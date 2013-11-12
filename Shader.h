@@ -4,29 +4,29 @@
 #define _MR_SHADER_H_
 
 #include "MorglodsRender.h"
+//#include "ResourceManager.h"
 
 namespace MR{
-    const unsigned short ShaderVar_INT_TYPE = 4; //int or sampler2D etc uniform1i
-    const unsigned short ShaderVar_FLOAT_TYPE = 0; //"float" float[1]
-    const unsigned short ShaderVar_VEC2_TYPE = 1; //"vec2" float[2]
-    const unsigned short ShaderVar_VEC3_TYPE = 2; //"vec3" float[3]
-    const unsigned short ShaderVar_VEC4_TYPE = 3; //"vec4" float[4]
+    enum ShaderUniformTypes : unsigned short {
+        ShaderUniform_INT_TYPE = 4, //int or sampler2D etc uniform1i
+        ShaderUniform_FLOAT_TYPE = 0, //"float" float[1]
+        ShaderUniform_VEC2_TYPE = 1, //"vec2" float[2]
+        ShaderUniform_VEC3_TYPE = 2, //"vec3" float[3]
+        ShaderUniform_VEC4_TYPE = 3 //"vec4" float[4]
+    };
 
     //--------------------------------------------------
     //Unique object for each shader; named var for shader
-    class ShaderVar{
+    struct ShaderUniform{
     public:
-        const char* name = "unnamed";
-        unsigned short type = ShaderVar_FLOAT_TYPE;
-        void* value = NULL;
-        int uniform_location = 0; //uniform location
+        const char* name;
+        ShaderUniformTypes type;
+        void* value;
+        int uniform_location; //uniform location
 
-        ShaderVar(){}
-        ShaderVar(const char* Name, unsigned short Type, void* Value, GLenum shader_program){
-            this->name = Name;
-            this->uniform_location = glGetUniformLocationARB(shader_program, Name);
-            this->type = Type;
-            this->value = Value;
+        ShaderUniform() : name("none"), type(ShaderUniformTypes::ShaderUniform_FLOAT_TYPE), value(nullptr), uniform_location(0){}
+        ShaderUniform(const char* Name, ShaderUniformTypes Type, void* Value, GLenum shader_program) : name(Name), type(Type), value(Value){
+            uniform_location = glGetUniformLocationARB(shader_program, Name);
         }
     };
 
@@ -59,11 +59,11 @@ namespace MR{
         ~SubShader();
     };
 
-    class Shader{
+    //!TODO: add Shader resource manager
+    class Shader/* : public virtual Resource*/{
         GLenum gl_PROGRAM; //OpenGL shader program
     public:
-        ShaderVar** ShaderVars = NULL; //pointer to array of vars; used in Use function
-        unsigned int ShaderVarsNum = 0; //num of elements in ShaderVars
+        std::vector<ShaderUniform*> ShaderUniforms;
 
         //----------------------------
         //Returns OpenGL shader object
@@ -78,12 +78,14 @@ namespace MR{
         //Uses this shader
         inline void Use(){
             glUseProgramObjectARB(this->gl_PROGRAM);
-            for(unsigned int i = 0; i < this->ShaderVarsNum; ++i){
-                if(this->ShaderVars[i]->type == ShaderVar_INT_TYPE) glUniform1i(this->ShaderVars[i]->uniform_location, ((int*)this->ShaderVars[i]->value)[0]);
-                if(this->ShaderVars[i]->type == ShaderVar_FLOAT_TYPE) glUniform1f(this->ShaderVars[i]->uniform_location, ((float*)this->ShaderVars[i]->value)[0]);
-                if(this->ShaderVars[i]->type == ShaderVar_VEC2_TYPE) glUniform2f(this->ShaderVars[i]->uniform_location, ((float*)this->ShaderVars[i]->value)[0], ((float*)this->ShaderVars[i]->value)[1]);
-                if(this->ShaderVars[i]->type == ShaderVar_VEC3_TYPE) glUniform3f(this->ShaderVars[i]->uniform_location, ((float*)this->ShaderVars[i]->value)[0], ((float*)this->ShaderVars[i]->value)[1], ((float*)this->ShaderVars[i]->value)[2]);
-                if(this->ShaderVars[i]->type == ShaderVar_VEC4_TYPE) glUniform4f(this->ShaderVars[i]->uniform_location, ((float*)this->ShaderVars[i]->value)[0], ((float*)this->ShaderVars[i]->value)[1], ((float*)this->ShaderVars[i]->value)[2], ((float*)this->ShaderVars[i]->value)[3]);
+            ShaderUniform* currentUni = nullptr;
+            for(auto it = ShaderUniforms.begin(); it != ShaderUniforms.end(); ++it){
+                currentUni = (*it);
+                if(currentUni->type == ShaderUniform_INT_TYPE) glUniform1i(currentUni->uniform_location, ((int*)currentUni->value)[0]);
+                if(currentUni->type == ShaderUniform_FLOAT_TYPE) glUniform1f(currentUni->uniform_location, ((float*)currentUni->value)[0]);
+                if(currentUni->type == ShaderUniform_VEC2_TYPE) glUniform2f(currentUni->uniform_location, ((float*)currentUni->value)[0], ((float*)currentUni->value)[1]);
+                if(currentUni->type == ShaderUniform_VEC3_TYPE) glUniform3f(currentUni->uniform_location, ((float*)currentUni->value)[0], ((float*)currentUni->value)[1], ((float*)currentUni->value)[2]);
+                if(currentUni->type == ShaderUniform_VEC4_TYPE) glUniform4f(currentUni->uniform_location, ((float*)currentUni->value)[0], ((float*)currentUni->value)[1], ((float*)currentUni->value)[2], ((float*)currentUni->value)[3]);
             }
         }
 

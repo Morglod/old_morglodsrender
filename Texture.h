@@ -31,7 +31,7 @@ namespace MR{
         bool _loaded = false;
         TextureManager* _manager = nullptr;
     public:
-        GLuint gl_texture; //OpenGL
+        GLuint gl_texture; //OpenGL texture
 
         //----------------------
         //Returns OpenGL texture
@@ -54,7 +54,7 @@ namespace MR{
         inline ResourceManager* GetManager(){return (ResourceManager*)this->_manager;}
 
         Texture();
-        Texture(MR::TextureManager* manager, std::string name, std::string source);
+        Texture(MR::ResourceManager* manager, std::string name, std::string source);
 
         //----------------------
         //Deletes OpenGL texture

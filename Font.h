@@ -112,7 +112,7 @@ public:
         return (ResourceManager*)this->_manager;
     }
 
-    Font(MR::FontManager* manager, std::string name, std::string source)  : _name(name), _source(source), _manager(manager) {}
+    Font(MR::ResourceManager* manager, std::string name, std::string source);
     virtual ~Font();
 };
 

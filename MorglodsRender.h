@@ -55,7 +55,7 @@ GLEW GCC REBUILD
 #include "Texture.h"
 #include "Log.h"
 #include "Font.h"
-#include "Node.h"
+//#include "Node.h"
 
 #include "GeometryBuffer.h"
 #include "Shader.h"
@@ -83,6 +83,9 @@ namespace MR{
     //Stops MorglodsRender work
     void Shutdown();
 
+    //----------------------------
+    //Calculates frames per second
+    //timeType is data type of time in calculations
     template<typename timeType>
     unsigned short inline FPS(){
         static timeType lastTime = 0.0;

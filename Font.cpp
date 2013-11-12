@@ -235,6 +235,10 @@ bool Font::ReLoad() {
     this->UnLoad();
     return this->Load();
 }
+Font::Font(MR::ResourceManager* manager,
+     std::string name, std::string source) : Resource(manager, name, source), _name(name), _source(source) {
+    _manager = dynamic_cast<MR::FontManager*>(manager);
+}
 Font::~Font() {
     if(this->_manager->debugMessages) MR::Log::LogString("Font "+this->_name+" ("+this->_source+") deleting");
     this->UnLoad();

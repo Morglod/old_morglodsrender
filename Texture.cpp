@@ -33,8 +33,8 @@ bool MR::Texture::ReLoad(){
     return this->Load();
 }
 
-MR::Texture::Texture(MR::TextureManager* manager, std::string name, std::string source){
-    this->_manager = manager;
+MR::Texture::Texture(MR::ResourceManager* manager, std::string name, std::string source) : Resource(manager, name, source) {
+    this->_manager = dynamic_cast<TextureManager*>(manager);
     this->_source = source;
     this->_name = name;
 }
