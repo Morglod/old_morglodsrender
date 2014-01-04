@@ -426,13 +426,13 @@
 
 1379965445 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\boundingbox.h
 
-1378659702 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\camera.cpp
-	"Camera.h"
+1388036337 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\camera.cpp
+	"Camera.hpp"
 
-1378659864 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\camera.h
-	"Node.h"
+1387395533 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\camera.h
+	"MorglodsRender.h"
 
-1378387229 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\node.h
+1384267410 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\node.h
 	<vector>
 	<algorithm>
 	<string>
@@ -448,9 +448,12 @@
 1377577707 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\culling.h
 	"MorglodsRender.h"
 
-1384196989 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\morglodsrender.h
+1387381049 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\morglodsrender.h
 	<GL\glew.h>
 	<GLFW\glfw3.h>
+	<glm/glm.hpp>
+	<glm/gtc/matrix_transform.hpp>
+	<glm/gtc/type_ptr.hpp>
 	<assimp/cimport.h>
 	<assimp/material.h>
 	<assimp/scene.h>
@@ -461,6 +464,7 @@
 	<stdlib.h>
 	<windows.h>
 	<iostream>
+	<string>
 	"ResourceManager.h"
 	"Texture.h"
 	"Log.h"
@@ -470,7 +474,10 @@
 	"Material.h"
 	"Camera.h"
 	"Culling.h"
+	"RenderManager.h"
+	"Events.h"
 	"MachineInfo.h"
+	"Transformation.h"
 
 1384198992 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\resourcemanager.h
 	<vector>
@@ -478,7 +485,7 @@
 	<memory>
 	<string>
 
-1384198333 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\texture.h
+1385368820 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\texture.h
 	<GL\glew.h>
 	<SOIL.h>
 	"ResourceManager.h"
@@ -491,47 +498,47 @@
 	<algorithm>
 	<string>
 
-1384200657 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shader.h
-	"MorglodsRender.h"
+1385704745 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shader.h
+	<GL\glew.h>
+	<vector>
+	<string>
 
-1378383187 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\material.h
+1384392643 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\material.h
 	"MorglodsRender.h"
 
 1379948430 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\optimizations.h
 	"Node.h"
 	"GeometryBuffer.h"
 
-1383057569 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometrybuffer.h
-	"MorglodsRender.h"
+1385738849 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometrybuffer.h
+	<GL\glew.h>
 	<iostream>
 
-1382914243 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\machineinfo.h
+1385361589 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\machineinfo.h
 	<string>
 
-1380902706 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\log.cpp
-	"Log.h"
+1388036281 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\log.cpp
+	"Log.hpp"
 
-1382914273 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\machineinfo.cpp
-	"MachineInfo.h"
-	<GL\glew.h>
-	<stdio.h>
+1388701045 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\machineinfo.cpp
+	"MachineInfo.hpp"
 	<windows.h>
 
-1382839681 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\morglodsrender.cpp
-	"MorglodsRender.h"
+1388037068 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\morglodsrender.cpp
+	"MorglodsRender.hpp"
 
-1377811234 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\node.cpp
+1384267526 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\node.cpp
 	"Node.h"
 	"MorglodsRender.h"
 
-1382973996 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shader.cpp
-	"Shader.h"
+1388151961 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shader.cpp
+	"Shader.hpp"
+	"Log.hpp"
 
-1384198967 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\texture.cpp
-	"Texture.h"
-	"Log.h"
+1388037159 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\texture.cpp
+	"Texture.hpp"
 
-1384198864 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\font.h
+1385365194 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\font.h
 	"ResourceManager.h"
 	"Texture.h"
 	<sstream>
@@ -539,11 +546,106 @@
 	<fstream>
 	<vector>
 
-1384198864 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\font.cpp
+1384498766 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\font.cpp
 	"Font.h"
 	<fstream>
 	<stdlib.h>
 
-1383058558 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometrybuffer.cpp
+1388787778 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometrybuffer.cpp
+	"GeometryBuffer.hpp"
+	"Shader.hpp"
+	"Log.hpp"
+
+1388036577 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\material.cpp
+	"Material.hpp"
+
+1384428847 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\rendermanager.h
+	<GL\glew.h>
 	"GeometryBuffer.h"
+	"Shader.h"
+
+1387576079 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\events.h
+	<vector>
+	<algorithm>
+
+1387382320 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\transformation.h
+	"MorglodsRender.h"
+
+1388792116 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\camera.hpp
+	"MorglodsRender.hpp"
+
+1388037030 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\morglodsrender.hpp
+	"pre.hpp"
+	"ResourceManager.hpp"
+	"Texture.hpp"
+	"Log.hpp"
+	"GeometryBuffer.hpp"
+	"Shader.hpp"
+	"Material.hpp"
+	"Camera.hpp"
+	"RenderManager.hpp"
+	"Events.hpp"
+	"MachineInfo.hpp"
+	"Transformation.hpp"
+
+1388037377 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\pre.hpp
+	<GL\glew.h>
+	<GLFW\glfw3.h>
+	<glm/glm.hpp>
+	<glm/gtc/matrix_transform.hpp>
+	<glm/gtc/type_ptr.hpp>
+	<SOIL.h>
+	<memory>
+	<stdlib.h>
+	<windows.h>
+	<iostream>
+	<fstream>
+	<string>
+	<vector>
+	<algorithm>
+	<stdio.h>
+	<assimp/cimport.h>
+	<assimp/material.h>
+	<assimp/scene.h>
+	<assimp/postprocess.h>
+	<assimp/Importer.hpp>
+	<assimp/mesh.h>
+
+1388036782 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\resourcemanager.hpp
+	"pre.hpp"
+
+1388036934 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\texture.hpp
+	<GL\glew.h>
+	"ResourceManager.hpp"
+	"Log.hpp"
+
+1388035867 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\log.hpp
+	<vector>
+	<algorithm>
+	<string>
+
+1388786897 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometrybuffer.hpp
+	"pre.hpp"
+	"Events.hpp"
+
+1388791877 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shader.hpp
+	"pre.hpp"
+
+1388036568 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\material.hpp
+	"MorglodsRender.hpp"
+
+1388036702 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\rendermanager.hpp
+	<GL\glew.h>
+	"GeometryBuffer.hpp"
+	"Shader.hpp"
+
+1388698465 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\events.hpp
+	<vector>
+	<algorithm>
+
+1388036518 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\machineinfo.hpp
+	"pre.hpp"
+
+1388036955 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\transformation.hpp
+	"MorglodsRender.hpp"
 

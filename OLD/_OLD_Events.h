@@ -8,7 +8,7 @@
 namespace MR{
     class EventCallback{
     private:
-        void (*defaultCallback)(void* data1, void* data2) = nullptr;
+        void (*defaultCallback)(void* data1, void* data2);
     public:
         virtual inline void Set(void* callback){
             this->defaultCallback = callback;
@@ -19,6 +19,8 @@ namespace MR{
         virtual inline void Invoke(void* data1, void* data2){
             if(this->defaultCallback != nullptr) this->defaultCallback(data1, data2);
         }
+
+        EventCallback() : defaultCallback(nullptr) {}
     };
 
     class Event{

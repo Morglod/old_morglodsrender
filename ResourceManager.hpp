@@ -3,10 +3,7 @@
 #ifndef _MR_RESOURCE_MANAGER_H_
 #define _MR_RESOURCE_MANAGER_H_
 
-#include <vector>
-#include <algorithm>
-#include <memory>
-#include <string>
+#include "pre.hpp"
 
 namespace MR{
     class ResourceManager;

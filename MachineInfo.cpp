@@ -1,42 +1,75 @@
-#include "MachineInfo.h"
+#include "MachineInfo.hpp"
 
-//GLEW
-#ifndef __glew_h__
-#   define GLEW_STATIC
-#   include <GL\glew.h>
-#endif
-
-#include <stdio.h>
 #include <windows.h>
 
-int MR::MachineInfo::gl_version_major()
-{
+int MR::MachineInfo::gl_version_major() {
     int outv = 0;
     glGetIntegerv(GL_MAJOR_VERSION, &outv);
     return outv;
 }
 
-int MR::MachineInfo::gl_version_minor()
-{
+int MR::MachineInfo::gl_version_minor() {
     int outv = 0;
     glGetIntegerv(GL_MINOR_VERSION, &outv);
     return outv;
 }
 
-std::string MR::MachineInfo::version_string()
-{
+std::string MR::MachineInfo::gl_version_string() {
     static std::string outv = (const char*)glGetString(GL_VERSION);
     return outv;
 }
 
-std::string MR::MachineInfo::gpu_vendor_string()
-{
+MR::MachineInfo::GLVersion MR::MachineInfo::gl_version() {
+    static int gl_major = gl_version_major();
+    static int gl_minor = gl_version_minor();
+    static GLVersion ver = GLVersion::VUnknown;
+
+    if(ver != GLVersion::VUnknown) return ver;
+
+    if( (gl_major <= MINIMAL_GL_VERSION_MAJOR) && (gl_minor <= MINIMAL_GL_VERSION_MINOR) ) {
+        ver = GLVersion::VNotSupported;
+        return ver;
+    }
+    if(gl_major == 3) {
+        if(gl_minor == 2) {
+            ver = GLVersion::V3_2;
+            return ver;
+        } else if(gl_minor == 3) {
+            ver = GLVersion::V3_3;
+            return ver;
+        } else {
+            ver = GLVersion::V3_x;
+            return ver;
+        }
+    } else if(gl_major == 4) {
+        if(gl_minor == 0) {
+            ver = GLVersion::V4_0;
+            return ver;
+        } else if(gl_minor == 2) {
+            ver = GLVersion::V4_2;
+            return ver;
+        } else if(gl_minor == 3) {
+            ver = GLVersion::V4_3;
+            return ver;
+        } else if(gl_minor == 4) {
+            ver = GLVersion::V4_4;
+            return ver;
+        } else {
+            ver = GLVersion::V4_x;
+            return ver;
+        }
+    }
+
+    ver = GLVersion::Vx_x;
+    return ver;
+}
+
+std::string MR::MachineInfo::gpu_vendor_string() {
     static std::string outv = (const char*)glGetString(GL_VENDOR);
     return outv;
 }
 
-MR::MachineInfo::GPUVendor MR::MachineInfo::gpu_vendor()
-{
+MR::MachineInfo::GPUVendor MR::MachineInfo::gpu_vendor() {
     static std::string v = gpu_vendor_string();
     if(v == "NVIDIA Corporation") return GPUVendor::Nvidia;
     else if(v == "ATI Technologies") return GPUVendor::Nvidia;
@@ -45,35 +78,33 @@ MR::MachineInfo::GPUVendor MR::MachineInfo::gpu_vendor()
     else return GPUVendor::Other;
 }
 
-std::string MR::MachineInfo::gpu_name()
-{
+std::string MR::MachineInfo::gpu_name() {
     static std::string outv = (const char*)glGetString(GL_RENDERER);
     return outv;
 }
 
-std::string MR::MachineInfo::extensions_list()
-{
+std::string MR::MachineInfo::gl_extensions_list() {
     static std::string outv = (const char*)glGetString(GL_EXTENSIONS);
     return outv;
 }
 
-std::string MR::MachineInfo::version_glsl()
-{
+std::string MR::MachineInfo::gl_version_glsl() {
     static std::string outv = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
     return outv;
 }
-int MR::MachineInfo::total_memory_kb()
-{
+int MR::MachineInfo::total_memory_kb() {
     GLint total_mem_kb = 0;
     if(gpu_vendor() == Nvidia) glGetIntegerv(GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX, &total_mem_kb);
-    else
-    {
+    else {
         //COPYPASTA
         DWORD	i[5] = { 0, 0, 0x27, 0, 0 };
         DWORD	o[5] = { 0, 0, 0, 0, 0 };
+#ifdef UNICODE
+        HDC hdc = CreateDC(L"DISPLAY", 0, 0, 0);
+#else
         HDC hdc = CreateDC("DISPLAY", 0, 0, 0);
-        if (hdc == NULL)
-        {
+#endif
+        if (hdc == NULL) {
             return 0;
         }
 
@@ -81,8 +112,7 @@ int MR::MachineInfo::total_memory_kb()
 
         DeleteDC(hdc);
 
-        if (s <= 0)
-        {
+        if (s <= 0) {
             return 0;
         }
 
@@ -90,8 +120,7 @@ int MR::MachineInfo::total_memory_kb()
     }
     return total_mem_kb;
 }
-int MR::MachineInfo::current_memory_kb()
-{
+int MR::MachineInfo::current_memory_kb() {
     GLint cur_avail_mem_kb = 0;
     if(gpu_vendor() == Nvidia) glGetIntegerv(GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX, &cur_avail_mem_kb);
     return cur_avail_mem_kb;

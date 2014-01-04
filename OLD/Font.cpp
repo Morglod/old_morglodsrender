@@ -160,8 +160,8 @@ bool Font::Load() {
     //if(!IO::File::Exists( gcnew String(this->_source.c_str()) ) )
     //    if(this->_manager->debugMessages)
     //        MR::Log::LogString("Font "+this->_name+" ("+this->_source+") load failed. Source is not exist");
-    std::ifstream fs("myfile.txt");
-    if(fs.fail()){
+    std::ifstream fs(this->_source, std::ios::in);
+    if(!fs){
         if(this->_manager->debugMessages) MR::Log::LogString("Font "+this->_name+" ("+this->_source+") load failed. Source is not exist");
         return false;
     }
@@ -177,18 +177,19 @@ bool Font::Load() {
     //file = file->Remove(0, file->IndexOf("file=\"")+6);
     fstring = fstring.erase(0, fstring.find_first_of("file=\"")+6);
 
+    std::string texture_file = fstring.substr(0, fstring.find_first_of('\"'));
+    MR::Log::LogString("Font CharsetTexture(\""+texture_file+"\")");
+    this->_char_set = new Charset(TextureSize, dynamic_cast<MR::Texture*>(MR::TextureManager::Instance()->Need( texture_file )) );
     /*std::string texture_file = (wchar_t*)(void*)System::Runtime::InteropServices::Marshal::StringToHGlobalUni(
 		System::IO::Path::Combine(
 		System::IO::Path::GetDirectoryName( gcnew System::String(this->_source.c_str()) ),
 		file->Substring(0, file->IndexOf("\"")) )
 	);*/
-	size_t pos = this->_source.find_last_of("\\/");
-	std::string texture_file = ((std::string::npos == pos) ? "" : this->_source.substr(0, pos))+fstring.substr(0, fstring.find_first_of("\""));
+	//size_t pos = this->_source.find_last_of("\\/");
+	//std::string texture_file = ((std::string::npos == pos) ? "" : this->_source.substr(0, pos))+fstring.substr(0, fstring.find_first_of("\""));
 
     //file = file->Remove(0, file->IndexOf("char id=")+8);
     fstring = fstring.erase(0, fstring.find_first_of("char id=")+8);
-
-    this->_char_set = new Charset(TextureSize, dynamic_cast<MR::Texture*>(MR::TextureManager::Instance()->Need( texture_file )) );
 
     //At first pass we have "char id=" from 0 index
     bool ok = true;

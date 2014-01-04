@@ -9,16 +9,8 @@
 #   include <GL\glew.h>
 #endif
 
-//SIMPLE IMAGE LIBRARY
-#ifndef HEADER_SIMPLE_OPENGL_IMAGE_LIBRARY
-#   include <SOIL.h>
-#endif
-
-#include "ResourceManager.h"
-#include "Log.h"
-
-#include <algorithm>
-#include <vector>
+#include "ResourceManager.hpp"
+#include "Log.hpp"
 
 namespace MR{
     class Texture;
@@ -26,11 +18,57 @@ namespace MR{
 
     class Texture : public virtual MR::Resource{
     protected:
-        std::string _name = "";
-        std::string _source = "";
+        std::string _name;
+        std::string _source;
         bool _loaded = false;
         TextureManager* _manager = nullptr;
+
+        unsigned short gl_width = 0, gl_height = 0, gl_depth = 0, gl_internal_format = 0;
+        unsigned char gl_red_bits_num = 0, gl_green_bits_num = 0, gl_blue_bits_num = 0, gl_depth_bits_num = 0, gl_alpha_bits_num = 0;
+        unsigned int gl_mem_image_size = 0, gl_mem_compressed_img_size = 0;
+        bool gl_compressed = false;
+
     public:
+
+        //TEXTURE-----------------------------
+
+        inline unsigned short GetWidth() const {
+            return gl_width;
+        }
+        inline unsigned short GetHeight() const {
+            return gl_height;
+        }
+        inline unsigned short GetDepth() const {
+            return gl_depth;
+        }
+        inline unsigned short GetInternalFormat() const {
+            return gl_internal_format;
+        }
+        inline unsigned int GetImageSize() const {
+            return gl_mem_image_size;
+        }
+        inline unsigned int GetCompressedImageSize() const {
+            return gl_mem_compressed_img_size;
+        }
+        inline unsigned char GetRedBitsNum() const {
+            return gl_red_bits_num;
+        }
+        inline unsigned char GetGreenBitsNum() const {
+            return gl_green_bits_num;
+        }
+        inline unsigned char GetBlueBitsNum() const {
+            return gl_blue_bits_num;
+        }
+        inline unsigned char GetDepthBitsNum() const {
+            return gl_depth_bits_num;
+        }
+        inline unsigned char GetAlphaBitsNum() const {
+            return gl_alpha_bits_num;
+        }
+        inline bool IsCompressed() const {
+            return gl_compressed;
+        }
+
         GLuint gl_texture; //OpenGL texture
 
         //----------------------
@@ -40,10 +78,12 @@ namespace MR{
         //Binds this OpenGL texture to specific texture slot (gl_tex_num)
         //gl_tex_num - GL_TEXTURE0 GL_TEXTURE1 etc
         inline void Bind(GLenum gl_tex_num){
-            MR::Log::LogString("TEXTURE BIND "+this->_name+" "+this->_source);
+            //if(_manager->debugMessages) MR::Log::LogString("TEXTURE BIND "+this->_name+" "+this->_source);
             glActiveTexture(gl_tex_num);
             glBindTexture(GL_TEXTURE_2D, this->gl_texture);
         }
+
+        //RESOURCE-----------------------------
 
         virtual inline std::string GetName(){return this->_name;}
         virtual inline std::string GetSource(){return this->_source;}
@@ -51,7 +91,7 @@ namespace MR{
         virtual void UnLoad();
         virtual bool ReLoad();
         virtual inline bool IsLoaded(){return this->_loaded;}
-        inline ResourceManager* GetManager(){return (ResourceManager*)this->_manager;}
+        inline ResourceManager* GetManager(){return reinterpret_cast<ResourceManager*>(this->_manager);}
 
         Texture();
         Texture(MR::ResourceManager* manager, std::string name, std::string source);

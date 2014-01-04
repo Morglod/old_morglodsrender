@@ -1,0 +1,286 @@
+------------------------------
+Шаг 0: Подготовка.
+
+Необходимо:
+MinGW - GCC компилятор
+GLEW 190 static lib gcc
+glfw3
+SOIL(Simple OpenGL Image Library)
+MorglodsRender
+CodeBlocks (MinGW)
+
+------------------------------
+Шаг 1: Подключение библиотеки.
+
+Пользователь может в ручную подключить необходимые библиотеки, не парясь
+со стандартными путями и путями поиска студии.
+(До подключения самого рендера).
+
+"
+#define GLEW_STATIC
+#include "C:\GLEW_190_GCC\include\GL\glew.h"
+#include "C:\GLFW\include\GLFW\glfw3.h"
+#include "C:\Simple OpenGL Image Library\src\SOIL.h"
+"
+
+"#define GLEW_STATIC"
+GLEW должен подключаться статически.
+
+"#include "C:\MorglodsRender\MorglodsRender.h""
+Подключение самого рендера.
+
+Подключение необходимых библиотек:
+MorglodsRender\libMorglodsRender.a
+Simple OpenGL Image Library\lib\libSOIL.a
+GLFW\lib-mingw\libglfw3.a
+GLEW\lib\libGLEW_190_GCC.a
+MinGW\lib\libopengl32.a
+MinGW\lib\libgdi32.a
+
+------------------------------
+Шаг 2: Пробный пуск.
+
+Подключаем необходимые "хэдеры":
+"
+//You can manually include GLEW, GLFW, SOIL
+#define GLEW_STATIC //GLEW bust be static
+#include "C:\Users\Вовка\Documents\CodeBlocksProjects\GLEW_190_GCC\include\GL\glew.h"
+#include "C:\GLFW\include\GLFW\glfw3.h"
+#include "C:\Simple OpenGL Image Library\src\SOIL.h"
+
+//Include framework
+#include "C:\Users\Вовка\Documents\CodeBlocksProjects\MorglodsRender\MorglodsRender\MorglodsRender.h"
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+"
+
+Переходим к главному методу "main":
+
+Инициализация рендера осуществяется с помощью функции MR::Init(window name, window width, window height).
+Возвращает GLFW хендл окна (GLFWwindow*), или NULL если неудачно. Текст ошибки можно получить
+с помощью методов MR::GetLastErrorCode(void) и MR::MessageText(uint).
+
+Пример инициализации с выводом сообщения об ошибке:
+"
+GLFWwindow* window = MR::Init("Test window", 640, 480);
+if(window == NULL) std::cout << MR::MessageText(MR::GetLastErrorCode()) << std::endl;
+"
+
+Главный цикл выглядит примерно так:
+"
+while(!glfwWindowShouldClose(window)){
+	glfwSwapBuffers(window);
+	glfwPollEvents();
+}
+"
+
+Метод GLFW glfwWindowShouldClose(GLFWwindow*) возвращает true если окно должно закрыться.
+Внутри цикла мы меняем буфферы и обрабатываем сообщения силами GLFW (glfwSwapBuffers(GLFWwindow*) и glfwPollEvents(void)).
+
+Для освобождения ресурсов, занятых движком, необходимо вызвать метод MR::Shutdown(void).
+
+------------------------------
+Шаг 3: Копаем глубже.
+
+Для отрисовки, пользователь может спокойно использовать обычные OpenGL методы.
+"
+while(!glfwWindowShouldClose(window)){
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	glBegin(GL_TRIANGLES);
+	glVertex3f(0.5f, 	0, 0);
+	glVertex3f(0, 		1, 0);
+	glVertex3f(-0.5f, 	0, 0);
+	glEnd();
+	
+	glfwSwapBuffers(window);
+	glfwPollEvents();
+}
+"
+
+Но для большей производительности, лучше использовать буфферы. В MorglodsRender их есть несколько видов.
+
+Для вершин используется MR::VertexBuffer.
+"
+float verts[]{
+	//top triangle
+	-0.1f, 0, 0,
+	0, 0.1f, 0,
+	0.1f, 0, 0,
+
+	//bottom triangle
+	-0.1f, 0, 0,
+	0, -0.1f, 0,
+	0.1f, 0, 0
+};
+
+MR::VertexBuffer* vbuffer = new MR::VertexBuffer(&verts[0], 18, GL_STATIC_DRAW);
+"
+verts - массив с координатами вершин. Каждая вершина кодируется 3мя значениями (элементами).
+&verts[0] - указатель на первый элемент массива.
+18 - количество элементов (значений). 2 треугольника, по 3 вершины (2*3*3 = 18).
+GL_STATIC_DRAW - OpenGL флаг, показывающий как будет использоваться буффер.
+
+Чтобы отрисовать такой буффер, необходимо создать также буффер геометрии.
+"
+MR::GeometryBuffer* geometry = new MR::GeometryBuffer(vbuffer, NULL, GL_TRIANGLES);
+"
+vbuffer - ранее созданный буффер вершин.
+NULL - вместо этого, можно передать индексный буффер (будет рассмотрен позднее).
+GL_TRIANGLES - способ отрисовки OpenGL
+
+Затем просто вызвать метод Draw.
+"
+geometry->Draw();
+"
+
+Теперь попробуем с индексными буфферами:
+"
+unsigned int indeces[]{
+	0, 1, 2
+};
+
+MR::IndexBuffer* ibuffer = new MR::IndexBuffer(&indeces[0], 3, GL_STATIC_DRAW);
+MR::GeometryBuffer* geometry = new MR::GeometryBuffer(vbuffer, ibuffer, GL_TRIANGLES);
+"
+
+Большинство объектов в MorglodsRender можно присоеденить к нодам (MR::Node).
+Создадим один объект MR::Node, присоединим к нему геометрический буффер и отрисуем.
+"
+MR::Node* node = new MR::Node();
+geometry->AttachTo(*node);
+node->Draw();
+"
+
+С помощью нодов, можно также пользоваться OpenGL трансформацией:
+"
+//translation ( used in Draw() )
+node->tX += 1;
+node->tY += 1;
+node->tZ += 1;
+
+//rotation ( used in Draw() )
+node->rX += 1;
+node->rY += 1;
+node->rZ += 1;
+
+//scale ( used in Draw() )
+node->sX += 1;
+node->sY += 1;
+node->sZ += 1;
+"
+
+В MorglodsRender также существует MR::DataBuffer для отрисовки с дополнительной информацией (текстурные координаты, нормали, цвет итд)
+Создадим буффер цвета и присоединим его к геометрии.
+"
+unsigned int colors[]{
+	0, 255, 0,
+	0, 255, 0,
+	0, 255, 0 
+};
+
+MR::DataBuffer* dbuffer2 = new MR::DataBuffer(&colors[0], sizeof(unsigned int), 9, GL_STATIC_DRAW, GL_COLOR_ARRAY, GL_UNSIGNED_INT);
+vbuffer->dataBuffers = &dbuffer2;
+vbuffer->dataBuffers_num = 1;
+"
+
+В MR::DataBuffer можно передавать элементы различных типов и различного назначения.
+
+------------------------------
+Шаг 4: Материалы.
+
+Простой метод для загрузки текста из файла (например для шейдеров):
+"
+const char* LoadTextFromFile(const char* path){
+    std::fstream vertexShaderFile(path, std::ios::in);
+
+    if (vertexShaderFile.is_open()){
+        //This is to help store the file's buffer.
+        std::stringstream buffer;
+        //Here, get all of the file's data by streaming the file's stream into our buffer stream.
+        buffer << vertexShaderFile.rdbuf();
+        //Now, buffer contains file text data
+        return buffer.str().c_str();
+    }
+    return NULL;
+}
+"
+
+Для начала загрузим текстуру:
+"
+MR::Texture* tex = new MR::Texture("texture.png");
+if(tex->Get() == 0) std::cout << "Texture loading error\n" << SOIL_last_result() << std::endl;
+"
+
+Теперь добавим к нашей геометрии буффер текстурных координат.
+"
+float uvs[]{
+	0, 0.5f,
+	0.5f, 1.0f,
+	1.0f, 0.5f
+};
+
+MR::DataBuffer* dbuffer = new MR::DataBuffer(&uvs[0], sizeof(float), 6, GL_STATIC_DRAW, GL_TEXTURE_COORD_ARRAY, GL_FLOAT);
+vbuffer->dataBuffers = &dbuffer;
+vbuffer->dataBuffers_num = 1;
+"
+
+И отрисуем, используя текстуру.
+"
+tex->Bind(GL_TEXTURE0);
+node->Draw();
+"
+
+Теперь будем использовать шейдеры:
+
+Создадим шейдер, с использованием фрагментного и вершинного (SubShader'ов).
+"
+char log[2048];
+MR::SubShader* vertex_shader = new MR::SubShader(LoadTextFromFile("vs.txt"), GL_VERTEX_SHADER);
+glGetInfoLogARB(vertex_shader->Get(), 2048, 0, &log[0]); std::cout << log << std::endl;
+MR::SubShader* fragment_shader = new MR::SubShader(LoadTextFromFile("fs.txt"), GL_FRAGMENT_SHADER);
+glGetInfoLogARB(fragment_shader->Get(), 2048, 0, &log[0]); std::cout << log << std::endl;
+MR::SubShader* sub_shaders[2];
+sub_shaders[0] = vertex_shader;
+sub_shaders[1] = fragment_shader;
+MR::Shader* shader = new MR::Shader(&sub_shaders[0], 2);
+"
+
+Теперь выведем uniform'ы для удобной работы с ними.
+
+(Код шейдера):
+"
+uniform vec2 UniformPosXY;
+"
+
+(Код программы):
+"
+float UniformPosXY[2]{0.0f, 0.0f};
+MR::ShaderVar* varXY = new MR::ShaderVar("UniformPosXY", MR::ShaderVar_VEC2_TYPE, &UniformPosXY[0], shader->Get());
+shader->ShaderVars = varXY;
+shader->ShaderVarsNum = 1;
+"
+
+Теперь значения uniform'ов можно легко изменить:
+"
+UniformPosXY[0] -= 0.1f; //x
+UniformPosXY[1] += 0.1f; //y
+"
+
+И использовать шейдер при отрисовке:
+"
+tex->Bind(GL_TEXTURE0);
+shader->Use();
+node->Draw();
+"
+
+Материалы можно использовать вместе с MR::Mesh.
+"
+MR::Material* mat = new MR::Material();
+MR::Mesh* mesh = new MR::Mesh();
+mesh->geom_buffers = &geometry;
+mesh->materials = &mat;
+mesh->geom_buffers_num = 1;
+"

@@ -33,8 +33,9 @@ public:
 struct Charset {
 public:
     const unsigned short TextureSize;
-    unsigned int BadCharCodeReplace = (unsigned int)(' ');
+    unsigned int BadCharCodeReplace;
     MR::Texture* _texture;
+    const Font* font;
 
     std::vector<unsigned int> char_codes;
     std::vector<CharDescr*> char_desrcs;
@@ -54,7 +55,7 @@ public:
     }
 
     //CharDescr* Chars[256];
-    Charset(unsigned short _ts, MR::Texture* _tx) : TextureSize(_ts), _texture(_tx) {}
+    Charset(unsigned short _ts, MR::Texture* _tx) : TextureSize(_ts), _texture(_tx), BadCharCodeReplace('?'), NewLineHight(0.0f) {}
 };
 
 class FontText {
@@ -86,9 +87,11 @@ protected:
     Charset* _char_set = nullptr;
 public:
     GLenum glTextureStage = GL_TEXTURE0;
+
     virtual inline std::string GetName() {
         return this->_name;
     }
+
     virtual inline std::string GetSource() {
         return this->_source;
     }
@@ -100,7 +103,7 @@ public:
     virtual void PrintLine(std::wstring text, float x, float y, float rescale = 1.0f, float color_r = 0.0f, float color_b = 0.0f, float color_g = 0.0f, float color_a = 1.0f, wchar_t maskChar = '\0');
 	virtual float CalcLineSize(std::wstring text, float rescale = 1.0f);
 
-    virtual bool Load();
+    bool Load();
     virtual void UnLoad();
     virtual bool ReLoad();
 
@@ -109,7 +112,7 @@ public:
     }
 
     virtual inline ResourceManager* GetManager() {
-        return (ResourceManager*)this->_manager;
+        return reinterpret_cast<ResourceManager*>(this->_manager);
     }
 
     Font(MR::ResourceManager* manager, std::string name, std::string source);
@@ -138,7 +141,7 @@ public:
     virtual Resource* Get(std::string source);
     virtual Resource* Find(std::string name);
     virtual Resource* Need(std::string source);
-    virtual Resource** Need(std::string* sources, const unsigned int num);
+    virtual Resource** Need(std::string* sources, const unsigned int num){return nullptr;}
     virtual void Remove(std::string name, std::string source);
 
     virtual void RemoveAll();

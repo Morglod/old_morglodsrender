@@ -1,5 +1,4 @@
-#include "Texture.h"
-#include "Log.h"
+#include "Texture.hpp"
 
 using namespace MR;
 
@@ -18,6 +17,23 @@ bool MR::Texture::Load(){
     }
 
     this->_loaded = true;
+
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, (int*)(&gl_width));
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, (int*)(&gl_height));
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_DEPTH, (int*)(&gl_depth));
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, (int*)(&gl_internal_format));
+
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_RED_SIZE, (int*)(&gl_red_bits_num));
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_GREEN_SIZE, (int*)(&gl_green_bits_num));
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_BLUE_SIZE, (int*)(&gl_blue_bits_num));
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_DEPTH_SIZE, (int*)(&gl_depth_bits_num));
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_ALPHA_SIZE, (int*)(&gl_alpha_bits_num));
+
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_COMPRESSED_IMAGE_SIZE, (int*)(&gl_mem_compressed_img_size));
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_COMPRESSED, (int*)(&gl_compressed));
+
+    gl_mem_image_size = ((gl_red_bits_num+gl_green_bits_num+gl_blue_bits_num+gl_depth_bits_num+gl_alpha_bits_num)/8)*gl_width*gl_height;
+
     return true;
 }
 
@@ -33,10 +49,8 @@ bool MR::Texture::ReLoad(){
     return this->Load();
 }
 
-MR::Texture::Texture(MR::ResourceManager* manager, std::string name, std::string source) : Resource(manager, name, source) {
+MR::Texture::Texture(MR::ResourceManager* manager, std::string name, std::string source) : Resource(manager, name, source), _name(name), _source(source) {
     this->_manager = dynamic_cast<TextureManager*>(manager);
-    this->_source = source;
-    this->_name = name;
 }
 
 MR::Texture::~Texture(){

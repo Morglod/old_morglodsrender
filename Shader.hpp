@@ -3,8 +3,12 @@
 #ifndef _MR_SHADER_H_
 #define _MR_SHADER_H_
 
-#include "MorglodsRender.h"
-//#include "ResourceManager.h"
+#include "pre.hpp"
+
+#define SHADER_VERTEX_POSITION_ATTRIB_LOCATION 0
+#define SHADER_VERTEX_NORMAL_ATTRIB_LOCATION 1
+#define SHADER_VERTEX_COLOR_ATTRIB_LOCATION 2
+#define SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION 3
 
 namespace MR{
     enum ShaderUniformTypes : unsigned short {
@@ -12,7 +16,8 @@ namespace MR{
         ShaderUniform_FLOAT_TYPE = 0, //"float" float[1]
         ShaderUniform_VEC2_TYPE = 1, //"vec2" float[2]
         ShaderUniform_VEC3_TYPE = 2, //"vec3" float[3]
-        ShaderUniform_VEC4_TYPE = 3 //"vec4" float[4]
+        ShaderUniform_VEC4_TYPE = 3, //"vec4" float[4]
+        ShaderUniform_MAT4_TYPE = 4 //"mat4" float[4][4]
     };
 
     //--------------------------------------------------
@@ -57,6 +62,8 @@ namespace MR{
         //---------------------
         //Deletes OpenGL shader
         ~SubShader();
+
+        static SubShader* FromFile(std::string file, GLenum shader_type);
     };
 
     //!TODO: add Shader resource manager
@@ -78,14 +85,16 @@ namespace MR{
         //Uses this shader
         inline void Use(){
             glUseProgramObjectARB(this->gl_PROGRAM);
-            ShaderUniform* currentUni = nullptr;
             for(auto it = ShaderUniforms.begin(); it != ShaderUniforms.end(); ++it){
-                currentUni = (*it);
-                if(currentUni->type == ShaderUniform_INT_TYPE) glUniform1i(currentUni->uniform_location, ((int*)currentUni->value)[0]);
-                if(currentUni->type == ShaderUniform_FLOAT_TYPE) glUniform1f(currentUni->uniform_location, ((float*)currentUni->value)[0]);
-                if(currentUni->type == ShaderUniform_VEC2_TYPE) glUniform2f(currentUni->uniform_location, ((float*)currentUni->value)[0], ((float*)currentUni->value)[1]);
-                if(currentUni->type == ShaderUniform_VEC3_TYPE) glUniform3f(currentUni->uniform_location, ((float*)currentUni->value)[0], ((float*)currentUni->value)[1], ((float*)currentUni->value)[2]);
-                if(currentUni->type == ShaderUniform_VEC4_TYPE) glUniform4f(currentUni->uniform_location, ((float*)currentUni->value)[0], ((float*)currentUni->value)[1], ((float*)currentUni->value)[2], ((float*)currentUni->value)[3]);
+                if((*it)->value == nullptr) continue;
+                if((*it)->type == ShaderUniform_INT_TYPE) glUniform1i((*it)->uniform_location, ((int*)(*it)->value)[0]);
+                if((*it)->type == ShaderUniform_FLOAT_TYPE) glUniform1f((*it)->uniform_location, ((float*)(*it)->value)[0]);
+                if((*it)->type == ShaderUniform_VEC2_TYPE) glUniform2f((*it)->uniform_location, ((float*)(*it)->value)[0], ((float*)(*it)->value)[1]);
+                if((*it)->type == ShaderUniform_VEC3_TYPE) glUniform3f((*it)->uniform_location, ((float*)(*it)->value)[0], ((float*)(*it)->value)[1], ((float*)(*it)->value)[2]);
+                if((*it)->type == ShaderUniform_VEC4_TYPE) glUniform4f((*it)->uniform_location, ((float*)(*it)->value)[0], ((float*)(*it)->value)[1], ((float*)(*it)->value)[2], ((float*)(*it)->value)[3]);
+                if((*it)->type == ShaderUniform_MAT4_TYPE) {
+                    glUniformMatrix4fv((*it)->uniform_location, 1, GL_FALSE, (float*)&(((glm::mat4*)(*it)->value)[0][0]));
+                }
             }
         }
 

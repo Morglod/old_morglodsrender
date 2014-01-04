@@ -150,7 +150,7 @@ namespace MR{
         }
 
         static void _FindByName(MR::Node* n, std::string name, std::vector<MR::Node*> & vector_node){
-            for(std::vector<MR::Node*>::iterator it = n->Children.begin(); it != n->Children.end(); it++){
+            for(std::vector<MR::Node*>::iterator it = n->Children.begin(); it != n->Children.end(); ++it){
                 if( (*it)->name == name ) vector_node.push_back(*it);
                 _FindByName( (*it), name, vector_node );
             }

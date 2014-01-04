@@ -1,10 +1,5 @@
-#include "Camera.h"
+#include "Camera.hpp"
 
-void MR::Camera::Use(){
-    //if(this->renderTarget != NULL){
-        //if(this->renderTarget->SizeChanged)
-            //this->AspectRatio = this->renderTarget->Width/this->renderTarget->Height;
-        gluPerspective(this->FovY, this->AspectRatio, this->zNear, this->zFar);
-        gluLookAt(this->cameraX, this->cameraY, this->cameraZ, this->tX, this->tY, this->tZ, this->upX, this->upY, this->upZ);
-    //}
+void MR::Camera::Use(GLuint matrixUniform) {
+    glUniformMatrix4fv(matrixUniform, 1, GL_FALSE, &mvp[0][0]);
 }

@@ -3,9 +3,18 @@
 #ifndef _MR_GEOMETRY_BUFFER_H_
 #define _MR_GEOMETRY_BUFFER_H_
 
-#include "MorglodsRender.h"
+/*
+//GLEW
+#ifndef __glew_h__
+#   define GLEW_STATIC
+#   include <GL\glew.h>
+#endif
 
-#include <iostream>
+//#include "MorglodsRender.h"
+
+#include <iostream>*/
+#include "pre.hpp"
+#include "Shader.hpp"
 
 namespace MR
 {
@@ -32,6 +41,8 @@ public:
 
     const GLvoid *pointer;
 
+    VertexDeclarationType(){}
+
     //t - VertexDeclarationTypesEnum
     //e_num - Num of elements, that describes this data
     //p - GL pointer in stride
@@ -47,6 +58,20 @@ public:
 
     //Num of elements in array (_decl_types)
     unsigned short _decl_types_num = 0;
+
+    inline bool contains(VertexDeclarationTypesEnum type){
+        for(unsigned short i = 0; i < _decl_types_num; ++i){
+            if(_decl_types[i].type == type) return true;
+        }
+        return false;
+    }
+
+    inline VertexDeclarationType* get(VertexDeclarationTypesEnum type){
+        for(unsigned short i = 0; i < _decl_types_num; ++i){
+            if(_decl_types[i].type == type) return &_decl_types[i];
+        }
+        return nullptr;
+    }
 
     //Data type in buffer
     GLenum _data_type = GL_FLOAT;
@@ -94,11 +119,15 @@ protected:
 
 public:
     inline void Bind(){
+        std::cout << "BIND" << '\n';
+
         if(this->_vertex_buffer == 0) return;
         if(this->_decl == nullptr) return;
 
+        std::cout << "decl types num " << this->_decl->_decl_types_num;
         for(unsigned short i = 0; i < this->_decl->_decl_types_num; ++i)
         {
+            std::cout << "decl type" << '\n';
             switch(this->_decl->_decl_types[i].type)
             {
             case VDTE_POSITION:
@@ -116,10 +145,40 @@ public:
             }
         }
 
+        std::cout << "BIND1" << '\n';
+
         glBindBuffer(GL_ARRAY_BUFFER, this->_vertex_buffer);
 
+        //BIND
+        VertexDeclarationType* v_pos = _decl->get(VertexDeclarationTypesEnum::VDTE_POSITION);
+        if(v_pos != nullptr){
+            glVertexAttribPointer(SHADER_VERTEX_POSITION_ATTRIB_LOCATION, v_pos->elements_num, _decl->_data_type, GL_FALSE, _decl->stride_size, v_pos->pointer);
+            glEnableVertexAttribArray(SHADER_VERTEX_POSITION_ATTRIB_LOCATION);
+        }
+
+        VertexDeclarationType* v_texcoord = _decl->get(VertexDeclarationTypesEnum::VDTE_TEXTURE_COORD);
+        if(v_texcoord != nullptr){
+            glVertexAttribPointer(SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION, v_texcoord->elements_num, _decl->_data_type, GL_FALSE, _decl->stride_size, v_texcoord->pointer);
+            glEnableVertexAttribArray(SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION);
+        }
+
+        VertexDeclarationType* v_norm = _decl->get(VertexDeclarationTypesEnum::VDTE_NORMAL);
+        if(v_norm != nullptr){
+            glVertexAttribPointer(SHADER_VERTEX_NORMAL_ATTRIB_LOCATION, v_norm->elements_num, _decl->_data_type, GL_FALSE, _decl->stride_size, v_norm->pointer);
+            glEnableVertexAttribArray(SHADER_VERTEX_NORMAL_ATTRIB_LOCATION);
+        }
+
+        VertexDeclarationType* v_color = _decl->get(VertexDeclarationTypesEnum::VDTE_COLOR);
+        if(v_color != nullptr){
+            glVertexAttribPointer(SHADER_VERTEX_COLOR_ATTRIB_LOCATION, v_color->elements_num, _decl->_data_type, GL_FALSE, _decl->stride_size, v_color->pointer);
+            glEnableVertexAttribArray(SHADER_VERTEX_COLOR_ATTRIB_LOCATION);
+        }
+        //-------
+
+        std::cout << "BIND2" << '\n';
+
         //! todo: TRY TO ADD enableClientState to this cycle
-        for(unsigned short i = 0; i < this->_decl->_decl_types_num; ++i)
+        /*for(unsigned short i = 0; i < this->_decl->_decl_types_num; ++i)
         {
             switch(this->_decl->_decl_types[i].type)
             {
@@ -136,13 +195,13 @@ public:
                 glColorPointer(this->_decl->_decl_types[i].elements_num, this->_decl->_data_type, this->_decl->stride_size, this->_decl->_decl_types[i].pointer);
                 break;
             }
-        }
-
+        }*/
         if(_index_buffer != 0)
         {
             glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, this->_index_buffer );
             glEnableClientState( GL_ELEMENT_ARRAY_BUFFER );
         }
+        std::cout << "BIND OK" << '\n';
     }
 
     inline void Unbind(){
@@ -183,6 +242,8 @@ public:
 
         if(_index_buffer != 0)
         {
+            glEnableClientState( GL_ELEMENT_ARRAY_BUFFER );
+
             glDrawElements(
                 this->draw_mode, //mode
                 _indexes_num, //count
@@ -193,9 +254,12 @@ public:
             glDisableClientState( GL_ELEMENT_ARRAY_BUFFER );
         }
         else{
+            //std::cout << "\nDRAW ARRAYS " << this->draw_mode << ", 0, " << this->_vertexes_num << '\n';
             glDrawArrays(this->draw_mode, 0, this->_vertexes_num);
         }
     }
+
+    GeometryBuffer(){}
 
     //vd - VertexDeclaration pointer
     //id - IndexDeclaration pointer
