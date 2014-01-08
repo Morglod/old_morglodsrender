@@ -1,7 +1,6 @@
 #include "Material.hpp"
 
 void MR::MaterialPass::Use(){
-    if(ambientColor) glColor4f(ambientColor[0], ambientColor[1], ambientColor[2], ambientColor[3]);
-    if(ambientTexture) ambientTexture->Bind(ambientTextureStage);
+    if(diffuseTexture) MR::RenderManager::Instance()->UseTexture(diffuseTexture, diffuseTextureStage);
     if(shader) shader->Use();
 }

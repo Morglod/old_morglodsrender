@@ -35,9 +35,14 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add option="-fexpensive-optimizations" />
+			<Add option="-Os" />
+			<Add option="-O3" />
+			<Add option="-O" />
 			<Add option="-std=c++11" />
 		</Compiler>
 		<Linker>
+			<Add option="-s" />
 			<Add library="C:\MinGW\lib\libSOIL.a" />
 			<Add library="C:\MinGW\lib\libglfw3.a" />
 			<Add library="C:\MinGW\lib\libglew.a" />
@@ -59,6 +64,8 @@
 		<Unit filename="MachineInfo.hpp" />
 		<Unit filename="Material.cpp" />
 		<Unit filename="Material.hpp" />
+		<Unit filename="Mesh.cpp" />
+		<Unit filename="Mesh.hpp" />
 		<Unit filename="MorglodsRender.cpp" />
 		<Unit filename="MorglodsRender.hpp" />
 		<Unit filename="README.md" />

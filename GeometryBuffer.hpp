@@ -194,7 +194,8 @@ public:
     ~GeometryBuffer();
 };
 
-bool ImportMoMesh(std::string file, MR::GeometryBuffer**& buffers, int & num, bool log = false);
+//Import geometry from mom (momesh) file
+bool ImportMoGeom(std::string file, MR::GeometryBuffer**& buffers, unsigned int & num, bool indexes = false, bool log = false);
 }
 
 #endif // _MR_GEOMETRY_BUFFER_H

@@ -38,9 +38,9 @@ protected:
     float zFar;
     float aspectRatio;
 
-    glm::mat4 viewMatrix;
-    glm::mat4 projectionMatrix;
-    glm::mat4 mvp;
+    glm::mat4* viewMatrix;
+    glm::mat4* projectionMatrix;
+    glm::mat4* mvp;
 
     bool autoReCalc;
 
@@ -127,7 +127,7 @@ public:
     }
 
     inline void calcViewMatrix() {
-        if(cmode == CameraMode::CM_TARGET) viewMatrix = glm::lookAt(pos, target, up);
+        if(cmode == CameraMode::CM_TARGET) *viewMatrix = glm::lookAt(pos, target, up);
     }
 
     /*inline void CalcModelMatrix(){
@@ -135,11 +135,11 @@ public:
     }*/
 
     inline void calcProjectionMatrix() {
-        projectionMatrix = glm::perspective(fovY, aspectRatio, zNear, zFar);
+        *projectionMatrix = glm::perspective(fovY, aspectRatio, zNear, zFar);
     }
 
     inline void calcMVP() {
-        mvp = projectionMatrix*viewMatrix/*modelMatrix*/;
+        *mvp = (*projectionMatrix)*(*viewMatrix)/*modelMatrix*/;
     }
 
     inline void calc() {
@@ -151,7 +151,7 @@ public:
 
     inline glm::mat4* GetViewMatrix() {
         //CalcViewMatrix();
-        return &viewMatrix;
+        return viewMatrix;
     }
 
     /*inline glm::mat4 GetModelMatrix() {
@@ -161,12 +161,12 @@ public:
 
     inline glm::mat4* GetProjectMatrix() {
         //CalcProjectionMatrix();
-        return &projectionMatrix;
+        return projectionMatrix;
     }
 
     inline glm::mat4* GetMVP() {
         calcMVP();
-        return &mvp;
+        return mvp;
     }
 
     inline void SetAutoRecalc(bool state) {
@@ -177,7 +177,11 @@ public:
     inline Camera(glm::vec3 camPos, glm::vec3 camTarget, float fov, float nearZ, float farZ, float aspectR)
         : cmode(CameraMode::CM_TARGET), pos(camPos), direction( WorldForwardVector() ), target(camTarget), up(glm::vec3(0,1,0)),
           fovY(fov), zNear(nearZ), zFar(farZ), aspectRatio(aspectR), autoReCalc(false) {
-        calc();
+
+        //allocate space, functionality like calc()
+        viewMatrix = new glm::mat4(glm::lookAt(pos, target, up));
+        projectionMatrix = new glm::mat4(glm::perspective(fovY, aspectRatio, zNear, zFar));
+        mvp = new glm::mat4( (*projectionMatrix) * (*viewMatrix) );
     }
 };
 }

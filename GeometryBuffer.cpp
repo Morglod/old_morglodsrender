@@ -1,6 +1,7 @@
 #include "GeometryBuffer.hpp"
 #include "Shader.hpp"
 #include "Log.hpp"
+#include "Transformation.hpp"
 
 namespace MR
 {
@@ -118,39 +119,35 @@ GeometryBuffer::~GeometryBuffer(){
     if(this->_vao != 0) glDeleteVertexArrays(1, &this->_vao);
 }
 
-bool ImportMoMesh(std::string file, MR::GeometryBuffer**& buffers, int & num, bool log){
+bool ImportMoGeom(std::string file, MR::GeometryBuffer**& buffers, unsigned int & num, bool bindexes, bool log){
     std::ifstream ffile(file, std::ios::in | std::ios::binary);
     if(!ffile.is_open()) return false;
 
-    unsigned int numModels = 0;
+    unsigned int numMeshes = 0;
     unsigned int numMaterials = 0;
 
-    ffile.read( reinterpret_cast<char*>(&numModels), sizeof(unsigned int));
+    ffile.read( reinterpret_cast<char*>(&numMeshes), sizeof(unsigned int));
     ffile.read( reinterpret_cast<char*>(&numMaterials), sizeof(unsigned int));
 
-    buffers = new MR::GeometryBuffer*[numModels];
-    if(log) MR::Log::LogString("Meshes num " + std::to_string(numModels));
-    num = numModels;
+    buffers = new MR::GeometryBuffer*[numMeshes];
+    if(log) MR::Log::LogString("Meshes num " + std::to_string(numMeshes));
+    num = numMeshes;
 
-    for(unsigned int i = 0; i < numModels; ++i){
+    for(unsigned int i = 0; i < numMeshes; ++i){
         //Read model name
-        unsigned int modelLength = 0;
-        ffile.read( reinterpret_cast<char*>(&modelLength), sizeof(unsigned int));
-        if(log) MR::Log::LogString("Mesh name length " + std::to_string(modelLength));
+        unsigned int meshNameLength = 0;
+        ffile.read( reinterpret_cast<char*>(&meshNameLength), sizeof(unsigned int));
+        if(log) MR::Log::LogString("Mesh name length " + std::to_string(meshNameLength));
 
-        char* modelName = new char[modelLength];
-        if( modelLength != 0) {
-            ffile.read( &modelName[0], modelLength*sizeof(char) );
-            if(log) MR::Log::LogString(std::string("Mesh name ") + modelName);
+        char* meshName = new char[meshNameLength];
+        if( meshNameLength != 0) {
+            ffile.read( &meshName[0], meshNameLength*sizeof(char) );
+            if(log) MR::Log::LogString(std::string("Mesh name ") + meshName);
         }
         else {
             if(log) MR::Log::LogString("Mesh name is null");
-            modelName = "noname";
+            meshName = "noname";
         }
-
-        //Pos,Rot,Scale is null now
-        char* zeroBuffer = new char[sizeof(float)*9];
-        ffile.read( &zeroBuffer[0], sizeof(float)*9 );
 
         unsigned int materialId = 0;
         ffile.read( reinterpret_cast<char*>(&materialId), sizeof(unsigned int));
@@ -239,9 +236,8 @@ bool ImportMoMesh(std::string file, MR::GeometryBuffer**& buffers, int & num, bo
         MR::VertexDeclaration* vDecl = new MR::VertexDeclaration(&vdtypes[0], declarations, GL_FLOAT);
         MR::IndexDeclaration* iDecl = new MR::IndexDeclaration(GL_UNSIGNED_INT);
 
-//(VertexDeclaration* vd, IndexDeclaration* id, void* data, size_t data_size, void* idata, size_t idata_size, unsigned int vnum, unsigned int inum, GLenum usage = GL_STATIC_DRAW, GLenum iusage = GL_STATIC_DRAW, GLenum drawm =
         buffers[i] = new MR::GeometryBuffer(vDecl, nullptr, &vbuffer[0], vbufferSize, nullptr, 0, numVerts, 0);
-        //buffers[i] = MR::GeometryBuffer(&vDecl, &iDecl, &vbuffer[0], sizeof(float)*vbufferSize, &ibuffer[0], sizeof(unsigned int)*ibufferSize, numVerts, facesNum*3, GL_STATIC_DRAW, GL_STATIC_DRAW, GL_TRIANGLES);
+        if(bindexes) buffers[i] = new MR::GeometryBuffer(vDecl, iDecl, &vbuffer[0], vbufferSize, &ibuffer[0], ibufferSize, numVerts, facesNum*3);
     }
 
     return true;

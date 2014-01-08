@@ -26,7 +26,7 @@ GLEW GCC REBUILD
 #include "GeometryBuffer.hpp"
 #include "Shader.hpp"
 //#include "Scene.h"
-//#include "Mesh.h"
+#include "Mesh.hpp"
 #include "Material.hpp"
 //#include "RenderTarget.h"
 #include "Camera.hpp"

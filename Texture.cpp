@@ -39,7 +39,12 @@ bool MR::Texture::Load(){
 
 void MR::Texture::UnLoad(){
     if(this->_manager->debugMessages) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") unloading");
-    glDeleteTextures(1, &this->gl_texture);
+    if(_res_free_state) {
+        if(this->_manager->debugMessages) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") -> ResFreeState is on, deleting data");
+        glDeleteTextures(1, &this->gl_texture);
+    } else{
+        if(this->_manager->debugMessages) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") -> ResFreeState is off");
+    }
     this->gl_texture = 0;
 }
 
@@ -82,7 +87,7 @@ Resource* TextureManager::CreateAndLoad(std::string name, std::string source){
 
 Resource* TextureManager::Get(std::string source){
     if(this->debugMessages) MR::Log::LogString("TextureManager ("+source+") getting");
-    for(auto it = this->_resources.begin(); it != this->_resources.end(); it++){
+    for(std::vector<Texture*>::iterator it = this->_resources.begin(); it != this->_resources.end(); ++it){
         if( (*it)->GetSource() == source ) return *it;
     }
     return nullptr;
@@ -90,7 +95,7 @@ Resource* TextureManager::Get(std::string source){
 
 Resource* TextureManager::Find(std::string name){
     if(this->debugMessages) MR::Log::LogString("TextureManager "+name+" searching");
-    for(auto it = this->_resources.begin(); it != this->_resources.end(); it++){
+    for(std::vector<Texture*>::iterator it = this->_resources.begin(); it != this->_resources.end(); ++it){
         if( (*it)->GetName() == name ) return *it;
     }
     return nullptr;
@@ -98,7 +103,7 @@ Resource* TextureManager::Find(std::string name){
 
 Resource* TextureManager::Need(std::string source){
     if(this->debugMessages) MR::Log::LogString("TextureManager ("+source+") needed");
-    for(auto it = this->_resources.begin(); it != this->_resources.end(); it++){
+    for(std::vector<Texture*>::iterator it = this->_resources.begin(); it != this->_resources.end(); ++it){
         if( (*it)->GetSource() == source ) return *it;
     }
     return this->CreateAndLoad("AutoLoaded_"+source, source);
@@ -107,7 +112,7 @@ Resource* TextureManager::Need(std::string source){
 Resource** TextureManager::Need(std::string* sources, const unsigned int num){
     Resource** finded_list = new Resource*[num];
     if(this->debugMessages) MR::Log::LogString("TextureManager List of resources needed");
-    for(auto it = this->_resources.begin(); it != this->_resources.end(); it++){
+    for(std::vector<Texture*>::iterator it = this->_resources.begin(); it != this->_resources.end(); ++it){
         for(unsigned int i = 0; i < num; ++i){
             if( !(finded_list[i]) ){
                 if( (*it)->GetSource() == sources[i] ){
@@ -132,7 +137,7 @@ Resource** TextureManager::Need(std::string* sources, const unsigned int num){
 
 void TextureManager::Remove(std::string name, std::string source){
     if(this->debugMessages) MR::Log::LogString("TextureManager "+name+" ("+source+") removing");
-    for(auto it = this->_resources.begin(); it != this->_resources.end(); it++){
+    for(std::vector<Texture*>::iterator it = this->_resources.begin(); it != this->_resources.end(); ++it){
         if( (*it)->GetName() == name && (*it)->GetSource() == source){
             delete *it;
             this->_resources.erase(it);
@@ -142,7 +147,7 @@ void TextureManager::Remove(std::string name, std::string source){
 
 void TextureManager::RemoveAll(){
     if(this->debugMessages) MR::Log::LogString("TextureManager removing all");
-    for(auto it = this->_resources.begin(); it != this->_resources.end(); it++){
+    for(std::vector<Texture*>::iterator it = this->_resources.begin(); it != this->_resources.end(); ++it){
         delete *it;
         this->_resources.erase(it);
         it--;

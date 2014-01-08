@@ -70,6 +70,7 @@ public:
     }
 
     inline Transform() : mat(glm::mat4(1.0f)), pos(glm::vec3(0.0f)), rot(glm::vec3(0.0f)), scale(glm::vec3(0.0f)), autoReCalc(false) {}
+    inline Transform(glm::mat4 m) : mat(m), pos(glm::vec3(0.0f)), rot(glm::vec3(0.0f)), scale(glm::vec3(0.0f)), autoReCalc(false) {}
 };
 }
 

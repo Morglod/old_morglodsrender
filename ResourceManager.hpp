@@ -8,8 +8,15 @@
 namespace MR{
     class ResourceManager;
 
-    class Resource{
+    class Resource {
     public:
+        //If true, resource data will be destroyed after deleting resource
+        //For example geometry buffers after deleting Mesh resource
+        virtual void SetResourceFreeState(bool) = 0;
+
+        //Get state
+        virtual bool GetResourceFreeState() = 0;
+
         //Resource name in it's manager
         virtual std::string GetName() = 0;
 
@@ -35,7 +42,7 @@ namespace MR{
         Resource(MR::ResourceManager* manager, std::string name, std::string source){}
     };
 
-    class ResourceManager{
+    class ResourceManager {
     public:
         //Adds created resource from manager
         virtual void Add(Resource* res) = 0;

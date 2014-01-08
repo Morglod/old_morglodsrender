@@ -28,6 +28,8 @@ namespace MR{
         unsigned int gl_mem_image_size = 0, gl_mem_compressed_img_size = 0;
         bool gl_compressed = false;
 
+        bool _res_free_state = true;
+
     public:
 
         //TEXTURE-----------------------------
@@ -84,6 +86,13 @@ namespace MR{
         }
 
         //RESOURCE-----------------------------
+        inline void SetResourceFreeState(bool s){
+            _res_free_state = s;
+        }
+
+        inline bool GetResourceFreeState(){
+            return _res_free_state;
+        }
 
         virtual inline std::string GetName(){return this->_name;}
         virtual inline std::string GetSource(){return this->_source;}
