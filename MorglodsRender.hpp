@@ -34,15 +34,17 @@ GLEW GCC REBUILD
 //#include "Optimizations.h"
 //#include "AssimpImporter.h"
 //#include "Collada.h"
-#include "RenderManager.hpp"
+//#include "RenderManager.hpp"
 
 #include "Events.hpp"
 #include "MachineInfo.hpp"
 
 #include "Transformation.hpp"
+#include "RenderWindow.hpp"
+#include "RenderContext.hpp"
 
-namespace MR{
-    class Render{
+namespace MR{/*
+    class RenderContext{
     protected:
         GLFWwindow* window;
         bool released;
@@ -87,7 +89,7 @@ namespace MR{
 
             return lastFps;
         }
-    };
+    };*/
 }
 
 #endif // _MR_MORGLODS_RENDER_H_

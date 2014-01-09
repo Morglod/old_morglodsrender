@@ -62,7 +62,7 @@ void MR::SubShader::Compile(const char* code, GLenum shader_type) {
     if(bufflen > 1) {
         GLchar* logString = new GLchar[bufflen + 1];
         glGetShaderInfoLog(this->gl_SHADER, bufflen, 0, logString);
-        MR::Log::LogString("Sub shader output: "+std::string(logString));
+        MR::Log::LogString("Sub shader output: "+std::string(logString), MR_LOG_LEVEL_WARNING);
 
         delete [] logString;
         logString = 0;
@@ -95,17 +95,23 @@ void MR::Shader::Link(SubShader** sub_shaders, unsigned int num) {
     if(bufflen > 1) {
         GLchar* logString = new GLchar[bufflen + 1];
         glGetProgramInfoLog(this->gl_PROGRAM, bufflen, 0, logString);
-        MR::Log::LogString("Shader output: "+std::string(logString));
+        MR::Log::LogString("Shader output: "+std::string(logString), MR_LOG_LEVEL_WARNING);
 
         delete [] logString;
         logString = 0;
     }
 }
 
-MR::Shader::Shader(SubShader** sub_shaders, unsigned int num) {
+MR::Shader::Shader(SubShader** sub_shaders, unsigned int num) : _res_free_state(true) {
     this->Link(sub_shaders, num);
 }
 
 MR::Shader::~Shader() {
     glDeleteObjectARB(this->gl_PROGRAM);
+    if(_res_free_state){
+        for(std::vector<ShaderUniform*>::iterator it = shaderUniforms.begin(); it != shaderUniforms.end(); ++it){
+            delete (*it);
+        }
+        shaderUniforms.clear();
+    }
 }

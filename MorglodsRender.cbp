@@ -69,7 +69,10 @@
 		<Unit filename="MorglodsRender.cpp" />
 		<Unit filename="MorglodsRender.hpp" />
 		<Unit filename="README.md" />
-		<Unit filename="RenderManager.hpp" />
+		<Unit filename="RenderContext.cpp" />
+		<Unit filename="RenderContext.hpp" />
+		<Unit filename="RenderWindow.cpp" />
+		<Unit filename="RenderWindow.hpp" />
 		<Unit filename="ResourceManager.hpp" />
 		<Unit filename="Shader.cpp" />
 		<Unit filename="Shader.hpp" />

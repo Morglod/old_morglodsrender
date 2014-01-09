@@ -35,22 +35,4 @@
 #include <algorithm>
 #include <stdio.h>
 
-//ASSIMP
-/*#ifndef AI_ASSIMP_H_INC
-#   include <assimp/cimport.h>
-#endif
-#ifndef AI_MATERIAL_H_INC
-#   include <assimp/material.h>
-#endif
-#ifndef __AI_SCENE_H_INC__
-#   include <assimp/scene.h>
-#endif
-#ifndef AI_POSTPROCESS_H_INC
-#   include <assimp/postprocess.h>
-#endif
-#ifndef INCLUDED_AI_ASSIMP_HPP
-#   include <assimp/Importer.hpp>
-#endif
-#ifndef INCLUDED_AI_MESH_H
-#   include <assimp/mesh.h>
-#endif*/
+#define MR_DELTA_TYPE float

@@ -120,6 +120,7 @@ GeometryBuffer::~GeometryBuffer(){
 }
 
 bool ImportMoGeom(std::string file, MR::GeometryBuffer**& buffers, unsigned int & num, bool bindexes, bool log){
+    if(log) MR::Log::LogString("Importing geometry from ("+file+")", MR_LOG_LEVEL_INFO);
     std::ifstream ffile(file, std::ios::in | std::ios::binary);
     if(!ffile.is_open()) return false;
 
@@ -130,79 +131,79 @@ bool ImportMoGeom(std::string file, MR::GeometryBuffer**& buffers, unsigned int 
     ffile.read( reinterpret_cast<char*>(&numMaterials), sizeof(unsigned int));
 
     buffers = new MR::GeometryBuffer*[numMeshes];
-    if(log) MR::Log::LogString("Meshes num " + std::to_string(numMeshes));
+    if(log) MR::Log::LogString("Meshes num " + std::to_string(numMeshes), MR_LOG_LEVEL_INFO);
     num = numMeshes;
 
     for(unsigned int i = 0; i < numMeshes; ++i){
         //Read model name
         unsigned int meshNameLength = 0;
         ffile.read( reinterpret_cast<char*>(&meshNameLength), sizeof(unsigned int));
-        if(log) MR::Log::LogString("Mesh name length " + std::to_string(meshNameLength));
+        if(log) MR::Log::LogString("Mesh name length " + std::to_string(meshNameLength), MR_LOG_LEVEL_INFO);
 
         char* meshName = new char[meshNameLength];
         if( meshNameLength != 0) {
             ffile.read( &meshName[0], meshNameLength*sizeof(char) );
-            if(log) MR::Log::LogString(std::string("Mesh name ") + meshName);
+            if(log) MR::Log::LogString(std::string("Mesh name ") + meshName, MR_LOG_LEVEL_INFO);
         }
         else {
-            if(log) MR::Log::LogString("Mesh name is null");
-            meshName = "noname";
+            if(log) MR::Log::LogString("Mesh name is null", MR_LOG_LEVEL_INFO);
+            meshName = (char*)&("noname")[0];
         }
 
         unsigned int materialId = 0;
         ffile.read( reinterpret_cast<char*>(&materialId), sizeof(unsigned int));
-        if(log) MR::Log::LogString("Material id " + std::to_string(materialId ));
+        if(log) MR::Log::LogString("Material id " + std::to_string(materialId ), MR_LOG_LEVEL_INFO);
 
         unsigned int numVerts = 0;
         ffile.read( reinterpret_cast<char*>(&numVerts), sizeof(unsigned int));
-        if(log) MR::Log::LogString("Num verts " + std::to_string(numVerts ));
+        if(log) MR::Log::LogString("Num verts " + std::to_string(numVerts ), MR_LOG_LEVEL_INFO);
 
         int stride = 0;
         ffile.read( reinterpret_cast<char*>(&stride), sizeof(int));
-        if(log) MR::Log::LogString("GL stride " + std::to_string(stride ));
+        if(log) MR::Log::LogString("GL stride " + std::to_string(stride ), MR_LOG_LEVEL_INFO);
 
         int declarations = 0;
         ffile.read( reinterpret_cast<char*>(&declarations), sizeof(int));
-        if(log) MR::Log::LogString("Decl types num " + std::to_string(declarations ));
+        if(log) MR::Log::LogString("Decl types num " + std::to_string(declarations ), MR_LOG_LEVEL_INFO);
 
         bool posDecl = false, texCoordDecl = false, normalDecl = false, vertexColorDecl = false;
         for(int j = 0; j < declarations; ++j){
             unsigned char flag = 0;
             ffile.read( reinterpret_cast<char*>(&flag), sizeof(unsigned char));
-            if(log) MR::Log::LogString("Flag ");
+            if(log) MR::Log::LogString("Flag ", MR_LOG_LEVEL_INFO);
 
             if(flag == 0) {
                 posDecl = true;
-                if(log) MR::Log::LogString("Pos");
+                if(log) MR::Log::LogString("Pos", MR_LOG_LEVEL_INFO);
             }
             else if(flag == 1) {
                 texCoordDecl = true;
-                if(log) MR::Log::LogString("TexCoord");
+                if(log) MR::Log::LogString("TexCoord", MR_LOG_LEVEL_INFO);
             }
             else if(flag == 2) {
                 normalDecl = true;
-                if(log) MR::Log::LogString("Normal");
+                if(log) MR::Log::LogString("Normal", MR_LOG_LEVEL_INFO);
             }
             else if(flag == 3) {
                 vertexColorDecl = true;
-                if(log) MR::Log::LogString("VertexColor");
+                if(log) MR::Log::LogString("VertexColor", MR_LOG_LEVEL_INFO);
             }
         }
 
         unsigned int vbufferSize = 0;
         ffile.read( reinterpret_cast<char*>(&vbufferSize), sizeof(unsigned int));
-        if(log) MR::Log::LogString("VB size in bytes " + std::to_string(vbufferSize ));
+        if(log) MR::Log::LogString("VB size in bytes " + std::to_string(vbufferSize ), MR_LOG_LEVEL_INFO);
 
         float* vbuffer = new float[vbufferSize];
         ffile.read( reinterpret_cast<char*>(vbuffer), vbufferSize);
 
         unsigned int facesNum = 0;
         ffile.read( reinterpret_cast<char*>(&facesNum), sizeof(unsigned int));
-        if(log) MR::Log::LogString("Faces num " + std::to_string(facesNum ));
+        if(log) MR::Log::LogString("Faces num " + std::to_string(facesNum ), MR_LOG_LEVEL_INFO);
 
         unsigned int ibufferSize = 0;
         ffile.read( reinterpret_cast<char*>(&ibufferSize), sizeof(unsigned int));
-        if(log) MR::Log::LogString("IB size in bytes " + std::to_string(ibufferSize ));
+        if(log) MR::Log::LogString("IB size in bytes " + std::to_string(ibufferSize ), MR_LOG_LEVEL_INFO);
 
         unsigned int * ibuffer = new unsigned int[facesNum*3];
         ffile.read( reinterpret_cast<char*>(ibuffer), ibufferSize);
@@ -231,7 +232,7 @@ bool ImportMoGeom(std::string file, MR::GeometryBuffer**& buffers, unsigned int 
             ptr_decl += sizeof(float)*4;
         }
 
-        if(log) MR::Log::LogString("Decls " + std::to_string(declarations ));
+        if(log) MR::Log::LogString("Decls " + std::to_string(declarations ), MR_LOG_LEVEL_INFO);
 
         MR::VertexDeclaration* vDecl = new MR::VertexDeclaration(&vdtypes[0], declarations, GL_FLOAT);
         MR::IndexDeclaration* iDecl = new MR::IndexDeclaration(GL_UNSIGNED_INT);
@@ -239,6 +240,7 @@ bool ImportMoGeom(std::string file, MR::GeometryBuffer**& buffers, unsigned int 
         buffers[i] = new MR::GeometryBuffer(vDecl, nullptr, &vbuffer[0], vbufferSize, nullptr, 0, numVerts, 0);
         if(bindexes) buffers[i] = new MR::GeometryBuffer(vDecl, iDecl, &vbuffer[0], vbufferSize, &ibuffer[0], ibufferSize, numVerts, facesNum*3);
     }
+    if(log) MR::Log::LogString("Imported geometry from ("+file+")", MR_LOG_LEVEL_INFO);
 
     return true;
 }

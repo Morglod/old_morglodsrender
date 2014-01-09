@@ -29,12 +29,14 @@ public:
     }
 
     inline virtual void Call(void* sender, Args... args) const {
-        for(auto it = _funcs.begin(); it != _funcs.end(); ++it)
-            (*it)(sender, args...);
+        if(_funcs.size() != 0){
+            for(auto it = _funcs.begin(); it != _funcs.end(); ++it)
+                (*it)(sender, args...);
+        }
     }
 
     inline void operator() (void* s, Args... args) const {
-        Call(s, args...);
+        if(_funcs.size() != 0) Call(s, args...);
     }
 
     Event() {}

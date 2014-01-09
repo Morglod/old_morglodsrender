@@ -1,6 +1,6 @@
-#include "MorglodsRender.hpp"
+//#include "MorglodsRender.hpp"
 
-bool MR::Render::Init(std::string window_name, int width, int height){
+/*bool MR::Render::Init(std::string window_name, int width, int height){
     MR::Log::LogString("MorglodsRender \""+window_name+"\" "+std::to_string(width)+" "+std::to_string(height), MR_LOG_LEVEL_INFO);
 
     if(!glfwInit()){
@@ -53,3 +53,4 @@ MR::Render::Render() : window(NULL), released(true) {
 MR::Render::~Render(){
     Shutdown();
 }
+*/

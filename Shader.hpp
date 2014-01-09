@@ -69,8 +69,37 @@ namespace MR{
     //!TODO: add Shader resource manager
     class Shader/* : public virtual Resource*/{
         GLenum gl_PROGRAM; //OpenGL shader program
+        std::vector<ShaderUniform*> shaderUniforms;
+        bool _res_free_state = true;
+
     public:
-        std::vector<ShaderUniform*> ShaderUniforms;
+        inline void DelUniform(ShaderUniform* su){
+            std::vector<ShaderUniform*>::iterator it = std::find(shaderUniforms.begin(), shaderUniforms.end(), su);
+            if(it == shaderUniforms.end()) return;
+            delete (*it);
+            shaderUniforms.erase(it);
+        }
+
+        inline ShaderUniform* FindByName(std::string uniform_name){
+            for(std::vector<ShaderUniform*>::iterator it = shaderUniforms.begin(); it != shaderUniforms.end(); ++it){
+                if((*it)->name == uniform_name) return (*it);
+            }
+            return nullptr;
+        }
+
+        inline ShaderUniform* CreateUniform(std::string uniform_name, MR::ShaderUniformTypes type, void* value){
+            MR::ShaderUniform* p = new MR::ShaderUniform(uniform_name.c_str(), type, value, gl_PROGRAM);
+            shaderUniforms.push_back(p);
+            return p;
+        }
+
+        inline void SetResourceFreeState(bool s){
+            _res_free_state = s;
+        }
+
+        inline bool GetResourceFreeState(){
+            return _res_free_state;
+        }
 
         //----------------------------
         //Returns OpenGL shader object
@@ -85,7 +114,7 @@ namespace MR{
         //Uses this shader
         inline void Use(){
             glUseProgramObjectARB(this->gl_PROGRAM);
-            for(auto it = ShaderUniforms.begin(); it != ShaderUniforms.end(); ++it){
+            for(auto it = shaderUniforms.begin(); it != shaderUniforms.end(); ++it){
                 if((*it)->value == nullptr) continue;
                 if((*it)->type == ShaderUniform_INT_TYPE) glUniform1i((*it)->uniform_location, ((int*)(*it)->value)[0]);
                 if((*it)->type == ShaderUniform_FLOAT_TYPE) glUniform1f((*it)->uniform_location, ((float*)(*it)->value)[0]);
