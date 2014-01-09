@@ -8,7 +8,9 @@
 
 namespace MR {
 
-//Type of stored data
+/**
+* Type of stored data
+*/
 enum VertexDeclarationTypesEnum {
     VDTE_POSITION = 0,
     VDTE_NORMAL = 1, //!ONLY 3 ELEMENTS
@@ -16,13 +18,15 @@ enum VertexDeclarationTypesEnum {
     VDTE_COLOR = 4
 };
 
-//Description of stored data in buffer of one type
+/**
+* Description of stored data in buffer of one type
+*/
 struct VertexDeclarationType {
 public:
-    //Type of stored data
+    //!Type of stored data
     VertexDeclarationTypesEnum type = VertexDeclarationTypesEnum::VDTE_POSITION;
 
-    //Num of elements, that describes this data
+    //!Num of elements, that describes this data
     //!If VDTE_NORMAL, elements_num = 3
     //!If VDTE_TEXTURE_COORD, elements_num = 2
     unsigned short elements_num;
@@ -31,19 +35,21 @@ public:
 
     VertexDeclarationType() {}
 
-    //t - VertexDeclarationTypesEnum
-    //e_num - Num of elements, that describes this data
-    //p - GL pointer in stride
+    //!t - VertexDeclarationTypesEnum
+    //!e_num - Num of elements, that describes this data
+    //!p - GL pointer in stride
     VertexDeclarationType(VertexDeclarationTypesEnum t, unsigned short e_num, const GLvoid *p);
 };
 
-//Description of stored data in buffer
+/**
+* Description of stored data in buffer
+*/
 struct VertexDeclaration {
 public:
-    //Array of buffer stride elements
+    //!Array of buffer stride elements
     VertexDeclarationType* decl_types = nullptr;
 
-    //Num of elements in array (_decl_types)
+    //!Num of elements in array (_decl_types)
     unsigned short decl_types_num = 0;
 
     inline bool contains(VertexDeclarationTypesEnum type) {
@@ -60,15 +66,15 @@ public:
         return nullptr;
     }
 
-    //Data type in buffer
+    //1Data type in buffer
     GLenum data_type = GL_FLOAT;
 
-    //Size of stride for OpenGL
+    //!Size of stride for OpenGL
     GLsizei stride_size = 0;
 
-    //vdt - VertexDeclarationType array
-    //dn - Num of elements in vdt array
-    //dt - Data type
+    //!vdt - VertexDeclarationType array
+    //!dn - Num of elements in vdt array
+    //!dt - Data type
     VertexDeclaration(VertexDeclarationType* vdt, unsigned short dn, GLenum dt);
 
     ~VertexDeclaration();
@@ -76,37 +82,37 @@ public:
 
 struct IndexDeclaration {
 public:
-    //OpenGL type of data in buffer
+    //!OpenGL type of data in buffer
     GLenum data_type = GL_UNSIGNED_INT;
 
-    //dt - OpenGL data type in buffer
+    //!dt - OpenGL data type in buffer
     IndexDeclaration(GLenum dt);
 };
 
 class GeometryBuffer {
 protected:
-    //Vertex data storage in buffer
-    //Shouldn't be null
+    //!Vertex data storage in buffer
+    //!Shouldn't be null
     VertexDeclaration* _vdecl = nullptr;
 
-    //Index data storage in buffer
+    //!Index data storage in buffer
     IndexDeclaration* _idecl = nullptr;
 
-    //OpenGL buffers
-    //_vertex_buffer shouldn't be null
+    //!OpenGL buffers
+    //!_vertex_buffer shouldn't be null
     GLuint _vertex_buffer = 0, _index_buffer = 0, _vao = 0;
 
-    //Num of vertexes and indexes
+    //!Num of vertexes and indexes
     unsigned int _vertexes_num = 3, _indexes_num = 0;
 
-    //OpenGL draw mode
+    //!OpenGL draw mode
     GLenum _draw_mode = GL_TRIANGLES;
 
 public:
 
-    //sender - geometry buffer
-    //arg1 - old draw mode
-    //arg2 - new draw mode
+    //!sender - geometry buffer
+    //!arg1 - old draw mode
+    //!arg2 - new draw mode
     MR::Event<GLenum, GLenum> OnDrawModeChanged;
 
     inline void Bind() {
@@ -167,35 +173,47 @@ public:
 
     GeometryBuffer() {}
 
-    //vd - VertexDeclaration pointer
-    //id - IndexDeclaration pointer
-    //vb - OpenGL vertex buffer
-    //ib - OpenGL index buffer
-    //dt - OpenGL data type in buffer
-    //vnum - Number of vertices
-    //inum - Number of indexes
-    //drawm - OpenGL draw mode GL_POINTERS GL_LINES GL_TRIANGLES GL_QUADS
+    /**
+    * vd - VertexDeclaration pointer
+    * id - IndexDeclaration pointer
+    * vb - OpenGL vertex buffer
+    * ib - OpenGL index buffer
+    * dt - OpenGL data type in buffer
+    * vnum - Number of vertices
+    * inum - Number of indexes
+    * drawm - OpenGL draw mode GL_POINTERS GL_LINES GL_TRIANGLES GL_QUADS
+    */
     GeometryBuffer(VertexDeclaration* vd, IndexDeclaration* id, GLuint vb, GLuint ib, unsigned int vnum, unsigned int inum, GLenum drawm = GL_TRIANGLES);
 
-    //vd - VertexDeclaration pointer
-    //id - IndexDeclaration pointer
-    //data - Pointer to data
-    //data_size - Size of passed data
-    //idata - Pointer to indexdata
-    //idata_size - Size of passed index data
-    //vnum - Number of vertices
-    //inum - Number of indexes
-    //usage - OpenGL buffer usage (for example GL_STATIC_DRAW)
-    //iusage - OpenGL index buffer usage (for example GL_STATIC_DRAW)
-    //drawm - OpenGL draw mode GL_POINTERS GL_LINES GL_TRIANGLES GL_QUADS
+    /** vd - VertexDeclaration pointer
+    * id - IndexDeclaration pointer
+    * data - Pointer to data
+    * data_size - Size of passed data
+    * idata - Pointer to indexdata
+    * idata_size - Size of passed index data
+    * vnum - Number of vertices
+    * inum - Number of indexes
+    * usage - OpenGL buffer usage (for example GL_STATIC_DRAW)
+    * iusage - OpenGL index buffer usage (for example GL_STATIC_DRAW)
+    * drawm - OpenGL draw mode GL_POINTERS GL_LINES GL_TRIANGLES GL_QUADS
+    */
     GeometryBuffer(VertexDeclaration* vd, IndexDeclaration* id, void* data, size_t data_size, void* idata, size_t idata_size, unsigned int vnum, unsigned int inum, GLenum usage = GL_STATIC_DRAW, GLenum iusage = GL_STATIC_DRAW, GLenum drawm = GL_TRIANGLES);
 
-    //Don not deletes declaration
+    //!Don't delete declaration
     ~GeometryBuffer();
 };
 
-//Import geometry from mom (momesh) file
-bool ImportMoGeom(std::string file, MR::GeometryBuffer**& buffers, unsigned int & num, bool indexes = false, bool log = false);
+/** \brief Imports geometry from file
+ *
+ * \param file - Path to mom file
+ * \param buffers - link to array of pointers, where will be saved imported geometry
+ * \param num - link to var where will be saved geometry buffers num
+ * \param indexes - import indexes from file? true by default
+ * \param log - log debug messages? false by default
+ * \return
+ *
+ */
+bool ImportMoGeom(std::string file, MR::GeometryBuffer**& buffers, unsigned int & num, bool indexes = true, bool log = false);
 }
 
 #endif // _MR_GEOMETRY_BUFFER_H

@@ -1,0 +1,142 @@
+<h3>About log</h3>
+<p>
+Firstly write method, that will be used by engine for logging:<br>
+<br>
+<textarea rows=20 cols=60>
+void LogStringMethod(std::string s, int level) {
+	switch(level) {
+	case MR_LOG_LEVEL_ERROR:
+		std::cout << "Error: ";
+		break;
+	case MR_LOG_LEVEL_EXCEPTION:
+		std::cout << "Exception: ";
+		break;
+	case MR_LOG_LEVEL_INFO:
+		std::cout << "Info: ";
+		break;
+	case MR_LOG_LEVEL_WARNING:
+		std::cout << "Warning: ";
+		break;
+	}
+
+	std::cout << s << std::endl;
+}
+</textarea><br>
+<br>
+by this method, you can log data on the way you want.<br>
+<br>
+And then symply attach this to log:<br>
+<textarea cols=30>MR::Log::Add(LogStringMethod);</textarea><br>
+To detach it from log, use MR::Log::Remove(LogStringPtr);<br>
+<br>
+For some objects like managers, you can turn on/off debug logging:<br>
+<textarea rows=2 cols=60>
+MR::MeshManager::Instance()->debugMessages = true;
+MR::TextureManager::Instance()->debugMessages = true;
+</textarea><br>
+<br>
+To log string by yourself, use MR::Log::LogString(std::string, int level) method.<br>
+</p>
+
+<hr>
+
+<h3>About events</h3>
+<p>
+<b>C++11 needed</b><br>
+<br>
+Example of using event object:<br>
+<textarea>
+void LogDataMethod(void* sender, int a, float b){
+	std::cout << a << ' ' << b << std::endl;
+}
+
+int main(){
+	//Create event with 2 args
+	MR::Event<int, float> LogSomeData;
+	
+	//Then add our LogDataMethod to invoke list
+	LogSomeData.Add(LogDataMethod);
+	
+	//Then invoke
+	//Sender is null
+	LogSomeData(nullptr, 10, 12.2f);
+	LogSomeData(nullptr, 55, 3.14f);
+	LogSomeData(nullptr, 0, 8889.2f);
+	
+	return 0;
+}
+</textarea><br>
+Output will be like this:<br>
+<textarea>
+10 12.2
+55 3.14
+0 8889.2
+</textarea><br>
+Also in MorglodsRender, there is TimerEvent<br>
+which can be used to invoke methods list every defined time.<br>
+<br>
+Example:<br>
+<textarea>
+void Method(void* sender, int* a){
+	std::cout << "Counter = " << (++a) << std::endl;
+}
+
+int main(){
+	//Create event with current time = 0sec and timer = 5sec
+	MR::TimerEvent<int*> timer(0.0f, 5.0f);
+	
+	int counter = 0;
+	while( counter != 10 ){
+	
+		//Pass delta (from last update), sender and arguments
+		//timer will automaticly call our method
+		timer.Update( time_delta(), nullptr, &counter );
+	}
+	
+	return 0;
+}
+</textarea><br>
+</p>
+
+<hr>
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
