@@ -3,9 +3,9 @@
 using namespace MR;
 
 bool MR::Texture::Load(){
-    if(this->_manager->debugMessages) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") loading", MR_LOG_LEVEL_INFO);
+    if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") loading", MR_LOG_LEVEL_INFO);
     if(this->_source != "") this->gl_texture = MR::LoadGLTexture(this->_source);
-    else if(this->_manager->debugMessages){
+    else if(this->_resource_manager->GetDebugMessagesState()){
         MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") load failed. Source is null", MR_LOG_LEVEL_ERROR);
         this->_loaded = false;
         return false;
@@ -38,78 +38,41 @@ bool MR::Texture::Load(){
 }
 
 void MR::Texture::UnLoad(){
-    if(this->_manager->debugMessages) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") unloading", MR_LOG_LEVEL_INFO);
+    if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") unloading", MR_LOG_LEVEL_INFO);
     if(_res_free_state) {
-        if(this->_manager->debugMessages) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") -> ResFreeState is on, deleting data", MR_LOG_LEVEL_INFO);
+        if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") -> ResFreeState is on, deleting data", MR_LOG_LEVEL_INFO);
         glDeleteTextures(1, &this->gl_texture);
     } else{
-        if(this->_manager->debugMessages) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") -> ResFreeState is off", MR_LOG_LEVEL_INFO);
+        if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") -> ResFreeState is off", MR_LOG_LEVEL_INFO);
     }
     this->gl_texture = 0;
 }
 
-bool MR::Texture::ReLoad(){
-    if(this->_manager->debugMessages) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") reloading", MR_LOG_LEVEL_INFO);
-    this->UnLoad();
-    return this->Load();
-}
-
-MR::Texture::Texture(MR::ResourceManager* manager, std::string name, std::string source) : Resource(manager, name, source), _name(name), _source(source) {
-    this->_manager = dynamic_cast<TextureManager*>(manager);
+MR::Texture::Texture(MR::ResourceManager* manager, std::string name, std::string source) : Resource(manager, name, source) {
 }
 
 MR::Texture::~Texture(){
-    if(this->_manager->debugMessages) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") deleting", MR_LOG_LEVEL_INFO);
-    this->UnLoad();
+    if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") deleting", MR_LOG_LEVEL_INFO);
+    UnLoad();
 }
 
 Resource* TextureManager::Create(std::string name, std::string source){
-    if(this->debugMessages) MR::Log::LogString("TextureManager "+name+" ("+source+") creating", MR_LOG_LEVEL_INFO);
+    if(this->_debugMessages) MR::Log::LogString("TextureManager "+name+" ("+source+") creating", MR_LOG_LEVEL_INFO);
     Texture * t = new Texture(this, name, source);
     this->_resources.push_back(t);
     return t;
 }
 
 Resource* TextureManager::Create(std::string name, unsigned int gl_texture){
-    if(this->debugMessages) MR::Log::LogString("TextureManager "+name+" (gl_texture) creating", MR_LOG_LEVEL_INFO);
+    if(this->_debugMessages) MR::Log::LogString("TextureManager "+name+" (gl_texture) creating", MR_LOG_LEVEL_INFO);
     Texture * t = new Texture(this, name, "");
-    t->gl_texture = gl_texture;
+    t->Set(gl_texture);
     this->_resources.push_back(t);
     return t;
 }
 
-Resource* TextureManager::CreateAndLoad(std::string name, std::string source){
-    if(this->debugMessages) MR::Log::LogString("TextureManager "+name+" ("+source+") creating and loading", MR_LOG_LEVEL_INFO);
-    Resource* t = this->Create(name, source);
-    t->Load();
-    return t;
-}
-
-Resource* TextureManager::Get(std::string source){
-    if(this->debugMessages) MR::Log::LogString("TextureManager ("+source+") getting", MR_LOG_LEVEL_INFO);
-    for(std::vector<Texture*>::iterator it = this->_resources.begin(); it != this->_resources.end(); ++it){
-        if( (*it)->GetSource() == source ) return *it;
-    }
-    return nullptr;
-}
-
-Resource* TextureManager::Find(std::string name){
-    if(this->debugMessages) MR::Log::LogString("TextureManager "+name+" searching", MR_LOG_LEVEL_INFO);
-    for(std::vector<Texture*>::iterator it = this->_resources.begin(); it != this->_resources.end(); ++it){
-        if( (*it)->GetName() == name ) return *it;
-    }
-    return nullptr;
-}
-
-Resource* TextureManager::Need(std::string source){
-    if(this->debugMessages) MR::Log::LogString("TextureManager ("+source+") needed", MR_LOG_LEVEL_INFO);
-    for(std::vector<Texture*>::iterator it = this->_resources.begin(); it != this->_resources.end(); ++it){
-        if( (*it)->GetSource() == source ) return *it;
-    }
-    return this->CreateAndLoad("AutoLoaded_"+source, source);
-}
-
-Resource** TextureManager::Need(std::string* sources, const unsigned int num){
+/*
+Resource** TextureManager::Need(std::string* sources, unsigned int num){
     Resource** finded_list = new Resource*[num];
     if(this->debugMessages) MR::Log::LogString("TextureManager List of resources needed", MR_LOG_LEVEL_INFO);
     for(std::vector<Texture*>::iterator it = this->_resources.begin(); it != this->_resources.end(); ++it){
@@ -134,21 +97,4 @@ Resource** TextureManager::Need(std::string* sources, const unsigned int num){
 
     return &finded_list[0];
 }
-
-void TextureManager::Remove(std::string name, std::string source){
-    if(this->debugMessages) MR::Log::LogString("TextureManager "+name+" ("+source+") removing", MR_LOG_LEVEL_INFO);
-    for(std::vector<Texture*>::iterator it = this->_resources.begin(); it != this->_resources.end(); ++it){
-        if( (*it)->GetName() == name && (*it)->GetSource() == source){
-            delete (*it);
-            this->_resources.erase(it);
-        }
-    }
-}
-
-void TextureManager::RemoveAll(){
-    if(this->debugMessages) MR::Log::LogString("TextureManager removing all", MR_LOG_LEVEL_INFO);
-    for(std::vector<Texture*>::iterator it = this->_resources.begin(); it != this->_resources.end(); ++it){
-        delete (*it);
-    }
-    this->_resources.clear();
-}
+*/

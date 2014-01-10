@@ -13,12 +13,7 @@ class Transform;
 
 class Mesh : public virtual Resource {
 protected:
-    std::string _name = "";
-    std::string _source = "";
-    bool _loaded = false;
-    MeshManager* _manager = nullptr;
     MR::Transform* _transform = nullptr;
-    bool _res_free_state = true;
 
     GeometryBuffer** geom_buffers = nullptr; //array of pointers to GeomBuffers
     unsigned int geom_buffers_num;
@@ -47,69 +42,18 @@ public:
         return _transform;
     }
 
-    //RESOURCE
-    inline void SetResourceFreeState(bool s){
-        _res_free_state = s;
-    }
-
-    inline bool GetResourceFreeState(){
-        return _res_free_state;
-    }
-
-    virtual inline std::string GetName() {
-        return this->_name;
-    }
-    virtual inline std::string GetSource() {
-        return this->_source;
-    }
     virtual bool Load();
     virtual void UnLoad();
-    virtual bool ReLoad();
-    virtual bool IsLoaded() {
-        return this->_loaded;
-    }
-    inline ResourceManager* GetManager() {
-        return (ResourceManager*)this->_manager;
-    }
-    //---------
 
     Mesh(MeshManager* manager, std::string name, std::string source);
     virtual ~Mesh();
 };
 
 class MeshManager : public virtual ResourceManager {
-protected:
-    std::vector<Mesh*> _resources;
 public:
-    bool debugMessages = false;
-
-    inline void Add(Resource* res) {
-        this->_resources.push_back( dynamic_cast<Mesh*>(res) );
-    }
-
-    inline void Remove(Resource* res) {
-        auto it = std::find(this->_resources.begin(), this->_resources.end(), res);
-        if(it != this->_resources.end()) {
-            delete (*it);
-            this->_resources.erase(it);
-        }
-    }
     virtual Resource* Create(std::string name, std::string source);
-    virtual Resource* CreateAndLoad(std::string name, std::string source);
-    virtual Resource* Get(std::string source);
-    virtual Resource* Find(std::string name);
 
-    virtual Resource* Need(std::string source);
-
-    inline virtual Resource** Need(std::string* source, unsigned int sources_num){
-        return nullptr;
-    }
-
-    virtual void Remove(std::string name, std::string source);
-
-    virtual void RemoveAll();
-
-    MeshManager() {}
+    MeshManager() : ResourceManager() {}
     virtual ~MeshManager() {}
 
     static MeshManager* Instance() {

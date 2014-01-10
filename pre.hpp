@@ -35,4 +35,6 @@
 #include <algorithm>
 #include <stdio.h>
 
+#include <locale>
+
 #define MR_DELTA_TYPE float

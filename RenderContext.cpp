@@ -23,6 +23,7 @@ RenderContext::~RenderContext() {
     MR::Log::LogString("MorglodsRender shutdown", MR_LOG_LEVEL_INFO);
     MR::TextureManager::Instance()->RemoveAll();
     MR::MeshManager::Instance()->RemoveAll();
+    MR::ShaderManager::Instance()->RemoveAll();
     glfwTerminate();
 }
 

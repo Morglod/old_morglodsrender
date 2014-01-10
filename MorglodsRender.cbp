@@ -73,6 +73,7 @@
 		<Unit filename="RenderContext.hpp" />
 		<Unit filename="RenderWindow.cpp" />
 		<Unit filename="RenderWindow.hpp" />
+		<Unit filename="ResourceManager.cpp" />
 		<Unit filename="ResourceManager.hpp" />
 		<Unit filename="Shader.cpp" />
 		<Unit filename="Shader.hpp" />

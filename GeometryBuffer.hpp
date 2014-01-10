@@ -203,15 +203,12 @@ public:
     ~GeometryBuffer();
 };
 
-/** \brief Imports geometry from file
- *
- * \param file - Path to mom file
- * \param buffers - link to array of pointers, where will be saved imported geometry
- * \param num - link to var where will be saved geometry buffers num
- * \param indexes - import indexes from file? true by default
- * \param log - log debug messages? false by default
- * \return
- *
+/** Imports geometry from file
+ *  file - Path to mom file
+ *  buffers - link to array of pointers, where will be saved imported geometry
+ *  num - link to var where will be saved geometry buffers num
+ *  indexes - import indexes from file? true by default
+ *  log - log debug messages? false by default
  */
 bool ImportMoGeom(std::string file, MR::GeometryBuffer**& buffers, unsigned int & num, bool indexes = true, bool log = false);
 }

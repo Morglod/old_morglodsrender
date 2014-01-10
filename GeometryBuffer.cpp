@@ -113,10 +113,19 @@ GeometryBuffer::GeometryBuffer(VertexDeclaration* vd, IndexDeclaration* id, void
     }
 }
 
-GeometryBuffer::~GeometryBuffer(){
-    if(this->_vertex_buffer != 0) glDeleteBuffers(1, &this->_vertex_buffer);
-    if(this->_index_buffer != 0) glDeleteBuffers(1, &this->_index_buffer);
-    if(this->_vao != 0) glDeleteVertexArrays(1, &this->_vao);
+GeometryBuffer::~GeometryBuffer() {
+    if(this->_vertex_buffer != 0) {
+        glBindBuffer(GL_VERTEX_ARRAY, 0);
+        glDeleteBuffers(1, &this->_vertex_buffer);
+    }
+    if(this->_index_buffer != 0) {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glDeleteBuffers(1, &this->_index_buffer);
+    }
+    if(this->_vao != 0) {
+        glBindVertexArray(0);
+        glDeleteVertexArrays(1, &this->_vao);
+    }
 }
 
 bool ImportMoGeom(std::string file, MR::GeometryBuffer**& buffers, unsigned int & num, bool bindexes, bool log){
@@ -240,6 +249,8 @@ bool ImportMoGeom(std::string file, MR::GeometryBuffer**& buffers, unsigned int 
         buffers[i] = new MR::GeometryBuffer(vDecl, nullptr, &vbuffer[0], vbufferSize, nullptr, 0, numVerts, 0);
         if(bindexes) buffers[i] = new MR::GeometryBuffer(vDecl, iDecl, &vbuffer[0], vbufferSize, &ibuffer[0], ibufferSize, numVerts, facesNum*3);
     }
+
+    ffile.close();
     if(log) MR::Log::LogString("Imported geometry from ("+file+")", MR_LOG_LEVEL_INFO);
 
     return true;

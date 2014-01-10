@@ -31,8 +31,8 @@ To detach it from log, use MR::Log::Remove(LogStringPtr);<br>
 <br>
 For some objects like managers, you can turn on/off debug logging:<br>
 <textarea rows=2 cols=60>
-MR::MeshManager::Instance()->debugMessages = true;
-MR::TextureManager::Instance()->debugMessages = true;
+MR::MeshManager::Instance()->SetDebugMessagesState(true);
+MR::TextureManager::Instance()->SetDebugMessagesState(true);
 </textarea><br>
 <br>
 To log string by yourself, use MR::Log::LogString(std::string, int level) method.<br>
