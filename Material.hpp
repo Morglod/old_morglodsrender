@@ -3,11 +3,12 @@
 #ifndef _MR_MATERIAL_H_
 #define _MR_MATERIAL_H_
 
-#include "MorglodsRender.hpp"
+#include "pre.hpp"
 
 namespace MR {
 class Shader;
 class Texture;
+class RenderContext;
 
 inline float* WhiteColor() {
     return new float[4] {1.0f, 1.0f, 1.0f, 1.0f};
@@ -32,7 +33,7 @@ public:
 
     Shader* shader; //pointer to shader
 
-    void Use();
+    void Use(RenderContext* rc);
 
     MaterialPass() : diffuseTexture(nullptr), diffuseTextureStage(GL_TEXTURE0), shader(nullptr) {}
     MaterialPass(Texture* dTex, GLenum dTexStage, Shader* sh) : diffuseTexture(dTex), diffuseTextureStage(dTexStage), shader(sh) {}

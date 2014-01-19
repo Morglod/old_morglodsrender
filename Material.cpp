@@ -1,6 +1,8 @@
 #include "Material.hpp"
+#include "RenderContext.hpp"
+#include "Texture.hpp"
 
-void MR::MaterialPass::Use(){
-    //if(diffuseTexture) MR::RenderManager::Instance()->UseTexture(diffuseTexture, diffuseTextureStage);
-    if(shader) shader->Use();
+void MR::MaterialPass::Use(RenderContext* rc){
+    if(diffuseTexture) rc->UseTexture(diffuseTexture, diffuseTextureStage);
+    if(shader) rc->UseShader(shader);
 }

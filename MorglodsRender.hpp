@@ -7,7 +7,8 @@ OpenGL
 GLFW http://www.glfw.org/
 SOIL (Simple Image Library) http://www.lonesock.net/soil.html
 Assimp
-GLEW GCC REBUILD
+GLM http://glm.g-truc.net/0.9.5/index.html
+GLEW GCC REBUILD http://glew.sourceforge.net/
 */
 
 #pragma once
@@ -40,56 +41,11 @@ GLEW GCC REBUILD
 #include "MachineInfo.hpp"
 
 #include "Transformation.hpp"
+
+#include "Model.hpp"
+#include "Entity.hpp"
+
 #include "RenderWindow.hpp"
 #include "RenderContext.hpp"
-
-namespace MR{/*
-    class RenderContext{
-    protected:
-        GLFWwindow* window;
-        bool released;
-    public:
-        inline GLFWwindow* GetWindow(){
-            return window;
-        }
-
-        //-----------------------------------------------------------------------------------------------------
-        //Inits MorglodsRender, Returns glfw window or NULL if failed and write error code to MR::LastErrorCode
-        //window_name - Caption of new window
-        //width - Width of new window
-        //height - Height of new window
-        bool Init(std::string window_name, int width, int height);
-
-        //-------------------------
-        //Stops MorglodsRender work
-        void Shutdown();
-
-        Render();
-        ~Render();
-
-        //----------------------------
-        //Calculates frames per second
-        //timeType is data type of time in calculations
-        template<typename timeType>
-        static unsigned short inline FPS(){
-            static timeType lastTime = 0.0;
-            static timeType time = 0.0;
-            static unsigned short frames = 0;
-            static unsigned short lastFps = 0;
-
-            timeType currentTime = (timeType)glfwGetTime();
-            time += currentTime-lastTime;
-            lastTime = currentTime;
-            ++frames;
-            if(time > 1){
-                lastFps = frames;
-                time -= 1.0;
-                frames = 0;
-            }
-
-            return lastFps;
-        }
-    };*/
-}
 
 #endif // _MR_MORGLODS_RENDER_H_

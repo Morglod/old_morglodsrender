@@ -53,6 +53,8 @@
 		</Linker>
 		<Unit filename="Camera.cpp" />
 		<Unit filename="Camera.hpp" />
+		<Unit filename="Entity.cpp" />
+		<Unit filename="Entity.hpp" />
 		<Unit filename="Events.hpp" />
 		<Unit filename="GeometryBuffer.cpp" />
 		<Unit filename="GeometryBuffer.hpp" />
@@ -66,6 +68,8 @@
 		<Unit filename="Material.hpp" />
 		<Unit filename="Mesh.cpp" />
 		<Unit filename="Mesh.hpp" />
+		<Unit filename="Model.cpp" />
+		<Unit filename="Model.hpp" />
 		<Unit filename="MorglodsRender.cpp" />
 		<Unit filename="MorglodsRender.hpp" />
 		<Unit filename="README.md" />

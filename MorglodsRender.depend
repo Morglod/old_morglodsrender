@@ -550,14 +550,16 @@
 	<fstream>
 	<stdlib.h>
 
-1389323328 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometrybuffer.cpp
+1390079582 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometrybuffer.cpp
 	"GeometryBuffer.hpp"
 	"Shader.hpp"
 	"Log.hpp"
 	"Transformation.hpp"
 
-1389173876 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\material.cpp
+1389613574 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\material.cpp
 	"Material.hpp"
+	"RenderContext.hpp"
+	"Texture.hpp"
 
 1384428847 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\rendermanager.h
 	<GL\glew.h>
@@ -571,10 +573,11 @@
 1387382320 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\transformation.h
 	"MorglodsRender.h"
 
-1388806063 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\camera.hpp
-	"MorglodsRender.hpp"
+1390131237 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\camera.hpp
+	"pre.hpp"
+	"Events.hpp"
 
-1389173845 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\morglodsrender.hpp
+1389511063 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\morglodsrender.hpp
 	"pre.hpp"
 	"ResourceManager.hpp"
 	"Texture.hpp"
@@ -587,10 +590,12 @@
 	"Events.hpp"
 	"MachineInfo.hpp"
 	"Transformation.hpp"
+	"Model.hpp"
+	"Entity.hpp"
 	"RenderWindow.hpp"
 	"RenderContext.hpp"
 
-1389336038 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\pre.hpp
+1389609039 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\pre.hpp
 	<GL\glew.h>
 	<GLFW\glfw3.h>
 	<glm/glm.hpp>
@@ -612,7 +617,7 @@
 	"pre.hpp"
 	"Events.hpp"
 
-1389351611 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\texture.hpp
+1389513448 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\texture.hpp
 	<GL\glew.h>
 	"ResourceManager.hpp"
 	"Log.hpp"
@@ -631,8 +636,8 @@
 	"ResourceManager.hpp"
 	"Events.hpp"
 
-1389027560 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\material.hpp
-	"MorglodsRender.hpp"
+1389513236 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\material.hpp
+	"pre.hpp"
 
 1388036702 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\rendermanager.hpp
 	<GL\glew.h>
@@ -646,27 +651,36 @@
 1388036518 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\machineinfo.hpp
 	"pre.hpp"
 
-1389034078 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\transformation.hpp
-	"MorglodsRender.hpp"
+1390129286 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\transformation.hpp
+	"pre.hpp"
 
-1389351274 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\mesh.hpp
-	"MorglodsRender.hpp"
+1390080535 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\mesh.hpp
+	"pre.hpp"
+	"ResourceManager.hpp"
 
-1389352029 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\mesh.cpp
+1390080495 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\mesh.cpp
 	"Mesh.hpp"
+	"Log.hpp"
+	"GeometryBuffer.hpp"
+	"Material.hpp"
 
 1389297150 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\renderwindow.hpp
 	"pre.hpp"
 	"Events.hpp"
 
-1389186076 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\rendercontext.hpp
+1390087354 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\rendercontext.hpp
 	"pre.hpp"
 	"GeometryBuffer.hpp"
 	"Shader.hpp"
 	"Texture.hpp"
 	"Events.hpp"
+	"Camera.hpp"
+	"Material.hpp"
+	"Mesh.hpp"
+	"Model.hpp"
+	"Entity.hpp"
 
-1389331995 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\rendercontext.cpp
+1390081138 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\rendercontext.cpp
 	"RenderContext.hpp"
 	"Mesh.hpp"
 	"Log.hpp"
@@ -678,4 +692,24 @@
 
 1389350303 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\resourcemanager.cpp
 	"ResourceManager.hpp"
+
+1390086010 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\model.hpp
+	"pre.hpp"
+	"Mesh.hpp"
+	"ResourceManager.hpp"
+
+1389612595 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\entity.hpp
+	"pre.hpp"
+	"Transformation.hpp"
+	"Events.hpp"
+
+1389609110 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\entity.cpp
+	"Entity.hpp"
+
+1390118065 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\model.cpp
+	"Model.hpp"
+	"Log.hpp"
+	"GeometryBuffer.hpp"
+	"Material.hpp"
+	"Texture.hpp"
 

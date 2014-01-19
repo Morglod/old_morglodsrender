@@ -16,13 +16,13 @@ bool RenderContext::Init() {
     return true;
 }
 
-RenderContext::RenderContext() {
+RenderContext::RenderContext(){
 }
 
 RenderContext::~RenderContext() {
     MR::Log::LogString("MorglodsRender shutdown", MR_LOG_LEVEL_INFO);
     MR::TextureManager::Instance()->RemoveAll();
-    MR::MeshManager::Instance()->RemoveAll();
+    MR::ModelManager::Instance()->RemoveAll();
     MR::ShaderManager::Instance()->RemoveAll();
     glfwTerminate();
 }

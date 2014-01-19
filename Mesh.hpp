@@ -3,18 +3,16 @@
 #ifndef _MR_MESH_H_
 #define _MR_MESH_H_
 
-#include "MorglodsRender.hpp"
+#include "pre.hpp"
+#include "ResourceManager.hpp"
 
 namespace MR {
 class GeometryBuffer;
 class Material;
-class MeshManager;
 class Transform;
 
-class Mesh : public virtual Resource {
+class Mesh {
 protected:
-    MR::Transform* _transform = nullptr;
-
     GeometryBuffer** geom_buffers = nullptr; //array of pointers to GeomBuffers
     unsigned int geom_buffers_num;
 
@@ -22,8 +20,29 @@ protected:
     unsigned int materials_num;
 
 public:
+    bool _res_free_state;
+
+    MR::Event<Material**, unsigned int> OnMaterialsChanged;
+    MR::Event<GeometryBuffer**, unsigned int> OnGeometryBuffersChanged;
+
+    inline void SetMaterials(Material** m, unsigned int mnum){
+        if((materials != m) || (materials_num != mnum)) {
+            materials = m;
+            materials_num = mnum;
+            OnMaterialsChanged(this, m, mnum);
+        }
+    }
+
     inline GeometryBuffer** GetGeomBuffers(){
         return geom_buffers;
+    }
+
+    inline void SetGeomBuffers(GeometryBuffer** gb, unsigned int n){
+        if( (geom_buffers != gb) || (geom_buffers_num != n) ){
+            geom_buffers = gb;
+            geom_buffers_num = n;
+            OnGeometryBuffersChanged(this, gb, n);
+        }
     }
 
     inline unsigned int GetGeomBuffersNum(){
@@ -38,29 +57,14 @@ public:
         return materials_num;
     }
 
-    inline MR::Transform* GetTransform(){
+    /*inline MR::Transform* GetTransform(){
         return _transform;
-    }
+    }*/
 
-    virtual bool Load();
-    virtual void UnLoad();
-
-    Mesh(MeshManager* manager, std::string name, std::string source);
+    Mesh(GeometryBuffer** gb, unsigned int nm, Material** m, unsigned int mnum);
     virtual ~Mesh();
 };
 
-class MeshManager : public virtual ResourceManager {
-public:
-    virtual Resource* Create(std::string name, std::string source);
-
-    MeshManager() : ResourceManager() {}
-    virtual ~MeshManager() {}
-
-    static MeshManager* Instance() {
-        static MeshManager* m = new MeshManager();
-        return m;
-    }
-};
 }
 
 #endif // _MR_MESH_H_

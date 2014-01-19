@@ -38,3 +38,12 @@
 #include <locale>
 
 #define MR_DELTA_TYPE float
+
+template<typename T>
+class Copyable {
+public:
+    inline virtual T* Copy() {
+        //assert("Copy method isn't overloaded!");
+        return nullptr;
+    }
+};

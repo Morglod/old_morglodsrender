@@ -12,6 +12,8 @@
 #include "ResourceManager.hpp"
 #include "Log.hpp"
 
+#define MR_TEXTURE_DIFFUSE_STAGE GL_TEXTURE0
+
 namespace MR{
     class Texture;
     class TextureManager;
