@@ -12,50 +12,24 @@ class Material;
 class Transform;
 
 class Mesh {
-protected:
-    GeometryBuffer** geom_buffers = nullptr; //array of pointers to GeomBuffers
-    unsigned int geom_buffers_num;
-
-    Material** materials = nullptr; //array of pointers to Materials, num of geom_buffers_num; if null, not used; if (SingleMaterial) so it is size of 1
-    unsigned int materials_num;
-
 public:
-    bool _res_free_state;
-
     MR::Event<Material**, unsigned int> OnMaterialsChanged;
     MR::Event<GeometryBuffer**, unsigned int> OnGeometryBuffersChanged;
+    MR::Event<const bool&> OnResourceFreeStateChanged;
 
-    inline void SetMaterials(Material** m, unsigned int mnum){
-        if((materials != m) || (materials_num != mnum)) {
-            materials = m;
-            materials_num = mnum;
-            OnMaterialsChanged(this, m, mnum);
-        }
-    }
+    /** If true, resource data will be destroyed after unloading/deleting resource
+    *  For example geometry buffers after unloading/deleting Mesh resource
+    *  True by default
+    */
+    virtual void SetResourceFreeState(const bool& state);
 
-    inline GeometryBuffer** GetGeomBuffers(){
-        return geom_buffers;
-    }
+    void SetMaterials(Material** m, const unsigned int & mnum);
+    void SetGeomBuffers(GeometryBuffer** gb, const unsigned int & n);
 
-    inline void SetGeomBuffers(GeometryBuffer** gb, unsigned int n){
-        if( (geom_buffers != gb) || (geom_buffers_num != n) ){
-            geom_buffers = gb;
-            geom_buffers_num = n;
-            OnGeometryBuffersChanged(this, gb, n);
-        }
-    }
-
-    inline unsigned int GetGeomBuffersNum(){
-        return geom_buffers_num;
-    }
-
-    inline Material** GetMaterials(){
-        return materials;
-    }
-
-    inline unsigned int GetMaterialsNum(){
-        return materials_num;
-    }
+    inline unsigned int GetGeomBuffersNum(){ return geom_buffers_num; }
+    inline Material** GetMaterials(){ return materials; }
+    inline unsigned int GetMaterialsNum(){ return materials_num; }
+    inline GeometryBuffer** GetGeomBuffers(){ return geom_buffers; }
 
     /*inline MR::Transform* GetTransform(){
         return _transform;
@@ -63,6 +37,15 @@ public:
 
     Mesh(GeometryBuffer** gb, unsigned int nm, Material** m, unsigned int mnum);
     virtual ~Mesh();
+
+protected:
+    GeometryBuffer** geom_buffers = nullptr; //array of pointers to GeomBuffers
+    unsigned int geom_buffers_num;
+
+    Material** materials = nullptr; //array of pointers to Materials, num of geom_buffers_num; if null, not used; if (SingleMaterial) so it is size of 1
+    unsigned int materials_num;
+
+    bool _res_free_state;
 };
 
 }

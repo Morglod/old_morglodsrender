@@ -26,7 +26,9 @@
 				<Option compiler="gcc" />
 				<Option createDefFile="1" />
 				<Compiler>
-					<Add option="-O2" />
+					<Add option="-fomit-frame-pointer" />
+					<Add option="-fexpensive-optimizations" />
+					<Add option="-O3" />
 					<Add option="-Wall" />
 				</Compiler>
 				<Linker>
@@ -35,31 +37,20 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="-fexpensive-optimizations" />
-			<Add option="-Os" />
-			<Add option="-O3" />
-			<Add option="-O" />
 			<Add option="-std=c++11" />
 		</Compiler>
-		<Linker>
-			<Add option="-s" />
-			<Add library="C:\MinGW\lib\libSOIL.a" />
-			<Add library="C:\MinGW\lib\libglfw3.a" />
-			<Add library="C:\MinGW\lib\libglew.a" />
-			<Add library="C:\MinGW\lib\libopengl32.a" />
-			<Add library="C:\MinGW\lib\libgdi32.a" />
-			<Add library="C:\MinGW\lib\libglu32.a" />
-			<Add library="C:\MinGW\lib\libwinmm.a" />
-		</Linker>
 		<Unit filename="Camera.cpp" />
 		<Unit filename="Camera.hpp" />
 		<Unit filename="Entity.cpp" />
 		<Unit filename="Entity.hpp" />
 		<Unit filename="Events.hpp" />
+		<Unit filename="Exception.hpp" />
 		<Unit filename="GeometryBuffer.cpp" />
 		<Unit filename="GeometryBuffer.hpp" />
 		<Unit filename="LICENSE" />
 		<Unit filename="Lessons.txt" />
+		<Unit filename="Light.cpp" />
+		<Unit filename="Light.hpp" />
 		<Unit filename="Log.cpp" />
 		<Unit filename="Log.hpp" />
 		<Unit filename="MachineInfo.cpp" />
@@ -70,17 +61,24 @@
 		<Unit filename="Mesh.hpp" />
 		<Unit filename="Model.cpp" />
 		<Unit filename="Model.hpp" />
-		<Unit filename="MorglodsRender.cpp" />
 		<Unit filename="MorglodsRender.hpp" />
 		<Unit filename="README.md" />
 		<Unit filename="RenderContext.cpp" />
 		<Unit filename="RenderContext.hpp" />
+		<Unit filename="RenderTarget.cpp" />
+		<Unit filename="RenderTarget.hpp" />
 		<Unit filename="RenderWindow.cpp" />
 		<Unit filename="RenderWindow.hpp" />
 		<Unit filename="ResourceManager.cpp" />
 		<Unit filename="ResourceManager.hpp" />
+		<Unit filename="ResourceSource.cpp" />
+		<Unit filename="ResourceSource.hpp" />
+		<Unit filename="Scene.cpp" />
+		<Unit filename="Scene.hpp" />
 		<Unit filename="Shader.cpp" />
 		<Unit filename="Shader.hpp" />
+		<Unit filename="Sprite.hpp" />
+		<Unit filename="SpriteBatch.hpp" />
 		<Unit filename="Texture.cpp" />
 		<Unit filename="Texture.hpp" />
 		<Unit filename="Transformation.hpp" />

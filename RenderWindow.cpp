@@ -4,106 +4,107 @@
 
 namespace MR {
 
- void RenderWindow::window_pos_callback(GLFWwindow* window, int x, int y) {
+void RenderWindow::window_pos_callback(GLFWwindow* window, int x, int y) {
     RenderWindow* p = (RenderWindow*)glfwGetWindowUserPointer(window);
     p->OnSizeChanged(p, x, y);
 }
 
- void RenderWindow::window_size_callback(GLFWwindow* window, int w, int h) {
+void RenderWindow::window_size_callback(GLFWwindow* window, int w, int h) {
     RenderWindow* p = (RenderWindow*)glfwGetWindowUserPointer(window);
     p->OnSizeChanged(p, w, h);
 }
 
- void RenderWindow::window_char_callback(GLFWwindow* window, unsigned int c) {
+void RenderWindow::window_char_callback(GLFWwindow* window, unsigned int c) {
     RenderWindow* p = (RenderWindow*)glfwGetWindowUserPointer(window);
     p->OnChar(p, c);
 }
 
- void RenderWindow::window_cursor_entered_callback(GLFWwindow* window, int state) {
+void RenderWindow::window_cursor_entered_callback(GLFWwindow* window, int state) {
     RenderWindow* p = (RenderWindow*)glfwGetWindowUserPointer(window);
     p->OnCursorEnterStateChanged(p, state);
 }
 
- void RenderWindow::window_cursor_pos_changed_callback(GLFWwindow* window, double x, double y) {
+void RenderWindow::window_cursor_pos_changed_callback(GLFWwindow* window, double x, double y) {
     RenderWindow* p = (RenderWindow*)glfwGetWindowUserPointer(window);
     p->OnCursorPosChanged(p, x, y);
 }
 
- void RenderWindow::window_key_callback(GLFWwindow* window, int glfw_key, int sys_scancode, int glfw_key_action, int glfw_mods) {
+void RenderWindow::window_key_callback(GLFWwindow* window, int glfw_key, int sys_scancode, int glfw_key_action, int glfw_mods) {
     RenderWindow* p = (RenderWindow*)glfwGetWindowUserPointer(window);
     p->OnKey(p, glfw_key, sys_scancode, glfw_key_action, glfw_mods);
 }
 
- void RenderWindow::window_mouse_key_callback(GLFWwindow* window, int glfw_button, int glfw_key_action, int glfw_mods) {
+void RenderWindow::window_mouse_key_callback(GLFWwindow* window, int glfw_button, int glfw_key_action, int glfw_mods) {
     RenderWindow* p = (RenderWindow*)glfwGetWindowUserPointer(window);
     p->OnMouseButton(p, glfw_button, glfw_key_action, glfw_mods);
 }
 
- void RenderWindow::window_scroll_callback(GLFWwindow* window, double x_offset, double y_offset) {
+void RenderWindow::window_scroll_callback(GLFWwindow* window, double x_offset, double y_offset) {
     RenderWindow* p = (RenderWindow*)glfwGetWindowUserPointer(window);
     p->OnScroll(p, x_offset, y_offset);
 }
 
- void RenderWindow::window_close_callback(GLFWwindow* window) {
+void RenderWindow::window_close_callback(GLFWwindow* window) {
     RenderWindow* p = (RenderWindow*)glfwGetWindowUserPointer(window);
     p->OnClose(p, nullptr);
 }
 
- void RenderWindow::window_focus_changed_callback(GLFWwindow* window, int state) {
+void RenderWindow::window_focus_changed_callback(GLFWwindow* window, int state) {
     RenderWindow* p = (RenderWindow*)glfwGetWindowUserPointer(window);
     p->OnFocusChanged(p, state);
 }
 
- void RenderWindow::window_iconifed_callback(GLFWwindow* window, int state) {
+void RenderWindow::window_iconifed_callback(GLFWwindow* window, int state) {
     RenderWindow* p = (RenderWindow*)glfwGetWindowUserPointer(window);
     p->OnIconificationStateChanged(p, state);
 }
 
- void RenderWindow::window_refresh_callback(GLFWwindow* window) {
+void RenderWindow::window_refresh_callback(GLFWwindow* window) {
     RenderWindow* p = (RenderWindow*)glfwGetWindowUserPointer(window);
     p->OnRefresh(p, nullptr);
 }
 
- void RenderWindow::framebuffer_size_callback(GLFWwindow* window, int w, int h) {
+void RenderWindow::framebuffer_size_callback(GLFWwindow* window, int w, int h) {
     RenderWindow* p = (RenderWindow*)glfwGetWindowUserPointer(window);
     p->OnFrameBufferSizeChanged(p, w, h);
 }
 
-RenderWindow::RenderWindow(std::string title, int width, int height, RenderWindowHints* hints, GLFWwindow* parent_share_resources, RenderWindowCallbacks* callbacks) : glfw_handle(nullptr), titlec((char*)title.c_str()) {
-    if(hints == nullptr) glfwDefaultWindowHints();
-    else {
-        glfwWindowHint(GLFW_ACCUM_ALPHA_BITS, hints->accum_alpha_bits);
-        glfwWindowHint(GLFW_ACCUM_BLUE_BITS, hints->accum_blue_bits);
-        glfwWindowHint(GLFW_ACCUM_GREEN_BITS, hints->accum_green_bits);
-        glfwWindowHint(GLFW_ACCUM_RED_BITS, hints->accum_red_bits);
-        glfwWindowHint(GLFW_ALPHA_BITS, hints->alpha_bits);
-        glfwWindowHint(GLFW_AUX_BUFFERS, hints->aux_buffers);
-        glfwWindowHint(GLFW_BLUE_BITS, hints->blue_bits);
-        glfwWindowHint(GLFW_CLIENT_API, hints->client_api);
-        glfwWindowHint(GLFW_CONTEXT_ROBUSTNESS, hints->context_robustness);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, hints->context_version_major);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, hints->context_version_minor);
-        glfwWindowHint(GLFW_DECORATED, hints->decorated);
-        glfwWindowHint(GLFW_DEPTH_BITS, hints->depth_bits);
-        glfwWindowHint(GLFW_GREEN_BITS, hints->green_bits);
-        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, hints->opengl_debug_context);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, hints->opengl_forward_compat);
-        glfwWindowHint(GLFW_RED_BITS, hints->red_bits);
-        glfwWindowHint(GLFW_REFRESH_RATE, hints->refresh_rate);
-        glfwWindowHint(GLFW_RESIZABLE, hints->resizable);
-        glfwWindowHint(GLFW_SAMPLES, hints->samples);
-        glfwWindowHint(GLFW_SRGB_CAPABLE, hints->srgb_capable);
-        glfwWindowHint(GLFW_STENCIL_BITS, hints->stencil_bits);
-        glfwWindowHint(GLFW_STEREO, hints->stereo);
-        glfwWindowHint(GLFW_VISIBLE, hints->visible);
-    }
+RenderWindow::RenderWindow(const std::string& title, const int& width, const int& height, const RenderWindowHints& hints, const RenderWindowCallbacks& callbacks, GLFWwindow* parent_share_resources) :
+    glfw_handle(nullptr), titlec((char*)title.c_str()) {
+
+
+    glfwWindowHint(GLFW_ACCUM_ALPHA_BITS, hints.accum_alpha_bits);
+    glfwWindowHint(GLFW_ACCUM_BLUE_BITS, hints.accum_blue_bits);
+    glfwWindowHint(GLFW_ACCUM_GREEN_BITS, hints.accum_green_bits);
+    glfwWindowHint(GLFW_ACCUM_RED_BITS, hints.accum_red_bits);
+    glfwWindowHint(GLFW_ALPHA_BITS, hints.alpha_bits);
+    glfwWindowHint(GLFW_AUX_BUFFERS, hints.aux_buffers);
+    glfwWindowHint(GLFW_BLUE_BITS, hints.blue_bits);
+    glfwWindowHint(GLFW_CLIENT_API, hints.client_api);
+    glfwWindowHint(GLFW_CONTEXT_ROBUSTNESS, hints.context_robustness);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, hints.context_version_major);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, hints.context_version_minor);
+    glfwWindowHint(GLFW_DECORATED, hints.decorated);
+    glfwWindowHint(GLFW_DEPTH_BITS, hints.depth_bits);
+    glfwWindowHint(GLFW_GREEN_BITS, hints.green_bits);
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, hints.opengl_debug_context);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, hints.opengl_forward_compat);
+    glfwWindowHint(GLFW_RED_BITS, hints.red_bits);
+    glfwWindowHint(GLFW_REFRESH_RATE, hints.refresh_rate);
+    glfwWindowHint(GLFW_RESIZABLE, hints.resizable);
+    glfwWindowHint(GLFW_SAMPLES, hints.samples);
+    glfwWindowHint(GLFW_SRGB_CAPABLE, hints.srgb_capable);
+    glfwWindowHint(GLFW_STENCIL_BITS, hints.stencil_bits);
+    glfwWindowHint(GLFW_STEREO, hints.stereo);
+    glfwWindowHint(GLFW_VISIBLE, hints.visible);
+
 
     glfw_handle = glfwCreateWindow(width, height, titlec, NULL, parent_share_resources);
 
-    if(glfw_handle){
+    if(glfw_handle) {
         MakeCurrent();
 
-        if(parent_share_resources == NULL){
+        if(parent_share_resources == NULL) {
             GLenum result = glewInit();
             if(result != GLEW_OK) {
                 MR::Log::LogString("glew initialization failed", MR_LOG_LEVEL_ERROR);
@@ -120,28 +121,26 @@ RenderWindow::RenderWindow(std::string title, int width, int height, RenderWindo
 
         glfwSetWindowUserPointer(glfw_handle, this);
 
-        if(callbacks) {
-            if(callbacks->cpos) glfwSetWindowPosCallback(glfw_handle, window_pos_callback);
-            if(callbacks->csize) glfwSetWindowSizeCallback(glfw_handle, window_size_callback);
-            if(callbacks->cchar) glfwSetCharCallback(glfw_handle, window_char_callback);
-            if(callbacks->ccursor_enter) glfwSetCursorEnterCallback(glfw_handle, window_cursor_entered_callback);
-            if(callbacks->ccursor_pos) glfwSetCursorPosCallback(glfw_handle, window_cursor_pos_changed_callback);
-            if(callbacks->cframebuffer_size) glfwSetFramebufferSizeCallback(glfw_handle, framebuffer_size_callback);
-            if(callbacks->ckey) glfwSetKeyCallback(glfw_handle, window_key_callback);
-            if(callbacks->cmouse_button) glfwSetMouseButtonCallback(glfw_handle, window_mouse_key_callback);
-            if(callbacks->cscroll) glfwSetScrollCallback(glfw_handle, window_scroll_callback);
-            if(callbacks->cclose) glfwSetWindowCloseCallback(glfw_handle, window_close_callback);
-            if(callbacks->cfocus) glfwSetWindowFocusCallback(glfw_handle, window_focus_changed_callback);
-            if(callbacks->ciconify) glfwSetWindowIconifyCallback(glfw_handle, window_iconifed_callback);
-            if(callbacks->crefresh) glfwSetWindowRefreshCallback(glfw_handle, window_refresh_callback);
-        }
+        if(callbacks.cpos) glfwSetWindowPosCallback(glfw_handle, window_pos_callback);
+        if(callbacks.csize) glfwSetWindowSizeCallback(glfw_handle, window_size_callback);
+        if(callbacks.cchar) glfwSetCharCallback(glfw_handle, window_char_callback);
+        if(callbacks.ccursor_enter) glfwSetCursorEnterCallback(glfw_handle, window_cursor_entered_callback);
+        if(callbacks.ccursor_pos) glfwSetCursorPosCallback(glfw_handle, window_cursor_pos_changed_callback);
+        if(callbacks.cframebuffer_size) glfwSetFramebufferSizeCallback(glfw_handle, framebuffer_size_callback);
+        if(callbacks.ckey) glfwSetKeyCallback(glfw_handle, window_key_callback);
+        if(callbacks.cmouse_button) glfwSetMouseButtonCallback(glfw_handle, window_mouse_key_callback);
+        if(callbacks.cscroll) glfwSetScrollCallback(glfw_handle, window_scroll_callback);
+        if(callbacks.cclose) glfwSetWindowCloseCallback(glfw_handle, window_close_callback);
+        if(callbacks.cfocus) glfwSetWindowFocusCallback(glfw_handle, window_focus_changed_callback);
+        if(callbacks.ciconify) glfwSetWindowIconifyCallback(glfw_handle, window_iconifed_callback);
+        if(callbacks.crefresh) glfwSetWindowRefreshCallback(glfw_handle, window_refresh_callback);
     } else {
         MR::Log::LogString("glfw window creation failed", MR_LOG_LEVEL_ERROR);
         glfwTerminate();
     }
 }
 
-RenderWindow::~RenderWindow(){
+RenderWindow::~RenderWindow() {
     free((void*)titlec);
 }
 

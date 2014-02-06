@@ -7,6 +7,9 @@
 #include "Events.hpp"
 
 namespace MR{
+
+    std::string DirectoryFromFilePath(const std::string& file);
+
     class ResourceManager;
 
     class Resource {

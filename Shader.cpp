@@ -29,8 +29,42 @@ char *textFileRead(const char *fn, int * count = nullptr) {
     return content;
 }
 
-MR::ShaderUniform::ShaderUniform(const char* Name, ShaderUniformTypes Type, void* Value, GLenum shader_program) : name(Name), type(Type), value(Value) {
+MR::ShaderUniform::ShaderUniform(const char* Name, const ShaderUniformTypes& Type, void* Value, const GLenum& shader_program) : name(Name), type(Type), value(Value) {
     MapUniform(shader_program);
+}
+
+//UNIFORM BLOCK
+
+void MR::ShaderUniformBlock::MapBlock(const GLenum& shader_program) {
+    uniform_block_index = glGetUniformBlockIndex(shader_program, name);
+    glGetActiveUniformBlockiv(shader_program, uniform_block_index, GL_UNIFORM_BLOCK_DATA_SIZE, &block_size);
+    glGetUniformIndices(shader_program, num_uniforms, uniform_names, uniform_indecies);
+    glGetActiveUniformsiv(shader_program, num_uniforms, uniform_indecies, GL_UNIFORM_OFFSET, uniform_offsets);
+}
+
+void MR::ShaderUniformBlock::BufferData(unsigned char* Data){
+    data = Data;
+    glGenBuffers(1, &ubo);
+    glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+	glBufferData(GL_UNIFORM_BUFFER, block_size, data, GL_STREAM_DRAW);
+	glBindBufferBase(GL_UNIFORM_BUFFER, uniform_block_index, ubo);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
+void MR::ShaderUniformBlock::ChangeBufferedData(const int& ChangedPos, const int& ChangedSize){
+    glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+	glBufferSubData(GL_UNIFORM_BUFFER, ChangedPos, ChangedSize, data+ChangedPos);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
+MR::ShaderUniformBlock::ShaderUniformBlock(const char* Name, const int& NumUniforms, const char** UniformNames, /*const ShaderUniformBlockTypes& Type,*/ const GLenum& shader_program) :
+    name(Name), data(NULL), uniform_block_index(0), block_size(0), num_uniforms(NumUniforms), uniform_names(UniformNames), uniform_indecies( new unsigned int[NumUniforms] ), uniform_offsets( new int[NumUniforms] ), /*type(Type),*/ ubo(0) {
+    MapBlock(shader_program);
+}
+
+MR::ShaderUniformBlock::~ShaderUniformBlock() {
+    glDeleteBuffers(1, &ubo);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 //SUB SHADER
@@ -117,26 +151,24 @@ bool MR::Shader::Load(){
                 ((char*)p_code)[ci] = (char)(( (int) ((unsigned char*)p_code)  [ci])-127);
             }
 
-            //if(this->_manager->debugMessages) MR::Log::LogString("Sub shader code "+std::string(code));
-
             GLenum sh_type = GL_VERTEX_SHADER;
             switch(type){
-            case 0:
+            case 3:
                 sh_type = GL_COMPUTE_SHADER;
                 break;
             case 1:
                 sh_type = GL_VERTEX_SHADER;
                 break;
-            case 2:
+            case 4:
                 sh_type = GL_TESS_CONTROL_SHADER;
                 break;
-            case 3:
+            case 5:
                 sh_type = GL_TESS_EVALUATION_SHADER;
                 break;
-            case 4:
+            case 6:
                 sh_type = GL_GEOMETRY_SHADER;
                 break;
-            case 5:
+            case 2:
                 sh_type = GL_FRAGMENT_SHADER;
                 break;
             }

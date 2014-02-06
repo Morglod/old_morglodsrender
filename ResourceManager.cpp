@@ -1,5 +1,14 @@
 #include "ResourceManager.hpp"
 
+std::string MR::DirectoryFromFilePath(const std::string& file){
+    std::string::size_type it_a = file.find_last_of("\\");
+    std::string::size_type it_b = file.find_last_of("/");
+    if((it_a == file.npos)&&(it_b == file.npos)) return file;
+    if((it_a == file.npos)&&(it_b != file.npos)) return file.substr(0, it_b);
+    if((it_a != file.npos)&&(it_b == file.npos)) return file.substr(0, it_a);
+    return file.substr(0, std::max(it_a, it_b));
+}
+
 MR::Resource* MR::ResourceManager::CreateAndLoad(std::string name, std::string source){
     Resource* r = this->Create(name, source);
     r->Load();

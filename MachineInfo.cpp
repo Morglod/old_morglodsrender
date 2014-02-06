@@ -1,5 +1,4 @@
 #include "MachineInfo.hpp"
-
 #include <windows.h>
 
 int MR::MachineInfo::gl_version_major() {

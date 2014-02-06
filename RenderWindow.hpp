@@ -5,6 +5,7 @@
 
 #include "pre.hpp"
 #include "Events.hpp"
+#include "RenderContext.hpp"
 
 namespace MR {
 
@@ -13,11 +14,11 @@ public:
 
     //sender - RenderWindow
     //arg1, arg2 - new x,y
-    MR::Event<int&, int&> OnPosChanged;
+    MR::Event<const int&, const int&> OnPosChanged;
 
     //sender - RenderWindow
     //arg1, arg2 - new w,h
-    MR::Event<int&, int&> OnSizeChanged;
+    MR::Event<const int&, const int&> OnSizeChanged;
 
     //sender - RenderWindow
     //arg1 - new title
@@ -25,50 +26,50 @@ public:
 
     //sender - RenderWindow
     //arg1 - new refreshes num
-    MR::Event<int&> OnSyncChanged;
+    MR::Event<const int&> OnSyncChanged;
 
     //sender - RenderWindow
     //arg1 - new state
-    MR::Event<bool&> OnVisibilityChanged;
+    MR::Event<const bool&> OnVisibilityChanged;
 
     //sender - RenderWindow
     //arg1 - unicode char of key
-    MR::Event<unsigned int&> OnChar;
+    MR::Event<const unsigned int&> OnChar;
 
     //sender - RenderWindow
     //arg1 - glfw key GLFW_A, GLFW_B etc
     //arg2 - system scan code
     //arg3 - glfw key action GLFW_PRESS, GLFW_RELEASE, GLFW_REPEAT
     //arg4 - glfw mods bit
-    MR::Event<int&, int&, int&, int&> OnKey;
+    MR::Event<const int&, const int&, const int&, const int&> OnKey;
 
     //sender - RenderWindow
     //arg1 - glfw button
     //arg2 - glfw key action GLFW_PRESS, GLFW_RELEASE
     //arg3 - glfw mods bit
-    MR::Event<int&, int&, int&> OnMouseButton;
+    MR::Event<const int&, const int&, const int&> OnMouseButton;
 
     //sender - RenderWindow
     //arg1 - GL_TRUE or GL_FALSE
-    MR::Event<int&> OnCursorEnterStateChanged;
+    MR::Event<const int&> OnCursorEnterStateChanged;
 
     //sender - RenderWindow
     //arg1 - x
     //arg2 - y
-    MR::Event<double&, double&> OnCursorPosChanged;
+    MR::Event<const double&, const double&> OnCursorPosChanged;
 
     //sender - RenderWindow
     //arg1 - x offset
     //arg2 - y offset
-    MR::Event<double&, double&> OnScroll;
+    MR::Event<const double&, const double&> OnScroll;
 
     //sender - RenderWindow
     //arg1, arg2 - new w,h
-    MR::Event<int&, int&> OnFrameBufferSizeChanged;
+    MR::Event<const int&, const int&> OnFrameBufferSizeChanged;
 
     //sender - RenderWindow
     //arg1 - new monitor gamma
-    MR::Event<float&> OnGammaChanged;
+    MR::Event<const float&> OnGammaChanged;
 
     //sender - RenderWindow
     //arg1 - nullptr
@@ -76,11 +77,11 @@ public:
 
     //sender - RenderWindow
     //arg1 - GL_TRUE, GL_FALSE
-    MR::Event<int&> OnFocusChanged;
+    MR::Event<const int&> OnFocusChanged;
 
     //sender - RenderWindow
     //arg1 - GL_TRUE, GL_FALSE
-    MR::Event<int&> OnIconificationStateChanged;
+    MR::Event<const int&> OnIconificationStateChanged;
 
     //sender - RenderWindow
     //arg1 - nullptr
@@ -109,44 +110,20 @@ protected:
 
 public:
 
-    inline GLFWwindow* GetHandle() {
-        return glfw_handle;
-    }
+    inline GLFWwindow* GetHandle() { return glfw_handle; }
+    inline void GetPos(int* x, int* y){ glfwGetWindowPos(glfw_handle, x, y); }
+    inline void GetSize(int* w, int* h){ glfwGetWindowSize(glfw_handle, w, h); }
+    inline void GetFrameBufferSize(int* w, int* h){ glfwGetFramebufferSize(glfw_handle, w, h); }
+    inline const GLFWgammaramp* GetGLFWGammaRamp() { return glfwGetGammaRamp(glfwGetWindowMonitor(glfw_handle)); }
+    inline const char* GetTitle(){ return titlec; }
+    inline const char* GetClipboardString(){ return glfwGetClipboardString(glfw_handle); }
 
-    inline void GetPos(int* x, int* y){
-        glfwGetWindowPos(glfw_handle, x, y);
-    }
-
-    inline void GetSize(int* w, int* h){
-        glfwGetWindowSize(glfw_handle, w, h);
-    }
-
-    inline void GetFrameBufferSize(int* w, int* h){
-        glfwGetFramebufferSize(glfw_handle, w, h);
-    }
-
-    inline const GLFWgammaramp* GetGLFWGammaRamp() {
-        return glfwGetGammaRamp(glfwGetWindowMonitor(glfw_handle));
-    }
-
-    /*inline MR_DELTA_TYPE GetDelta(){
-        return delta;
-    }*/
-
-    inline const char* GetTitle(){
-        return titlec;
-    }
-
-    inline const char* GetClipboardString(){
-        return glfwGetClipboardString(glfw_handle);
-    }
-
-    inline void SetPos(int x, int y){
+    inline void SetPos(const int& x, const int& y){
         glfwSetWindowPos(glfw_handle, x, y);
         OnPosChanged(this, x, y);
     }
 
-    inline void SetSize(int w, int h){
+    inline void SetSize(const int& w, const int& h){
         glfwSetWindowSize(glfw_handle, w, h);
         OnSizeChanged(this, w, h);
     }
@@ -157,69 +134,45 @@ public:
         OnTitleChanged(this, s);
     }
 
-    inline void SetTitle(std::string s){
-        SetTitleC(s.c_str());
-    }
+    inline void SetTitle(const std::string& s){ SetTitleC(s.c_str()); }
+    inline void SetClipboardString(const char* s){ glfwSetClipboardString(glfw_handle, s); }
 
-    inline void SetClipboardString(const char* s){
-        glfwSetClipboardString(glfw_handle, s);
-    }
-
-    inline void SyncWait(int refreshes){
+    inline void SyncWait(const int& refreshes){
         glfwSwapInterval(refreshes);
         OnSyncChanged(this, refreshes);
     }
 
-    inline void SetGamma(float gamma){
+    inline void SetGamma(const float& gamma){
         glfwSetGamma(glfwGetWindowMonitor(glfw_handle), gamma);
         OnGammaChanged(this, gamma);
     }
 
-    inline void Visible(bool state){
+    inline void Visible(const bool& state){
         if(state) glfwShowWindow(glfw_handle);
         else glfwHideWindow(glfw_handle);
         OnVisibilityChanged(this, state);
     }
 
-    inline bool IsFocused(){
-        return glfwGetWindowAttrib(glfw_handle, GLFW_FOCUSED);
+    inline bool IsFocused(){ return glfwGetWindowAttrib(glfw_handle, GLFW_FOCUSED); }
+    inline bool IsIconified(){ return glfwGetWindowAttrib(glfw_handle, GLFW_ICONIFIED); }
+    inline bool IsVisible(){ return glfwGetWindowAttrib(glfw_handle, GLFW_VISIBLE); }
+    inline bool IsResizable(){ return glfwGetWindowAttrib(glfw_handle, GLFW_RESIZABLE); }
+    inline bool IsDecorated(){ return glfwGetWindowAttrib(glfw_handle, GLFW_DECORATED); }
+    inline bool ShouldClose(){ return glfwWindowShouldClose(glfw_handle); }
+    inline void Close(){ glfwSetWindowShouldClose(glfw_handle, 1); }
+    inline void SwapBuffers(){ glfwSwapBuffers(glfw_handle); }
+    inline void MakeCurrent(){ glfwMakeContextCurrent(glfw_handle); }
+
+    inline void ResetViewport(RenderContext& rc){
+        int w = 1, h = 1;
+        GetSize(&w, &h);
+        rc.SetViewport(0, 0, w, h);
     }
 
-    inline bool IsIconified(){
-        return glfwGetWindowAttrib(glfw_handle, GLFW_ICONIFIED);
-    }
-
-    inline bool IsVisible(){
-        return glfwGetWindowAttrib(glfw_handle, GLFW_VISIBLE);
-    }
-
-    inline bool IsResizable(){
-        return glfwGetWindowAttrib(glfw_handle, GLFW_RESIZABLE);
-    }
-
-    inline bool IsDecorated(){
-        return glfwGetWindowAttrib(glfw_handle, GLFW_DECORATED);
-    }
-
-    inline bool ShouldClose(){
-        return glfwWindowShouldClose(glfw_handle);
-    }
-
-    inline void Close(){
-        glfwSetWindowShouldClose(glfw_handle, 1);
-    }
-
-    /*inline void BeginFrame(){
-        delta = (MR_DELTA_TYPE)glfwGetTime() - fps_last_time;
-        fps_last_time += delta;
-    }*/
-
-    inline void SwapBuffers(){
-        glfwSwapBuffers(glfw_handle);
-    }
-
-    inline void MakeCurrent(){
-        glfwMakeContextCurrent(glfw_handle);
+    inline void ResetViewport(RenderContext* rc){
+        int w = 1, h = 1;
+        GetSize(&w, &h);
+        rc->SetViewport(0, 0, w, h);
     }
 
     struct RenderWindowCallbacks {
@@ -272,12 +225,10 @@ public:
         RenderWindowHints();
     };
 
-    RenderWindow(std::string title, int width, int height, RenderWindowHints* hints = new RenderWindowHints(), GLFWwindow* parent_share_resources = NULL, RenderWindowCallbacks* callbacks = new RenderWindowCallbacks());
+    RenderWindow(const std::string& title, const int& width, const int& height, const RenderWindowHints& hints = RenderWindowHints(), const RenderWindowCallbacks& callbacks = RenderWindowCallbacks(), GLFWwindow* parent_share_resources = NULL);
     ~RenderWindow();
 
-    static RenderWindow* Create(std::string title, int width, int height) {
-        return new RenderWindow(title, width, height);
-    }
+    static RenderWindow* Create(const std::string& title, const int& width, const int& height) { return new RenderWindow(title, width, height); }
 };
 
 }

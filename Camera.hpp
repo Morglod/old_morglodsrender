@@ -5,45 +5,99 @@
 
 #include "pre.hpp"
 #include "Events.hpp"
+#include "Transformation.hpp"
 
 namespace MR {
+
+class RenderTarget;
 class Camera {
 public:
     enum CameraMode : unsigned char {
-        CM_TARGET = 0,
-        CM_DIRECTION = 1
+        CM_TARGET = 0, //camera looks at target point, camera rotates around target point
+        CM_DIRECTION = 1 //camera looks at target point, target point rotates around camera
     };
 
     enum CameraProjection : unsigned char {
         CP_PERSPECTIVE = 0,
         CP_ORTHO = 1
     };
+
+    MR::Event<const CameraMode&> OnModeChanged;
+    MR::Event<const CameraProjection&> OnProjectionChanged;
+    MR::Event<const glm::vec3&> OnPositionChanged;
+    MR::Event<const glm::vec3&> OnTargetPosChanged; //only for target camera mode
+    MR::Event<const glm::vec3&> OnDirectionChanged;
+    MR::Event<RenderTarget*> OnRenderTargetChanged;
+    MR::Event<glm::mat4*> OnMVPRecalc;
+
+    virtual void Use(const GLuint& matrixUniform);
+    inline bool IsAutoRecalc() const { return autoReCalc; }
+
+    inline CameraMode GetCameraMode() const { return cmode; }
+    inline CameraProjection GetCameraProjection() const { return cproj; }
+
+    inline glm::vec3* GetDirectionP() const { return direction; }
+    inline glm::vec3 GetCameraPosition() const { return pos; }
+    inline glm::vec3 GetCameraTarget() const { return target; }
+    inline glm::vec3 GetCameraUp() const { return up; }
+
+    inline float GetFovY() const { return fovY; }
+    inline float* GetFovYP() { return &fovY; }
+    inline float GetNearZ() const { return zNear; }
+    inline float GetFarZ() const { return zFar; }
+    inline float GetAspectRatio() const { return aspectRatio; }
+    inline float* GetAspectRatioP() { return &aspectRatio; }
+
+    inline glm::mat4* GetViewMatrix() { return viewMatrix; }
+    inline glm::mat4* GetProjectMatrix() { return projectionMatrix; }
+    inline glm::mat4* GetMVP() { return mvp; }
+
+    inline MR::RenderTarget* GetRenderTarget() { return _render_target; }
+    virtual void SetRenderTarget(MR::RenderTarget* rt);
+
+    virtual void MoveForward(const glm::vec3& v);
+    virtual void MoveLeft(const glm::vec3& v);
+    virtual void Move(const glm::vec3& v);
+    virtual void MoveTarget(const glm::vec3& t);
+
+    virtual void SetDirection(const glm::vec3& d);
+    virtual void SetDirection(const glm::vec3& d, const glm::vec3 left_d);
+    virtual void SetCameraMode(const CameraMode& cm);
+    virtual void SetCameraProjection(const CameraProjection& cp);
+    virtual void SetModelMatrix(glm::mat4* m);
+    virtual void SetAutoRecalc(const bool& state);
+
+    virtual void CalcViewMatrix();
+    virtual void CalcProjectionMatrix();
+    virtual void CalcMVP();
+    virtual void Calc();
+
+    Camera(glm::vec3 camPos, glm::vec3 camTarget, float fov, float nearZ, float farZ, float aspectR);
+    virtual ~Camera();
+
+    /*inline void Rotate(glm::vec3 v) {
+        //if(camMode == CameraMode::Cam_TP) modelMatrix = glm::rotate(glm::rotate(glm::rotate(modelMatrix, v.x, glm::vec3(1,0,0)), v.y, glm::vec3(0,1,0)), v.z, glm::vec3(0,0,1));
+    }*/
+
+    /*inline void CalcModelMatrix(){
+        modelMatrix = glm::translate(glm::rotate(glm::rotate(glm::rotate(glm::scale(glm::mat4(1.0f), ModelScale), ModelRot.x, glm::vec3(1, 0, 0)), ModelRot.y, glm::vec3(0,1,0)), ModelRot.z, glm::vec3(0,0,1)), ModelPos);
+    }*/
+
 protected:
     CameraMode cmode;
     CameraProjection cproj;
 
-    //target and direction mode
-    glm::vec3 pos;
+    glm::vec3 pos; //for target and direction mode
+    glm::vec3* direction; //direction mode only
+    glm::vec3* left_direction; //direction mode only
+    glm::vec3 target; //target mode only
 
-    //direction mode only
-    glm::vec3* direction;
-
-    //target mode only
-    glm::vec3 target;
-
-    //up vector
     glm::vec3 up;
-
-    /*glm::vec3 modelPos;
-    glm::vec3 modelRot;
-    glm::vec3 modelScale;
-    glm::mat4 modelMatrix;*/
 
     float fovY;
     float zNear;
     float zFar;
     float aspectRatio;
-
     float ortho_left, ortho_right, ortho_top, ortho_bottom;
 
     glm::mat4* viewMatrix;
@@ -53,194 +107,7 @@ protected:
 
     bool autoReCalc;
 
-public:
-    /** sender - Camera
-    */
-    MR::Event<const CameraProjection&> OnProjectionChanged;
-
-    inline bool IsAutoRecalc() {
-        return autoReCalc;
-    }
-
-    inline static glm::vec3 WorldForwardVector() {
-        return glm::vec3(0,0,-1);
-    }
-
-    inline static glm::vec3 WorldBackwardVector() {
-        return glm::vec3(0,0,1);
-    }
-
-    inline static glm::vec3 WorldUpVector() {
-        return glm::vec3(0,1,0);
-    }
-
-    inline static glm::vec3 WorldDownVector() {
-        return glm::vec3(0,-1,0);
-    }
-
-    inline static glm::vec3 WorldLeftVector() {
-        return glm::vec3(-1,0,0);
-    }
-
-    inline static glm::vec3 WorldRightVector() {
-        return glm::vec3(1,0,0);
-    }
-
-    void Use(GLuint matrixUniform);
-
-    inline void MoveForward(glm::vec3 v) {
-        //if(cmode == CameraMode::CM_TARGET) modelMatrix = glm::translate(modelMatrix, v);
-        //if(cmode == CameraMode::CM_TARGET) {
-            pos += v * (*direction);
-            if(IsAutoRecalc()) calcViewMatrix();
-        //}//viewMatrix = glm::translate(viewMatrix, v);
-    }
-
-    inline void Move(glm::vec3 v) {
-        //if(cmode == CameraMode::CM_TARGET) modelMatrix = glm::translate(modelMatrix, v);
-        //if(cmode == CameraMode::CM_TARGET) {
-            pos += v;
-            if(IsAutoRecalc()) calcViewMatrix();
-        //}//viewMatrix = glm::translate(viewMatrix, v);
-    }
-
-    inline void MoveTarget(glm::vec3 t) {
-        if(cmode == CameraMode::CM_TARGET) {
-            target += t;
-            if(IsAutoRecalc()) calcViewMatrix();
-        }
-    }
-
-    inline void SetDirection(glm::vec3 d) {
-        *direction = d;
-        if(IsAutoRecalc()) calcViewMatrix();
-    }
-
-    inline glm::vec3* GetDirectionP() {
-        return direction;
-    }
-
-    /*inline void Rotate(glm::vec3 v) {
-        //if(camMode == CameraMode::Cam_TP) modelMatrix = glm::rotate(glm::rotate(glm::rotate(modelMatrix, v.x, glm::vec3(1,0,0)), v.y, glm::vec3(0,1,0)), v.z, glm::vec3(0,0,1));
-    }*/
-
-    inline CameraMode GetCameraMode() const {
-        return cmode;
-    }
-
-    inline void SetCameraMode(CameraMode cm) {
-        cmode = cm;
-    }
-
-    inline CameraProjection GetCameraProjection() const {
-        return cproj;
-    }
-
-    inline void SetCameraProjection(const CameraProjection& cp) {
-        if(cproj != cp){
-            cproj = cp;
-            OnProjectionChanged(this, cp);
-        }
-    }
-
-    inline glm::vec3 GetCameraPosition() const {
-        return pos;
-    }
-
-    inline glm::vec3 GetCameraTarget() const {
-        return target;
-    }
-
-    inline glm::vec3 GetCameraUp() const {
-        return up;
-    }
-
-    inline float GetFovY() const {
-        return fovY;
-    }
-
-    inline float* GetFovYP() {
-        return &fovY;
-    }
-
-    inline float GetNearZ() const {
-        return zNear;
-    }
-
-    inline float GetFarZ() const {
-        return zFar;
-    }
-
-    inline float GetAspectRatio() const {
-        return aspectRatio;
-    }
-
-    inline float* GetAspectRatioP() {
-        return &aspectRatio;
-    }
-
-    inline void calcViewMatrix() {
-        if(cmode == CameraMode::CM_TARGET) *viewMatrix = glm::lookAt(pos, target, up);
-        if(cmode == CameraMode::CM_DIRECTION) *viewMatrix = glm::lookAt(pos, pos + (*direction), up);
-    }
-
-    /*inline void CalcModelMatrix(){
-        modelMatrix = glm::translate(glm::rotate(glm::rotate(glm::rotate(glm::scale(glm::mat4(1.0f), ModelScale), ModelRot.x, glm::vec3(1, 0, 0)), ModelRot.y, glm::vec3(0,1,0)), ModelRot.z, glm::vec3(0,0,1)), ModelPos);
-    }*/
-
-    inline void calcProjectionMatrix() {
-        if(cproj == CameraProjection::CP_PERSPECTIVE) *projectionMatrix = glm::perspective(fovY, aspectRatio, zNear, zFar);
-        if(cproj == CameraProjection::CP_ORTHO) *projectionMatrix = glm::ortho(ortho_left, ortho_right, ortho_bottom, ortho_top, zNear, zFar);
-    }
-
-    inline void calcMVP() {
-        if(modelMatrix) *mvp = (*projectionMatrix)*(*viewMatrix)*(*modelMatrix);
-        else *mvp = (*projectionMatrix)*(*viewMatrix);
-    }
-
-    inline void calc() {
-        calcViewMatrix();
-        //CalcModelMatrix();
-        calcProjectionMatrix();
-        calcMVP();
-    }
-
-    inline glm::mat4* GetViewMatrix() {
-        //CalcViewMatrix();
-        return viewMatrix;
-    }
-
-    inline void SetModelMatrix(glm::mat4* m) {
-        modelMatrix = m;
-        if(autoReCalc) {
-            calcMVP();
-        }
-    }
-
-    inline glm::mat4* GetProjectMatrix() {
-        //CalcProjectionMatrix();
-        return projectionMatrix;
-    }
-
-    inline glm::mat4* GetMVP() {
-        //calcMVP();
-        return mvp;
-    }
-
-    inline void SetAutoRecalc(bool state) {
-        autoReCalc = state;
-        if(state) calc();
-    }
-
-    inline Camera(glm::vec3 camPos, glm::vec3 camTarget, float fov, float nearZ, float farZ, float aspectR)
-        : cmode(CameraMode::CM_TARGET), pos(camPos), direction( new glm::vec3(WorldForwardVector()) ), target(camTarget), up(glm::vec3(0,1,0)),
-          fovY(fov), zNear(nearZ), zFar(farZ), aspectRatio(aspectR), ortho_left(0.0f), ortho_right(100.0f), ortho_top(0.0f), ortho_bottom(100.0f), modelMatrix(nullptr), autoReCalc(false) {
-
-        //allocate space, functionality like calc()
-        viewMatrix = new glm::mat4(glm::lookAt(pos, target, up));
-        projectionMatrix = new glm::mat4(glm::perspective(fovY, aspectRatio, zNear, zFar));
-        mvp = new glm::mat4( (*projectionMatrix) * (*viewMatrix) );
-    }
+    MR::RenderTarget* _render_target;
 };
 }
 

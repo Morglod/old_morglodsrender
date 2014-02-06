@@ -1,3 +1,5 @@
+/** HEADER ONLY **/
+
 #pragma once
 
 #ifndef _MR_EVENTS_H_
@@ -7,26 +9,20 @@
 #include <algorithm>
 
 namespace MR {
+
 template<typename... Args>
 class Event {
 public:
     typedef void (*FuncP)(void* sender, Args... args);
-protected:
-    std::vector<FuncP> _funcs;
-public:
-    inline virtual void Add(FuncP f) {
-        _funcs.push_back(f);
-    }
 
-    inline virtual void Sub(FuncP f) {
+    inline virtual void Add(const FuncP& f) { _funcs.push_back(f); }
+
+    inline virtual void Sub(const FuncP& f) {
         auto it = std::find(_funcs.begin(), _funcs.end(), f);
         if(it == _funcs.end()) return;
         _funcs.erase(it);
     }
-
-    inline virtual void SubAll() {
-        _funcs.clear();
-    }
+    inline virtual void SubAll() { _funcs.clear(); }
 
     inline virtual void Call(void* sender, Args... args) const {
         if(_funcs.size() != 0){
@@ -36,26 +32,24 @@ public:
     }
 
     inline void operator() (void* s, Args... args) const {
-        if(_funcs.size() != 0) Call(s, args...);
+        Call(s, args...);
     }
 
     Event() {}
+    virtual ~Event() { SubAll(); }
 
-    virtual ~Event() {
-        SubAll();
-    }
+protected:
+    std::vector<FuncP> _funcs;
 };
 
 template<typename... Args>
 class TimerEvent : public Event<Args...> {
-protected:
-    float timerTickTime;
-    float timerCurrentTime;
 public:
-    Event<TimerEvent*, float, Args...> OnUpdate;
+    Event<const float&, Args...> OnUpdate;
+    Event<const float&> OnTickTimeChanged;
 
-    inline virtual void Update(float delta, void* s, Args... args) {
-        OnUpdate(this, this, delta, args...);
+    inline virtual void Update(const float& delta, void* s, Args... args) {
+        OnUpdate(this, delta, args...);
         timerCurrentTime += delta;
         if(timerCurrentTime >= timerTickTime) {
             this->Call(s, args...);
@@ -63,27 +57,23 @@ public:
         }
     }
 
-    inline virtual float GetCurrentTime() const {
-        return timerCurrentTime;
+    inline virtual float GetCurrentTime() const { return timerCurrentTime; }
+    inline virtual float GetTickTime() const { return timerTickTime; }
+    inline virtual void SetCurrentTime(const float& t) { timerCurrentTime = t; }
+
+    inline virtual void SetTickTime(const float& t) {
+        if(timerTickTime != t){
+            timerTickTime = t;
+            OnTickTimeChanged(this, t);
+        }
     }
 
-    inline virtual float GetTickTime() const {
-        return timerTickTime;
-    }
+    TimerEvent(float currentTime, float tickTime) : Event<Args...>(), timerTickTime(tickTime), timerCurrentTime(currentTime) {}
+    virtual ~TimerEvent() {}
 
-    inline virtual void SetCurrentTime(float t) {
-        timerCurrentTime = t;
-    }
-
-    Event<TimerEvent*, float> OnNewTickTime;
-
-    inline virtual void SetTickTime(float t) {
-        OnNewTickTime(this, this, t);
-        timerTickTime = t;
-    }
-
-    inline TimerEvent(float currentTime, float tickTime)
-        : Event<Args...>(), timerTickTime(tickTime), timerCurrentTime(currentTime) {}
+protected:
+    float timerTickTime;
+    float timerCurrentTime;
 };
 
 }

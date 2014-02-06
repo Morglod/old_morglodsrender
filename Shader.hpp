@@ -15,10 +15,8 @@
 namespace MR{
     class ShaderManager;
 
-    /** Types of shader uniforms
-     */
-    enum ShaderUniformTypes : unsigned short {
-        ShaderUniform_INT_TYPE = 4, //int or sampler2D etc uniform1i
+    enum ShaderUniformTypes : unsigned char {
+        ShaderUniform_INT_TYPE = 5, //int or sampler2D etc uniform1i
         ShaderUniform_FLOAT_TYPE = 0, //"float" float[1]
         ShaderUniform_VEC2_TYPE = 1, //"vec2" float[2]
         ShaderUniform_VEC3_TYPE = 2, //"vec3" float[3]
@@ -37,43 +35,23 @@ namespace MR{
         int uniform_location;
 
     public:
-
-        /** sender - ShaderUniform
-         *  arg1 - pointer to new value
-         */
         MR::Event<void*> OnNewValuePtr;
+        MR::Event<const GLenum&, const int&> OnMapped; //shader program, new uniform location
 
-        /** sender - ShaderUniform
-         *  arg1 - shader program
-         *  arg2 - new uniform location
-         */
-        MR::Event<GLenum, int> OnMapped;
-
-        inline const char* GetName(){
-            return name;
-        }
-
-        inline ShaderUniformTypes GetType(){
-            return type;
-        }
-
-        inline void* GetValuePtr(){
-            return value;
-        }
+        inline const char* GetName(){ return name; }
+        inline ShaderUniformTypes GetType(){ return type; }
+        inline void* GetValuePtr(){ return value; }
+        inline int GetOpenGLLocation(){ return uniform_location; }
 
         inline void SetValuePtr(void* p){
             value = p;
             OnNewValuePtr(this, p);
         }
 
-        inline int GetOpenGLLocation(){
-            return uniform_location;
-        }
-
         /** Get new uniform location from shader
          *  Call this method on each shader recompilation (linking)
          */
-        inline void MapUniform(GLenum shader_program){
+        inline void MapUniform(const GLenum& shader_program){
             uniform_location = glGetUniformLocationARB(shader_program, name);
             OnMapped(this, shader_program, uniform_location);
         }
@@ -84,7 +62,43 @@ namespace MR{
          *  Value - pointer to value of uniform
          *  shader_program - OpenGL shader program object
          */
-        ShaderUniform(const char* Name, ShaderUniformTypes Type, void* Value, GLenum shader_program);
+        ShaderUniform(const char* Name, const ShaderUniformTypes& Type, void* Value, const GLenum& shader_program);
+    };
+
+    class ShaderUniformBlock {
+    protected:
+        const char* name;
+        unsigned char* data;
+        int uniform_block_index;
+        int block_size;
+
+        int num_uniforms;
+        const char** uniform_names; //array size of num_uniforms
+        unsigned int * uniform_indecies; //array size of num_uniforms
+        int * uniform_offsets;
+
+        GLuint ubo;
+    public:
+        inline int GetOpenGLIndex() { return uniform_block_index; }
+        inline unsigned char* GetData() { return data; }
+        inline const char* GetName() { return name; }
+        inline int GetBlockSize() { return block_size; }
+        inline int GetNumUniforms() { return num_uniforms; }
+        inline const char** GetUniformNames() { return uniform_names; }
+        inline unsigned int* GetUniformIndecies() { return uniform_indecies; }
+        inline int* GetUniformOffsets() { return uniform_offsets; }
+
+        //Call it before BufferData method (one time)
+        void MapBlock(const GLenum& shader_program);
+
+        //Generate new ubo and buffer this data
+        void BufferData(unsigned char* Data);
+
+        //Firstly change smth in data and then tell, what changed (offset from zero and size)
+        void ChangeBufferedData(const int& ChangedPos, const int& ChangedSize);
+
+        ShaderUniformBlock(const char* Name, const int& NumUniforms, const char** UniformNames, const GLenum& shader_program);
+        ~ShaderUniformBlock();
     };
 
     /** OpenGL shader
@@ -134,6 +148,7 @@ namespace MR{
     class Shader : public virtual Resource {
         GLenum gl_PROGRAM; //OpenGL shader program
         std::vector<ShaderUniform*> shaderUniforms;
+        std::vector<ShaderUniformBlock*> shaderUniformBlocks;
 
     public:
         /** Create new shader uniform
@@ -144,6 +159,19 @@ namespace MR{
         inline ShaderUniform* CreateUniform(std::string uniform_name, MR::ShaderUniformTypes type, void* value){
             MR::ShaderUniform* p = new MR::ShaderUniform(uniform_name.c_str(), type, value, gl_PROGRAM);
             shaderUniforms.push_back(p);
+            return p;
+        }
+
+        inline ShaderUniform* CreateUniform(std::string uniform_name, int* value){ return CreateUniform(uniform_name, MR::ShaderUniformTypes::ShaderUniform_INT_TYPE, value); }
+        inline ShaderUniform* CreateUniform(std::string uniform_name, float* value){ return CreateUniform(uniform_name, MR::ShaderUniformTypes::ShaderUniform_FLOAT_TYPE, value); }
+        inline ShaderUniform* CreateUniform(std::string uniform_name, glm::vec2* value){ return CreateUniform(uniform_name, MR::ShaderUniformTypes::ShaderUniform_VEC2_TYPE, value); }
+        inline ShaderUniform* CreateUniform(std::string uniform_name, glm::vec3* value){ return CreateUniform(uniform_name, MR::ShaderUniformTypes::ShaderUniform_VEC3_TYPE, value); }
+        inline ShaderUniform* CreateUniform(std::string uniform_name, glm::vec4* value){ return CreateUniform(uniform_name, MR::ShaderUniformTypes::ShaderUniform_VEC4_TYPE, value); }
+        inline ShaderUniform* CreateUniform(std::string uniform_name, glm::mat4* value){ return CreateUniform(uniform_name, MR::ShaderUniformTypes::ShaderUniform_MAT4_TYPE, value); }
+
+        inline ShaderUniformBlock* CreateUniformBlock(const char* Name, const int& NumUniforms, const char** UniformNames, const GLenum& shader_program) {
+            MR::ShaderUniformBlock* p = new MR::ShaderUniformBlock(Name, NumUniforms,UniformNames,shader_program);
+            shaderUniformBlocks.push_back(p);
             return p;
         }
 
@@ -177,7 +205,7 @@ namespace MR{
          */
         void Link(SubShader** sub_shaders, unsigned int num);
 
-        /** Uses this shader
+        /** Use this shader
          */
         inline void Use(){
             glUseProgramObjectARB(this->gl_PROGRAM);
@@ -211,6 +239,7 @@ namespace MR{
     class ShaderManager : public virtual MR::ResourceManager{
     public:
         virtual Resource* Create(std::string name, std::string source);
+        inline Shader* NeedShader(const std::string& source){ return dynamic_cast<Shader*>(Need(source)); }
 
         ShaderManager() : ResourceManager() {}
         virtual ~ShaderManager(){}

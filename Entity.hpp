@@ -12,55 +12,34 @@ class Model;
 class Transform;
 class Material;
 
-/** Unique for each world object
+/** Unique for each rendering object
 */
 class Entity : public Copyable<Entity> {
-protected:
-    MR::Model* model;
-    MR::Material* material; //if not nullptr, used as model's material
-    MR::Transform tranform;
-
 public:
+    MR::Event<MR::Model*> OnModelChanged; //new model
+    MR::Event<MR::Material*> OnMaterialChanged; //new material
 
-    /** sender - Entity
-     *  arg1 - new model
-     */
-    MR::Event<MR::Model*> OnModelChanged;
+    inline MR::Model* GetModel() { return _model; }
+    inline MR::Material* GetMaterial(){ return _material; }
+    inline std::string GetName() { return _name; }
+    inline MR::Transform* GetTransformP() { return &_tranform; }
 
-    /** sender - Entity
-     *  arg1 - new material
-     */
-    MR::Event<MR::Material*> OnMaterialChanged;
-
-    inline MR::Model* GetModel() {
-        return model;
-    }
-
-    inline void SetModel(MR::Model* m){
-        model = m;
-        OnModelChanged(this, m);
-    }
-
-    inline MR::Transform* GetTransform() {
-        return &tranform;
-    }
-
-    inline MR::Material* GetMaterial(){
-        return material;
-    }
-
-    inline void SetMaterial(MR::Material* m){
-        material = m;
-        OnMaterialChanged(this, m);
-    }
+    virtual void SetModel(MR::Model* m);
+    virtual void SetMaterial(MR::Material* m);
 
     Entity* Copy();
 
-    Entity() : model(nullptr), material(nullptr){}
+    Entity();
     Entity(MR::Model* m);
-    virtual ~Entity(){}
+    virtual ~Entity();
 
     static Entity* CreateEntity(MR::Model* model);
+
+protected:
+    MR::Model* _model;
+    MR::Material* _material; //if not nullptr, used as model's material
+    MR::Transform _tranform;
+    std::string _name;
 };
 
 }

@@ -6,6 +6,25 @@
 
 namespace MR {
 
+ModelLod::ModelLod(MR::Mesh** mm, const unsigned short & mmnum) : meshes(mm), meshes_num(mmnum) {
+}
+
+ModelLod::~ModelLod() {
+    delete meshes;
+}
+
+ModelLod* Model::GetLod(const float & dist) {
+    if(lods.size() == 0) return nullptr;
+    if(lods.size() == 1) return lods[0];
+    for(unsigned short it = 0; it < lods.size(); ++it) {
+        if( (dist_step*it) > dist ) {
+            if(it == 0) return lods[0];
+            else return lods[it-1];
+        }
+    }
+    return lods[lods.size()-1];
+}
+
 bool Model::Load() {
     if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Model "+this->_name+" ("+this->_source+") loading", MR_LOG_LEVEL_INFO);
     if(this->_source == "") {
@@ -16,14 +35,14 @@ bool Model::Load() {
         return false;
     }
 
-    MR::ModelFile* mfl = ModelFile::ImportModelFile(this->_source, true, true);
+    MR::ModelFile* mfl = ModelFile::ImportModelFile(this->_source, true, this->_resource_manager->GetDebugMessagesState());
     if(mfl == nullptr) {
         MR::Log::LogString("Model "+this->_name+" ("+this->_source+") load failed. ModelFile is null", MR_LOG_LEVEL_ERROR);
         this->_loaded = false;
         return false;
     } else {
-        meshes = mfl->meshes;
-        meshes_num = mfl->meshes_num;
+        //lods = new ModelLod*[1];
+        AddLod( new ModelLod(mfl->meshes, mfl->meshes_num) );
     }
 
     this->_loaded = true;
@@ -31,13 +50,17 @@ bool Model::Load() {
 }
 
 void Model::UnLoad() {
-    delete meshes;
-    meshes = nullptr;
-    meshes_num = 0;
+    for(ModelLod* mlod : lods) {
+        delete mlod;
+    }
+    lods.clear();
 }
 
 Model::Model(ModelManager* manager, std::string name, std::string source) :
-    Resource(manager, name, source), meshes(nullptr), meshes_num(0) {}
+    Resource(manager, name, source) {}
+
+Model::~Model() {
+}
 
 Resource* ModelManager::Create(std::string name, std::string source) {
     if(this->_debugMessages) MR::Log::LogString("ModelManager "+name+" ("+source+") creating", MR_LOG_LEVEL_INFO);
@@ -93,7 +116,7 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool bindexes, bool log)
         ffile.read( reinterpret_cast<char*>(&materialNameLength), sizeof(int));
         if(log) MR::Log::LogString("Material name length " + std::to_string(materialNameLength), MR_LOG_LEVEL_INFO);
 
-        if(materialNameLength != 0){
+        if(materialNameLength != 0) {
             void* matName = new unsigned char[materialNameLength+1];
             ffile.read( reinterpret_cast<char*>(&((unsigned char*)matName)[0]), sizeof(unsigned char)*materialNameLength);
             for (int ci = 0; ci < materialNameLength; ++ci) {
@@ -127,6 +150,8 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool bindexes, bool log)
         if(log) MR::Log::LogString("Textures num "+std::to_string(TexturesNum), MR_LOG_LEVEL_INFO);
 
         std::string textureFile = "";
+        unsigned char wrapModeU = 0;
+        unsigned char wrapModeV = 0;
         for(int ti = 0; ti < TexturesNum; ++ti) {
             float blendFactor = 0.0f;
             ffile.read( reinterpret_cast<char*>(&blendFactor), sizeof(float));
@@ -160,13 +185,51 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool bindexes, bool log)
             //Skip uv index
             ffile.seekg( sizeof(unsigned int) * 1 , std::ios::cur);
 
-            //Skip uv mapping
-            ffile.seekg( sizeof(unsigned char) * 2 , std::ios::cur);
+            //uv mapping
+            ffile.read( reinterpret_cast<char*>(&wrapModeU), sizeof(unsigned char));
+            ffile.read( reinterpret_cast<char*>(&wrapModeV), sizeof(unsigned char));
+            if(log) MR::Log::LogString("Material texture UV WrapModes "+std::to_string(wrapModeU)+" "+std::to_string(wrapModeV), MR_LOG_LEVEL_INFO);
         }
 
-        materials[i] = new MR::Material();
-        if(textureFile != "") materials[i]->materialPasses.push_back(new MR::MaterialPass(dynamic_cast<MR::Texture*>(MR::TextureManager::Instance()->Need(textureFile)), GL_TEXTURE0, nullptr));
-        else materials[i]->materialPasses.push_back(new MR::MaterialPass(nullptr, GL_TEXTURE0, nullptr));
+        materials[i] = new MR::Material(MR::MaterialManager::Instance(), "default");
+        MR::Texture* tex = dynamic_cast<MR::Texture*>(MR::TextureManager::Instance()->Need( MR::DirectoryFromFilePath(file) + "/" + textureFile ));
+        GLint wmT = GL_CLAMP_TO_EDGE, wmS = GL_CLAMP_TO_EDGE;;
+        switch(wrapModeU) {
+        case 1: //clamp
+            wmT = GL_CLAMP_TO_EDGE;
+            break;
+        case 2: //decal
+            wmT = GL_DECAL;
+            break;
+        case 3: //mirror
+            wmT = GL_MIRRORED_REPEAT;
+            break;
+        case 4: //wrap
+            wmT = GL_REPEAT;
+            break;
+        }
+        switch(wrapModeV) {
+        case 1: //clamp
+            wmS = GL_CLAMP_TO_EDGE;
+            break;
+        case 2: //decal
+            wmS = GL_DECAL;
+            break;
+        case 3: //mirror
+            wmS = GL_MIRRORED_REPEAT;
+            break;
+        case 4: //wrap
+            wmS = GL_REPEAT;
+            break;
+        }
+
+        TextureSettings* texs = new TextureSettings();
+        tex->SetSettings(texs);
+        texs->SetWrapS(wmS);
+        texs->SetWrapT(wmT);
+
+        if(textureFile != "") materials[i]->AddPass(new MR::MaterialPass(materials[i], tex, GL_TEXTURE0, nullptr));
+        else materials[i]->AddPass(new MR::MaterialPass(materials[i], nullptr, GL_TEXTURE0, nullptr));
     }
 
     for(int i = 0; i < NumMeshes; ++i) {
@@ -245,22 +308,22 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool bindexes, bool log)
         unsigned char idecl = 0;
         int ptr_decl = 0;
         if(posDecl) {
-            vdtypes[idecl] = MR::VertexDeclarationType(MR::VertexDeclarationTypesEnum::VDTE_POSITION, 3, (void*)(ptr_decl));
+            vdtypes[idecl] = MR::VertexDeclarationType(MR::VertexDeclarationTypesEnum::VDTE_POSITION, (void*)(ptr_decl));
             ++idecl;
             ptr_decl += sizeof(float)*3;
         }
         if(texCoordDecl) {
-            vdtypes[idecl] = MR::VertexDeclarationType(MR::VertexDeclarationTypesEnum::VDTE_TEXTURE_COORD, 2, (void*)(ptr_decl));
+            vdtypes[idecl] = MR::VertexDeclarationType(MR::VertexDeclarationTypesEnum::VDTE_TEXTURE_COORD, (void*)(ptr_decl));
             ++idecl;
             ptr_decl += sizeof(float)*2;
         }
         if(normalDecl) {
-            vdtypes[idecl] = MR::VertexDeclarationType(MR::VertexDeclarationTypesEnum::VDTE_NORMAL, 3, (void*)(ptr_decl));
+            vdtypes[idecl] = MR::VertexDeclarationType(MR::VertexDeclarationTypesEnum::VDTE_NORMAL, (void*)(ptr_decl));
             ++idecl;
             ptr_decl += sizeof(float)*3;
         }
         if(vertexColorDecl) {
-            vdtypes[idecl] = MR::VertexDeclarationType(MR::VertexDeclarationTypesEnum::VDTE_COLOR, 4, (void*)(ptr_decl));
+            vdtypes[idecl] = MR::VertexDeclarationType(MR::VertexDeclarationTypesEnum::VDTE_COLOR, (void*)(ptr_decl));
             ++idecl;
             ptr_decl += sizeof(float)*4;
         }
