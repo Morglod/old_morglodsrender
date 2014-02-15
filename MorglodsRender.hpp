@@ -6,7 +6,7 @@ MorglodsRender library header.
 OpenGL
 GLFW http://www.glfw.org/
 SOIL (Simple Image Library) http://www.lonesock.net/soil.html
-Assimp For Converter Only
+Assimp For MoConverter Only
 GLM http://glm.g-truc.net/0.9.5/index.html
 GLEW GCC REBUILD http://glew.sourceforge.net/
 */
@@ -38,12 +38,3 @@ GLEW GCC REBUILD http://glew.sourceforge.net/
 #include "Transformation.hpp"
 
 #endif // _MR_MORGLODS_RENDER_H_
-
-//#include "Font.h"
-//#include "Node.h"
-//#include "Scene.h"
-//#include "Culling.h"
-//#include "Optimizations.h"
-//#include "AssimpImporter.h"
-//#include "Collada.h"
-//#include "RenderManager.hpp"

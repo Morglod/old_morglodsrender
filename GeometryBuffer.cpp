@@ -137,11 +137,22 @@ void GeometryBuffer::CalcRadius(float* data) {
     for(unsigned short it = 0; it < _vdecl->decl_types_num; ++it) {
         stride += _vdecl->decl_types[it].ElementsNum();
     }
+
+#ifdef MR_USE_OPENMP
+    #pragma omp parallel for
     for(unsigned int it = pos_offset; it < (_vertexes_num*stride); it += stride ) {
         point[0] = std::max( point[0], std::abs(data[it  ]) );
         point[1] = std::max( point[1], std::abs(data[it+1]) );
         point[2] = std::max( point[2], std::abs(data[it+2]) );
     }
+#else
+    for(unsigned int it = pos_offset; it < (_vertexes_num*stride); it += stride ) {
+        point[0] = std::max( point[0], std::abs(data[it  ]) );
+        point[1] = std::max( point[1], std::abs(data[it+1]) );
+        point[2] = std::max( point[2], std::abs(data[it+2]) );
+    }
+#endif // MR_USE_OPENMP
+
     _radius = glm::length( glm::vec3(point[0], point[1], point[2]) );
 }
 

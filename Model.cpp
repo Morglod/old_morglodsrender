@@ -16,6 +16,7 @@ ModelLod::~ModelLod() {
 ModelLod* Model::GetLod(const float & dist) {
     if(lods.size() == 0) return nullptr;
     if(lods.size() == 1) return lods[0];
+
     for(unsigned short it = 0; it < lods.size(); ++it) {
         if( (dist_step*it) > dist ) {
             if(it == 0) return lods[0];
