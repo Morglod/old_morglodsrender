@@ -11,70 +11,70 @@ void Transform::Calc() {
     {
         #pragma omp section
         {
-            tm = glm::translate(glm::mat4(1.0f), pos);
+            tm = glm::translate(glm::mat4(1.0f), _pos);
         }
         #pragma omp section
         {
-            rmx = glm::rotate(glm::mat4(1.0f), rot.x, glm::vec3(1,0,0));
+            rmx = glm::rotate(glm::mat4(1.0f), _rot.x, glm::vec3(1,0,0));
         }
         #pragma omp section
         {
-            rmy = glm::rotate(glm::mat4(1.0f), rot.y, glm::vec3(0,1,0));
+            rmy = glm::rotate(glm::mat4(1.0f), _rot.y, glm::vec3(0,1,0));
         }
         #pragma omp section
         {
-            rmz = glm::rotate(glm::mat4(1.0f), rot.z, glm::vec3(0,0,1));
+            rmz = glm::rotate(glm::mat4(1.0f), _rot.z, glm::vec3(0,0,1));
         }
         #pragma omp section
         {
-            sm = glm::scale(glm::mat4(1.0f), scale);
+            sm = glm::scale(glm::mat4(1.0f), _scale);
         }
     }
 }
-    mat = tm*(rmx*rmy*rmz)*sm;
+    _mat = tm*(rmx*rmy*rmz)*sm;
 #else
-    mat = ( glm::translate(glm::mat4(1.0f), pos) * ( glm::rotate(glm::mat4(1.0f), rot.x, glm::vec3(1,0,0)) * glm::rotate(glm::mat4(1.0f), rot.y, glm::vec3(0,1,0)) * glm::rotate(glm::mat4(1.0f), rot.z, glm::vec3(0,0,1)) ) * glm::scale(glm::mat4(1.0f), scale) );
+    _mat = ( glm::translate(glm::mat4(1.0f), _pos) * ( glm::rotate(glm::mat4(1.0f), _rot.x, glm::vec3(1,0,0)) * glm::rotate(glm::mat4(1.0f), _rot.y, glm::vec3(0,1,0)) * glm::rotate(glm::mat4(1.0f), _rot.z, glm::vec3(0,0,1)) ) * glm::scale(glm::mat4(1.0f), _scale) );
 #endif // MR_USE_OPENMP
 }
 
 void Transform::SetAutoRecalc(const bool& state) {
-    autoReCalc = state;
+    _autoReCalc = state;
     Calc();
 }
 
 void Transform::SetPos(const glm::vec3& p) {
-    if(pos!=p) {
-        pos = p;
+    if(_pos!=p) {
+        _pos = p;
         if(IsAutoRecalc()) Calc();
     }
 }
 
 void Transform::SetPos(glm::vec3* p) {
-    pos = *p;
+    _pos = *p;
     if(IsAutoRecalc()) Calc();
 }
 
 void Transform::SetRot(const glm::vec3& r) {
-    if(rot!=r) {
-        rot = r;
+    if(_rot!=r) {
+        _rot = r;
         if(IsAutoRecalc()) Calc();
     }
 }
 
 void Transform::SetRot(glm::vec3* r) {
-    rot = *r;
+    _rot = *r;
     if(IsAutoRecalc()) Calc();
 }
 
 void Transform::SetScale(const glm::vec3& s) {
-    if(scale!=s) {
-        scale = s;
+    if(_scale!=s) {
+        _scale = s;
         if(IsAutoRecalc()) Calc();
     }
 }
 
 void Transform::SetScale(glm::vec3* s) {
-    scale = *s;
+    _scale = *s;
     if(IsAutoRecalc()) Calc();
 }
 

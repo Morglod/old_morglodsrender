@@ -60,7 +60,7 @@ public:
 
 class ModelManager : public virtual ResourceManager {
 public:
-    virtual Resource* Create(std::string name, std::string source);
+    virtual Resource* Create(const std::string& name, const std::string& source);
     inline Model* NeedModel(const std::string& source) { return dynamic_cast<Model*>(Need(source)); }
 
     ModelManager() : ResourceManager() {}

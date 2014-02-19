@@ -9,6 +9,7 @@ SOIL (Simple Image Library) http://www.lonesock.net/soil.html
 Assimp For MoConverter Only
 GLM http://glm.g-truc.net/0.9.5/index.html
 GLEW GCC REBUILD http://glew.sourceforge.net/
+zlib http://www.zlib.net
 */
 
 #pragma once

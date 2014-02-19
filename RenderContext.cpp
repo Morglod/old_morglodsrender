@@ -37,16 +37,29 @@ void RenderContext::BindTexture(const GLuint& tx, GLenum texStage) {
     texStage -= GL_TEXTURE0;
     if( _tx[texStage] != tx ) {
         _tx[texStage] = tx;
+        _tab[texStage] = false;
         glBindTexture(GL_TEXTURE_2D, tx);
     }
 }
 
-void RenderContext::BindTexture(Texture* tx, const GLenum& texStage) {
-    BindTexture(tx->GetGLTexture(), texStage);
-    UseTextureSettings(tx->GetSettings(), texStage);
+void RenderContext::BindTexture(Texture* tx, GLenum texStage) {
+    if(tx->_inTextureArray) {
+        //MR::Log::LogString("Bind tex array; Index = "+std::to_string(tx->_textureArrayIndex)+"; GLTexture = "+std::to_string(tx->_texArray->GetGLTexture())+"; stage = "+std::to_string( (int)(texStage - GL_TEXTURE0)));
+        ActiveTextureUnit(texStage);
+        texStage -= GL_TEXTURE0;
+        _tab[texStage] = true;
+        _tai[texStage] = tx->_textureArrayIndex;
+        _tx[texStage] = tx->_texArray->GetGLTexture();
+        glBindTexture(GL_TEXTURE_2D_ARRAY, _tx[texStage]);
+        //UseTextureSettings(tx->GetSettings(), texStage+GL_TEXTURE0);
+    }
+    else {
+        BindTexture(tx->GetGLTexture(), texStage);
+        UseTextureSettings(tx->GetSettings(), texStage);
+    }
 }
 
-void RenderContext::UseTextureSettings(TextureSettings* ts, GLenum texStage) {
+void RenderContext::UseTextureSettings(TextureSettings::Ptr ts, GLenum texStage) {
     texStage -= GL_TEXTURE0;
     if( _ts[texStage] != ts ) {
         _ts[texStage] = ts;

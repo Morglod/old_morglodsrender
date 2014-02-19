@@ -3,9 +3,12 @@
 #ifndef _MR_ENTITY_H_
 #define _MR_ENTITY_H_
 
-#include "pre.hpp"
+#include "Config.hpp"
 #include "Transformation.hpp"
 #include "Events.hpp"
+#include "Types.hpp"
+
+#include <string>
 
 namespace MR {
 class Model;
@@ -14,7 +17,7 @@ class Material;
 
 /** Unique for each rendering object
 */
-class Entity : public Copyable<Entity> {
+class Entity : public Copyable<Entity*> {
 public:
     MR::Event<MR::Model*> OnModelChanged; //new model
     MR::Event<MR::Material*> OnMaterialChanged; //new material

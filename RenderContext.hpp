@@ -5,6 +5,7 @@
 
 #include "pre.hpp"
 #include "Events.hpp"
+#include "Texture.hpp"
 
 namespace MR {
 class Camera;
@@ -15,9 +16,11 @@ class Shader;
 class GeometryBuffer;
 class Material;
 class Texture;
+class TextureArray;
 class TextureSettings;
 
 class RenderContext {
+    friend class Texture;
 public:
     MR::Event<Material*> OnDefaultMaterialChanged;
     MR::Event<bool> OnDefaultMaterialUsingStateChanged;
@@ -33,8 +36,8 @@ public:
     void UseShader(Shader* sh);
     void ActiveTextureUnit(const GLenum & u);
     void BindTexture(const GLuint& tx, GLenum texStage);
-    void BindTexture(Texture* tx, const GLenum& texStage);
-    void UseTextureSettings(TextureSettings* ts, GLenum texStage);
+    void BindTexture(Texture* tx, GLenum texStage);
+    void UseTextureSettings(TextureSettings::Ptr ts, GLenum texStage);
     void SetDefaultMaterial(Material* mat);
     void SetViewport(const unsigned short & x, const unsigned short & y, const unsigned short & width, const unsigned short & height);
     void UseDefaultMaterialState(bool s);
@@ -86,7 +89,12 @@ protected:
     //Textures--
     GLuint activedTextureUnit = GL_TEXTURE0;
     GLuint _tx[GL_TEXTURE31-GL_TEXTURE0+1];
-    TextureSettings* _ts[GL_TEXTURE31-GL_TEXTURE0+1];
+    unsigned int _tai[GL_TEXTURE31-GL_TEXTURE0+1]; //texture array index
+    bool _tab[GL_TEXTURE31-GL_TEXTURE0+1]; //is texture array used
+    TextureSettings::Ptr _ts[GL_TEXTURE31-GL_TEXTURE0+1];
+
+    ///TODO---------------------------------------------------------------------------------------------------------------------
+    int _diffuseTextureUnit = 0;
     //----------
 };
 

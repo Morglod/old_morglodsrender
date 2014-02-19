@@ -13,24 +13,17 @@ namespace MR{
     class ResourceManager;
 
     class Resource {
-    protected:
-        bool _res_free_state;
-        std::string _name;
-        std::string _source;
-        ResourceManager* _resource_manager;
-        bool _loaded;
-
     public:
         /** sender - Resource object
          *  arg1 - new state
          */
-        MR::Event<const bool&> OnResourceFreeStateChanged;
+        MR::Event<bool&> OnResourceFreeStateChanged;
 
         /** If true, resource data will be destroyed after unloading/deleting resource
          *  For example geometry buffers after unloading/deleting Mesh resource
          *  True by default
          */
-        inline virtual void SetResourceFreeState(const bool& state) {
+        inline virtual void SetResourceFreeState(bool state) {
             _res_free_state = state;
             OnResourceFreeStateChanged(this, state);
         }
@@ -88,8 +81,16 @@ namespace MR{
          *  name - name of resource instance in resource manager
          *  source - file source (path to file)
          */
-        Resource(MR::ResourceManager* manager, const std::string& name, const std::string& source) : _res_free_state(true), _name(name), _source(source), _resource_manager(manager), _loaded(false) {}
-        virtual ~Resource(){}
+        Resource(MR::ResourceManager* manager, std::string name, std::string source);
+        virtual ~Resource();
+    protected:
+        bool _res_free_state;
+        std::string _name;
+        std::string _source;
+        ResourceManager* _resource_manager;
+        bool _loaded;
+    private:
+        Resource(const Resource& r);
     };
 
     class ResourceManager {
@@ -101,12 +102,12 @@ namespace MR{
         /** sender - Resource object
          *  arg1 - new state
          */
-        MR::Event<const bool&> OnDebugMessagesStateChanged;
+        MR::Event<bool&> OnDebugMessagesStateChanged;
 
         /** Turn on/off debug messages
          *  False by default
          */
-        inline virtual void SetDebugMessagesState(const bool& state){
+        inline virtual void SetDebugMessagesState(bool state){
             _debugMessages = state;
             OnDebugMessagesStateChanged(this, state);
         }
@@ -136,25 +137,25 @@ namespace MR{
 
         /** Creates resource from source
          */
-        virtual Resource* Create(const std::string& name, const std::string& source) = 0;
+        virtual Resource* Create(std::string name, std::string source) = 0;
 
         /** Creates and loads resource from source
          */
-        virtual Resource* CreateAndLoad(const std::string& name, const std::string& source);
+        virtual Resource* CreateAndLoad(std::string name, std::string source);
 
         /** Returns created resource from source
          */
-        virtual Resource* Get(const std::string& source);
+        virtual Resource* Get(std::string source);
 
         /** Finds resource by it's name
          */
-        virtual Resource* Find(const std::string& name);
+        virtual Resource* Find(std::string name);
 
         /** Needs resource by source
          *  Creates and loads if not finded
          *  Returns loaded resource or nullptr if failed
          */
-        virtual Resource* Need(const std::string& source);
+        virtual Resource* Need(std::string source);
 
         //Needs resource list by sources
         //Creates and loads if not finded or element will be nullptr if can't load resource
@@ -163,13 +164,14 @@ namespace MR{
 
         /** Removes resource
          */
-        virtual void Remove(const std::string& name, const std::string& source);
+        virtual void Remove(std::string name, std::string source);
 
         /** Removes all resources
          */
         virtual void RemoveAll();
 
         ResourceManager() : _debugMessages(false) {}
+        virtual ~ResourceManager(){}
     };
 }
 

@@ -3,7 +3,11 @@
 #ifndef _MR_LIGHT_H_
 #define _MR_LIGHT_H_
 
-#include "pre.hpp"
+#include "Config.hpp"
+
+#ifndef glm_glm
+#   include <glm/glm.hpp>
+#endif
 
 namespace MR {
 
@@ -17,16 +21,16 @@ public:
         tb32 = 2
     };
 
-    inline LightSource* GetLight() { return parentLight; }
-    inline int GetWidth() { return w; }
-    inline int GetHeight() { return h; }
+    inline LightSource* GetLight() { return _parentLight; }
+    inline int GetWidth() { return _w; }
+    inline int GetHeight() { return _h; }
 
     ShadowMap(LightSource* light, const int& width, const int& height, const TextureBits& tbits = TextureBits::tb24);
 
 protected:
-    LightSource* parentLight;
-    GLuint gl_texture, gl_framebuffer;
-    int w, h;
+    LightSource* _parentLight;
+    unsigned int _gl_texture, _gl_framebuffer;
+    int _w, _h;
 };
 
 class LightSource {

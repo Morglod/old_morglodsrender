@@ -16,10 +16,6 @@
 //#   include <glm/gtc/matrix_transform.hpp>
 #endif
 
-#ifndef HEADER_SIMPLE_OPENGL_IMAGE_LIBRARY
-#   include <SOIL.h>
-#endif
-
 /** std libs **/
 #include <memory>
 #include <stdlib.h>
@@ -32,10 +28,3 @@
 #include <algorithm>
 #include <stdio.h>
 #include <locale>
-
-/** interfaces **/
-template<typename T>
-class Copyable {
-public:
-    virtual T* Copy() = 0;
-};

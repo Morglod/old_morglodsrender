@@ -9,34 +9,34 @@ std::string MR::DirectoryFromFilePath(const std::string& file){
     return file.substr(0, std::max(it_a, it_b));
 }
 
-MR::Resource* MR::ResourceManager::CreateAndLoad(const std::string& name, const std::string& source){
+MR::Resource* MR::ResourceManager::CreateAndLoad(std::string name, std::string source){
     Resource* r = this->Create(name, source);
     r->Load();
     return r;
 }
 
-MR::Resource* MR::ResourceManager::Get(const std::string& source) {
+MR::Resource* MR::ResourceManager::Get(std::string source) {
     for(std::vector<Resource*>::iterator it = this->_resources.begin(); it != this->_resources.end(); ++it){
         if( (*it)->GetSource() == source ) return (*it);
     }
     return nullptr;
 }
 
-MR::Resource* MR::ResourceManager::Find(const std::string& name) {
+MR::Resource* MR::ResourceManager::Find(std::string name) {
     for(std::vector<Resource*>::iterator it = this->_resources.begin(); it != this->_resources.end(); ++it){
         if( (*it)->GetName() == name ) return *it;
     }
     return nullptr;
 }
 
-MR::Resource* MR::ResourceManager::Need(const std::string& source){
+MR::Resource* MR::ResourceManager::Need(std::string source){
     for(std::vector<Resource*>::iterator it = this->_resources.begin(); it != this->_resources.end(); ++it){
         if( (*it)->GetSource() == source ) return *it;
     }
     return this->CreateAndLoad("AutoLoaded_"+source, source);
 }
 
-void MR::ResourceManager::Remove(const std::string& name, const std::string& source){
+void MR::ResourceManager::Remove(std::string name, std::string source){
     for(std::vector<Resource*>::iterator it = this->_resources.begin(); it != this->_resources.end(); ++it){
         if( (*it)->GetName() == name && (*it)->GetSource() == source){
             delete (*it);
@@ -51,3 +51,11 @@ void MR::ResourceManager::RemoveAll(){
     }
     this->_resources.clear();
 }
+
+MR::Resource::Resource(const Resource& r) : OnResourceFreeStateChanged(), _res_free_state(true), _name(""), _source(""), _resource_manager(0), _loaded(false) {}
+
+MR::Resource::Resource(MR::ResourceManager* manager, std::string name, std::string source) : OnResourceFreeStateChanged(), _res_free_state(true), _name(name), _source(source), _resource_manager(manager), _loaded(false) {
+}
+
+MR::Resource::~Resource(){}
+

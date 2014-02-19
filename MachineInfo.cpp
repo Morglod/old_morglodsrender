@@ -1,5 +1,33 @@
 #include "MachineInfo.hpp"
+#include "Log.hpp"
+
+#ifndef __glew_h__
+#   include <GL\glew.h>
+#endif
+
 #include <windows.h>
+
+// GL_NVX_gpu_memory_info
+#define GL_GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX     0x9047
+#define GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX     0x9048
+#define GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX   0x9049
+
+// ATI_meminfo
+#define VBO_FREE_MEMORY_ATI             0x87FB
+#define TEXTURE_FREE_MEMORY_ATI         0x87FC
+#define RENDERBUFFER_FREE_MEMORY_ATI    0x87FD
+
+// AMD_gpu_association
+#define WGL_GPU_VENDOR_AMD                 0x1F00
+#define WGL_GPU_RENDERER_STRING_AMD        0x1F01
+#define WGL_GPU_OPENGL_VERSION_STRING_AMD  0x1F02
+#define WGL_GPU_FASTEST_TARGET_GPUS_AMD    0x21A2
+#define WGL_GPU_RAM_AMD                    0x21A3
+#define WGL_GPU_CLOCK_AMD                  0x21A4
+#define WGL_GPU_NUM_PIPES_AMD              0x21A5
+#define WGL_GPU_NUM_SIMD_AMD               0x21A6
+#define WGL_GPU_NUM_RB_AMD                 0x21A7
+#define WGL_GPU_NUM_SPI_AMD                0x21A8
 
 int MR::MachineInfo::gl_version_major() {
     int outv = 0;
@@ -71,8 +99,8 @@ std::string MR::MachineInfo::gpu_vendor_string() {
 MR::MachineInfo::GPUVendor MR::MachineInfo::gpu_vendor() {
     static std::string v = gpu_vendor_string();
     if(v == "NVIDIA Corporation") return GPUVendor::Nvidia;
-    else if(v == "ATI Technologies") return GPUVendor::Nvidia;
-    else if(v == "INTEL") return GPUVendor::Nvidia;
+    else if(v == "ATI Technologies") return GPUVendor::ATI;
+    else if(v == "INTEL") return GPUVendor::Intel;
     else if(v == "Microsoft") return GPUVendor::Microsoft_DirectX_Wrapper;
     else return GPUVendor::Other;
 }
@@ -91,9 +119,22 @@ std::string MR::MachineInfo::gl_version_glsl() {
     static std::string outv = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
     return outv;
 }
+
 int MR::MachineInfo::total_memory_kb() {
     GLint total_mem_kb = 0;
-    if(gpu_vendor() == Nvidia) glGetIntegerv(GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX, &total_mem_kb);
+    if(gpu_vendor() == GPUVendor::Nvidia) glGetIntegerv(GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX, &total_mem_kb);
+    /*else if(gpu_vendor() == GPUVendor::ATI) {
+        unsigned int n = wglGetGPUIDsAMD(0, 0);
+        unsigned int *ids = new unsigned int[n];
+        size_t total_mem_mb = 0;
+        wglGetGPUIDsAMD(n, ids);
+        wglGetGPUInfoAMD(ids[0],
+          WGL_GPU_RAM_AMD,
+          GL_UNSIGNED_INT,
+          sizeof(size_t),
+          &total_mem_mb);
+        total_mem_kb = total_mem_mb / 1024;
+    }*/
     else {
         //COPYPASTA
         DWORD	i[5] = { 0, 0, 0x27, 0, 0 };
@@ -104,6 +145,7 @@ int MR::MachineInfo::total_memory_kb() {
         HDC hdc = CreateDC("DISPLAY", 0, 0, 0);
 #endif
         if (hdc == NULL) {
+            MR::Log::LogString("Failed MachineInfo::total_memory_kb. Failed CreateDC", MR_LOG_LEVEL_ERROR);
             return 0;
         }
 
@@ -112,6 +154,7 @@ int MR::MachineInfo::total_memory_kb() {
         DeleteDC(hdc);
 
         if (s <= 0) {
+            MR::Log::LogString("Failed MachineInfo::total_memory_kb. Bad Escape code", MR_LOG_LEVEL_ERROR);
             return 0;
         }
 
@@ -119,8 +162,14 @@ int MR::MachineInfo::total_memory_kb() {
     }
     return total_mem_kb;
 }
+
 int MR::MachineInfo::current_memory_kb() {
     GLint cur_avail_mem_kb = 0;
-    if(gpu_vendor() == Nvidia) glGetIntegerv(GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX, &cur_avail_mem_kb);
+    if(gpu_vendor() == GPUVendor::Nvidia) glGetIntegerv(GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX, &cur_avail_mem_kb);
+    else if(gpu_vendor() == GPUVendor::ATI){
+        int free_mem[4] = {0};
+        glGetIntegerv(GL_TEXTURE_FREE_MEMORY_ATI, &free_mem[0]);
+        cur_avail_mem_kb = free_mem[0];
+    }
     return cur_avail_mem_kb;
 }

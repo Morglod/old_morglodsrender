@@ -63,7 +63,7 @@ Model::Model(ModelManager* manager, std::string name, std::string source) :
 Model::~Model() {
 }
 
-Resource* ModelManager::Create(std::string name, std::string source) {
+Resource* ModelManager::Create(const std::string& name, const std::string& source) {
     if(this->_debugMessages) MR::Log::LogString("ModelManager "+name+" ("+source+") creating", MR_LOG_LEVEL_INFO);
     Model * m = new Model(this, name, source);
     this->_resources.push_back(m);
@@ -224,10 +224,10 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool bindexes, bool log)
             break;
         }
 
-        TextureSettings* texs = new TextureSettings();
+        TextureSettings::Ptr texs = TextureSettings::Create();
         tex->SetSettings(texs);
-        texs->SetWrapS(wmS);
-        texs->SetWrapT(wmT);
+        texs->SetWrapS((TextureSettings::Wrap)wmS);
+        texs->SetWrapT((TextureSettings::Wrap)wmT);
 
         if(textureFile != "") materials[i]->AddPass(new MR::MaterialPass(materials[i], tex, GL_TEXTURE0, nullptr));
         else materials[i]->AddPass(new MR::MaterialPass(materials[i], nullptr, GL_TEXTURE0, nullptr));

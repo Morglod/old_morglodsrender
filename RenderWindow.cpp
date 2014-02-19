@@ -115,6 +115,7 @@ RenderWindow::RenderWindow(const std::string& title, const int& width, const int
             }
             glClearColor(0.01f, 0.01f, 0.01f, 1.0f);
             glEnable(GL_TEXTURE_2D);
+            glEnable(GL_TEXTURE_3D);
             glEnable(GL_DEPTH_TEST);
             glEnable(GL_CULL_FACE);
         }

@@ -3,9 +3,12 @@
 #ifndef _MR_CAMERA_H_
 #define _MR_CAMERA_H_
 
-#include "pre.hpp"
 #include "Events.hpp"
 #include "Transformation.hpp"
+
+#ifndef glm_glm
+#   include <glm/glm.hpp>
+#endif
 
 namespace MR {
 
@@ -30,27 +33,27 @@ public:
     MR::Event<RenderTarget*> OnRenderTargetChanged;
     MR::Event<glm::mat4*> OnMVPRecalc;
 
-    virtual void Use(const GLuint& matrixUniform);
-    inline bool IsAutoRecalc() const { return autoReCalc; }
+    virtual void Use(const unsigned int & matrixUniform);
+    inline bool IsAutoRecalc() const { return _autoReCalc; }
 
-    inline CameraMode GetCameraMode() const { return cmode; }
-    inline CameraProjection GetCameraProjection() const { return cproj; }
+    inline CameraMode GetCameraMode() const { return _cmode; }
+    inline CameraProjection GetCameraProjection() const { return _cproj; }
 
-    inline glm::vec3* GetDirectionP() const { return direction; }
-    inline glm::vec3 GetCameraPosition() const { return pos; }
-    inline glm::vec3 GetCameraTarget() const { return target; }
-    inline glm::vec3 GetCameraUp() const { return up; }
+    inline glm::vec3* GetDirectionP() const { return _direction; }
+    inline glm::vec3 GetCameraPosition() const { return _pos; }
+    inline glm::vec3 GetCameraTarget() const { return _target; }
+    inline glm::vec3 GetCameraUp() const { return _up; }
 
-    inline float GetFovY() const { return fovY; }
-    inline float* GetFovYP() { return &fovY; }
-    inline float GetNearZ() const { return zNear; }
-    inline float GetFarZ() const { return zFar; }
-    inline float GetAspectRatio() const { return aspectRatio; }
-    inline float* GetAspectRatioP() { return &aspectRatio; }
+    inline float GetFovY() const { return _fovY; }
+    inline float* GetFovYP() { return &_fovY; }
+    inline float GetNearZ() const { return _zNear; }
+    inline float GetFarZ() const { return _zFar; }
+    inline float GetAspectRatio() const { return _aspectRatio; }
+    inline float* GetAspectRatioP() { return &_aspectRatio; }
 
-    inline glm::mat4* GetViewMatrix() { return viewMatrix; }
-    inline glm::mat4* GetProjectMatrix() { return projectionMatrix; }
-    inline glm::mat4* GetMVP() { return mvp; }
+    inline glm::mat4* GetViewMatrix() { return _viewMatrix; }
+    inline glm::mat4* GetProjectMatrix() { return _projectionMatrix; }
+    inline glm::mat4* GetMVP() { return _mvp; }
 
     inline MR::RenderTarget* GetRenderTarget() { return _render_target; }
     virtual void SetRenderTarget(MR::RenderTarget* rt);
@@ -72,42 +75,37 @@ public:
     virtual void CalcMVP();
     virtual void Calc();
 
-    Camera(glm::vec3 camPos, glm::vec3 camTarget, float fov, float nearZ, float farZ, float aspectR);
+    Camera(const glm::vec3& camPos, const glm::vec3& camTarget, const float& fov, const float& nearZ, const float& farZ, const float& aspectR);
     virtual ~Camera();
 
-    /*inline void Rotate(glm::vec3 v) {
-        //if(camMode == CameraMode::Cam_TP) modelMatrix = glm::rotate(glm::rotate(glm::rotate(modelMatrix, v.x, glm::vec3(1,0,0)), v.y, glm::vec3(0,1,0)), v.z, glm::vec3(0,0,1));
-    }*/
-
-    /*inline void CalcModelMatrix(){
-        modelMatrix = glm::translate(glm::rotate(glm::rotate(glm::rotate(glm::scale(glm::mat4(1.0f), ModelScale), ModelRot.x, glm::vec3(1, 0, 0)), ModelRot.y, glm::vec3(0,1,0)), ModelRot.z, glm::vec3(0,0,1)), ModelPos);
-    }*/
-
 protected:
-    CameraMode cmode;
-    CameraProjection cproj;
+    CameraMode _cmode;
+    CameraProjection _cproj;
 
-    glm::vec3 pos; //for target and direction mode
-    glm::vec3* direction; //direction mode only
-    glm::vec3* left_direction; //direction mode only
-    glm::vec3 target; //target mode only
+    glm::vec3 _pos; //for target and direction mode
+    glm::vec3* _direction; //direction mode only
+    glm::vec3* _left_direction; //direction mode only
+    glm::vec3 _target; //target mode only
 
-    glm::vec3 up;
+    glm::vec3 _up;
 
-    float fovY;
-    float zNear;
-    float zFar;
-    float aspectRatio;
-    float ortho_left, ortho_right, ortho_top, ortho_bottom;
+    float _fovY;
+    float _zNear;
+    float _zFar;
+    float _aspectRatio;
+    float _ortho_left, _ortho_right, _ortho_top, _ortho_bottom;
 
-    glm::mat4* viewMatrix;
-    glm::mat4* projectionMatrix;
-    glm::mat4* modelMatrix;
-    glm::mat4* mvp;
+    glm::mat4* _viewMatrix;
+    glm::mat4* _projectionMatrix;
+    glm::mat4* _modelMatrix;
+    glm::mat4* _mvp;
 
-    bool autoReCalc;
+    bool _autoReCalc;
 
     MR::RenderTarget* _render_target;
+private:
+    Camera(const Camera&);
+    Camera operator=(const Camera& c);
 };
 }
 

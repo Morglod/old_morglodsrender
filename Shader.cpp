@@ -1,6 +1,10 @@
 #include "Shader.hpp"
 #include "Log.hpp"
 
+#ifndef __glew_h__
+#   include <GL\glew.h>
+#endif
+
 char *textFileRead(const char *fn, int * count = nullptr) {
     FILE *fp;
     char *content = NULL;
@@ -29,7 +33,12 @@ char *textFileRead(const char *fn, int * count = nullptr) {
     return content;
 }
 
-MR::ShaderUniform::ShaderUniform(const char* Name, const ShaderUniformTypes& Type, void* Value, const GLenum& shader_program) : name(Name), type(Type), value(Value) {
+void MR::ShaderUniform::MapUniform(const unsigned int & shader_program){
+    _uniform_location = glGetUniformLocationARB(shader_program, _name);
+    OnMapped(this, shader_program, _uniform_location);
+}
+
+MR::ShaderUniform::ShaderUniform(const char* Name, const ShaderUniformTypes& Type, void* Value, const GLenum& shader_program) : _name(Name), _type(Type), _value(Value) {
     MapUniform(shader_program);
 }
 
@@ -68,18 +77,18 @@ MR::ShaderUniformBlock::~ShaderUniformBlock() {
 }
 
 //SUB SHADER
-void MR::SubShader::Compile(const char* code, GLenum shader_type) {
-    if(this->gl_SHADER != 0) glDeleteObjectARB(this->gl_SHADER);
-    this->gl_SHADER_TYPE = shader_type;
-    this->gl_SHADER = glCreateShaderObjectARB(shader_type);
-    glShaderSourceARB(this->gl_SHADER, 1, &code, NULL);
-    glCompileShaderARB(this->gl_SHADER);
+void MR::SubShader::Compile(const char* code, const SubShader::Type& shader_type) {
+    if(this->_shader != 0) glDeleteObjectARB(this->_shader);
+    this->_type = shader_type;
+    this->_shader = glCreateShaderObjectARB((unsigned int)shader_type);
+    glShaderSourceARB(this->_shader, 1, &code, NULL);
+    glCompileShaderARB(this->_shader);
 
     int bufflen = 0;
-    glGetShaderiv(this->gl_SHADER, GL_INFO_LOG_LENGTH, &bufflen);
+    glGetShaderiv(this->_shader, GL_INFO_LOG_LENGTH, &bufflen);
     if(bufflen > 1) {
         GLchar* logString = new GLchar[bufflen + 1];
-        glGetShaderInfoLog(this->gl_SHADER, bufflen, 0, logString);
+        glGetShaderInfoLog(this->_shader, bufflen, 0, logString);
         MR::Log::LogString("Sub shader output: "+std::string(logString), MR_LOG_LEVEL_WARNING);
 
         delete [] logString;
@@ -89,32 +98,32 @@ void MR::SubShader::Compile(const char* code, GLenum shader_type) {
     OnCompiled(this, code, shader_type);
 }
 
-MR::SubShader::SubShader(const char* code, GLenum shader_type) {
-    this->Compile(code, shader_type);
+MR::SubShader::SubShader(const char* code, const SubShader::Type& type) {
+    this->Compile(code, type);
 }
 
 MR::SubShader::~SubShader() {
-    glDeleteObjectARB(this->gl_SHADER);
+    glDeleteObjectARB(this->_shader);
 }
 
-MR::SubShader* MR::SubShader::FromFile(std::string file, GLenum shader_type) {
+MR::SubShader* MR::SubShader::FromFile(const std::string& file, const SubShader::Type& shader_type) {
     return new MR::SubShader(textFileRead(file.c_str()), shader_type);
 }
 
 //SHADER
 void MR::Shader::Link(SubShader** sub_shaders, unsigned int num) {
-    if(this->gl_PROGRAM != 0) glDeleteObjectARB(this->gl_PROGRAM);
-    this->gl_PROGRAM = glCreateProgramObjectARB();
+    if(this->_program != 0) glDeleteObjectARB(this->_program);
+    this->_program = glCreateProgramObjectARB();
     for(unsigned int i = 0; i < num; ++i) {
-        glAttachObjectARB(this->gl_PROGRAM, sub_shaders[i]->Get());
+        glAttachObjectARB(this->_program, sub_shaders[i]->Get());
     }
-    glLinkProgramARB(this->gl_PROGRAM);
+    glLinkProgramARB(this->_program);
 
     int bufflen = 0;
-    glGetProgramiv(this->gl_PROGRAM, GL_INFO_LOG_LENGTH, &bufflen);
+    glGetProgramiv(this->_program, GL_INFO_LOG_LENGTH, &bufflen);
     if(bufflen > 1) {
         GLchar* logString = new GLchar[bufflen + 1];
-        glGetProgramInfoLog(this->gl_PROGRAM, bufflen, 0, logString);
+        glGetProgramInfoLog(this->_program, bufflen, 0, logString);
         MR::Log::LogString("Shader output: "+std::string(logString), MR_LOG_LEVEL_WARNING);
 
         delete [] logString;
@@ -173,7 +182,7 @@ bool MR::Shader::Load(){
                 break;
             }
 
-            subs[i] = new MR::SubShader((char*)p_code, sh_type);
+            subs[i] = new MR::SubShader((char*)p_code, (SubShader::Type)((unsigned int)sh_type));
         }
 
         Link(subs, sub_shaders_num);
@@ -183,7 +192,7 @@ bool MR::Shader::Load(){
         this->_loaded = false;
         return false;
     }
-    if(this->gl_PROGRAM == 0){
+    if(this->_program == 0){
         MR::Log::LogString("Shader "+this->_name+" ("+this->_source+") loading failed. GL_PROGRAM is null", MR_LOG_LEVEL_ERROR);
         this->_loaded = false;
         return false;
@@ -192,14 +201,17 @@ bool MR::Shader::Load(){
     this->_loaded = true;
     return true;
 }
+
 void MR::Shader::UnLoad(){
-    if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Shader "+this->_name+" ("+this->_source+") unloading", MR_LOG_LEVEL_INFO);
-    glDeleteObjectARB(this->gl_PROGRAM);
+    if(_loaded){
+        if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Shader "+this->_name+" ("+this->_source+") unloading", MR_LOG_LEVEL_INFO);
+        glDeleteObjectARB(this->_program);
+    }
 }
 
 //--------
 
-MR::Shader::Shader(ResourceManager* manager, std::string name, std::string source) : Resource(manager, name, source) {
+MR::Shader::Shader(ResourceManager* manager, const std::string& name, const std::string& source) : Resource(manager, name, source) {
     //this->Link(sub_shaders, num);
 }
 
@@ -216,7 +228,7 @@ MR::Shader::~Shader() {
 
 //SHADER MANAGER
 
-MR::Resource* MR::ShaderManager::Create(std::string name, std::string source){
+MR::Resource* MR::ShaderManager::Create(const std::string& name, const std::string& source){
     if(this->_debugMessages) MR::Log::LogString("ShaderManager "+name+" ("+source+") creating", MR_LOG_LEVEL_INFO);
     Shader * s = new Shader(this, name, source);
     this->_resources.push_back(s);

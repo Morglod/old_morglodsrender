@@ -5,6 +5,7 @@
 
 #include "pre.hpp"
 #include "Events.hpp"
+#include "Types.hpp"
 
 namespace MR {
 
@@ -133,7 +134,7 @@ public:
     void Unbind();
 };
 
-class GeometryBuffer : Copyable<GeometryBuffer> {
+class GeometryBuffer : Copyable<GeometryBuffer*> {
 public:
     /** sender - this GeometryBuffer **/
     MR::Event<const GLenum&> OnDrawModeChanged;

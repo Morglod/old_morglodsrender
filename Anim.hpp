@@ -6,6 +6,7 @@
 #define MR_ANIM_TIME_TYPE float
 
 #include "pre.hpp"
+#include "Types.hpp"
 
 namespace MR{
 
@@ -23,7 +24,7 @@ typedef AnimValue<glm::vec3> AnimValueV3;
 typedef AnimValue<glm::vec4> AnimValueV4;
 
 template<typename T>
-class AnimDesc {
+class AnimDesc : WithPtr<T> {
 public:
     inline MR_ANIM_TIME_TYPE& GetAnimTime(){return _anim_time;}
     inline MR_ANIM_TIME_TYPE& GetActivationTime(){return _act_time;}
@@ -43,7 +44,8 @@ protected:
 
 template<typename T>
 class Anim {
-    AnimDesc<T>* desc;
+protected:
+    typename AnimDesc<T>::Ptr _desc;
 };
 
 }

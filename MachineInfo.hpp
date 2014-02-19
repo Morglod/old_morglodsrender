@@ -1,18 +1,16 @@
 #ifndef _MR_MACHINE_INFO_H_
 #define _MR_MACHINE_INFO_H_
 
-#include "pre.hpp"
+#include "Config.hpp"
 
-#define GL_GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX 0x9047
-#define GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX 0x9048
-#define GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX 0x9049
+#include <string>
 
 #define MINIMAL_GL_VERSION_MAJOR 3
 #define MINIMAL_GL_VERSION_MINOR 2
 
 namespace MR{
     namespace MachineInfo{
-        enum GPUVendor : unsigned char {
+        enum class GPUVendor : unsigned char {
             Other = 0,
             Nvidia = 1,
             ATI = 2,
@@ -20,7 +18,7 @@ namespace MR{
             Microsoft_DirectX_Wrapper = 4
         };
 
-        enum GLVersion : unsigned char {
+        enum class GLVersion : unsigned char {
             VUnknown = 255,
             VNotSupported = 0,
             Vx_x = 1,

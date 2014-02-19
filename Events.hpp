@@ -31,9 +31,9 @@ public:
         }
     }
 
-    inline void operator() (void* s, Args... args) const {
-        Call(s, args...);
-    }
+    inline void operator() (void* s, Args... args) const { Call(s, args...); }
+    inline void operator += (const FuncP& f){ Add(f); }
+    inline void operator -= (const FuncP& f){ Sub(f); }
 
     Event() {}
     virtual ~Event() { SubAll(); }

@@ -219,26 +219,26 @@ GeometryBuffer::GeometryBuffer(VertexDeclaration* vd, IndexDeclaration* id, void
 
     VertexDeclarationType* v_pos = _vdecl->get(VertexDeclarationTypesEnum::VDTE_POSITION);
     if(v_pos != nullptr) {
-        glVertexAttribPointer(SHADER_VERTEX_POSITION_ATTRIB_LOCATION, v_pos->ElementsNum(), _vdecl->data_type, GL_FALSE, _vdecl->stride_size, v_pos->pointer);
-        glEnableVertexAttribArray(SHADER_VERTEX_POSITION_ATTRIB_LOCATION);
+        glVertexAttribPointer(MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION, v_pos->ElementsNum(), _vdecl->data_type, GL_FALSE, _vdecl->stride_size, v_pos->pointer);
+        glEnableVertexAttribArray(MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION);
     }
 
     VertexDeclarationType* v_texcoord = _vdecl->get(VertexDeclarationTypesEnum::VDTE_TEXTURE_COORD);
     if(v_texcoord != nullptr) {
-        glVertexAttribPointer(SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION, v_texcoord->ElementsNum(), _vdecl->data_type, GL_FALSE, _vdecl->stride_size, v_texcoord->pointer);
-        glEnableVertexAttribArray(SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION);
+        glVertexAttribPointer(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION, v_texcoord->ElementsNum(), _vdecl->data_type, GL_FALSE, _vdecl->stride_size, v_texcoord->pointer);
+        glEnableVertexAttribArray(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION);
     }
 
     VertexDeclarationType* v_norm = _vdecl->get(VertexDeclarationTypesEnum::VDTE_NORMAL);
     if(v_norm != nullptr) {
-        glVertexAttribPointer(SHADER_VERTEX_NORMAL_ATTRIB_LOCATION, v_norm->ElementsNum(), _vdecl->data_type, GL_FALSE, _vdecl->stride_size, v_norm->pointer);
-        glEnableVertexAttribArray(SHADER_VERTEX_NORMAL_ATTRIB_LOCATION);
+        glVertexAttribPointer(MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION, v_norm->ElementsNum(), _vdecl->data_type, GL_FALSE, _vdecl->stride_size, v_norm->pointer);
+        glEnableVertexAttribArray(MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION);
     }
 
     VertexDeclarationType* v_color = _vdecl->get(VertexDeclarationTypesEnum::VDTE_COLOR);
     if(v_color != nullptr) {
-        glVertexAttribPointer(SHADER_VERTEX_COLOR_ATTRIB_LOCATION, v_color->ElementsNum(), _vdecl->data_type, GL_FALSE, _vdecl->stride_size, v_color->pointer);
-        glEnableVertexAttribArray(SHADER_VERTEX_COLOR_ATTRIB_LOCATION);
+        glVertexAttribPointer(MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION, v_color->ElementsNum(), _vdecl->data_type, GL_FALSE, _vdecl->stride_size, v_color->pointer);
+        glEnableVertexAttribArray(MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION);
     }
 
     //Unbind vertex array
