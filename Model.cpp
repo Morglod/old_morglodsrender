@@ -4,6 +4,13 @@
 #include "Material.hpp"
 #include "Texture.hpp"
 
+#ifndef __glew_h__
+#   include <GL\glew.h>
+#endif
+
+#include <iostream>
+#include <fstream>
+
 namespace MR {
 
 ModelLod::ModelLod(MR::Mesh** mm, const unsigned short & mmnum) : meshes(mm), meshes_num(mmnum) {
@@ -331,8 +338,8 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool bindexes, bool log)
 
         if(log) MR::Log::LogString("Decls " + std::to_string(declarations ), MR_LOG_LEVEL_INFO);
 
-        MR::VertexDeclaration* vDecl = new MR::VertexDeclaration(&vdtypes[0], declarations, GL_FLOAT);
-        MR::IndexDeclaration* iDecl = new MR::IndexDeclaration(GL_UNSIGNED_INT);
+        MR::VertexDeclaration* vDecl = new MR::VertexDeclaration(&vdtypes[0], declarations, VertexDeclaration::DataType::Float);
+        MR::IndexDeclaration* iDecl = new MR::IndexDeclaration(IndexDeclaration::DataType::UInt);
 
         buffers[ buffers_mat_ids[i] ] = new MR::GeometryBuffer(vDecl, nullptr, &vbuffer[0], vbufferSize, nullptr, 0, numVerts, 0);
         if(bindexes) buffers[ buffers_mat_ids[i] ] = new MR::GeometryBuffer(vDecl, iDecl, &vbuffer[0], vbufferSize, &ibuffer[0], ibufferSize, numVerts, indsNum);

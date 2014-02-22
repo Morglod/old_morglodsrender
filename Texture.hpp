@@ -408,7 +408,7 @@ namespace MR{
             return m;
         }
     protected:
-        bool _useTexArrays = true;
+        bool _useTexArrays = false; //experimental
         unsigned int _maxTexturesInArray = 50;
         std::vector<TextureArray*> _tex_arrays;
 

@@ -3,7 +3,6 @@
 #ifndef _MR_MODEL_H_
 #define _MR_MODEL_H_
 
-#include "pre.hpp"
 #include "Mesh.hpp"
 #include "ResourceManager.hpp"
 #include "Events.hpp"

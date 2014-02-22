@@ -3,9 +3,11 @@
 #ifndef _MR_RENDER_WINDOW_H_
 #define _MR_RENDER_WINDOW_H_
 
-#include "pre.hpp"
 #include "Events.hpp"
 #include "RenderContext.hpp"
+
+class GLFWwindow;
+class GLFWgammaramp;
 
 namespace MR {
 
@@ -111,57 +113,33 @@ protected:
 public:
 
     inline GLFWwindow* GetHandle() { return glfw_handle; }
-    inline void GetPos(int* x, int* y){ glfwGetWindowPos(glfw_handle, x, y); }
-    inline void GetSize(int* w, int* h){ glfwGetWindowSize(glfw_handle, w, h); }
-    inline void GetFrameBufferSize(int* w, int* h){ glfwGetFramebufferSize(glfw_handle, w, h); }
-    inline const GLFWgammaramp* GetGLFWGammaRamp() { return glfwGetGammaRamp(glfwGetWindowMonitor(glfw_handle)); }
+    void GetPos(int* x, int* y);
+    void GetSize(int* w, int* h);
+    void GetFrameBufferSize(int* w, int* h);
+    const GLFWgammaramp* GetGLFWGammaRamp();
     inline const char* GetTitle(){ return titlec; }
-    inline const char* GetClipboardString(){ return glfwGetClipboardString(glfw_handle); }
+    const char* GetClipboardString();
 
-    inline void SetPos(const int& x, const int& y){
-        glfwSetWindowPos(glfw_handle, x, y);
-        OnPosChanged(this, x, y);
-    }
-
-    inline void SetSize(const int& w, const int& h){
-        glfwSetWindowSize(glfw_handle, w, h);
-        OnSizeChanged(this, w, h);
-    }
-
-    inline void SetTitleC(const char* s){
-        titlec = (char*)s;
-        glfwSetWindowTitle(glfw_handle, s);
-        OnTitleChanged(this, s);
-    }
+    void SetPos(const int& x, const int& y);
+    void SetSize(const int& w, const int& h);
+    void SetTitleC(const char* s);
 
     inline void SetTitle(const std::string& s){ SetTitleC(s.c_str()); }
-    inline void SetClipboardString(const char* s){ glfwSetClipboardString(glfw_handle, s); }
+    void SetClipboardString(const char* s);
 
-    inline void SyncWait(const int& refreshes){
-        glfwSwapInterval(refreshes);
-        OnSyncChanged(this, refreshes);
-    }
+    void SyncWait(const int& refreshes);
+    void SetGamma(const float& gamma);
+    void Visible(const bool& state);
 
-    inline void SetGamma(const float& gamma){
-        glfwSetGamma(glfwGetWindowMonitor(glfw_handle), gamma);
-        OnGammaChanged(this, gamma);
-    }
-
-    inline void Visible(const bool& state){
-        if(state) glfwShowWindow(glfw_handle);
-        else glfwHideWindow(glfw_handle);
-        OnVisibilityChanged(this, state);
-    }
-
-    inline bool IsFocused(){ return glfwGetWindowAttrib(glfw_handle, GLFW_FOCUSED); }
-    inline bool IsIconified(){ return glfwGetWindowAttrib(glfw_handle, GLFW_ICONIFIED); }
-    inline bool IsVisible(){ return glfwGetWindowAttrib(glfw_handle, GLFW_VISIBLE); }
-    inline bool IsResizable(){ return glfwGetWindowAttrib(glfw_handle, GLFW_RESIZABLE); }
-    inline bool IsDecorated(){ return glfwGetWindowAttrib(glfw_handle, GLFW_DECORATED); }
-    inline bool ShouldClose(){ return glfwWindowShouldClose(glfw_handle); }
-    inline void Close(){ glfwSetWindowShouldClose(glfw_handle, 1); }
-    inline void SwapBuffers(){ glfwSwapBuffers(glfw_handle); }
-    inline void MakeCurrent(){ glfwMakeContextCurrent(glfw_handle); }
+    bool IsFocused();
+    bool IsIconified();
+    bool IsVisible();
+    bool IsResizable();
+    bool IsDecorated();
+    bool ShouldClose();
+    void Close();
+    void SwapBuffers();
+    void MakeCurrent();
 
     inline void ResetViewport(RenderContext& rc){
         int w = 1, h = 1;

@@ -15,9 +15,9 @@ unsigned int MR::LoadGLTexture(const std::string& file, const unsigned int & t, 
     if(i == 0){
         std::string lastResult = std::string(SOIL_last_result());
         if(ThrowExceptions()){
-            throw MR::Exception("Failed LoadGLTexture. " + lastResult);
+            throw MR::Exception("Failed LoadGLTexture(\""+file+"\"). " + lastResult);
         } else {
-            MR::Log::LogString("Failed LoadGLTexture. " + lastResult, MR_LOG_LEVEL_ERROR);
+            MR::Log::LogString("Failed LoadGLTexture(\""+file+"\"). " + lastResult, MR_LOG_LEVEL_ERROR);
         }
     }
     return i;
@@ -42,9 +42,9 @@ unsigned int MR::LoadGLCubemap(const std::string& file, const char faceOrder[6],
     if(i == 0){
         std::string lastResult = std::string(SOIL_last_result());
         if(ThrowExceptions()){
-            throw MR::Exception("Failed LoadGLCubemap. " + lastResult);
+            throw MR::Exception("Failed LoadGLCubemap(\""+file+"\"). " + lastResult);
         } else {
-            MR::Log::LogString("Failed LoadGLCubemap. " + lastResult, MR_LOG_LEVEL_ERROR);
+            MR::Log::LogString("Failed LoadGLCubemap(\""+file+"\"). " + lastResult, MR_LOG_LEVEL_ERROR);
         }
     }
     return i;
@@ -55,9 +55,9 @@ unsigned int MR::LoadGLHDR(const std::string& file, const int& rescale_to_max, c
     if(i == 0){
         std::string lastResult = std::string(SOIL_last_result());
         if(ThrowExceptions()){
-            throw MR::Exception("Failed LoadGLHDR. " + lastResult);
+            throw MR::Exception("Failed LoadGLHDR(\""+file+"\"). " + lastResult);
         } else {
-            MR::Log::LogString("Failed LoadGLHDR. " + lastResult);
+            MR::Log::LogString("Failed LoadGLHDR(\""+file+"\"). " + lastResult);
         }
     }
     return i;
@@ -119,9 +119,9 @@ bool MR::SaveScreenshot(const std::string& file, const GLImageSaveType& image_ty
     if(state == false){
         std::string lastResult = std::string(SOIL_last_result());
         if(ThrowExceptions()){
-            throw MR::Exception("Failed SaveScreenshot. " + lastResult);
+            throw MR::Exception("Failed SaveScreenshot(\""+file+"\"). " + lastResult);
         } else {
-            MR::Log::LogString("Failed SaveScreenshot. " + lastResult, MR_LOG_LEVEL_ERROR);
+            MR::Log::LogString("Failed SaveScreenshot(\""+file+"\"). " + lastResult, MR_LOG_LEVEL_ERROR);
         }
     }
     return state;
@@ -132,9 +132,9 @@ unsigned char* MR::LoadImage(const std::string& file, int* width, int* height, G
     if(ptr == NULL){
         std::string lastResult = std::string(SOIL_last_result());
         if(ThrowExceptions()){
-            throw MR::Exception("Failed LoadImage. " + lastResult);
+            throw MR::Exception("Failed LoadImage(\""+file+"\"). " + lastResult);
         } else {
-            MR::Log::LogString("Failed LoadImage. " + lastResult, MR_LOG_LEVEL_ERROR);
+            MR::Log::LogString("Failed LoadImage(\""+file+"\"). " + lastResult, MR_LOG_LEVEL_ERROR);
         }
     }
     return ptr;
@@ -465,7 +465,7 @@ void MR::TextureArray::Update(const unsigned int& textureIndex, void* newData){
     glBindTexture(GL_TEXTURE_2D_ARRAY,0);
 }
 
-MR::TextureArray::TextureArray(const Texture::InternalFormat& iformat, const Texture::Format& format, const Texture::Type& type, const unsigned short& width, const unsigned short& height, const unsigned int& maxTextures) : _maxTextures(maxTextures), _internal_format(iformat), _format(format), _type(type), _width(width), _height(height), _gl_texture(0) {
+MR::TextureArray::TextureArray(const Texture::InternalFormat& iformat, const Texture::Format& format, const Texture::Type& type, const unsigned short& width, const unsigned short& height, const unsigned int& maxTextures) : _maxTextures(maxTextures), _gl_texture(0), _internal_format(iformat), _format(format), _type(type), _width(width), _height(height) {
     glGenTextures(1, &_gl_texture);
     glBindTexture(GL_TEXTURE_2D_ARRAY, _gl_texture);
 

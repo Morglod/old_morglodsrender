@@ -7,18 +7,22 @@
 #include "ResourceManager.hpp"
 #include "Events.hpp"
 
+#ifndef glm_glm
+#   include <glm/glm.hpp>
+#endif
+
 namespace MR{
     class SubShader;
     class Shader;
     class ShaderManager;
 
     enum class ShaderUniformTypes : unsigned char {
-        FLOAT = 0, //"float" float[1]
-        VEC2 = 1, //"vec2" float[2]
-        VEC3 = 2, //"vec3" float[3]
-        VEC4 = 3, //"vec4" float[4]
-        MAT4 = 4, //"mat4" float[4][4]
-        INT = 5 //int or sampler2D etc uniform1i
+        FLOAT = 0,
+        VEC2 = 1, //glm::vec2 float[2]
+        VEC3 = 2, //glm::vec3 float[3]
+        VEC4 = 3, //glm::vec4 float[4]
+        MAT4 = 4, //glm::mat4 float[4][4]
+        INT = 5 //int or sampler2D etc; uniform1i
     };
 
     /** Named uniform of shader
@@ -30,29 +34,22 @@ namespace MR{
         friend class ShaderManager;
     public:
         MR::Event<void*> OnNewValuePtr;
-        MR::Event<const GLenum&, const int&> OnMapped; //shader program, new uniform location
+        MR::Event<const unsigned int &, const int&> OnMapped; //shader program, new uniform location
 
-        inline const char* GetName(){ return _name; }
-        inline ShaderUniformTypes GetType(){ return _type; }
-        inline void* GetValuePtr(){ return _value; }
-        inline int GetOpenGLLocation(){ return _uniform_location; }
+        inline const char* GetName();
+        inline ShaderUniformTypes GetType();
+        inline int GetOpenGLLocation();
 
-        inline void SetValuePtr(void* p){
-            _value = p;
-            OnNewValuePtr(this, p);
-        }
+        inline void  SetValuePtr(void* p);
+        inline void* GetValuePtr();
 
-        /** Get new uniform location from shader
-         *  Call this method on each shader recompilation (linking)
-         */
-        void MapUniform(const GLenum& shader_program);
+        //Call after shader linked
+        void MapUniform(const unsigned int & shader_program);
 
-        /** Constructor
-         *  Name - shader uniform name in shader
-         *  Type - type of shader uniform
-         *  Value - pointer to value of uniform
-         *  shader_program - OpenGL shader program object
-         */
+        /* Name - shader uniform name in shader
+           Type - type of shader uniform
+           Value - pointer to value of uniform
+           shader_program - OpenGL shader program object */
         ShaderUniform(const char* Name, const ShaderUniformTypes& Type, void* Value, const unsigned int& shader_program);
     protected:
         const char* _name;
@@ -62,27 +59,15 @@ namespace MR{
     };
 
     class ShaderUniformBlock {
-    protected:
-        const char* name;
-        unsigned char* data;
-        int uniform_block_index;
-        int block_size;
-
-        int num_uniforms;
-        const char** uniform_names; //array size of num_uniforms
-        unsigned int * uniform_indecies; //array size of num_uniforms
-        int * uniform_offsets;
-
-        GLuint ubo;
     public:
-        inline int GetOpenGLIndex() { return uniform_block_index; }
-        inline unsigned char* GetData() { return data; }
-        inline const char* GetName() { return name; }
-        inline int GetBlockSize() { return block_size; }
-        inline int GetNumUniforms() { return num_uniforms; }
-        inline const char** GetUniformNames() { return uniform_names; }
-        inline unsigned int* GetUniformIndecies() { return uniform_indecies; }
-        inline int* GetUniformOffsets() { return uniform_offsets; }
+        inline int GetOpenGLIndex();
+        inline unsigned char* GetData();
+        inline const char* GetName();
+        inline int GetBlockSize();
+        inline int GetNumUniforms();
+        inline const char** GetUniformNames();
+        inline unsigned int* GetUniformIndecies();
+        inline int* GetUniformOffsets();
 
         //Call it before BufferData method (one time)
         void MapBlock(const unsigned int& shader_program);
@@ -93,12 +78,22 @@ namespace MR{
         //Firstly change smth in data and then tell, what changed (offset from zero and size)
         void ChangeBufferedData(const int& ChangedPos, const int& ChangedSize);
 
-        ShaderUniformBlock(const char* Name, const int& NumUniforms, const char** UniformNames, const GLenum& shader_program);
+        ShaderUniformBlock(const char* Name, const int& NumUniforms, const char** UniformNames, const unsigned int & shader_program);
         ~ShaderUniformBlock();
+    protected:
+        const char* _name;
+        unsigned char* _data;
+        int _uniform_block_index;
+        int _block_size;
+
+        int _num_uniforms;
+        const char** _uniform_names; //array size of num_uniforms
+        unsigned int * _uniform_indecies; //array size of num_uniforms
+        int * _uniform_offsets;
+
+        unsigned int _ubo;
     };
 
-    /** OpenGL shader
-    */
     class SubShader{
     public:
         enum class Type : unsigned int {
@@ -120,8 +115,8 @@ namespace MR{
          *  code - OpenGL shader code */
         void Compile(const char* code, const SubShader::Type& type);
 
-        inline unsigned int Get(){return this->_shader;}
-        inline SubShader::Type GetType(){return this->_type;}
+        inline unsigned int Get();
+        inline SubShader::Type GetType();
 
         /** Compiles OpenGL shader */
         SubShader(const char* code, const SubShader::Type& type);
@@ -137,110 +132,209 @@ namespace MR{
         unsigned int _shader;
     };
 
-
     class Shader : public virtual Resource {
     public:
-        /** Create new shader uniform
+
+        /* Create new shader uniform
          *  uniform_name - name of new shader's uniform in shader
          *  type - type of shader uniform
-         *  value - pointer to uniform's value
-         */
-        inline ShaderUniform* CreateUniform(std::string uniform_name, MR::ShaderUniformTypes type, void* value){
-            MR::ShaderUniform* p = new MR::ShaderUniform(uniform_name.c_str(), type, value, _program);
-            shaderUniforms.push_back(p);
-            return p;
-        }
+         *  value - pointer to uniform's value */
+        inline ShaderUniform* CreateUniform(std::string uniform_name, MR::ShaderUniformTypes type, void* value);
+        inline ShaderUniform* CreateUniform(std::string uniform_name, int* value);
+        inline ShaderUniform* CreateUniform(std::string uniform_name, float* value);
+        inline ShaderUniform* CreateUniform(std::string uniform_name, glm::vec2* value);
+        inline ShaderUniform* CreateUniform(std::string uniform_name, glm::vec3* value);
+        inline ShaderUniform* CreateUniform(std::string uniform_name, glm::vec4* value);
+        inline ShaderUniform* CreateUniform(std::string uniform_name, glm::mat4* value);
 
-        inline ShaderUniform* CreateUniform(std::string uniform_name, int* value){ return CreateUniform(uniform_name, MR::ShaderUniformTypes::INT, value); }
-        inline ShaderUniform* CreateUniform(std::string uniform_name, float* value){ return CreateUniform(uniform_name, MR::ShaderUniformTypes::FLOAT, value); }
-        inline ShaderUniform* CreateUniform(std::string uniform_name, glm::vec2* value){ return CreateUniform(uniform_name, MR::ShaderUniformTypes::VEC2, value); }
-        inline ShaderUniform* CreateUniform(std::string uniform_name, glm::vec3* value){ return CreateUniform(uniform_name, MR::ShaderUniformTypes::VEC3, value); }
-        inline ShaderUniform* CreateUniform(std::string uniform_name, glm::vec4* value){ return CreateUniform(uniform_name, MR::ShaderUniformTypes::VEC4, value); }
-        inline ShaderUniform* CreateUniform(std::string uniform_name, glm::mat4* value){ return CreateUniform(uniform_name, MR::ShaderUniformTypes::MAT4, value); }
+        inline ShaderUniformBlock* CreateUniformBlock(const char* Name, const int& NumUniforms, const char** UniformNames);
 
-        inline ShaderUniformBlock* CreateUniformBlock(const char* Name, const int& NumUniforms, const char** UniformNames, const GLenum& shader_program) {
-            MR::ShaderUniformBlock* p = new MR::ShaderUniformBlock(Name, NumUniforms,UniformNames,shader_program);
-            shaderUniformBlocks.push_back(p);
-            return p;
-        }
+        inline void DeleteUniform(ShaderUniform* su);
 
-        /** Delete created uniform
-         *  su - shader uniform from shaderUniforms;
-         */
-        inline void DeleteUniform(ShaderUniform* su){
-            std::vector<ShaderUniform*>::iterator it = std::find(shaderUniforms.begin(), shaderUniforms.end(), su);
-            if(it == shaderUniforms.end()) return;
-            delete (*it);
-            shaderUniforms.erase(it);
-        }
+        inline ShaderUniform* FindShaderUniform(std::string uniform_name);
 
-        /** Find shader uniform by it's name
-         *  uniform_name - name of shader's uniform
-         */
-        inline ShaderUniform* FindShaderUniformByName(std::string uniform_name){
-            for(std::vector<ShaderUniform*>::iterator it = shaderUniforms.begin(); it != shaderUniforms.end(); ++it){
-                if((*it)->GetName() == uniform_name) return (*it);
-            }
-            return nullptr;
-        }
+        inline unsigned int GetOpenGLProgram();
 
-        /** Returns OpenGL shader object
-        */
-        inline GLenum Get(){return this->_program;}
-
-        /** Links sub shaders together (in OpenGL program)
+        /*  Links sub shaders together (in OpenGL program)
          *  sub_shaders - Array of SubShader objects
-         *  num - num of elements in array
-         */
-        void Link(SubShader** sub_shaders, unsigned int num);
+         *  num - num of elements in array */
+        ///    !! Doesn't attach or save this sub_shaders!!
+        void Link(SubShader** sub_shaders, const unsigned int& num);
 
-        /** Use this shader
-         */
-        inline void Use(){
-            glUseProgramObjectARB(this->_program);
-            for(auto it = shaderUniforms.begin(); it != shaderUniforms.end(); ++it){
-                if((*it)->GetValuePtr() == nullptr) continue;
-                if((*it)->GetType() == ShaderUniformTypes::INT) glUniform1i((*it)->GetOpenGLLocation(), ((int*)(*it)->GetValuePtr())[0]);
-                if((*it)->GetType() == ShaderUniformTypes::FLOAT) glUniform1f((*it)->GetOpenGLLocation(), ((float*)(*it)->GetValuePtr())[0]);
-                if((*it)->GetType() == ShaderUniformTypes::VEC2) glUniform2f((*it)->GetOpenGLLocation(), ((float*)(*it)->GetValuePtr())[0], ((float*)(*it)->GetValuePtr())[1]);
-                if((*it)->GetType() == ShaderUniformTypes::VEC3) glUniform3f((*it)->GetOpenGLLocation(), ((float*)(*it)->GetValuePtr())[0], ((float*)(*it)->GetValuePtr())[1], ((float*)(*it)->GetValuePtr())[2]);
-                if((*it)->GetType() == ShaderUniformTypes::VEC4) glUniform4f((*it)->GetOpenGLLocation(), ((float*)(*it)->GetValuePtr())[0], ((float*)(*it)->GetValuePtr())[1], ((float*)(*it)->GetValuePtr())[2], ((float*)(*it)->GetValuePtr())[3]);
-                if((*it)->GetType() == ShaderUniformTypes::MAT4) {
-                    glUniformMatrix4fv((*it)->GetOpenGLLocation(), 1, GL_FALSE, (float*)&(((glm::mat4*)(*it)->GetValuePtr())[0][0]));
-                }
-            }
-        }
+        //Link attached subs
+        void Link();
+
+        inline void AttachSubShader(SubShader* sub);
+        inline void DetachSubShader(SubShader* sub);
+        inline void DetachAllSubShaders();
+
+        void Use();
 
         virtual bool Load();
         virtual void UnLoad();
 
-        /** Links sub shaders together (in OpenGL program)
+        /*  Links sub shaders together (in OpenGL program)
          *  sub_shaders - Array of SubShader objects
-         *  num - num of elements in array
-         */
+         *  num - num of elements in array */
         Shader(ResourceManager* manager, const std::string& name, const std::string& source);
 
-        /** Deletes OpenGL shader object */
+        /* Deletes OpenGL shader object */
         virtual ~Shader();
     protected:
         unsigned int _program; //OpenGL shader program
-        std::vector<ShaderUniform*> shaderUniforms;
-        std::vector<ShaderUniformBlock*> shaderUniformBlocks;
+        std::vector<SubShader*> _sub_shaders;
+        std::vector<ShaderUniform*> _shaderUniforms;
+        std::vector<ShaderUniformBlock*> _shaderUniformBlocks;
     };
 
     class ShaderManager : public virtual MR::ResourceManager{
     public:
         virtual Resource* Create(const std::string& name, const std::string& source);
-        inline Shader* NeedShader(const std::string& source){ return dynamic_cast<Shader*>(Need(source)); }
+        inline Shader* NeedShader(const std::string& source);
 
         ShaderManager() : ResourceManager() {}
-        virtual ~ShaderManager(){}
+        virtual ~ShaderManager() {}
 
         static ShaderManager* Instance(){
             static ShaderManager* m = new ShaderManager();
             return m;
         }
     };
+}
+
+/** INLINES **/
+
+const char* MR::ShaderUniform::GetName(){
+    return _name;
+}
+
+MR::ShaderUniformTypes MR::ShaderUniform::GetType(){
+    return _type;
+}
+
+int MR::ShaderUniform::GetOpenGLLocation(){
+    return _uniform_location;
+}
+
+void MR::ShaderUniform::SetValuePtr(void* p){
+    _value = p;
+    OnNewValuePtr(this, p);
+}
+
+void* MR::ShaderUniform::GetValuePtr(){
+    return _value;
+}
+
+int MR::ShaderUniformBlock::GetOpenGLIndex() {
+    return _uniform_block_index;
+}
+
+unsigned char* MR::ShaderUniformBlock::GetData() {
+    return _data;
+}
+
+const char* MR::ShaderUniformBlock::GetName() {
+    return _name;
+}
+
+int MR::ShaderUniformBlock::GetBlockSize() {
+    return _block_size;
+}
+
+int MR::ShaderUniformBlock::GetNumUniforms() {
+    return _num_uniforms;
+}
+
+const char** MR::ShaderUniformBlock::GetUniformNames() {
+    return _uniform_names;
+}
+
+unsigned int* MR::ShaderUniformBlock::GetUniformIndecies() {
+    return _uniform_indecies;
+}
+
+int* MR::ShaderUniformBlock::GetUniformOffsets() {
+    return _uniform_offsets;
+}
+
+unsigned int MR::SubShader::Get(){
+    return this->_shader;
+}
+
+MR::SubShader::Type MR::SubShader::GetType(){
+    return this->_type;
+}
+
+MR::ShaderUniform* MR::Shader::CreateUniform(std::string uniform_name, MR::ShaderUniformTypes type, void* value){
+    MR::ShaderUniform* p = new MR::ShaderUniform(uniform_name.c_str(), type, value, _program);
+    _shaderUniforms.push_back(p);
+    return p;
+}
+
+MR::ShaderUniform* MR::Shader::CreateUniform(std::string uniform_name, int* value){
+    return CreateUniform(uniform_name, MR::ShaderUniformTypes::INT, value);
+}
+
+MR::ShaderUniform* MR::Shader::CreateUniform(std::string uniform_name, float* value){
+    return CreateUniform(uniform_name, MR::ShaderUniformTypes::FLOAT, value);
+}
+
+MR::ShaderUniform* MR::Shader::CreateUniform(std::string uniform_name, glm::vec2* value){
+    return CreateUniform(uniform_name, MR::ShaderUniformTypes::VEC2, value);
+}
+
+MR::ShaderUniform* MR::Shader::CreateUniform(std::string uniform_name, glm::vec3* value){
+    return CreateUniform(uniform_name, MR::ShaderUniformTypes::VEC3, value);
+}
+
+MR::ShaderUniform* MR::Shader::CreateUniform(std::string uniform_name, glm::vec4* value){
+    return CreateUniform(uniform_name, MR::ShaderUniformTypes::VEC4, value);
+}
+
+MR::ShaderUniform* MR::Shader::CreateUniform(std::string uniform_name, glm::mat4* value){
+    return CreateUniform(uniform_name, MR::ShaderUniformTypes::MAT4, value);
+}
+
+MR::ShaderUniformBlock* MR::Shader::CreateUniformBlock(const char* Name, const int& NumUniforms, const char** UniformNames) {
+    MR::ShaderUniformBlock* p = new MR::ShaderUniformBlock(Name, NumUniforms,UniformNames,_program);
+    _shaderUniformBlocks.push_back(p);
+    return p;
+}
+
+void MR::Shader::DeleteUniform(MR::ShaderUniform* su){
+    std::vector<ShaderUniform*>::iterator it = std::find(_shaderUniforms.begin(), _shaderUniforms.end(), su);
+    if(it == _shaderUniforms.end()) return;
+    delete (*it);
+    _shaderUniforms.erase(it);
+}
+
+MR::ShaderUniform* MR::Shader::FindShaderUniform(std::string uniform_name){
+    for(std::vector<ShaderUniform*>::iterator it = _shaderUniforms.begin(); it != _shaderUniforms.end(); ++it){
+        if((*it)->GetName() == uniform_name) return (*it);
+    }
+    return nullptr;
+}
+
+unsigned int MR::Shader::GetOpenGLProgram(){
+    return this->_program;
+}
+
+MR::Shader* MR::ShaderManager::NeedShader(const std::string& source){
+    return dynamic_cast<Shader*>(Need(source));
+}
+
+void MR::Shader::AttachSubShader(SubShader* sub){
+    _sub_shaders.push_back(sub);
+}
+
+void MR::Shader::DetachSubShader(SubShader* sub){
+    std::vector<SubShader*>::iterator it = std::find(_sub_shaders.begin(), _sub_shaders.end(), sub);
+    if(it == _sub_shaders.end()) return;
+    _sub_shaders.erase(it);
+}
+
+void MR::Shader::DetachAllSubShaders(){
+    _sub_shaders.clear();
 }
 
 #endif

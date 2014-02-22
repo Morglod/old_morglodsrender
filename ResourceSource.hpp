@@ -3,7 +3,10 @@
 #ifndef _MR_RESOURCE_SOURCE_H_
 #define _MR_RESOURCE_SOURCE_H_
 
-#include "pre.hpp"
+#include "Config.hpp"
+
+#include <string>
+#include <fstream>
 
 namespace MR {
 class ResSource {

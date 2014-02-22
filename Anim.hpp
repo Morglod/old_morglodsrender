@@ -5,8 +5,12 @@
 
 #define MR_ANIM_TIME_TYPE float
 
-#include "pre.hpp"
 #include "Types.hpp"
+
+#include <vector>
+#ifndef glm_glm
+#   include <glm/glm.hpp>
+#endif
 
 namespace MR{
 

@@ -3,9 +3,10 @@
 #ifndef _MR_RENDER_TARGET_H_
 #define _MR_RENDER_TARGET_H_
 
-#include "pre.hpp"
 #include "Events.hpp"
 #include "RenderContext.hpp"
+
+#include <string>
 
 namespace MR {
 
@@ -13,23 +14,16 @@ class RenderTarget {
 public:
     MR::Event<const std::string&> OnNameChanged;
 
-    inline std::string GetName(){ return _name; }
-    inline void SetName(const std::string& n){
-        if(_name != n) {
-            _name = n;
-            OnNameChanged(this, n);
-        }
-    }
+    inline std::string GetName();
+    void SetName(const std::string& n);
 
-    inline void Bind(RenderContext& rc){
-        glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffer);
-        rc.SetViewport(0, 0, _width, _height);
-    }
+    void Bind(RenderContext& rc);
+    void Bind(RenderContext* rc);
 
-    inline void Unbind(){ glBindFramebuffer(GL_FRAMEBUFFER, 0); }
-    inline unsigned short GetWidth(){ return _width; }
-    inline unsigned short GetHeight(){ return _height; }
-    inline unsigned int GetTargetTexture(const unsigned char & i){ return _targetTextures[i]; }
+    void Unbind();
+    inline unsigned short GetWidth();
+    inline unsigned short GetHeight();
+    inline unsigned int GetTargetTexture(const unsigned char & i);
 
     /** i - index of texture in (targetTextures)
         iFormat - internal format
@@ -52,6 +46,22 @@ protected:
     unsigned int _depthrenderbuffer;
 };
 
+}
+
+std::string MR::RenderTarget::GetName() {
+    return _name;
+}
+
+unsigned short MR::RenderTarget::GetWidth() {
+    return _width;
+}
+
+unsigned short MR::RenderTarget::GetHeight() {
+    return _height;
+}
+
+unsigned int MR::RenderTarget::GetTargetTexture(const unsigned char & i) {
+    return _targetTextures[i];
 }
 
 #endif

@@ -3,7 +3,7 @@
 #ifndef _MR_RESOURCE_MANAGER_H_
 #define _MR_RESOURCE_MANAGER_H_
 
-#include "pre.hpp"
+#include "Config.hpp"
 #include "Events.hpp"
 
 namespace MR{

@@ -92,6 +92,7 @@
 		<Unit filename="Scene.hpp" />
 		<Unit filename="Shader.cpp" />
 		<Unit filename="Shader.hpp" />
+		<Unit filename="SimpleApp.hpp" />
 		<Unit filename="Sprite.hpp" />
 		<Unit filename="SpriteBatch.hpp" />
 		<Unit filename="Texture.cpp" />
@@ -99,7 +100,7 @@
 		<Unit filename="Transformation.cpp" />
 		<Unit filename="Transformation.hpp" />
 		<Unit filename="Types.hpp" />
-		<Unit filename="pre.hpp" />
+		<Unit filename="_pre.hpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />

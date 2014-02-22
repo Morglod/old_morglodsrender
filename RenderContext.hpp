@@ -3,9 +3,13 @@
 #ifndef _MR_RENDER_MANAGER_H_
 #define _MR_RENDER_MANAGER_H_
 
-#include "pre.hpp"
+#include "Config.hpp"
 #include "Events.hpp"
 #include "Texture.hpp"
+
+#ifndef glm_glm
+#   include <glm/glm.hpp>
+#endif
 
 namespace MR {
 class Camera;
@@ -29,15 +33,15 @@ public:
 
     inline GeometryBuffer* GetCurrentGeometryBuffer() { return _gb; }
     inline Shader* GetCurrentShader() { return _sh; }
-    inline GLuint GetCurrentTexture(GLenum stage) { return _tx[stage-GL_TEXTURE0]; }
-    inline GLuint* GetCurrentTextures() { return &_tx[0]; }
+    inline unsigned int GetCurrentTexture(unsigned int stage) { return _tx[stage-0x84C0]; }
+    inline unsigned int* GetCurrentTextures() { return &_tx[0]; }
 
     void UseGeometryBuffer(GeometryBuffer* gb);
     void UseShader(Shader* sh);
-    void ActiveTextureUnit(const GLenum & u);
-    void BindTexture(const GLuint& tx, GLenum texStage);
-    void BindTexture(Texture* tx, GLenum texStage);
-    void UseTextureSettings(TextureSettings::Ptr ts, GLenum texStage);
+    void ActiveTextureUnit(const unsigned int & u);
+    void BindTexture(const unsigned int& tx, unsigned int texStage);
+    void BindTexture(Texture* tx, unsigned int texStage);
+    void UseTextureSettings(TextureSettings::Ptr ts, unsigned int texStage);
     void SetDefaultMaterial(Material* mat);
     void SetViewport(const unsigned short & x, const unsigned short & y, const unsigned short & width, const unsigned short & height);
     void UseDefaultMaterialState(bool s);
@@ -49,25 +53,10 @@ public:
 
     //Calculates frames per second
     //timeType is data type of time in calculations
-    template<typename timeType>
-    static unsigned short inline FPS(){
-        static timeType lastTime = 0.0;
-        static timeType time = 0.0;
-        static unsigned short frames = 0;
-        static unsigned short lastFps = 0;
+    static unsigned short FPS();
 
-        timeType currentTime = (timeType)glfwGetTime();
-        time += currentTime-lastTime;
-        lastTime = currentTime;
-        ++frames;
-        if(time > 1){
-            lastFps = frames;
-            time -= 1.0;
-            frames = 0;
-        }
-
-        return lastFps;
-    }
+    //Call it only one time each frame or calculate it in your code
+    static float Delta();
 
     RenderContext();
     ~RenderContext();
@@ -87,11 +76,11 @@ protected:
     //-----------
 
     //Textures--
-    GLuint activedTextureUnit = GL_TEXTURE0;
-    GLuint _tx[GL_TEXTURE31-GL_TEXTURE0+1];
-    unsigned int _tai[GL_TEXTURE31-GL_TEXTURE0+1]; //texture array index
-    bool _tab[GL_TEXTURE31-GL_TEXTURE0+1]; //is texture array used
-    TextureSettings::Ptr _ts[GL_TEXTURE31-GL_TEXTURE0+1];
+    unsigned int activedTextureUnit = 0x84C0; //GL_TEXTURE0
+    unsigned int _tx[32];
+    unsigned int _tai[32]; //texture array index
+    bool _tab[32]; //is texture array used
+    TextureSettings::Ptr _ts[32];
 
     ///TODO---------------------------------------------------------------------------------------------------------------------
     int _diffuseTextureUnit = 0;

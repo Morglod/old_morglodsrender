@@ -4,6 +4,7 @@
 #define _MR_TYPES_H_
 
 #include <vector>
+#include <algorithm>
 #include <memory>
 
 namespace MR{

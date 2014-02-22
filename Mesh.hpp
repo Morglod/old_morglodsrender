@@ -3,7 +3,6 @@
 #ifndef _MR_MESH_H_
 #define _MR_MESH_H_
 
-#include "pre.hpp"
 #include "ResourceManager.hpp"
 
 namespace MR {

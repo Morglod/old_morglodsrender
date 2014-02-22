@@ -3,7 +3,14 @@
 #ifndef _MR_MATERIAL_H_
 #define _MR_MATERIAL_H_
 
-#include "pre.hpp"
+#include "Config.hpp"
+
+#ifndef glm_glm
+#   include <glm/glm.hpp>
+#endif
+
+#include <string>
+#include <vector>
 
 namespace MR {
 class Shader;
@@ -33,21 +40,21 @@ public:
 
     inline Material* GetMaterial() { return parent; }
     inline Texture* GetDiffuseTexture() { return diffuseTexture; }
-    inline GLenum GetDiffuseTextureStage() { return diffuseTextureStage; }
+    inline unsigned int GetDiffuseTextureStage() { return diffuseTextureStage; }
     inline Shader* GetShader() { return shader; }
     inline bool IsTwoSided() { return twoSided; }
     inline void SetDiffuseTexture(Texture* t) {diffuseTexture = t;}
-    inline void SetDiffuseTextureStage(const GLenum& s) { diffuseTextureStage = s; }
+    inline void SetDiffuseTextureStage(const unsigned int& s) { diffuseTextureStage = s; }
     void SetShader(Shader* sh);
     inline void SetTwoSided(const bool& ts) { twoSided = ts; }
 
     MaterialPass(Material* mat);
-    MaterialPass(Material* mat, Texture* dTex, GLenum dTexStage, Shader* sh);
+    MaterialPass(Material* mat, Texture* dTex, unsigned int dTexStage, Shader* sh);
 
 protected:
     Material* parent;
     Texture* diffuseTexture;
-    GLenum diffuseTextureStage; //GL_TEXTURE0/GL_TEXTURE1/GL_TEXTURE2 etc
+    unsigned int diffuseTextureStage; //GL_TEXTURE0/GL_TEXTURE1/GL_TEXTURE2 etc
     Shader* shader; //pointer to shader
     bool twoSided;
     MaterialFlag flag;

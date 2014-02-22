@@ -3,6 +3,10 @@
 #include "Texture.hpp"
 #include "Shader.hpp"
 
+#ifndef __glew_h__
+#   include <GL\glew.h>
+#endif
+
 void MR::MaterialPass::Use(RenderContext* rc){
     if( (flag.always) || (parent->GetManager()->ActivedFlag() == flag.flag) ){
         if(diffuseTexture) rc->BindTexture(diffuseTexture, diffuseTextureStage);

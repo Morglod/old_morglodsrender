@@ -20,14 +20,17 @@ namespace MR {
 
 class Exception : public std::exception {
 public:
-    inline const char* what() { return t; }
-    Exception(const std::string& s) : t(s.c_str()) {}
+    const char* what() { return t.c_str(); }
+    Exception(const std::string& s) : t(s) {}
 protected:
-    const char* t;
+    std::string t;
 };
 
     void ThrowExceptions(const bool& state);
+    void ThrowCriticalExceptions(const bool& state);
+
     bool ThrowExceptions();
+    bool ThrowCriticalExceptions();
 }
 
 #endif

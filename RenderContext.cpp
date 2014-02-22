@@ -1,6 +1,5 @@
 #include "RenderContext.hpp"
 
-
 #include "Log.hpp"
 #include "Camera.hpp"
 #include "GeometryBuffer.hpp"
@@ -10,6 +9,14 @@
 #include "Material.hpp"
 #include "Model.hpp"
 #include "Entity.hpp"
+
+#ifndef __glew_h__
+#   include <GL\glew.h>
+#endif
+
+#ifndef _glfw3_h_
+#   include <GLFW\glfw3.h>
+#endif
 
 namespace MR {
 
@@ -52,8 +59,7 @@ void RenderContext::BindTexture(Texture* tx, GLenum texStage) {
         _tx[texStage] = tx->_texArray->GetGLTexture();
         glBindTexture(GL_TEXTURE_2D_ARRAY, _tx[texStage]);
         //UseTextureSettings(tx->GetSettings(), texStage+GL_TEXTURE0);
-    }
-    else {
+    } else {
         BindTexture(tx->GetGLTexture(), texStage);
         UseTextureSettings(tx->GetSettings(), texStage);
     }
@@ -119,7 +125,7 @@ void RenderContext::DrawGeomWithMaterial(glm::mat4* model_mat, MR::GeometryBuffe
 void RenderContext::DrawEntity(MR::Entity* ent) {
     if(!ent->GetModel()) return;
 
-    float dist = MR::Transform::CalcDist( camera->GetCameraPosition(), ent->GetTransformP()->GetPos() );
+    float dist = MR::Transform::CalcDist( camera->GetPosition(), ent->GetTransformP()->GetPos() );
     for(unsigned short i = 0; i < ent->GetModel()->GetLod( dist )->GetMeshesNum(); ++i) {
         MR::Mesh* mesh = ent->GetModel()->GetLod( dist )->GetMesh(i);
         if(mesh->GetMaterialsNum() == 0) {
@@ -166,6 +172,33 @@ RenderContext::~RenderContext() {
     MR::ShaderManager::Instance()->RemoveAll();
     delete MR::ShaderManager::Instance();
     glfwTerminate();
+}
+
+unsigned short MR::RenderContext::FPS() {
+    static float lastTime = 0.0;
+    static float time = 0.0;
+    static unsigned short frames = 0;
+    static unsigned short lastFps = 0;
+
+    float currentTime = (float)glfwGetTime();
+    time += currentTime-lastTime;
+    lastTime = currentTime;
+    ++frames;
+    if(time > 1) {
+        lastFps = frames;
+        time -= 1.0;
+        frames = 0;
+    }
+
+    return lastFps;
+}
+
+float MR::RenderContext::Delta() {
+    static float lastTime = 0;
+    float cur = (float)glfwGetTime();
+    float d = cur-lastTime;
+    lastTime = cur;
+    return d;
 }
 
 }

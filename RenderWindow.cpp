@@ -2,6 +2,14 @@
 #include "Log.hpp"
 #include "MachineInfo.hpp"
 
+#ifndef __glew_h__
+#   include <GL\glew.h>
+#endif
+
+#ifndef _glfw3_h_
+#   include <GLFW\glfw3.h>
+#endif
+
 namespace MR {
 
 void RenderWindow::window_pos_callback(GLFWwindow* window, int x, int y) {
@@ -67,6 +75,90 @@ void RenderWindow::window_refresh_callback(GLFWwindow* window) {
 void RenderWindow::framebuffer_size_callback(GLFWwindow* window, int w, int h) {
     RenderWindow* p = (RenderWindow*)glfwGetWindowUserPointer(window);
     p->OnFrameBufferSizeChanged(p, w, h);
+}
+
+void RenderWindow::GetPos(int* x, int* y) {
+    glfwGetWindowPos(glfw_handle, x, y);
+}
+
+void RenderWindow::GetSize(int* w, int* h) {
+    glfwGetWindowSize(glfw_handle, w, h);
+}
+
+void RenderWindow::GetFrameBufferSize(int* w, int* h) {
+    glfwGetFramebufferSize(glfw_handle, w, h);
+}
+
+const GLFWgammaramp* RenderWindow::GetGLFWGammaRamp() {
+    return glfwGetGammaRamp(glfwGetWindowMonitor(glfw_handle));
+}
+
+const char* RenderWindow::GetClipboardString() {
+    return glfwGetClipboardString(glfw_handle);
+}
+
+void RenderWindow::SetPos(const int& x, const int& y) {
+    glfwSetWindowPos(glfw_handle, x, y);
+    OnPosChanged(this, x, y);
+}
+
+void RenderWindow::SetSize(const int& w, const int& h) {
+    glfwSetWindowSize(glfw_handle, w, h);
+    OnSizeChanged(this, w, h);
+}
+
+void RenderWindow::SetTitleC(const char* s) {
+    titlec = (char*)s;
+    glfwSetWindowTitle(glfw_handle, s);
+    OnTitleChanged(this, s);
+}
+
+void RenderWindow::SetClipboardString(const char* s) {
+    glfwSetClipboardString(glfw_handle, s);
+}
+
+void RenderWindow::SyncWait(const int& refreshes) {
+    glfwSwapInterval(refreshes);
+    OnSyncChanged(this, refreshes);
+}
+
+void RenderWindow::SetGamma(const float& gamma) {
+    glfwSetGamma(glfwGetWindowMonitor(glfw_handle), gamma);
+    OnGammaChanged(this, gamma);
+}
+
+void RenderWindow::Visible(const bool& state) {
+    if(state) glfwShowWindow(glfw_handle);
+    else glfwHideWindow(glfw_handle);
+    OnVisibilityChanged(this, state);
+}
+
+bool RenderWindow::IsFocused() {
+    return glfwGetWindowAttrib(glfw_handle, GLFW_FOCUSED);
+}
+bool RenderWindow::IsIconified() {
+    return glfwGetWindowAttrib(glfw_handle, GLFW_ICONIFIED);
+}
+bool RenderWindow::IsVisible() {
+    return glfwGetWindowAttrib(glfw_handle, GLFW_VISIBLE);
+}
+bool RenderWindow::IsResizable() {
+    return glfwGetWindowAttrib(glfw_handle, GLFW_RESIZABLE);
+}
+bool RenderWindow::IsDecorated() {
+    return glfwGetWindowAttrib(glfw_handle, GLFW_DECORATED);
+}
+bool RenderWindow::ShouldClose() {
+    return glfwWindowShouldClose(glfw_handle);
+}
+void RenderWindow::Close() {
+    glfwSetWindowShouldClose(glfw_handle, 1);
+}
+void RenderWindow::SwapBuffers() {
+    glfwSwapBuffers(glfw_handle);
+}
+void RenderWindow::MakeCurrent() {
+    glfwMakeContextCurrent(glfw_handle);
 }
 
 RenderWindow::RenderWindow(const std::string& title, const int& width, const int& height, const RenderWindowHints& hints, const RenderWindowCallbacks& callbacks, GLFWwindow* parent_share_resources) :

@@ -3,7 +3,7 @@
 #ifndef _MR_SCENE_H_
 #define _MR_SCENE_H_
 
-#include "pre.hpp"
+#include "Config.hpp"
 #include "Events.hpp"
 #include "Entity.hpp"
 

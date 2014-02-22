@@ -7,6 +7,27 @@
 
 namespace MR {
 
+void RenderTarget::SetName(const std::string& n) {
+    if(_name != n) {
+        _name = n;
+        OnNameChanged(this, n);
+    }
+}
+
+void RenderTarget::Bind(RenderContext& rc){
+    glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffer);
+    rc.SetViewport(0, 0, _width, _height);
+}
+
+void RenderTarget::Bind(RenderContext* rc){
+    glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffer);
+    rc->SetViewport(0, 0, _width, _height);
+}
+
+void RenderTarget::Unbind(){
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void RenderTarget::CreateTargetTexture(const unsigned char & i, const GLenum & iFormat, const GLenum & Format, const GLenum & Type){
     glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffer);
 

@@ -3,17 +3,21 @@
 #include "Log.hpp"
 #include "Transformation.hpp"
 
+#ifndef __glew_h__
+#   include <GL\glew.h>
+#endif
+
 namespace MR {
 
 VertexDeclarationType::VertexDeclarationType(VertexDeclarationTypesEnum t, const GLvoid *p) : type(t), pointer(p) {
 }
 
-VertexDeclaration::VertexDeclaration(VertexDeclarationType* vdt, unsigned short dn, GLenum dt) {
+VertexDeclaration::VertexDeclaration(VertexDeclarationType* vdt, const unsigned short& dn, const DataType& dt) {
     this->decl_types = vdt;
     this->decl_types_num = dn;
     this->data_type = dt;
 
-    switch(dt) {
+    switch( (int)dt ) {
     case GL_INT:
         this->stride_size = sizeof(int);
         break;
@@ -43,11 +47,11 @@ VertexDeclaration::~VertexDeclaration() {
     this->decl_types = nullptr;
 }
 
-IndexDeclaration::IndexDeclaration(GLenum dt) : data_type(dt) {}
+IndexDeclaration::IndexDeclaration(const DataType& dt) : data_type(dt) {}
 
 void InstancedDataType::Bind() {
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glVertexAttribPointer(shader_location, size, type, normalized, stride, pointer);
+    glVertexAttribPointer(shader_location, size, (unsigned int)type, normalized, stride, pointer);
     glEnableVertexAttribArray(shader_location);
     glVertexAttribDivisor(shader_location, every_vertexes);
 }
@@ -96,11 +100,11 @@ void GeometryBuffer::Unbind() {
 
 void GeometryBuffer::Draw() {
     if( (instDataBuffer != nullptr) && (drawInstDataBuffer) ) {
-        if(_idecl == nullptr) glDrawArraysInstanced(_draw_mode, 0, _vertexes_num, instDataBuffer->instances_num);
-        else glDrawElementsInstanced(_draw_mode, _indexes_num, _idecl->data_type, (void*)0, instDataBuffer->instances_num);
+        if(_idecl == nullptr) glDrawArraysInstanced((unsigned int)_draw_mode, 0, _vertexes_num, instDataBuffer->instances_num);
+        else glDrawElementsInstanced((unsigned int)_draw_mode, _indexes_num, (unsigned int)_idecl->data_type, (void*)0, instDataBuffer->instances_num);
     } else {
-        if(_idecl == nullptr) glDrawArrays(_draw_mode, 0, _vertexes_num);
-        else glDrawElements(_draw_mode, _indexes_num, _idecl->data_type, (void*)0);
+        if(_idecl == nullptr) glDrawArrays((unsigned int)_draw_mode, 0, _vertexes_num);
+        else glDrawElements((unsigned int)_draw_mode, _indexes_num, (unsigned int)_idecl->data_type, (void*)0);
     }
 }
 
@@ -111,7 +115,7 @@ void GeometryBuffer::SetInstData(InstancedDataBuffer* idb) {
     }
 }
 
-void GeometryBuffer::SetDrawMode(const GLenum& dm) {
+void GeometryBuffer::SetDrawMode(const DrawMode& dm) {
     if(_draw_mode != dm) {
         _draw_mode = dm;
         OnDrawModeChanged(this, dm);
@@ -193,7 +197,7 @@ GeometryBuffer* GeometryBuffer::Copy() {
     return (new GeometryBuffer(vdc, idc, vdata, this->_data_size, idata, _idata_size, _vertexes_num, _indexes_num, _data_usage, _idata_usage, _draw_mode));
 }
 
-GeometryBuffer::GeometryBuffer(VertexDeclaration* vd, IndexDeclaration* id, GLuint vb, GLuint ib, unsigned int vnum, unsigned int inum, GLenum drawm, bool calcR) {
+GeometryBuffer::GeometryBuffer(VertexDeclaration* vd, IndexDeclaration* id, GLuint vb, GLuint ib, unsigned int vnum, unsigned int inum, const DrawMode& drawm, bool calcR) {
     this->_draw_mode = drawm;
     this->_vdecl = vd;
     this->_idecl = id;
@@ -204,7 +208,7 @@ GeometryBuffer::GeometryBuffer(VertexDeclaration* vd, IndexDeclaration* id, GLui
     if(calcR) CalcRadius();
 }
 
-GeometryBuffer::GeometryBuffer(VertexDeclaration* vd, IndexDeclaration* id, void* data, size_t data_size, void* idata, size_t idata_size, unsigned int vnum, unsigned int inum, GLenum usage, GLenum iusage, GLenum drawm, bool calcR)
+GeometryBuffer::GeometryBuffer(VertexDeclaration* vd, IndexDeclaration* id, void* data, size_t data_size, void* idata, size_t idata_size, unsigned int vnum, unsigned int inum, const Usage& usage, const Usage& iusage, const DrawMode& drawm, bool calcR)
     : _vdecl(vd), _idecl(id), _vertexes_num(vnum), _indexes_num(inum), _draw_mode(drawm), _data_size(data_size), _idata_size(idata_size), _data_usage(usage), _idata_usage(iusage) {
     //Create vertex array
     glGenVertexArrays(1, &_vao);
@@ -213,31 +217,31 @@ GeometryBuffer::GeometryBuffer(VertexDeclaration* vd, IndexDeclaration* id, void
     //Create data buffer
     glGenBuffers(1, &_vertex_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, _vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, data_size, data, usage);
+    glBufferData(GL_ARRAY_BUFFER, data_size, data, (unsigned int)usage);
 
     //Point attributes
 
     VertexDeclarationType* v_pos = _vdecl->get(VertexDeclarationTypesEnum::VDTE_POSITION);
     if(v_pos != nullptr) {
-        glVertexAttribPointer(MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION, v_pos->ElementsNum(), _vdecl->data_type, GL_FALSE, _vdecl->stride_size, v_pos->pointer);
+        glVertexAttribPointer(MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION, v_pos->ElementsNum(), (unsigned int)_vdecl->data_type, GL_FALSE, _vdecl->stride_size, v_pos->pointer);
         glEnableVertexAttribArray(MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION);
     }
 
     VertexDeclarationType* v_texcoord = _vdecl->get(VertexDeclarationTypesEnum::VDTE_TEXTURE_COORD);
     if(v_texcoord != nullptr) {
-        glVertexAttribPointer(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION, v_texcoord->ElementsNum(), _vdecl->data_type, GL_FALSE, _vdecl->stride_size, v_texcoord->pointer);
+        glVertexAttribPointer(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION, v_texcoord->ElementsNum(), (unsigned int)_vdecl->data_type, GL_FALSE, _vdecl->stride_size, v_texcoord->pointer);
         glEnableVertexAttribArray(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION);
     }
 
     VertexDeclarationType* v_norm = _vdecl->get(VertexDeclarationTypesEnum::VDTE_NORMAL);
     if(v_norm != nullptr) {
-        glVertexAttribPointer(MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION, v_norm->ElementsNum(), _vdecl->data_type, GL_FALSE, _vdecl->stride_size, v_norm->pointer);
+        glVertexAttribPointer(MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION, v_norm->ElementsNum(), (unsigned int)_vdecl->data_type, GL_FALSE, _vdecl->stride_size, v_norm->pointer);
         glEnableVertexAttribArray(MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION);
     }
 
     VertexDeclarationType* v_color = _vdecl->get(VertexDeclarationTypesEnum::VDTE_COLOR);
     if(v_color != nullptr) {
-        glVertexAttribPointer(MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION, v_color->ElementsNum(), _vdecl->data_type, GL_FALSE, _vdecl->stride_size, v_color->pointer);
+        glVertexAttribPointer(MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION, v_color->ElementsNum(), (unsigned int)_vdecl->data_type, GL_FALSE, _vdecl->stride_size, v_color->pointer);
         glEnableVertexAttribArray(MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION);
     }
 
@@ -248,7 +252,7 @@ GeometryBuffer::GeometryBuffer(VertexDeclaration* vd, IndexDeclaration* id, void
     if(_idecl != nullptr) {
         glGenBuffers(1, &this->_index_buffer);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->_index_buffer);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, idata_size, idata, iusage);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, idata_size, idata, (unsigned int)iusage);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
