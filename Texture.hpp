@@ -9,6 +9,11 @@
 #include "Types.hpp"
 #include "Events.hpp"
 
+#ifndef glm_glm
+#   include <glm/glm.hpp>
+#   include <glm/gtc/matrix_transform.hpp>
+#endif
+
 namespace MR{
     enum class GLTextureLoadFormat : int {
         Auto = 0,
@@ -99,7 +104,7 @@ namespace MR{
     unsigned char* LoadImage(const std::string& file, int* width, int* height, GLTextureLoadFormat* format, const GLTextureLoadFormat& force_format);
 
     /** **/
-
+    class Camera;
     class RenderContext;
 
     class Texture;
@@ -107,10 +112,12 @@ namespace MR{
     class TextureSettings;
     class TextureManager;
 
-    class _TS_WithPtr : public WithPtr<TextureSettings> {};
+    class RenderTarget;
 
-    class TextureSettings : public _TS_WithPtr, Copyable<_TS_WithPtr::Ptr> {
+    class TextureSettings : public Copyable<std::shared_ptr<TextureSettings>> {
     public:
+        typedef std::shared_ptr<TextureSettings> Ptr;
+
         enum class MinFilter : int {
             NEAREST_MIPMAP_NEAREST = 0x2700,
             LINEAR_MIPMAP_NEAREST = 0x2701,
@@ -207,6 +214,8 @@ namespace MR{
 
     class Texture : public virtual Resource {
     public:
+        typedef std::shared_ptr<Texture> Ptr;
+
         enum class InternalFormat : int {
             ALPHA = 0x1906,
             ALPHA4 = 0x803B,
@@ -284,6 +293,20 @@ namespace MR{
             UNSIGNED_INT_2_10_10_10_REV = 0x8368
         };
 
+        enum class Target : unsigned int {
+            Base1D = 0x0DE0,
+            Base2D = 0x0DE1,
+            Base3D = 0x806F,
+            Rectangle = 0x84F5,
+            Buffer = 0x8C2A,
+            CubeMap = 0x8513,
+            Array1D = 0x8C18,
+            Array2D = 0x8C1A,
+            CubeMapArray = 0x9009,
+            Multisample2D = 0x9100,
+            Multisample2DArray = 0x9102
+        };
+
         /* SENDER - Texture pointer */
         MR::Event<void*> OnInfoReset;
 
@@ -346,6 +369,8 @@ namespace MR{
         unsigned int gl_texture; //OpenGL texture
         TextureSettings::Ptr _settings;
 
+        Target _target = Target::Base2D;
+
         bool _inTextureArray = false;
         unsigned int _textureArrayIndex = 0;
         TextureArray* _texArray = nullptr;
@@ -354,6 +379,25 @@ namespace MR{
         friend class TextureArray;
         friend class TextureManager;
         Texture(MR::ResourceManager* m, const std::string& name, const std::string& source, const unsigned int & glTexture);
+    };
+
+    class CubeMap : public virtual Texture {
+    public:
+        MR::Event<const glm::vec3&> OnCapturePointChanged;
+
+        void SetCapturePoint(const glm::vec3& p);
+        inline glm::vec3 GetCapturePoint();
+
+        void Capture(RenderContext* context);
+
+        MR::RenderTarget* GetRenderTarget();
+
+        CubeMap(MR::ResourceManager* m, const std::string& name, const std::string& source, const unsigned short & Width, const unsigned short & Height);
+        virtual ~CubeMap();
+    protected:
+        glm::vec3 _world_point_pos;
+        MR::Camera* _cam;
+        MR::RenderTarget* _rtarget;
     };
 
     class TextureArray {
@@ -399,8 +443,9 @@ namespace MR{
         virtual Resource* Create(const std::string& name, const std::string& source);
         virtual Resource* Create(const std::string& name, const unsigned int & gl_texture);
         inline Texture* NeedTexture(const std::string& source) { return dynamic_cast<Texture*>(Need(source)); }
+        inline Texture* WhiteTexture();
 
-        TextureManager() : ResourceManager() {}
+        TextureManager();
         virtual ~TextureManager();
 
         static TextureManager* Instance(){
@@ -408,12 +453,22 @@ namespace MR{
             return m;
         }
     protected:
+        MR::Texture* _white;
+
         bool _useTexArrays = false; //experimental
         unsigned int _maxTexturesInArray = 50;
         std::vector<TextureArray*> _tex_arrays;
 
         TextureArray* _StoreTexture(unsigned int* texArrayIndex, void* data, const Texture::InternalFormat& iformat, const Texture::Format& format, const Texture::Type& type, const unsigned short& width, const unsigned short& height);
     };
+}
+
+glm::vec3 MR::CubeMap::GetCapturePoint(){
+    return _world_point_pos;
+}
+
+MR::Texture* MR::TextureManager::WhiteTexture(){
+    return _white;
 }
 
 #endif // _MR_TEXTURE_H_

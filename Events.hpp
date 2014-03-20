@@ -5,13 +5,15 @@
 #ifndef _MR_EVENTS_H_
 #define _MR_EVENTS_H_
 
+#include "Types.hpp"
+
 #include <vector>
 #include <algorithm>
 
 namespace MR {
 
 template<typename... Args>
-class Event {
+class Event : public Super {
 public:
     typedef void (*FuncP)(void* sender, Args... args);
 

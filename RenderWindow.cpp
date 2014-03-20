@@ -133,6 +133,14 @@ void RenderWindow::Visible(const bool& state) {
     OnVisibilityChanged(this, state);
 }
 
+void RenderWindow::SetMousePos(const double& x, const double& y){
+    glfwSetCursorPos(glfw_handle, x, y);
+}
+
+void RenderWindow::GetMousePos(double* x, double* y){
+    glfwGetCursorPos(glfw_handle, x, y);
+}
+
 bool RenderWindow::IsFocused() {
     return glfwGetWindowAttrib(glfw_handle, GLFW_FOCUSED);
 }

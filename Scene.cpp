@@ -78,15 +78,17 @@ void MR::SceneManager::DeleteEntity(Entity* ent) {
 }
 
 void MR::SceneManager::Draw(RenderContext& rc){
-    for(MR::Entity* ent : _entities){
+    /*for(MR::Entity* ent : _entities){
         rc.DrawEntity(ent);
-    }
+    }*/
+    rc.DrawEntity(_entities.data(), _entities.size(), false);
 }
 
 void MR::SceneManager::Draw(RenderContext* rc){
-    for(MR::Entity* ent : _entities){
+    /*for(MR::Entity* ent : _entities){
         rc->DrawEntity(ent);
-    }
+    }*/
+    rc->DrawEntity(_entities.data(), _entities.size(), false);
 }
 
 MR::SceneManager::SceneManager() : _mainCamera(nullptr){

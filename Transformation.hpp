@@ -45,6 +45,7 @@ public:
     inline static glm::vec3 WorldLeftVector() { return glm::vec3(-1,0,0); }
     inline static glm::vec3 WorldRightVector() { return glm::vec3(1,0,0); }
     inline static float CalcDist(const glm::vec3& v1, const glm::vec3& v2) { return glm::distance(v1, v2); }
+
 protected:
     glm::mat4 _mat;
     glm::vec3 _pos;

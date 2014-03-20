@@ -8,6 +8,7 @@
 
 #ifndef glm_glm
 #   include <glm/glm.hpp>
+#   include <glm/gtc/matrix_transform.hpp>
 #endif
 
 namespace MR {
@@ -43,7 +44,7 @@ public:
     inline glm::vec3 GetLeftDirection();
     inline glm::vec3 GetUpDirection();
 
-    inline glm::vec3 GetPosition();
+    inline glm::vec3* GetPosition();
     inline glm::vec3 GetTarget();
     inline glm::vec3 GetUp();
 
@@ -54,8 +55,10 @@ public:
     inline float GetAspectRatio();
     inline float* GetAspectRatioP();
 
+    inline glm::mat4* GetModelMatrix();
     inline glm::mat4* GetViewMatrix();
     inline glm::mat4* GetProjectMatrix();
+    inline glm::mat4* GetInvModelViewMatrix();
     inline glm::mat4* GetMVP();
 
     inline MR::RenderTarget* GetRenderTarget();
@@ -78,6 +81,9 @@ public:
     virtual void SetModelMatrix(glm::mat4* m);
     virtual void SetAutoRecalc(const bool& state);
 
+    virtual void SetPosition(const glm::vec3& p);
+    virtual void SetRotation(const glm::vec3& p);
+
     virtual void CalcViewMatrix();
     virtual void CalcProjectionMatrix();
     virtual void CalcMVP();
@@ -92,7 +98,7 @@ protected:
     CameraMode _cmode;
     CameraProjection _cproj;
 
-    glm::vec3 _pos;
+    glm::vec3* _pos;
     glm::vec3 _rot;
 
     glm::vec3 _direction; //direction mode only
@@ -107,10 +113,11 @@ protected:
     float _zFar;
     float _aspectRatio;
 
-    glm::mat4* _viewMatrix;
-    glm::mat4* _projectionMatrix;
-    glm::mat4* _modelMatrix;
-    glm::mat4* _mvp;
+    glm::mat4* _viewMatrix = new glm::mat4(1.0f);
+    glm::mat4* _projectionMatrix = new glm::mat4(1.0f);
+    glm::mat4* _modelMatrix = new glm::mat4(1.0f);
+    glm::mat4* _inv_modelViewMatrix = new glm::mat4(1.0f);
+    glm::mat4* _mvp = new glm::mat4(1.0f);
 
     bool _autoReCalc;
 
@@ -142,7 +149,7 @@ glm::vec3 MR::Camera::GetUpDirection(){
     return _up_direction;
 }
 
-glm::vec3 MR::Camera::GetPosition() {
+glm::vec3* MR::Camera::GetPosition() {
     return _pos;
 }
 glm::vec3 MR::Camera::GetTarget() {
@@ -171,12 +178,22 @@ float* MR::Camera::GetAspectRatioP() {
     return &_aspectRatio;
 }
 
+glm::mat4* MR::Camera::GetModelMatrix(){
+    return _modelMatrix;
+}
+
+glm::mat4* MR::Camera::GetInvModelViewMatrix(){
+    return _inv_modelViewMatrix;
+}
+
 glm::mat4* MR::Camera::GetViewMatrix() {
     return _viewMatrix;
 }
+
 glm::mat4* MR::Camera::GetProjectMatrix() {
     return _projectionMatrix;
 }
+
 glm::mat4* MR::Camera::GetMVP() {
     return _mvp;
 }

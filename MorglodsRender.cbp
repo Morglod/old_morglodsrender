@@ -99,8 +99,10 @@
 		<Unit filename="Texture.hpp" />
 		<Unit filename="Transformation.cpp" />
 		<Unit filename="Transformation.hpp" />
+		<Unit filename="Types.cpp" />
 		<Unit filename="Types.hpp" />
-		<Unit filename="_pre.hpp" />
+		<Unit filename="UI.cpp" />
+		<Unit filename="UI.hpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />

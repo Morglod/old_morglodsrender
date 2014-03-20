@@ -1,5 +1,6 @@
 #include "Shader.hpp"
 #include "Log.hpp"
+#include "MachineInfo.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
@@ -7,6 +8,126 @@
 
 #include <iostream>
 #include <fstream>
+
+const char* code_default_vert =
+    "#version 330\n"
+    "#extension GL_ARB_separate_shader_objects : enable\n"
+    "#pragma optimize(on)\n"
+    "uniform	mat4 mvp;"
+    "uniform	mat4 viewMatrix;"
+    "uniform	mat4 projMatrix;"
+    "layout (location = 0) in vec3 position;"
+    "layout (location = 1) in vec3 normal;"
+    "layout (location = 2) in vec4 color;"
+    "layout (location = 3) in vec2 texCoord;"
+    "layout (location = 0) out vec3 VertexPos;"
+    "layout (location = 1) out vec3 VertexNormal;"
+    "layout (location = 2) out vec4 VertexColor;"
+    "layout (location = 3) out vec2 VertexTexCoord;"
+    "void main() {"
+    "	VertexPos = position;"
+    "	VertexColor = color;"
+    "	VertexNormal = normal;"
+    "	VertexTexCoord = texCoord;"
+    "	gl_Position = (mvp) * vec4(position,1);"
+    "}";
+
+const char* code_default_frag =
+    "#version 330\n"
+    "#extension GL_ARB_separate_shader_objects : enable\n"
+    "#pragma optimize(on)\n"
+    "layout (location = 0) in vec3 VertexPos;"
+    "layout (location = 1) in vec4 VertexNormal;"
+    "layout (location = 2) in vec4 VertexColor;"
+    "layout (location = 3) in vec2 VertexTexCoord;"
+    "uniform sampler2D ENGINE_ALBEDO;"
+    "uniform vec4 ENGINE_COLOR;"
+    "void main() {"
+    "	gl_FragColor = texture(ENGINE_ALBEDO, VertexTexCoord) * ENGINE_COLOR;"
+    "}";
+
+const char* code_rtt_vert = code_default_vert;
+
+const char* code_rtt_frag =
+    "#version 330\n"
+    "#extension GL_ARB_separate_shader_objects : enable\n"
+    "#pragma optimize(on)\n"
+    "layout (location = 0) in vec3 VertexPos;"
+    "layout (location = 1) in vec4 VertexNormal;"
+    "layout (location = 2) in vec4 VertexColor;"
+    "layout (location = 3) in vec2 VertexTexCoord;"
+    "layout (location = 0) out vec3 fragColor;"
+    "uniform sampler2D ENGINE_ALBEDO;"
+    "uniform sampler2D screenColor;"
+    "uniform sampler2D screenDepth;"
+    "uniform samplerCube ENGINE_ENVIRONMENT;"
+    "uniform vec4 ENGINE_COLOR;"
+    "vec3 v3pow(vec3 v, float f){"
+    "   return pow( v, vec3(f, f, f) );"
+    "}"
+    "vec3 ENGINE_LIGHT(){"
+    "   vec3 a = texture(ENGINE_ENVIRONMENT, normalize(VertexNormal.xyz)).xyz;"
+    "   return vec3(1,1,1);"
+    "}"
+    "void main() {"
+    "	fragColor = (texture(ENGINE_ALBEDO, VertexTexCoord).xyz * ENGINE_COLOR.xyz) * ENGINE_LIGHT();"
+    "}";
+
+const char* code_rtt_discard_vert = code_rtt_vert;
+
+const char* code_rtt_discard_frag =
+    "#version 330\n"
+    "#extension GL_ARB_separate_shader_objects : enable\n"
+    "#pragma optimize(on)\n"
+    "layout (location = 0) in vec3 VertexPos;"
+    "layout (location = 1) in vec4 VertexNormal;"
+    "layout (location = 2) in vec4 VertexColor;"
+    "layout (location = 3) in vec2 VertexTexCoord;"
+    "layout (location = 0) out vec3 fragColor;"
+    "uniform sampler2D ENGINE_ALBEDO;"
+    "uniform sampler2D screenColor;"
+    "uniform sampler2D screenDepth;"
+    "uniform vec4 ENGINE_COLOR;"
+    "uniform float ENGINE_ALPHA_DISCARD;"
+    "void main() {"
+    "    vec4 c = texture(ENGINE_ALBEDO, VertexTexCoord);"
+    "	if(c.w < ENGINE_ALPHA_DISCARD) discard;"
+    "	fragColor = c.xyz * ENGINE_COLOR.xyz;"
+    "}";
+
+const char* code_screen_vert =
+    "#version 330\n"
+    "#extension GL_ARB_separate_shader_objects : enable\n"
+    "#pragma optimize(on)\n"
+    "layout (location = 0) in vec3 position;"
+    "layout (location = 1) in vec3 normal;"
+    "layout (location = 2) in vec4 color;"
+    "layout (location = 3) in vec2 texCoord;"
+    "layout (location = 0) out vec3 VertexPos;"
+    "layout (location = 1) out vec3 VertexNormal;"
+    "layout (location = 2) out vec4 VertexColor;"
+    "layout (location = 3) out vec2 VertexTexCoord;"
+    "void main() {"
+    "	VertexPos = position;"
+    "	VertexColor = color;"
+    "	VertexNormal = normal;"
+    "	VertexTexCoord = texCoord;"
+    "	gl_Position = vec4(position,1);"
+    "}";
+
+const char* code_screen_frag =
+    "#version 330\n"
+    "#extension GL_ARB_separate_shader_objects : enable\n"
+    "#pragma optimize(on)\n"
+    "layout (location = 0) in vec3 VertexPos;"
+    "layout (location = 1) in vec4 VertexNormal; "
+    "layout (location = 2) in vec4 VertexColor; "
+    "layout (location = 3) in vec2 VertexTexCoord;"
+    "layout (location = 0) out vec3 fragColor;"
+    "uniform sampler2D ENGINE_ALBEDO;"
+    "void main() {"
+    "	fragColor = texture(ENGINE_ALBEDO, VertexTexCoord).xyz;"
+    "}";
 
 char *textFileRead(const char *fn, int * count = nullptr) {
     FILE *fp;
@@ -36,42 +157,54 @@ char *textFileRead(const char *fn, int * count = nullptr) {
     return content;
 }
 
-void MR::ShaderUniform::MapUniform(const unsigned int & shader_program) {
-    _uniform_location = glGetUniformLocationARB(shader_program, _name);
-    OnMapped(this, shader_program, _uniform_location);
+bool MR::ShaderUniform::Map(IShader* shader) {
+    _uniform_location = glGetUniformLocationARB(shader->GetGPUProgramId(), _name.c_str());
+    OnMapped(this, shader, _uniform_location);
+    return true;
 }
 
-MR::ShaderUniform::ShaderUniform(const char* Name, const ShaderUniformTypes& Type, void* Value, const GLenum& shader_program) : _name(Name), _type(Type), _value(Value) {
-    MapUniform(shader_program);
+std::string MR::ShaderUniform::ToString() {
+    return "ShaderUniform(" + std::string(_name) + ") with data at " + std::to_string((unsigned long) _value);
+}
+
+MR::ShaderUniform::ShaderUniform(const char* Name, const ShaderUniform::Types& Type, void* Value, IShader* shader_program) : Super(), _name(Name), _type(Type), _value(Value) {
+    Map(shader_program);
+}
+
+MR::ShaderUniform::~ShaderUniform() {
 }
 
 //UNIFORM BLOCK
 
-void MR::ShaderUniformBlock::MapBlock(const GLenum& shader_program) {
-    _uniform_block_index = glGetUniformBlockIndex(shader_program, _name);
-    glGetActiveUniformBlockiv(shader_program, _uniform_block_index, GL_UNIFORM_BLOCK_DATA_SIZE, &_block_size);
-    glGetUniformIndices(shader_program, _num_uniforms, _uniform_names, _uniform_indecies);
-    glGetActiveUniformsiv(shader_program, _num_uniforms, _uniform_indecies, GL_UNIFORM_OFFSET, _uniform_offsets);
+bool MR::ShaderUniformBlock::Map(IShader* shader_program) {
+    _uniform_block_index = glGetUniformBlockIndex(shader_program->GetGPUProgramId(), _name.c_str());
+    glGetActiveUniformBlockiv(shader_program->GetGPUProgramId(), _uniform_block_index, GL_UNIFORM_BLOCK_DATA_SIZE, &_block_size);
+    const char * unames = &_uniform_names[0][0];
+    glGetUniformIndices(shader_program->GetGPUProgramId(), _num_uniforms, &unames, _uniform_indecies);
+    glGetActiveUniformsiv(shader_program->GetGPUProgramId(), _num_uniforms, _uniform_indecies, GL_UNIFORM_OFFSET, _uniform_offsets);
+    return true;
 }
 
-void MR::ShaderUniformBlock::BufferData(unsigned char* Data) {
-    _data = Data;
-    glGenBuffers(1, &_ubo);
-    glBindBuffer(GL_UNIFORM_BUFFER, _ubo);
-    glBufferData(GL_UNIFORM_BUFFER, _block_size, _data, GL_STREAM_DRAW);
-    glBindBufferBase(GL_UNIFORM_BUFFER, _uniform_block_index, _ubo);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+bool MR::ShaderUniformBlock::BufferData(unsigned char* data, const size_t& size, const size_t& offset){
+    if(_data == NULL){
+        _data = data;
+        _block_size = size;
+        glGenBuffers(1, &_ubo);
+        glBindBuffer(GL_UNIFORM_BUFFER, _ubo);
+        glBufferData(GL_UNIFORM_BUFFER, _block_size, _data+offset, GL_STREAM_DRAW);
+        glBindBufferBase(GL_UNIFORM_BUFFER, _uniform_block_index, _ubo);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    } else {
+        glBindBuffer(GL_UNIFORM_BUFFER, _ubo);
+        glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    }
+    return true;
 }
 
-void MR::ShaderUniformBlock::ChangeBufferedData(const int& ChangedPos, const int& ChangedSize) {
-    glBindBuffer(GL_UNIFORM_BUFFER, _ubo);
-    glBufferSubData(GL_UNIFORM_BUFFER, ChangedPos, ChangedSize, _data+ChangedPos);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-}
-
-MR::ShaderUniformBlock::ShaderUniformBlock(const char* Name, const int& NumUniforms, const char** UniformNames, /*const ShaderUniformBlockTypes& Type,*/ const GLenum& shader_program) :
-    _name(Name), _data(NULL), _uniform_block_index(0), _block_size(0), _num_uniforms(NumUniforms), _uniform_names(UniformNames), _uniform_indecies( new unsigned int[NumUniforms] ), _uniform_offsets( new int[NumUniforms] ), /*type(Type),*/ _ubo(0) {
-    MapBlock(shader_program);
+MR::ShaderUniformBlock::ShaderUniformBlock(const std::string& Name, const int& NumUniforms, std::string* UniformNames, IShader* shader) :
+    Super(), _name(Name), _data(NULL), _uniform_block_index(0), _block_size(0), _num_uniforms(NumUniforms), _uniform_names(UniformNames), _uniform_indecies( new unsigned int[NumUniforms] ), _uniform_offsets( new int[NumUniforms] ), /*type(Type),*/ _ubo(0) {
+    Map(shader);
 }
 
 MR::ShaderUniformBlock::~ShaderUniformBlock() {
@@ -80,11 +213,12 @@ MR::ShaderUniformBlock::~ShaderUniformBlock() {
 }
 
 //SUB SHADER
-void MR::SubShader::Compile(const char* code, const SubShader::Type& shader_type) {
+bool MR::SubShader::Compile(const std::string& code, const ISubShader::Type& shader_type) {
     if(this->_shader != 0) glDeleteObjectARB(this->_shader);
     this->_type = shader_type;
     this->_shader = glCreateShaderObjectARB((unsigned int)shader_type);
-    glShaderSourceARB(this->_shader, 1, &code, NULL);
+    const char* ccode = code.c_str();
+    glShaderSourceARB(this->_shader, 1, &ccode, NULL);
     glCompileShaderARB(this->_shader);
 
     int bufflen = 0;
@@ -99,9 +233,10 @@ void MR::SubShader::Compile(const char* code, const SubShader::Type& shader_type
     }
 
     OnCompiled(this, code, shader_type);
+    return true;
 }
 
-MR::SubShader::SubShader(const char* code, const SubShader::Type& type) {
+MR::SubShader::SubShader(const std::string& code, const ISubShader::Type& type) : Super() {
     this->Compile(code, type);
 }
 
@@ -113,14 +248,46 @@ MR::SubShader* MR::SubShader::FromFile(const std::string& file, const SubShader:
     return new MR::SubShader(textFileRead(file.c_str()), shader_type);
 }
 
+MR::SubShader* MR::SubShader::DefaultVert() {
+    return new SubShader(code_default_vert, SubShader::Type::Vertex);
+}
+
+MR::SubShader* MR::SubShader::DefaultRTTVert() {
+    return new SubShader(code_rtt_vert, SubShader::Type::Vertex);
+}
+
+MR::SubShader* MR::SubShader::DefaultRTTDiscardVert() {
+    return new SubShader(code_rtt_discard_vert, SubShader::Type::Vertex);
+}
+
+MR::SubShader* MR::SubShader::DefaultScreenVert() {
+    return new SubShader(code_screen_vert, SubShader::Type::Vertex);
+}
+
+MR::SubShader* MR::SubShader::DefaultFrag() {
+    return new SubShader(code_default_frag, SubShader::Type::Fragment);
+}
+
+MR::SubShader* MR::SubShader::DefaultRTTFrag() {
+    return new SubShader(code_rtt_frag, SubShader::Type::Fragment);
+}
+
+MR::SubShader* MR::SubShader::DefaultRTTDiscardFrag() {
+    return new SubShader(code_rtt_discard_frag, SubShader::Type::Fragment);
+}
+
+MR::SubShader* MR::SubShader::DefaultScreenFrag() {
+    return new SubShader(code_screen_frag, SubShader::Type::Fragment);
+}
+
 //SHADER
-void MR::Shader::Link(SubShader** sub_shaders, const unsigned int& num) {
+bool MR::Shader::Link(ISubShader** sub_shaders, const unsigned int& num) {
     if(this->_program != 0) glDeleteObjectARB(this->_program);
     this->_program = glCreateProgramObjectARB();
     for(unsigned int i = 0; i < num; ++i) {
-        glAttachObjectARB(this->_program, sub_shaders[i]->Get());
+        glAttachObjectARB(_program, sub_shaders[i]->GetGPUId());
     }
-    glLinkProgramARB(this->_program);
+    glLinkProgramARB(_program);
 
     int bufflen = 0;
     glGetProgramiv(this->_program, GL_INFO_LOG_LENGTH, &bufflen);
@@ -132,10 +299,12 @@ void MR::Shader::Link(SubShader** sub_shaders, const unsigned int& num) {
         delete [] logString;
         logString = 0;
     }
+    return true;
 }
 
-void MR::Shader::Link(){
+bool MR::Shader::Link() {
     Link(_sub_shaders.data(), _sub_shaders.size());
+    return true;
 }
 
 bool MR::Shader::Load() {
@@ -192,7 +361,7 @@ bool MR::Shader::Load() {
             subs[i] = new MR::SubShader((char*)p_code, (SubShader::Type)((unsigned int)sh_type));
         }
 
-        Link(subs, sub_shaders_num);
+        Link((ISubShader**)subs, sub_shaders_num);
     } else if(this->_resource_manager->GetDebugMessagesState()) {
         MR::Log::LogString("Shader "+this->_name+" ("+this->_source+") load failed. Source is null", MR_LOG_LEVEL_ERROR);
         this->_loaded = false;
@@ -215,24 +384,94 @@ void MR::Shader::UnLoad() {
     }
 }
 
-void MR::Shader::Use() {
-    glUseProgramObjectARB(this->_program);
-    for(auto it = _shaderUniforms.begin(); it != _shaderUniforms.end(); ++it) {
-        if((*it)->GetValuePtr() == nullptr) continue;
-        if((*it)->GetType() == ShaderUniformTypes::INT) glUniform1i((*it)->GetOpenGLLocation(), ((int*)(*it)->GetValuePtr())[0]);
-        if((*it)->GetType() == ShaderUniformTypes::FLOAT) glUniform1f((*it)->GetOpenGLLocation(), ((float*)(*it)->GetValuePtr())[0]);
-        if((*it)->GetType() == ShaderUniformTypes::VEC2) glUniform2f((*it)->GetOpenGLLocation(), ((float*)(*it)->GetValuePtr())[0], ((float*)(*it)->GetValuePtr())[1]);
-        if((*it)->GetType() == ShaderUniformTypes::VEC3) glUniform3f((*it)->GetOpenGLLocation(), ((float*)(*it)->GetValuePtr())[0], ((float*)(*it)->GetValuePtr())[1], ((float*)(*it)->GetValuePtr())[2]);
-        if((*it)->GetType() == ShaderUniformTypes::VEC4) glUniform4f((*it)->GetOpenGLLocation(), ((float*)(*it)->GetValuePtr())[0], ((float*)(*it)->GetValuePtr())[1], ((float*)(*it)->GetValuePtr())[2], ((float*)(*it)->GetValuePtr())[3]);
-        if((*it)->GetType() == ShaderUniformTypes::MAT4) {
-            glUniformMatrix4fv((*it)->GetOpenGLLocation(), 1, GL_FALSE, (float*)&(((glm::mat4*)(*it)->GetValuePtr())[0][0]));
+bool MR::Shader::Use(MR::RenderContext* context) {
+    if(MR::MachineInfo::IsDirectStateAccessSupported()) {
+        glUseProgramObjectARB(_program);
+        for(auto it = _shaderUniforms.begin(); it != _shaderUniforms.end(); ++it) {
+            if((*it)->GetValue() == nullptr) continue;
+            if((*it)->GetType() == ShaderUniform::Types::Int) glProgramUniform1iEXT(_program, (*it)->GetGPULocation(), ((int*)(*it)->GetValue())[0]);
+            if((*it)->GetType() == ShaderUniform::Types::Float) glProgramUniform1fEXT(_program, (*it)->GetGPULocation(), ((float*)(*it)->GetValue())[0]);
+            if((*it)->GetType() == ShaderUniform::Types::Vec2) glProgramUniform2fEXT(_program, (*it)->GetGPULocation(), ((float*)(*it)->GetValue())[0], ((float*)(*it)->GetValue())[1]);
+            if((*it)->GetType() == ShaderUniform::Types::Vec3) glProgramUniform3fEXT(_program, (*it)->GetGPULocation(), ((float*)(*it)->GetValue())[0], ((float*)(*it)->GetValue())[1], ((float*)(*it)->GetValue())[2]);
+            if((*it)->GetType() == ShaderUniform::Types::Vec4) glProgramUniform4fEXT(_program, (*it)->GetGPULocation(), ((float*)(*it)->GetValue())[0], ((float*)(*it)->GetValue())[1], ((float*)(*it)->GetValue())[2], ((float*)(*it)->GetValue())[3]);
+            if((*it)->GetType() == ShaderUniform::Types::Mat4) {
+                glProgramUniformMatrix4fvEXT(_program, (*it)->GetGPULocation(), 1, GL_FALSE, (float*)&(((glm::mat4*)(*it)->GetValue())[0][0]));
+            }
+        }
+    } else {
+        glUseProgramObjectARB(_program);
+        for(auto it = _shaderUniforms.begin(); it != _shaderUniforms.end(); ++it) {
+            if((*it)->GetValue() == nullptr) continue;
+            if((*it)->GetType() == ShaderUniform::Types::Int) glUniform1i((*it)->GetGPULocation(), ((int*)(*it)->GetValue())[0]);
+            if((*it)->GetType() == ShaderUniform::Types::Float) glUniform1f((*it)->GetGPULocation(), ((float*)(*it)->GetValue())[0]);
+            if((*it)->GetType() == ShaderUniform::Types::Vec2) glUniform2f((*it)->GetGPULocation(), ((float*)(*it)->GetValue())[0], ((float*)(*it)->GetValue())[1]);
+            if((*it)->GetType() == ShaderUniform::Types::Vec3) glUniform3f((*it)->GetGPULocation(), ((float*)(*it)->GetValue())[0], ((float*)(*it)->GetValue())[1], ((float*)(*it)->GetValue())[2]);
+            if((*it)->GetType() == ShaderUniform::Types::Vec4) glUniform4f((*it)->GetGPULocation(), ((float*)(*it)->GetValue())[0], ((float*)(*it)->GetValue())[1], ((float*)(*it)->GetValue())[2], ((float*)(*it)->GetValue())[3]);
+            if((*it)->GetType() == ShaderUniform::Types::Mat4) {
+                glUniformMatrix4fv((*it)->GetGPULocation(), 1, GL_FALSE, (float*)&(((glm::mat4*)(*it)->GetValue())[0][0]));
+            }
         }
     }
+    return true;
 }
 
 //--------
 
-MR::Shader::Shader(ResourceManager* manager, const std::string& name, const std::string& source) : Resource(manager, name, source) {
+MR::IShaderUniform* MR::Shader::CreateUniform(const std::string& uniform_name, const MR::ShaderUniform::Types& type, void* value){
+    MR::ShaderUniform* p = new MR::ShaderUniform(uniform_name.c_str(), type, value, this);
+    _shaderUniforms.push_back(p);
+    return p;
+}
+
+MR::IShaderUniformBlock* MR::Shader::CreateUniformBlock(const std::string& Name, const int& NumUniforms, std::string* UniformNames) {
+    MR::ShaderUniformBlock* p = new MR::ShaderUniformBlock(Name, NumUniforms,UniformNames,this);
+    _shaderUniformBlocks.push_back(p);
+    return p;
+}
+
+void MR::Shader::DeleteUniform(MR::IShaderUniform* su){
+    std::vector<IShaderUniform*>::iterator it = std::find(_shaderUniforms.begin(), _shaderUniforms.end(), su);
+    if(it == _shaderUniforms.end()) return;
+    delete (*it);
+    _shaderUniforms.erase(it);
+}
+
+void MR::Shader::DeleteUniformBlock(MR::IShaderUniformBlock* sub){
+    std::vector<IShaderUniformBlock*>::iterator it = std::find(_shaderUniformBlocks.begin(), _shaderUniformBlocks.end(), sub);
+    if(it == _shaderUniformBlocks.end()) return;
+    delete (*it);
+    _shaderUniformBlocks.erase(it);
+}
+
+MR::IShaderUniform* MR::Shader::FindShaderUniform(const std::string& uniform_name){
+    for(std::vector<IShaderUniform*>::iterator it = _shaderUniforms.begin(); it != _shaderUniforms.end(); ++it){
+        if((*it)->GetName() == uniform_name) return (*it);
+    }
+    return nullptr;
+}
+
+MR::IShaderUniformBlock* MR::Shader::FindShaderUniformBlock(const std::string& uniform_name){
+    for(std::vector<IShaderUniformBlock*>::iterator it = _shaderUniformBlocks.begin(); it != _shaderUniformBlocks.end(); ++it){
+        if((*it)->GetName() == uniform_name) return (*it);
+    }
+    return nullptr;
+}
+
+void MR::Shader::AttachSubShader(ISubShader* sub){
+    _sub_shaders.push_back(sub);
+}
+
+void MR::Shader::DetachSubShader(ISubShader* sub){
+    std::vector<ISubShader*>::iterator it = std::find(_sub_shaders.begin(), _sub_shaders.end(), sub);
+    if(it == _sub_shaders.end()) return;
+    _sub_shaders.erase(it);
+}
+
+void MR::Shader::DetachAllSubShaders(){
+    _sub_shaders.clear();
+}
+
+MR::Shader::Shader(ResourceManager* manager, const std::string& name, const std::string& source) : Resource(manager, name, source), Super() {
     //this->Link(sub_shaders, num);
 }
 
@@ -240,7 +479,7 @@ MR::Shader::~Shader() {
     if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Shader "+this->_name+" ("+this->_source+") deleting", MR_LOG_LEVEL_INFO);
     UnLoad();
     if(_res_free_state) {
-        for(std::vector<ShaderUniform*>::iterator it = _shaderUniforms.begin(); it != _shaderUniforms.end(); ++it) {
+        for(std::vector<IShaderUniform*>::iterator it = _shaderUniforms.begin(); it != _shaderUniforms.end(); ++it) {
             delete (*it);
         }
         _shaderUniforms.clear();

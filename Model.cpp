@@ -236,8 +236,12 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool bindexes, bool log)
         texs->SetWrapS((TextureSettings::Wrap)wmS);
         texs->SetWrapT((TextureSettings::Wrap)wmT);
 
-        if(textureFile != "") materials[i]->AddPass(new MR::MaterialPass(materials[i], tex, GL_TEXTURE0, nullptr));
-        else materials[i]->AddPass(new MR::MaterialPass(materials[i], nullptr, GL_TEXTURE0, nullptr));
+        if(textureFile != ""){
+            MR::MaterialPass* mp = new MR::MaterialPass(materials[i]);
+            mp->SetAlbedoTexture(tex);
+            materials[i]->AddPass(mp);
+        }
+        else materials[i]->AddPass(new MR::MaterialPass(materials[i]));
     }
 
     for(int i = 0; i < NumMeshes; ++i) {
@@ -312,26 +316,26 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool bindexes, bool log)
         unsigned int * ibuffer = new unsigned int[indsNum];
         ffile.read( reinterpret_cast<char*>(ibuffer), ibufferSize);
 
-        MR::VertexDeclarationType vdtypes[declarations];
+        MR::VertexDeclarationType* vdtypes = (MR::VertexDeclarationType*)malloc(declarations*sizeof(MR::VertexDeclarationType));
         unsigned char idecl = 0;
         int ptr_decl = 0;
         if(posDecl) {
-            vdtypes[idecl] = MR::VertexDeclarationType(MR::VertexDeclarationTypesEnum::VDTE_POSITION, (void*)(ptr_decl));
+            vdtypes[idecl] = MR::VertexDeclarationType(MR::VertexDeclarationType::DataType::Position, (void*)(ptr_decl));
             ++idecl;
             ptr_decl += sizeof(float)*3;
         }
         if(texCoordDecl) {
-            vdtypes[idecl] = MR::VertexDeclarationType(MR::VertexDeclarationTypesEnum::VDTE_TEXTURE_COORD, (void*)(ptr_decl));
+            vdtypes[idecl] = MR::VertexDeclarationType(MR::VertexDeclarationType::DataType::TexCoord, (void*)(ptr_decl));
             ++idecl;
             ptr_decl += sizeof(float)*2;
         }
         if(normalDecl) {
-            vdtypes[idecl] = MR::VertexDeclarationType(MR::VertexDeclarationTypesEnum::VDTE_NORMAL, (void*)(ptr_decl));
+            vdtypes[idecl] = MR::VertexDeclarationType(MR::VertexDeclarationType::DataType::Normal, (void*)(ptr_decl));
             ++idecl;
             ptr_decl += sizeof(float)*3;
         }
         if(vertexColorDecl) {
-            vdtypes[idecl] = MR::VertexDeclarationType(MR::VertexDeclarationTypesEnum::VDTE_COLOR, (void*)(ptr_decl));
+            vdtypes[idecl] = MR::VertexDeclarationType(MR::VertexDeclarationType::DataType::Color, (void*)(ptr_decl));
             ++idecl;
             ptr_decl += sizeof(float)*4;
         }

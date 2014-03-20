@@ -1,4 +1,7 @@
 #include "Texture.hpp"
+#include "RenderContext.hpp"
+#include "Camera.hpp"
+#include "RenderTarget.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
@@ -263,7 +266,7 @@ MR::TextureSettings::TextureSettings() :
 }
 
 MR::TextureSettings::~TextureSettings() {
-    glDeleteSamplers(1, &_sampler);
+    if(RenderContext::Alive()) glDeleteSamplers(1, &_sampler);
 }
 
 void MR::Texture::GetData(const int& mipMapLevel, const MR::Texture::Format& format, const MR::Texture::Type& type, void* dstBuffer) {
@@ -388,7 +391,7 @@ void MR::Texture::UnLoad(){
     if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") unloading", MR_LOG_LEVEL_INFO);
     if(_res_free_state) {
         if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") -> ResFreeState is on, deleting data", MR_LOG_LEVEL_INFO);
-        glDeleteTextures(1, &this->gl_texture);
+        if(RenderContext::Alive()) glDeleteTextures(1, &this->gl_texture);
     } else{
         if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") -> ResFreeState is off", MR_LOG_LEVEL_INFO);
     }
@@ -447,6 +450,46 @@ MR::Texture* MR::Texture::FromFile(MR::ResourceManager* m, const std::string& fi
     return (new MR::Texture(m, name, file, glt));
 }
 
+void MR::CubeMap::SetCapturePoint(const glm::vec3& p){
+    if(p != _world_point_pos){
+        _world_point_pos = p;
+        OnCapturePointChanged(this, _world_point_pos);
+    }
+}
+
+void MR::CubeMap::Capture(RenderContext* context){
+    _rtarget->Bind(context);
+    _cam->SetPosition(_world_point_pos);
+
+    //forward
+    _cam->SetRotation(glm::vec3(0,0,0));
+}
+
+MR::RenderTarget* MR::CubeMap::GetRenderTarget(){
+    return _rtarget;
+}
+
+MR::CubeMap::CubeMap(MR::ResourceManager* m, const std::string& name, const std::string& source, const unsigned short & Width, const unsigned short & Height)
+ :
+ MR::Resource(m, name, source),
+ MR::Texture(m, name, source),
+ _world_point_pos(0.0f, 0.0f, 0.0f),
+ _cam(new MR::Camera(_world_point_pos, glm::vec3(0.0f, 0.0f, 0.0f), 90.0f, 0.1f, 1000.0f, ((float)Width / (float)Height))),
+ _rtarget(new MR::RenderTarget("CubeMapCaptureTarget", 1, Width, Height)) {
+
+    _target = Texture::Target::CubeMap;
+    //_rtarget.CreateTargetTexture(0, MR::Texture::InternalFormat::RGB, MR::Texture::Format::RGB, MR::Texture::Type::UNSIGNED_BYTE);
+    //_rtarget->CreateCubeMapTargetTexture(0, MR::Texture::InternalFormat::RGB, MR::Texture::Format::RGB, MR::Texture::Type::UNSIGNED_BYTE);
+    //gl_texture = _rtarget->GetTargetTexture(0);
+
+    //ResetInfo();
+}
+
+MR::CubeMap::~CubeMap(){
+    delete _cam;
+    delete _rtarget;
+}
+
 unsigned int MR::TextureArray::Add(void* newData){
     glBindTexture(GL_TEXTURE_2D_ARRAY, _gl_texture);
 
@@ -469,16 +512,17 @@ MR::TextureArray::TextureArray(const Texture::InternalFormat& iformat, const Tex
     glGenTextures(1, &_gl_texture);
     glBindTexture(GL_TEXTURE_2D_ARRAY, _gl_texture);
 
+    //glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_SPARSE_ARB, GL_TRUE );
     glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
     glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
-    //glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_GENERATE_MIPMAP, GL_FALSE );
     glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_GENERATE_MIPMAP_SGIS, GL_TRUE );
 
     glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
     glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 
+    //glGetTextureSamplerHandleARB;
+
     glTexStorage3D(GL_TEXTURE_2D_ARRAY, 10, (int)iformat, width, height, _maxTextures);
-    //glTexImage3D(GL_TEXTURE_2D_ARRAY, 10, (int)iformat, width, height, _maxTextures, 0, (int)format, (int)type, NULL);
 
     glBindTexture(GL_TEXTURE_2D_ARRAY,0);
 }
@@ -568,6 +612,13 @@ TextureArray* TextureManager::_StoreTexture(unsigned int* texArrayIndex, void* d
     *texArrayIndex = ta->Add(data);
     _tex_arrays.push_back(ta);
     return ta;
+}
+
+TextureManager::TextureManager() : ResourceManager() {
+    _white = new MR::Texture(this, "White", "FromMem");
+    unsigned char pixel_white_data[4]{255,255,255,255};
+    MR::Texture::CreateOpenGLTexture(&pixel_white_data[0], 1, 1, GLTextureLoadFormat::RGBA, &_white->gl_texture, GLTextureLoadFlags::None);
+    Add(_white);
 }
 
 TextureManager::~TextureManager(){

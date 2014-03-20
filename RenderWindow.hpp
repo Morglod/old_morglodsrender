@@ -131,6 +131,9 @@ public:
     void SetGamma(const float& gamma);
     void Visible(const bool& state);
 
+    void SetMousePos(const double& x, const double& y);
+    void GetMousePos(double* x, double* y);
+
     bool IsFocused();
     bool IsIconified();
     bool IsVisible();

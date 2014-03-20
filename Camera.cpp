@@ -11,30 +11,30 @@ void MR::Camera::Use(const GLuint& matrixUniform) {
 
 void MR::Camera::MoveForward(const glm::vec3& v) {
     if(v == glm::vec3(0,0,0)) return;
-    _pos += v * _direction;
+    *_pos += v * _direction;
     if(IsAutoRecalc()) CalcViewMatrix();
-    OnPositionChanged(this, _pos);
+    OnPositionChanged(this, *_pos);
 }
 
 void MR::Camera::MoveLeft(const glm::vec3& v) {
     if(v == glm::vec3(0,0,0)) return;
-    _pos += v * _left_direction;
+    *_pos += v * _left_direction;
     if(IsAutoRecalc()) CalcViewMatrix();
-    OnPositionChanged(this, _pos);
+    OnPositionChanged(this, *_pos);
 }
 
 void MR::Camera::MoveUp(const glm::vec3& v){
     if(v == glm::vec3(0,0,0)) return;
-    _pos += v * _up_direction;
+    *_pos += v * _up_direction;
     if(IsAutoRecalc()) CalcViewMatrix();
-    OnPositionChanged(this, _pos);
+    OnPositionChanged(this, *_pos);
 }
 
 void MR::Camera::Move(const glm::vec3& v) {
     if(v == glm::vec3(0,0,0)) return;
-    _pos += v;
+    *_pos += v;
     if(IsAutoRecalc()) CalcViewMatrix();
-    OnPositionChanged(this, _pos);
+    OnPositionChanged(this, *_pos);
 }
 
 void MR::Camera::MoveTarget(const glm::vec3& t) {
@@ -89,8 +89,8 @@ void MR::Camera::SetCameraProjection(const CameraProjection& cp) {
 }
 
 void MR::Camera::CalcViewMatrix() {
-    if(_cmode == CameraMode::Target) *_viewMatrix = glm::lookAt(_pos, _target, _up_direction);
-    if(_cmode == CameraMode::Direction) *_viewMatrix = glm::lookAt(_pos, _pos + _direction, _up_direction);
+    if(_cmode == CameraMode::Target) *_viewMatrix = glm::lookAt(*_pos, _target, _up_direction);
+    if(_cmode == CameraMode::Direction) *_viewMatrix = glm::lookAt(*_pos, *_pos + _direction, _up_direction);
 }
 
 void MR::Camera::CalcProjectionMatrix() {
@@ -99,7 +99,10 @@ void MR::Camera::CalcProjectionMatrix() {
 }
 
 void MR::Camera::CalcMVP() {
-    if(_modelMatrix) *_mvp = (*_projectionMatrix)*(*_viewMatrix)*(*_modelMatrix);
+    if(_modelMatrix) {
+        *_mvp = (*_projectionMatrix)*(*_viewMatrix)*(*_modelMatrix);
+        *_inv_modelViewMatrix = glm::transpose( glm::inverse( (*_viewMatrix)*(*_modelMatrix) ) );
+    }
     else *_mvp = (*_projectionMatrix)*(*_viewMatrix);
     OnMVPRecalc(this, _mvp);
 }
@@ -128,7 +131,7 @@ void MR::Camera::Calc() {
 }
 
 void MR::Camera::SetModelMatrix(glm::mat4* m) {
-    _modelMatrix = m;
+    *_modelMatrix = *m;
     if(_autoReCalc) {
         CalcMVP();
     }
@@ -146,17 +149,28 @@ void MR::Camera::SetRenderTarget(MR::RenderTarget* renderTarget){
     }
 }
 
+void MR::Camera::SetPosition(const glm::vec3& p){
+    *_pos = p;
+    if(_autoReCalc) Calc();
+}
+
+void MR::Camera::SetRotation(const glm::vec3& p){
+    _rot = p;
+    if(_autoReCalc) CalcDirections();
+}
+
 MR::Camera::Camera(const glm::vec3& camPos, const glm::vec3& camTarget, const float& fov, const float& nearZ, const float& farZ, const float& aspectR)
-    : _cmode(CameraMode::Target), _cproj(CameraProjection::Perspective), _pos(camPos), _direction(MR::Transform::WorldForwardVector()), _left_direction(MR::Transform::WorldLeftVector()), _up_direction(MR::Transform::WorldUpVector()), _target(camTarget), _up(glm::vec3(0,1,0)),
-      _fovY(fov), _zNear(nearZ), _zFar(farZ), _aspectRatio(aspectR), _modelMatrix(nullptr), _autoReCalc(false), _render_target(nullptr) {
+    : _cmode(CameraMode::Target), _cproj(CameraProjection::Perspective), _pos( new glm::vec3(camPos) ), _direction(MR::Transform::WorldForwardVector()), _left_direction(MR::Transform::WorldLeftVector()), _up_direction(MR::Transform::WorldUpVector()), _target(camTarget), _up(glm::vec3(0,1,0)),
+      _fovY(fov), _zNear(nearZ), _zFar(farZ), _aspectRatio(aspectR), _modelMatrix( new glm::mat4(1.0f) ), _autoReCalc(false), _render_target(nullptr) {
 
     //allocate space, functionality like calc()
-    _viewMatrix = new glm::mat4(glm::lookAt(_pos, _target, _up));
+    _viewMatrix = new glm::mat4(glm::lookAt(*_pos, _target, _up));
     _projectionMatrix = new glm::mat4(glm::perspective(_fovY, _aspectRatio, _zNear, _zFar));
     _mvp = new glm::mat4( (*_projectionMatrix) * (*_viewMatrix) );
 }
 
 MR::Camera::~Camera() {
+    delete _pos;
     delete _viewMatrix;
     delete _projectionMatrix;
     delete _modelMatrix;

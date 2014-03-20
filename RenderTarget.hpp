@@ -28,7 +28,8 @@ public:
     /** i - index of texture in (targetTextures)
         iFormat - internal format
     */
-    void CreateTargetTexture(const unsigned char & i,const unsigned int & iFormat, const unsigned int & Format, const unsigned int & Type);
+    void CreateTargetTexture        (const unsigned char & i, const MR::Texture::InternalFormat & iFormat, const MR::Texture::Format & Format, const MR::Texture::Type & Type);
+    void CreateCubeMapTargetTexture (const unsigned char & i, const MR::Texture::InternalFormat & iFormat, const MR::Texture::Format & Format, const MR::Texture::Type & Type);
 
     /** TargetTexturesNum - 15 Max
     */

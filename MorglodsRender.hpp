@@ -36,5 +36,6 @@ zlib http://www.zlib.net
 #include "ResourceSource.hpp"
 #include "Texture.hpp"
 #include "Transformation.hpp"
+#include "UI.hpp"
 
 #endif // _MR_MORGLODS_RENDER_H_

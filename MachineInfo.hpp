@@ -10,6 +10,9 @@
 
 namespace MR{
     namespace MachineInfo{
+
+        /** INFO **/
+
         enum class GPUVendor : unsigned char {
             Other = 0,
             Nvidia = 1,
@@ -43,6 +46,15 @@ namespace MR{
         std::string gl_version_glsl();
         int total_memory_kb();
         int current_memory_kb();
+
+        /** EXTENSIONS **/
+
+        bool _IsDirectStateAccessSupported();
+
+        inline bool IsDirectStateAccessSupported() {
+            static bool state = _IsDirectStateAccessSupported();
+            return state;
+        }
     }
 }
 

@@ -6,61 +6,58 @@
 #include "Events.hpp"
 #include "Types.hpp"
 
+#ifndef glm_glm
+#   include <glm/glm.hpp>
+#   include <glm/gtc/matrix_transform.hpp>
+#endif
+
 namespace MR {
 
-/**
-* Type of stored data
-*/
-enum VertexDeclarationTypesEnum {
-    VDTE_POSITION = 0, //3 elements
-    VDTE_NORMAL = 1, //3 ELEMENTS
-    VDTE_TEXTURE_COORD = 2, //2 ELEMENTS
-    VDTE_COLOR = 4 //4 ELEMENTS - rgba
-};
+class VertexDeclaration;
+class VertexDeclarationType;
+class IndexDeclaration;
+class InstancedDataType;
+class InstancedDataBuffer;
+class GeometryBuffer;
 
 /**
 * Description of stored data in buffer of one type
 */
-struct VertexDeclarationType {
+class VertexDeclarationType {
+    friend class VertexDeclaration;
+    friend class GeometryBuffer;
 public:
-    //!Type of stored data
-    VertexDeclarationTypesEnum type = VertexDeclarationTypesEnum::VDTE_POSITION;
+    enum class DataType : unsigned char {
+        Position = 0, //3 elements
+        Normal = 1, //3 ELEMENTS
+        TexCoord = 2, //2 ELEMENTS
+        Color = 4 //4 ELEMENTS - rgba
+    };
 
-    //!Num of elements, that describes this data
-    //!If VDTE_NORMAL, elements_num = 3
-    //!If VDTE_TEXTURE_COORD, elements_num = 2
-    inline unsigned short ElementsNum(){
-        switch(type){
-        case VertexDeclarationTypesEnum::VDTE_POSITION:
-            return 3;
-            break;
-        case VertexDeclarationTypesEnum::VDTE_NORMAL:
-            return 3;
-            break;
-        case VertexDeclarationTypesEnum::VDTE_TEXTURE_COORD:
-            return 2;
-            break;
-        case VertexDeclarationTypesEnum::VDTE_COLOR:
-            return 4;
-            break;
-        }
-        return 0;
-    }
+    inline unsigned short ElementsNum();
+    inline VertexDeclarationType::DataType GetDataType();
+    inline const void * GetPointer();
 
-    const void *pointer;
+    inline static VertexDeclarationType Position(const void * pointer);
+    inline static VertexDeclarationType Normal(const void * pointer);
+    inline static VertexDeclarationType TexCoord(const void * pointer);
+    inline static VertexDeclarationType Color(const void * pointer);
 
-    VertexDeclarationType() : pointer(nullptr) {}
-
-    //!t - VertexDeclarationTypesEnum
-    //!e_num - Num of elements, that describes this data
-    //!p - GL pointer in stride
-    VertexDeclarationType(VertexDeclarationTypesEnum t, const void *p);
+    //t - VertexDeclarationTypesEnum
+    //p - GL pointer in stride
+    VertexDeclarationType(const VertexDeclarationType::DataType& t, const void *p);
+protected:
+    const void * _pointer;
+    VertexDeclarationType::DataType _type;
+    VertexDeclarationType();
 };
 
 /**
 * Description of stored data in buffer
 */
-struct VertexDeclaration {
+class VertexDeclaration {
+    friend class VertexDeclarationType;
+    friend class GeometryBuffer;
 public:
     enum class DataType : unsigned int {
         Float = 0x1406,
@@ -70,40 +67,28 @@ public:
         UInt = 0x1405
     };
 
-    //!Array of buffer stride elements
-    VertexDeclarationType* decl_types = nullptr;
+    inline bool Contains(const VertexDeclarationType::DataType& type);
+    inline VertexDeclarationType* Get(const VertexDeclarationType::DataType& type);
 
-    //!Num of elements in array (_decl_types)
-    unsigned short decl_types_num = 0;
+    inline VertexDeclaration::DataType GetDataType();
+    inline int GetStrideSize();
 
-    inline bool contains(const VertexDeclarationTypesEnum& type) {
-        for(unsigned short i = 0; i < decl_types_num; ++i) {
-            if(decl_types[i].type == type) return true;
-        }
-        return false;
-    }
+    //Only if VertexDeclaration created with "VertexDeclaration(const DataType& vertexDataType)" constructor
+    VertexDeclarationType* AddType(const VertexDeclarationType::DataType& t, const void *p);
+    void ClearTypesList();
 
-    inline VertexDeclarationType* get(const VertexDeclarationTypesEnum& type) {
-        for(unsigned short i = 0; i < decl_types_num; ++i) {
-            if(decl_types[i].type == type) return &decl_types[i];
-        }
-        return nullptr;
-    }
-
-    //1Data type in buffer
-    VertexDeclaration::DataType data_type = VertexDeclaration::DataType::Float;
-
-    //!Size of stride for OpenGL
-    int stride_size = 0;
-
-    //!vdt - VertexDeclarationType array
-    //!dn - Num of elements in vdt array
-    //!dt - Data type
-    VertexDeclaration(VertexDeclarationType* vdt, const unsigned short& dn, const DataType& dt);
+    VertexDeclaration(const DataType& vertexDataType);
+    VertexDeclaration(VertexDeclarationType* vertexDeclarationType, const unsigned short& vertexDeclarationTypesNum, const DataType& vertexDataType);
     ~VertexDeclaration();
+protected:
+    VertexDeclarationType* _decl_types = nullptr; //Array of buffer stride elements
+    unsigned short _decl_types_num = 0; //Num of elements in array (_decl_types)
+    VertexDeclaration::DataType _data_type = VertexDeclaration::DataType::Float;
+    int _stride_size = 0;
 };
 
-struct IndexDeclaration {
+class IndexDeclaration {
+    friend class GeometryBuffer;
 public:
     enum class DataType : unsigned int {
         Float = 0x1406,
@@ -113,11 +98,10 @@ public:
         UInt = 0x1405
     };
 
-    //!OpenGL type of data in buffer
-    IndexDeclaration::DataType data_type = IndexDeclaration::DataType::UInt;
-
     //!dt - OpenGL data type in buffer
-    IndexDeclaration(const DataType& dt);
+    IndexDeclaration(const IndexDeclaration::DataType& dt);
+protected:
+    IndexDeclaration::DataType _data_type = IndexDeclaration::DataType::UInt;
 };
 
 class InstancedDataType {
@@ -130,34 +114,37 @@ public:
         UInt = 0x1405
     };
 
-    int shader_location = 0;
-    int size = 0; //number of data elements per instancing element (if vec3 so this value is 3, because of 3 floats)
-    InstancedDataType::DataType type = InstancedDataType::DataType::UInt;
-    bool normalized = false;
-    unsigned int buffer = 0;
-    int stride = 0; //size of one element for instancing (eg sizeof(vec3) )
-    void* pointer = 0;
-    unsigned short every_vertexes = 1; //1 means every vertex, 3 means every triangle
-
     void Bind();
     void Unbind();
-    void BufferData(void* data, int data_size, unsigned int usage);
+    void BufferData(void* data, const int& data_size, const unsigned int& usage);
 
-    InstancedDataType(void* data, int data_size, unsigned int usage);
+    InstancedDataType(void* data, const int& data_size, const unsigned int& usage);
     virtual ~InstancedDataType(){}
+protected:
+    int _shader_location = 0;
+    int _size = 0; //number of data elements per instancing element (if vec3 so this value is 3, because of 3 floats)
+    InstancedDataType::DataType _type = InstancedDataType::DataType::UInt;
+    bool _normalized = false;
+    unsigned int _buffer = 0;
+    int _stride = 0; //size of one element for instancing (eg sizeof(vec3) )
+    void* _pointer = 0;
+    unsigned short _every_vertexes = 1; //1 means every vertex, 3 means every triangle
 };
 
 class InstancedDataBuffer {
+    friend class GeometryBuffer;
 public:
-    InstancedDataType* data_types = nullptr;
-    unsigned short data_types_num = 0;
-    unsigned short instances_num = 0;
-
     void Bind();
     void Unbind();
+protected:
+    InstancedDataType* _data_types = nullptr;
+    unsigned short _data_types_num = 0;
+    unsigned short _instances_num = 0;
 };
 
 class GeometryBuffer : Copyable<GeometryBuffer*> {
+    friend class InstancedDataBuffer;
+    friend class IndexDeclaration;
 public:
     enum class DrawMode : unsigned int {
         Points = 0,
@@ -236,6 +223,9 @@ public:
     //!Don't delete declaration
     virtual ~GeometryBuffer();
 
+    static GeometryBuffer* CreatePlane(const glm::vec3& scale, const glm::vec3 pos, const Usage& usage, const DrawMode& drawm);
+    static GeometryBuffer* CreateCube(const glm::vec3& scale, const glm::vec3 pos, const Usage& usage, const DrawMode& drawm);
+
 protected:
     //!Vertex data storage in buffer
     //!Shouldn't be null
@@ -273,6 +263,68 @@ protected:
  *  log - log debug messages? false by default
  */
 bool ImportMoGeom(std::string file, MR::GeometryBuffer**& buffers, unsigned int & num, bool indexes = true, bool log = false);
+}
+
+MR::VertexDeclarationType::DataType MR::VertexDeclarationType::GetDataType(){
+    return _type;
+}
+
+const void * MR::VertexDeclarationType::GetPointer(){
+    return _pointer;
+}
+
+MR::VertexDeclarationType MR::VertexDeclarationType::Position(const void * pointer){
+    return MR::VertexDeclarationType(MR::VertexDeclarationType::DataType::Position, pointer);
+}
+
+MR::VertexDeclarationType MR::VertexDeclarationType::Normal(const void * pointer){
+    return MR::VertexDeclarationType(MR::VertexDeclarationType::DataType::Normal, pointer);
+}
+
+MR::VertexDeclarationType MR::VertexDeclarationType::TexCoord(const void * pointer){
+    return MR::VertexDeclarationType(MR::VertexDeclarationType::DataType::TexCoord, pointer);
+}
+
+MR::VertexDeclarationType MR::VertexDeclarationType::Color(const void * pointer){
+    return MR::VertexDeclarationType(MR::VertexDeclarationType::DataType::Color, pointer);
+}
+
+unsigned short MR::VertexDeclarationType::ElementsNum(){
+    switch(_type){
+    case VertexDeclarationType::DataType::Position:
+    case VertexDeclarationType::DataType::Normal:
+        return 3;
+        break;
+    case VertexDeclarationType::DataType::TexCoord:
+        return 2;
+        break;
+    case VertexDeclarationType::DataType::Color:
+        return 4;
+        break;
+    }
+    return 0;
+}
+
+bool MR::VertexDeclaration::Contains(const VertexDeclarationType::DataType& type) {
+    for(unsigned short i = 0; i < _decl_types_num; ++i) {
+        if(_decl_types[i]._type == type) return true;
+    }
+    return false;
+}
+
+MR::VertexDeclarationType* MR::VertexDeclaration::Get(const VertexDeclarationType::DataType& type) {
+    for(unsigned short i = 0; i < _decl_types_num; ++i) {
+        if(_decl_types[i]._type == type) return &_decl_types[i];
+    }
+    return nullptr;
+}
+
+MR::VertexDeclaration::DataType MR::VertexDeclaration::GetDataType(){
+    return _data_type;
+}
+
+int MR::VertexDeclaration::GetStrideSize(){
+    return _stride_size;
 }
 
 #endif // _MR_GEOMETRY_BUFFER_H

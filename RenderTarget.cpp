@@ -28,7 +28,7 @@ void RenderTarget::Unbind(){
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void RenderTarget::CreateTargetTexture(const unsigned char & i, const GLenum & iFormat, const GLenum & Format, const GLenum & Type){
+void RenderTarget::CreateTargetTexture(const unsigned char & i, const MR::Texture::InternalFormat & iFormat, const MR::Texture::Format & Format, const MR::Texture::Type & Type){
     glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffer);
 
     MR::Texture::CreateOpenGLTexture(&_targetTextures[i], (Texture::InternalFormat)iFormat, _width, _height, (Texture::Format)Format, (Texture::Type)Type);
@@ -39,6 +39,32 @@ void RenderTarget::CreateTargetTexture(const unsigned char & i, const GLenum & i
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, _targetTextures[i], 0);
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void RenderTarget::CreateCubeMapTargetTexture(const unsigned char & i, const MR::Texture::InternalFormat & iFormat, const MR::Texture::Format & Format, const MR::Texture::Type & Type){
+    glGenTextures(1, &_targetTextures[i]);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, _targetTextures[i]);
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    std::vector<GLubyte> testData(_width * _height * 4, 128);
+
+    for(int loop = 0; loop < 6; ++loop) {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + loop, 0, (int)iFormat,
+            _width, _height, 0, (unsigned int)Format, (unsigned int)Type, &testData[0]);
+    }
+
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffer);
+    for(int face = 0; face < 6; face++) {
+        //draw();
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, _targetTextures[i], 0);
+    }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 

@@ -28,8 +28,10 @@ typedef AnimValue<glm::vec3> AnimValueV3;
 typedef AnimValue<glm::vec4> AnimValueV4;
 
 template<typename T>
-class AnimDesc : WithPtr<T> {
+class AnimDesc {
 public:
+    typedef std::shared_ptr<AnimDesc> Ptr;
+
     inline MR_ANIM_TIME_TYPE& GetAnimTime(){return _anim_time;}
     inline MR_ANIM_TIME_TYPE& GetActivationTime(){return _act_time;}
     inline MR_ANIM_TIME_TYPE& GetDeltaMult(){return _delta_mult;}
