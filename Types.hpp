@@ -59,6 +59,26 @@ protected:
     std::vector<flag_t> _flags;
 };
 
+class IArray{
+public:
+    virtual void* FirstElement() = 0;
+    virtual size_t Size() = 0; //num of elements
+    virtual void* At(const size_t& index) = 0;
+};
+
+template<typename t>
+class Array : public IArray {
+public:
+    void* FirstElement() override { return _first_element_ptr; }
+    size_t Size() override { return _size; }
+    void* At(const size_t& index) override { return (void*)&_first_element_ptr[index]; }
+    t operator[](const size_t& index) {return _first_element_ptr[index];}
+    Array(t* a, size_t sz) : _first_element_ptr(a), _size(sz) {}
+protected:
+    t* _first_element_ptr;
+    size_t _size;
+};
+
 }
 
 #endif // _MR_TYPES_H_

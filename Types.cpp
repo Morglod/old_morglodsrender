@@ -4,7 +4,7 @@
 namespace MR {
 
 std::string Super::ToString(){
-    return "Super";
+    return "Base";
 }
 
 Super::Super(){

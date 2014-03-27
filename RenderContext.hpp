@@ -11,6 +11,8 @@
 #   include <glm/glm.hpp>
 #endif
 
+#include <stack>
+
 namespace MR {
 class Camera;
 class Entity;
@@ -99,6 +101,8 @@ protected:
     unsigned int _tai[32]; //texture array index
     bool _tab[32]; //is texture array used
     TextureSettings::Ptr _ts[32];
+
+    //std::stack<IRenderTechnique*> _render_technique;
 
     static RenderContext* _instance;
 

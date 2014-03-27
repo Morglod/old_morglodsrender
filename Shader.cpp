@@ -176,6 +176,10 @@ MR::ShaderUniform::~ShaderUniform() {
 
 //UNIFORM BLOCK
 
+std::string MR::ShaderUniformBlock::ToString() {
+    return "ShaderUniformBlock(" + std::string(_name) + ") with data at " + std::to_string((unsigned long) _data);
+}
+
 bool MR::ShaderUniformBlock::Map(IShader* shader_program) {
     _uniform_block_index = glGetUniformBlockIndex(shader_program->GetGPUProgramId(), _name.c_str());
     glGetActiveUniformBlockiv(shader_program->GetGPUProgramId(), _uniform_block_index, GL_UNIFORM_BLOCK_DATA_SIZE, &_block_size);
@@ -234,6 +238,10 @@ bool MR::SubShader::Compile(const std::string& code, const ISubShader::Type& sha
 
     OnCompiled(this, code, shader_type);
     return true;
+}
+
+std::string MR::SubShader::ToString() {
+    return "SubShader";
 }
 
 MR::SubShader::SubShader(const std::string& code, const ISubShader::Type& type) : Super() {
@@ -305,6 +313,10 @@ bool MR::Shader::Link(ISubShader** sub_shaders, const unsigned int& num) {
 bool MR::Shader::Link() {
     Link(_sub_shaders.data(), _sub_shaders.size());
     return true;
+}
+
+std::string MR::Shader::ToString() {
+    return "Shader";
 }
 
 bool MR::Shader::Load() {

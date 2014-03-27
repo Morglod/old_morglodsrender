@@ -174,6 +174,7 @@ int MR::MachineInfo::current_memory_kb() {
     return cur_avail_mem_kb;
 }
 
-bool MR::MachineInfo::_IsDirectStateAccessSupported(){
-    return true;//(GLEW_EXT_direct_state_access);
+bool MR::MachineInfo::IsDirectStateAccessSupported(){
+    static bool state = (__glewNamedBufferDataEXT);
+    return state;
 }

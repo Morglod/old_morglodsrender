@@ -10,6 +10,10 @@
 #   include <GLFW\glfw3.h>
 #endif
 
+void ErrorHandle(int errorCode, const char* text){
+    MR::Log::LogString("GLFW Error ["+std::to_string(errorCode)+"] : "+std::string(text), MR_LOG_LEVEL_ERROR);
+}
+
 namespace MR {
 
 void RenderWindow::window_pos_callback(GLFWwindow* window, int x, int y) {
@@ -172,6 +176,7 @@ void RenderWindow::MakeCurrent() {
 RenderWindow::RenderWindow(const std::string& title, const int& width, const int& height, const RenderWindowHints& hints, const RenderWindowCallbacks& callbacks, GLFWwindow* parent_share_resources) :
     glfw_handle(nullptr), titlec((char*)title.c_str()) {
 
+    glfwSetErrorCallback(ErrorHandle);
 
     glfwWindowHint(GLFW_ACCUM_ALPHA_BITS, hints.accum_alpha_bits);
     glfwWindowHint(GLFW_ACCUM_BLUE_BITS, hints.accum_blue_bits);
@@ -197,7 +202,6 @@ RenderWindow::RenderWindow(const std::string& title, const int& width, const int
     glfwWindowHint(GLFW_STENCIL_BITS, hints.stencil_bits);
     glfwWindowHint(GLFW_STEREO, hints.stereo);
     glfwWindowHint(GLFW_VISIBLE, hints.visible);
-
 
     glfw_handle = glfwCreateWindow(width, height, titlec, NULL, parent_share_resources);
 

@@ -23,6 +23,7 @@ zlib http://www.zlib.net
 #include "Events.hpp"
 #include "GeometryBuffer.hpp"
 #include "Log.hpp"
+#include "Light.hpp"
 #include "MachineInfo.hpp"
 #include "Material.hpp"
 #include "Mesh.hpp"

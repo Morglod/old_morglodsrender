@@ -63,7 +63,7 @@ namespace MR{
         //Call after shader linked
         bool Map(IShader* shader) override;
 
-        inline int GetGPULocation() override {return _uniform_location;}
+        inline int GetGPULocation() override;
 
         std::string ToString() override;
 
@@ -113,6 +113,8 @@ namespace MR{
         bool Map(IShader* shader) override;
 
         bool BufferData(unsigned char* data, const size_t& size, const size_t& offset) override;
+
+        std::string ToString() override;
 
         ShaderUniformBlock(const std::string& Name, const int& NumUniforms, std::string* UniformNames, IShader* shader);
         virtual ~ShaderUniformBlock();
@@ -167,6 +169,8 @@ namespace MR{
         inline unsigned int GetGPUId() override;
         inline ISubShader::Type GetType() override;
 
+        std::string ToString() override;
+
         /** Compiles OpenGL shader */
         SubShader(const std::string& code, const ISubShader::Type& type);
 
@@ -207,6 +211,8 @@ namespace MR{
         virtual void DetachAllSubShaders() = 0;
 
         virtual bool Use(RenderContext* context) = 0;
+
+        virtual ~IShader(){}
     };
 
     class Shader : public Super, public IShader, public virtual Resource {
@@ -233,6 +239,8 @@ namespace MR{
         IShaderUniformBlock* FindShaderUniformBlock(const std::string& name) override;
 
         inline unsigned int GetGPUProgramId() override;
+
+        std::string ToString() override;
 
         /*  Links sub shaders together (in OpenGL program)
          *  sub_shaders - Array of SubShader objects
@@ -298,6 +306,10 @@ void MR::ShaderUniform::SetValue(void* p){
 
 void* MR::ShaderUniform::GetValue(){
     return _value;
+}
+
+int MR::ShaderUniform::GetGPULocation() {
+    return _uniform_location;
 }
 
 unsigned char* MR::ShaderUniformBlock::GetData() {

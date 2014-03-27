@@ -49,12 +49,7 @@ namespace MR{
 
         /** EXTENSIONS **/
 
-        bool _IsDirectStateAccessSupported();
-
-        inline bool IsDirectStateAccessSupported() {
-            static bool state = _IsDirectStateAccessSupported();
-            return state;
-        }
+        bool IsDirectStateAccessSupported();
     }
 }
 

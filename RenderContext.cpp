@@ -309,6 +309,7 @@ RenderContext::~RenderContext() {
     delete MR::ModelManager::Instance();
     MR::ShaderManager::Instance()->RemoveAll();
     delete MR::ShaderManager::Instance();
+    delete MR::UIManager::Instance();
     glfwTerminate();
 }
 

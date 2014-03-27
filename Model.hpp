@@ -64,6 +64,7 @@ public:
 
     ModelManager() : ResourceManager() {}
     virtual ~ModelManager() {}
+
     static ModelManager* Instance() {
         static ModelManager* m = new ModelManager();
         return m;

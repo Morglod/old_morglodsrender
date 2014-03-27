@@ -13,7 +13,7 @@
 namespace MR {
 
 template<typename... Args>
-class Event : public Super {
+class Event {
 public:
     typedef void (*FuncP)(void* sender, Args... args);
 
