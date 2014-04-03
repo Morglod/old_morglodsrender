@@ -34,7 +34,7 @@ public:
     inline void SetDistStep(const float & dist){ dist_step = dist; }
 
     ModelLod* GetLod(const float & dist);
-    inline ModelLod* GetLodN(const unsigned short & i){ return lods[i]; }
+    inline ModelLod* GetLodN(const unsigned short & i){ if(GetLodNum() == 0) return nullptr; return lods[i]; }
     inline unsigned short GetLodNum(){ return lods.size(); }
 
     virtual bool Load();

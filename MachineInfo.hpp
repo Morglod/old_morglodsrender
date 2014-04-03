@@ -11,7 +11,7 @@
 namespace MR{
     namespace MachineInfo{
 
-        /** INFO **/
+        /** GPU INFO **/
 
         enum class GPUVendor : unsigned char {
             Other = 0,
@@ -47,9 +47,15 @@ namespace MR{
         int total_memory_kb();
         int current_memory_kb();
 
+        /** FEATURES **/
+        bool FeatureNV_GPUPTR(); //direct access to gpu's addresses (for vertex buffers)
+
         /** EXTENSIONS **/
 
         bool IsDirectStateAccessSupported();
+
+        /** GL INFO **/
+        int MaxTextureSize();
     }
 }
 

@@ -1,6 +1,6 @@
 #include "UI.hpp"
 
-#include "GeometryBuffer.hpp"
+#include "GeometryBufferV2.hpp"
 #include "Shader.hpp"
 #include "RenderContext.hpp"
 #include "Log.hpp"
@@ -140,7 +140,7 @@ void UIManager::SetScreenRect(const glm::vec2& size){
 }
 
 UIManager::UIManager() : _projectionMatrix(new glm::mat4(1.0f)), _viewMatrix(new glm::mat4(1.0f)), _mvp(new glm::mat4(1.0f)), _color(new glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), _albedo_tex_unit(new int(0)), _screen_size(640.0f, 480.0f), _shader(0) {
-    _quad_geom = MR::GeometryBuffer::CreatePlane(glm::vec3(1.0f,1.0f,0.0f), glm::vec3(-0.5f, -0.5f, 0.0f), MR::GeometryBuffer::Usage::Static, MR::GeometryBuffer::DrawMode::Quads);
+    //_quad_geom = MR::GeometryBuffer::CreatePlane(glm::vec3(1.0f,1.0f,0.0f), glm::vec3(-0.5f, -0.5f, 0.0f), MR::GeometryBuffer::Usage::Static, MR::GeometryBuffer::DrawMode::Quads);
 
     _shader = new MR::Shader(MR::ShaderManager::Instance(), "UIDefaultShader", "FromMem");
     _shader->AttachSubShader(new MR::SubShader(code_ui_vert, MR::ISubShader::Type::Vertex));

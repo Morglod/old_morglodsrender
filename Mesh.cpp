@@ -1,6 +1,6 @@
 #include "Mesh.hpp"
 #include "Log.hpp"
-#include "GeometryBuffer.hpp"
+#include "GeometryBufferV2.hpp"
 #include "Material.hpp"
 
 void MR::Mesh::SetResourceFreeState(const bool& state) {

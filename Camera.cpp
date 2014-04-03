@@ -108,25 +108,8 @@ void MR::Camera::CalcMVP() {
 }
 
 void MR::Camera::Calc() {
-#ifdef MR_USE_OPENMP
-#pragma omp parallel
-{
-    #pragma omp sections
-    {
-        #pragma omp section
-        {
-            CalcViewMatrix();
-        }
-        #pragma omp section
-        {
-            CalcProjectionMatrix();
-        }
-    }
-}
-#else
     CalcViewMatrix();
     CalcProjectionMatrix();
-#endif // MR_USE_OPENMP
     CalcMVP();
 }
 

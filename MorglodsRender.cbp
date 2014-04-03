@@ -34,7 +34,6 @@
 		</Build>
 		<Compiler>
 			<Add option="-std=c++11" />
-			<Add option="-fopenmp" />
 		</Compiler>
 		<Linker>
 			<Add library="SOIL" />
@@ -44,7 +43,6 @@
 			<Add library="glu32" />
 			<Add library="gdi32" />
 			<Add library="winmm" />
-			<Add library="gomp" />
 			<Add library="zlib" />
 		</Linker>
 		<Unit filename="Anim.cpp" />
@@ -57,8 +55,6 @@
 		<Unit filename="Events.hpp" />
 		<Unit filename="Exception.cpp" />
 		<Unit filename="Exception.hpp" />
-		<Unit filename="GeometryBuffer.cpp" />
-		<Unit filename="GeometryBuffer.hpp" />
 		<Unit filename="GeometryBufferV2.cpp" />
 		<Unit filename="GeometryBufferV2.hpp" />
 		<Unit filename="Light.cpp" />

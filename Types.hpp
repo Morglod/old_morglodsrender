@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <string.h>
 
 namespace MR{
 
@@ -59,24 +60,28 @@ protected:
     std::vector<flag_t> _flags;
 };
 
-class IArray{
+class IArray {
 public:
-    virtual void* FirstElement() = 0;
-    virtual size_t Size() = 0; //num of elements
+    virtual void* TopPtr() = 0;
+    virtual size_t TypeSize() = 0; //size of one element in array
+    virtual size_t Num() = 0; //num of elements in array
     virtual void* At(const size_t& index) = 0;
 };
 
-template<typename t>
+template<typename _t>
 class Array : public IArray {
 public:
-    void* FirstElement() override { return _first_element_ptr; }
-    size_t Size() override { return _size; }
-    void* At(const size_t& index) override { return (void*)&_first_element_ptr[index]; }
-    t operator[](const size_t& index) {return _first_element_ptr[index];}
-    Array(t* a, size_t sz) : _first_element_ptr(a), _size(sz) {}
+    inline void* TopPtr() override { return _top; }
+    inline size_t TypeSize() override { return sizeof(_t); }
+    inline size_t Num() override { return _num; }
+    inline void* At(const size_t& index) override { return &_top[index]; }
+    inline _t* ElementPtr(const size_t& index) { return &_top[index]; }
+    inline _t Element(const size_t& index) { return _top[index]; }
+
+    Array(_t* a, const size_t& num) : _top(a), _num(num) {}
 protected:
-    t* _first_element_ptr;
-    size_t _size;
+    _t* _top;
+    size_t _num;
 };
 
 }

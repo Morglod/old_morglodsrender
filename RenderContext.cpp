@@ -2,7 +2,7 @@
 
 #include "Log.hpp"
 #include "Camera.hpp"
-#include "GeometryBuffer.hpp"
+#include "GeometryBufferV2.hpp"
 #include "Mesh.hpp"
 #include "Shader.hpp"
 #include "Texture.hpp"
@@ -33,13 +33,13 @@ void RenderContext::UseCamera(Camera* cam){
     }
 }
 
-void RenderContext::UseGeometryBuffer(GeometryBuffer* gb) {
+/*void RenderContext::UseGeometryBuffer(GeometryBuffer* gb) {
     if(gb != _gb) {
         _gb = gb;
         _gb->Bind();
         OnGeometryBufferUsed(this, _gb);
     }
-}
+}*/
 
 void RenderContext::UseShader(Shader* sh) {
     _sh = sh;
@@ -92,6 +92,26 @@ void RenderContext::BindTexture(Texture* tx, const unsigned int& texStage) {
     }
 }
 
+void RenderContext::BindVertexFormat(IVertexFormat* format){
+    if(_vformat != format){
+        if(_vformat != nullptr) _vformat->UnBind();
+        if(format != nullptr){
+            _vformat = format;
+            _vformat->Bind();
+        }
+    }
+}
+
+void RenderContext::BindIndexFormat(IIndexFormat* format){
+    if(_iformat != format){
+        if(_iformat != nullptr) _iformat->UnBind();
+        if(format != nullptr){
+            _iformat = format;
+            _iformat->Bind();
+        }
+    }
+}
+
 void RenderContext::UseTextureSettings(TextureSettings::Ptr ts, const unsigned int& texStage) {
     if( _ts[texStage] != ts ) {
         _ts[texStage] = ts;
@@ -125,8 +145,8 @@ void RenderContext::UseDefaultMaterial(const bool& s) {
 }
 
 void RenderContext::DrawGeometryBuffer(GeometryBuffer* gb) {
-    UseGeometryBuffer(gb);
-    _gb->Draw();
+    //UseGeometryBuffer(gb);
+    gb->Draw(this);
 }
 
 void RenderContext::DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::GeometryBuffer* g, MR::MaterialPass* mat_pass) {
@@ -219,12 +239,6 @@ void RenderContext::DrawEntity(MR::Entity** ent_list, const unsigned int& num, c
         //First analize entities
         std::vector<_DrawParam> scene_geometry;
 
-#ifdef MR_USE_OPENMP
-//        MR::Camera* camera = this->camera;
-//#pragma omp parallel shared(ent_list) shared(num) shared(camera) shared(scene_geometry)
-//{
-//        #pragma omp parallel for schedule(static)
-#endif
         for(unsigned int it = 0; it < num; ++it){
             if(!ent_list[it]->GetModel()) continue;
 
@@ -248,9 +262,6 @@ void RenderContext::DrawEntity(MR::Entity** ent_list, const unsigned int& num, c
                 }
             }
         }
-#ifdef MR_USE_OPENMP
-//}
-#endif // MR_USE_OPENMP
 
         std::vector<glm::mat4> mat_buffer_m;
         for(auto it = scene_geometry.begin(); it != scene_geometry.end(); ++it){

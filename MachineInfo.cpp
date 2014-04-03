@@ -174,7 +174,20 @@ int MR::MachineInfo::current_memory_kb() {
     return cur_avail_mem_kb;
 }
 
+bool MR::MachineInfo::FeatureNV_GPUPTR(){
+    static bool support = (gpu_vendor() == MR::MachineInfo::GPUVendor::Nvidia) && (__glewGetBufferParameterui64vNV);
+    return false;//support;
+}
+
 bool MR::MachineInfo::IsDirectStateAccessSupported(){
     static bool state = (__glewNamedBufferDataEXT);
     return state;
+}
+
+int MR::MachineInfo::MaxTextureSize(){
+    static int s = -10;
+    if(s == -10){
+        glGetIntegerv(GL_MAX_TEXTURE_SIZE, &s);
+    }
+    return s;
 }

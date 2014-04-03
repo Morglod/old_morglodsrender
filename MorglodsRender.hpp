@@ -21,7 +21,7 @@ zlib http://www.zlib.net
 #include "Camera.hpp"
 #include "Entity.hpp"
 #include "Events.hpp"
-#include "GeometryBuffer.hpp"
+#include "GeometryBufferV2.hpp"
 #include "Log.hpp"
 #include "Light.hpp"
 #include "MachineInfo.hpp"

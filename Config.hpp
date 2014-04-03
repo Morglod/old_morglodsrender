@@ -6,7 +6,6 @@
 /** COMPILE TIME CONFIG **/
 #define GLEW_STATIC
 #define GLM_FORCE_CXX11
-//#define MR_USE_OPENMP
 
 /** COMPILE TIME ENGINE CONSTANTS **/
 #define MR_DELTA_TYPE float

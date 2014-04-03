@@ -13,9 +13,9 @@ const char* code_default_vert =
     "#version 330\n"
     "#extension GL_ARB_separate_shader_objects : enable\n"
     "#pragma optimize(on)\n"
-    "uniform	mat4 mvp;"
-    "uniform	mat4 viewMatrix;"
-    "uniform	mat4 projMatrix;"
+    "uniform mat4 mvp;"
+    "uniform mat4 viewMatrix;"
+    "uniform mat4 projMatrix;"
     "layout (location = 0) in vec3 position;"
     "layout (location = 1) in vec3 normal;"
     "layout (location = 2) in vec4 color;"
@@ -158,7 +158,9 @@ char *textFileRead(const char *fn, int * count = nullptr) {
 }
 
 bool MR::ShaderUniform::Map(IShader* shader) {
+    MR::Log::LogString(this->ToString());
     _uniform_location = glGetUniformLocationARB(shader->GetGPUProgramId(), _name.c_str());
+    MR::Log::LogString(std::to_string(_uniform_location));
     OnMapped(this, shader, _uniform_location);
     return true;
 }
@@ -244,7 +246,7 @@ std::string MR::SubShader::ToString() {
     return "SubShader";
 }
 
-MR::SubShader::SubShader(const std::string& code, const ISubShader::Type& type) : Super() {
+MR::SubShader::SubShader(const std::string& code, const ISubShader::Type& type) : Super(), _shader(0) {
     this->Compile(code, type);
 }
 
@@ -483,7 +485,7 @@ void MR::Shader::DetachAllSubShaders(){
     _sub_shaders.clear();
 }
 
-MR::Shader::Shader(ResourceManager* manager, const std::string& name, const std::string& source) : Resource(manager, name, source), Super() {
+MR::Shader::Shader(ResourceManager* manager, const std::string& name, const std::string& source) : Resource(manager, name, source), Super(), _program(0) {
     //this->Link(sub_shaders, num);
 }
 

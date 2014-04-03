@@ -1,6 +1,6 @@
 #include "Model.hpp"
 #include "Log.hpp"
-#include "GeometryBuffer.hpp"
+#include "GeometryBufferV2.hpp"
 #include "Material.hpp"
 #include "Texture.hpp"
 
@@ -316,37 +316,41 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool bindexes, bool log)
         unsigned int * ibuffer = new unsigned int[indsNum];
         ffile.read( reinterpret_cast<char*>(ibuffer), ibufferSize);
 
-        MR::VertexDeclarationType* vdtypes = (MR::VertexDeclarationType*)malloc(declarations*sizeof(MR::VertexDeclarationType));
-        unsigned char idecl = 0;
-        int ptr_decl = 0;
+        VertexFormatCustom* vformat = new VertexFormatCustom();
         if(posDecl) {
-            vdtypes[idecl] = MR::VertexDeclarationType(MR::VertexDeclarationType::DataType::Position, (void*)(ptr_decl));
-            ++idecl;
-            ptr_decl += sizeof(float)*3;
+            vformat->AddVertexAttribute(new VertexAttributeCustom(3, VertexDataTypeFloat::Instance(), IVertexAttribute::ShaderIndex_Position));
         }
         if(texCoordDecl) {
-            vdtypes[idecl] = MR::VertexDeclarationType(MR::VertexDeclarationType::DataType::TexCoord, (void*)(ptr_decl));
-            ++idecl;
-            ptr_decl += sizeof(float)*2;
+            vformat->AddVertexAttribute(new VertexAttributeCustom(2, VertexDataTypeFloat::Instance(), IVertexAttribute::ShaderIndex_TexCoord));
         }
         if(normalDecl) {
-            vdtypes[idecl] = MR::VertexDeclarationType(MR::VertexDeclarationType::DataType::Normal, (void*)(ptr_decl));
-            ++idecl;
-            ptr_decl += sizeof(float)*3;
+            vformat->AddVertexAttribute(new VertexAttributeCustom(3, VertexDataTypeFloat::Instance(), IVertexAttribute::ShaderIndex_Normal));
         }
         if(vertexColorDecl) {
-            vdtypes[idecl] = MR::VertexDeclarationType(MR::VertexDeclarationType::DataType::Color, (void*)(ptr_decl));
-            ++idecl;
-            ptr_decl += sizeof(float)*4;
+            vformat->AddVertexAttribute(new VertexAttributeCustom(4, VertexDataTypeFloat::Instance(), IVertexAttribute::ShaderIndex_Color));
         }
 
         if(log) MR::Log::LogString("Decls " + std::to_string(declarations ), MR_LOG_LEVEL_INFO);
 
-        MR::VertexDeclaration* vDecl = new MR::VertexDeclaration(&vdtypes[0], declarations, VertexDeclaration::DataType::Float);
-        MR::IndexDeclaration* iDecl = new MR::IndexDeclaration(IndexDeclaration::DataType::UInt);
+        //MR::VertexDeclaration* vDecl = new MR::VertexDeclaration(&vdtypes[0], declarations, VertexDeclaration::DataType::Float);
+        //MR::IndexDeclaration* iDecl = new MR::IndexDeclaration(IndexDeclaration::DataType::UInt);
 
-        buffers[ buffers_mat_ids[i] ] = new MR::GeometryBuffer(vDecl, nullptr, &vbuffer[0], vbufferSize, nullptr, 0, numVerts, 0);
-        if(bindexes) buffers[ buffers_mat_ids[i] ] = new MR::GeometryBuffer(vDecl, iDecl, &vbuffer[0], vbufferSize, &ibuffer[0], ibufferSize, numVerts, indsNum);
+        VertexBuffer* gl_v_buffer = new VertexBuffer();
+        gl_v_buffer->Buffer(&vbuffer[0], vbufferSize, IGLBuffer::Static+IGLBuffer::Draw, IGLBuffer::ReadOnly);
+        gl_v_buffer->SetNum(numVerts);
+
+        IndexFormatCustom* gl_i_format = nullptr;
+        IndexBuffer* gl_i_buffer = nullptr;
+        if(bindexes) {
+            gl_i_format = new IndexFormatCustom(VertexDataTypeUInt::Instance());
+
+            gl_i_buffer = new IndexBuffer();
+            gl_i_buffer->Buffer(&ibuffer[0], ibufferSize, IGLBuffer::Static+IGLBuffer::Draw, IGLBuffer::ReadOnly);
+            gl_i_buffer->SetNum(indsNum);
+        }
+
+        buffers[ buffers_mat_ids[i] ] = new GeometryBuffer(gl_v_buffer, gl_i_buffer, vformat, gl_i_format, GL_TRIANGLES);//new MR::GeometryBuffer(vDecl, nullptr, &vbuffer[0], vbufferSize, nullptr, 0, numVerts, 0);
+        //if(bindexes) buffers[ buffers_mat_ids[i] ] = new MR::GeometryBuffer(vDecl, iDecl, &vbuffer[0], vbufferSize, &ibuffer[0], ibufferSize, numVerts, indsNum);
 
         delete meshName;
         delete vbuffer;

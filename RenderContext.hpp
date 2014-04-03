@@ -25,12 +25,14 @@ class MaterialPass;
 class Texture;
 class TextureArray;
 class TextureSettings;
+class IVertexFormat;
+class IIndexFormat;
 
 class RenderContext {
     friend class Texture;
 public:
     MR::Event<Camera*> OnCameraUsed;
-    MR::Event<GeometryBuffer*> OnGeometryBufferUsed;
+    //MR::Event<GeometryBuffer*> OnGeometryBufferUsed;
     MR::Event<Shader*> OnShaderUsed;
     MR::Event<const unsigned int&> OnTextureUnitActived;
 
@@ -38,13 +40,13 @@ public:
     MR::Event<bool> OnDefaultMaterialUsingStateChanged;
 
     inline Camera* GetCurrentCamera();
-    inline GeometryBuffer* GetCurrentGeometryBuffer();
+    //inline GeometryBuffer* GetCurrentGeometryBuffer();
     inline Shader* GetCurrentShader();
     inline unsigned int GetCurrentTexture(unsigned int stage);
     inline unsigned int* GetCurrentTextures();
 
     void UseCamera(Camera* cam);
-    void UseGeometryBuffer(GeometryBuffer* gb);
+    //void UseGeometryBuffer(GeometryBuffer* gb);
     void UseShader(Shader* sh);
     void UseDefaultMaterial(const bool& s);
     void UseTextureSettings(TextureSettings::Ptr ts, const unsigned int& texUnit);
@@ -53,6 +55,8 @@ public:
 
     void BindTexture(const Texture::Target& target, const unsigned int& tx, const unsigned int& texUnit);
     void BindTexture(Texture* tx, const unsigned int& texUnit);
+    void BindVertexFormat(IVertexFormat* format);
+    void BindIndexFormat(IIndexFormat* format);
 
     void SetDefaultMaterial(Material* mat);
     void SetViewport(const unsigned short & x, const unsigned short & y, const unsigned short & width, const unsigned short & height);
@@ -82,7 +86,9 @@ protected:
     bool _is_alive;
 
     Camera* _cam = nullptr;
-    GeometryBuffer* _gb = nullptr;
+    //GeometryBuffer* _gb = nullptr;
+    IVertexFormat* _vformat = nullptr;
+    IIndexFormat* _iformat = nullptr;
     Shader* _sh = nullptr;
 
     Material* defaultMaterial = nullptr;
@@ -121,9 +127,9 @@ MR::Camera* MR::RenderContext::GetCurrentCamera(){
     return _cam;
 }
 
-MR::GeometryBuffer* MR::RenderContext::GetCurrentGeometryBuffer(){
+/*MR::GeometryBuffer* MR::RenderContext::GetCurrentGeometryBuffer(){
     return _gb;
-}
+}*/
 
 MR::Shader* MR::RenderContext::GetCurrentShader(){
     return _sh;
