@@ -276,16 +276,9 @@ void GeometryBuffer::Draw(RenderContext* rc) {
         rc->BindVertexFormat(_format);
 
         for(size_t i = 0; i < _format->_Attributes()->size(); ++i) {
-            MR::IVertexAttribute* attr = (*(_format->_Attributes()))[i];
-            uint64_t attr_offset = (*(_format->_Offsets()))[i];
-
-            unsigned int si = attr->ShaderIndex();
-            uint64_t resPtr = _vb->_resident_ptr;
-            uint64_t attrSize = (uint64_t)attr->Size();
-
             glBufferAddressRangeNV(GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV,
-                                   attr->ShaderIndex(),
-                                   _vb->_resident_ptr + attr_offset,
+                                   (*(_format->_Attributes()))[i]->ShaderIndex(),
+                                   _vb->_resident_ptr + (*(_format->_Offsets()))[i],
                                    _vb->_buffer_size
                                    );
         }
