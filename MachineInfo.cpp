@@ -176,7 +176,7 @@ int MR::MachineInfo::current_memory_kb() {
 
 bool MR::MachineInfo::FeatureNV_GPUPTR(){
     static bool support = (gpu_vendor() == MR::MachineInfo::GPUVendor::Nvidia) && (__glewGetBufferParameterui64vNV);
-    return false;//support;
+    return support;
 }
 
 bool MR::MachineInfo::IsDirectStateAccessSupported(){

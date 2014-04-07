@@ -107,6 +107,7 @@ public:
     virtual void UnBind() = 0;
 protected:
     virtual std::vector<IVertexAttribute*>* _Attributes() = 0;
+    virtual std::vector<uint64_t>* _Offsets() = 0; //offsets of each attributes from starting point of vertex in bytes
 };
 
 class VertexFormatCustom : public IVertexFormat {
@@ -120,6 +121,7 @@ public:
     ~VertexFormatCustom();
 protected:
     inline std::vector<IVertexAttribute*>* _Attributes() override { return &_attribs; }
+    inline std::vector<uint64_t>* _Offsets() override { return &_pointers; }
 
     std::vector<IVertexAttribute*> _attribs;
     std::vector<uint64_t> _pointers;
