@@ -117,6 +117,9 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool bindexes, bool log)
 
     unsigned int buffers_mat_ids[NumMeshes];
     MR::GeometryBuffer** buffers = new MR::GeometryBuffer*[NumMeshes];
+    for(int i = 0; i < NumMeshes; ++i) {
+        buffers[i] = 0;
+    }
 
     for(int i = 0; i < NumMaterials; ++i) {
         //Read name

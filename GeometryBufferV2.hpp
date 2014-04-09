@@ -19,7 +19,7 @@ class RenderContext;
 class Geometry;
 class GeometryBuffer;
 
-class IVertexDataType {
+class IVertexDataType : public Comparable<IVertexDataType*> {
 public:
     virtual unsigned char Size() = 0; //one element of this data type size in bytes
     virtual unsigned int GPUDataType() = 0; //returns opengl data type
@@ -30,6 +30,12 @@ public:
     inline unsigned char Size() override { return sizeof(int); }
     inline unsigned int GPUDataType() override { return 0x1404; }
 
+    inline bool Equal(IVertexDataType* dt) override {
+        if(sizeof(int) != dt->Size()) return false;
+        if(0x1404 != dt->GPUDataType()) return false;
+        return true;
+    }
+
     static IVertexDataType* Instance();
 };
 
@@ -37,6 +43,12 @@ class VertexDataTypeUInt : public IVertexDataType {
 public:
     inline unsigned char Size() override { return sizeof(unsigned int); }
     inline unsigned int GPUDataType() override { return 0x1405; }
+
+    inline bool Equal(IVertexDataType* dt) override {
+        if(sizeof(unsigned int) != dt->Size()) return false;
+        if(0x1405 != dt->GPUDataType()) return false;
+        return true;
+    }
 
     static IVertexDataType* Instance();
 };
@@ -46,6 +58,12 @@ public:
     inline unsigned char Size() override { return sizeof(float); }
     inline unsigned int GPUDataType() override { return 0x1406; }
 
+    inline bool Equal(IVertexDataType* dt) override {
+        if(sizeof(float) != dt->Size()) return false;
+        if(0x1406 != dt->GPUDataType()) return false;
+        return true;
+    }
+
     static IVertexDataType* Instance();
 };
 
@@ -54,13 +72,19 @@ public:
     inline unsigned char Size() override {return _size;}
     inline unsigned int GPUDataType() override {return _gpu_type;}
 
+    inline bool Equal(IVertexDataType* dt) override {
+        if(_size != dt->Size()) return false;
+        if(_gpu_type != dt->GPUDataType()) return false;
+        return true;
+    }
+
     VertexDataTypeCustom(const unsigned int& gpu_type, const unsigned char& size);
 protected:
     unsigned int _gpu_type;
     unsigned char _size;
 };
 
-class IVertexAttribute {
+class IVertexAttribute : public Comparable<IVertexAttribute*> {
 public:
     enum ShaderIndex {
         ShaderIndex_Position = MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION,
@@ -79,8 +103,16 @@ class VertexAttributePos3F : public IVertexAttribute {
 public:
     inline uint64_t Size() override {return ((uint64_t)VertexDataTypeFloat::Instance()->Size()) * ((uint64_t)3);}
     inline unsigned char ElementsNum() override { return 3; }
-    inline IVertexDataType* DataType() override {return VertexDataTypeFloat::Instance();}
+    inline IVertexDataType* DataType() override { return VertexDataTypeFloat::Instance();}
     inline unsigned int ShaderIndex() override { return IVertexAttribute::ShaderIndex_Position; }
+
+    inline bool Equal(IVertexAttribute* va) override {
+        if((((uint64_t)VertexDataTypeFloat::Instance()->Size()) * ((uint64_t)3)) != va->Size()) return false;
+        if(3 != va->ElementsNum()) return false;
+        if(IVertexAttribute::ShaderIndex_Position != va->ShaderIndex()) return false;
+
+        return VertexDataTypeFloat::Instance()->Equal(va->DataType());
+    }
 };
 
 class VertexAttributeCustom : public IVertexAttribute {
@@ -90,6 +122,14 @@ public:
     inline IVertexDataType* DataType() override { return _data_type; }
     inline unsigned int ShaderIndex() override { return _shaderIndex; }
 
+    inline bool Equal(IVertexAttribute* va) override {
+        if(_size != va->Size()) return false;
+        if(_el_num != va->ElementsNum()) return false;
+        if(_shaderIndex != va->ShaderIndex()) return false;
+
+        return _data_type->Equal(va->DataType());
+    }
+
     VertexAttributeCustom(const unsigned char& elementsNum, IVertexDataType* dataType, const unsigned int& shaderIndex);
 protected:
     unsigned char _el_num;
@@ -98,7 +138,7 @@ protected:
     unsigned int _shaderIndex;
 };
 
-class IVertexFormat {
+class IVertexFormat : public Comparable<IVertexFormat*> {
     friend class GeometryBuffer;
 public:
     virtual size_t Size() = 0; //one vertex size in bytes
@@ -116,6 +156,7 @@ public:
     void AddVertexAttribute(IVertexAttribute* a) override;
     bool Bind() override;
     void UnBind() override;
+    bool Equal(IVertexFormat* vf) override;
 
     VertexFormatCustom();
     ~VertexFormatCustom();

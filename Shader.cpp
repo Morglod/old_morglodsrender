@@ -158,9 +158,7 @@ char *textFileRead(const char *fn, int * count = nullptr) {
 }
 
 bool MR::ShaderUniform::Map(IShader* shader) {
-    MR::Log::LogString(this->ToString());
     _uniform_location = glGetUniformLocationARB(shader->GetGPUProgramId(), _name.c_str());
-    MR::Log::LogString(std::to_string(_uniform_location));
     OnMapped(this, shader, _uniform_location);
     return true;
 }
@@ -169,7 +167,7 @@ std::string MR::ShaderUniform::ToString() {
     return "ShaderUniform(" + std::string(_name) + ") with data at " + std::to_string((unsigned long) _value);
 }
 
-MR::ShaderUniform::ShaderUniform(const char* Name, const ShaderUniform::Types& Type, void* Value, IShader* shader_program) : Super(), _name(Name), _type(Type), _value(Value) {
+MR::ShaderUniform::ShaderUniform(const char* Name, const IShaderUniform::Types& Type, void* Value, IShader* shader_program) : Super(), IShaderUniform(Name, Type, Value, shader_program), _name(Name) {
     Map(shader_program);
 }
 
@@ -402,27 +400,27 @@ bool MR::Shader::Use(MR::RenderContext* context) {
     if(MR::MachineInfo::IsDirectStateAccessSupported()) {
         glUseProgramObjectARB(_program);
         for(auto it = _shaderUniforms.begin(); it != _shaderUniforms.end(); ++it) {
-            if((*it)->GetValue() == nullptr) continue;
-            if((*it)->GetType() == ShaderUniform::Types::Int) glProgramUniform1iEXT(_program, (*it)->GetGPULocation(), ((int*)(*it)->GetValue())[0]);
-            if((*it)->GetType() == ShaderUniform::Types::Float) glProgramUniform1fEXT(_program, (*it)->GetGPULocation(), ((float*)(*it)->GetValue())[0]);
-            if((*it)->GetType() == ShaderUniform::Types::Vec2) glProgramUniform2fEXT(_program, (*it)->GetGPULocation(), ((float*)(*it)->GetValue())[0], ((float*)(*it)->GetValue())[1]);
-            if((*it)->GetType() == ShaderUniform::Types::Vec3) glProgramUniform3fEXT(_program, (*it)->GetGPULocation(), ((float*)(*it)->GetValue())[0], ((float*)(*it)->GetValue())[1], ((float*)(*it)->GetValue())[2]);
-            if((*it)->GetType() == ShaderUniform::Types::Vec4) glProgramUniform4fEXT(_program, (*it)->GetGPULocation(), ((float*)(*it)->GetValue())[0], ((float*)(*it)->GetValue())[1], ((float*)(*it)->GetValue())[2], ((float*)(*it)->GetValue())[3]);
-            if((*it)->GetType() == ShaderUniform::Types::Mat4) {
+            if((*it)->_value == nullptr) continue;
+            if((*it)->_type == ShaderUniform::Types::Int) glProgramUniform1iEXT(_program, (*it)->GetGPULocation(), ((int*)(*it)->_value)[0]);
+            if((*it)->_type == ShaderUniform::Types::Float) glProgramUniform1fEXT(_program, (*it)->GetGPULocation(), ((float*)(*it)->_value)[0]);
+            if((*it)->_type == ShaderUniform::Types::Vec2) glProgramUniform2fEXT(_program, (*it)->GetGPULocation(), ((float*)(*it)->_value)[0], ((float*)(*it)->_value)[1]);
+            if((*it)->_type == ShaderUniform::Types::Vec3) glProgramUniform3fEXT(_program, (*it)->GetGPULocation(), ((float*)(*it)->_value)[0], ((float*)(*it)->_value)[1], ((float*)(*it)->_value)[2]);
+            if((*it)->_type == ShaderUniform::Types::Vec4) glProgramUniform4fEXT(_program, (*it)->GetGPULocation(), ((float*)(*it)->_value)[0], ((float*)(*it)->_value)[1], ((float*)(*it)->_value)[2], ((float*)(*it)->_value)[3]);
+            if((*it)->_type == ShaderUniform::Types::Mat4) {
                 glProgramUniformMatrix4fvEXT(_program, (*it)->GetGPULocation(), 1, GL_FALSE, (float*)&(((glm::mat4*)(*it)->GetValue())[0][0]));
             }
         }
     } else {
         glUseProgramObjectARB(_program);
         for(auto it = _shaderUniforms.begin(); it != _shaderUniforms.end(); ++it) {
-            if((*it)->GetValue() == nullptr) continue;
-            if((*it)->GetType() == ShaderUniform::Types::Int) glUniform1i((*it)->GetGPULocation(), ((int*)(*it)->GetValue())[0]);
-            if((*it)->GetType() == ShaderUniform::Types::Float) glUniform1f((*it)->GetGPULocation(), ((float*)(*it)->GetValue())[0]);
-            if((*it)->GetType() == ShaderUniform::Types::Vec2) glUniform2f((*it)->GetGPULocation(), ((float*)(*it)->GetValue())[0], ((float*)(*it)->GetValue())[1]);
-            if((*it)->GetType() == ShaderUniform::Types::Vec3) glUniform3f((*it)->GetGPULocation(), ((float*)(*it)->GetValue())[0], ((float*)(*it)->GetValue())[1], ((float*)(*it)->GetValue())[2]);
-            if((*it)->GetType() == ShaderUniform::Types::Vec4) glUniform4f((*it)->GetGPULocation(), ((float*)(*it)->GetValue())[0], ((float*)(*it)->GetValue())[1], ((float*)(*it)->GetValue())[2], ((float*)(*it)->GetValue())[3]);
-            if((*it)->GetType() == ShaderUniform::Types::Mat4) {
-                glUniformMatrix4fv((*it)->GetGPULocation(), 1, GL_FALSE, (float*)&(((glm::mat4*)(*it)->GetValue())[0][0]));
+            if((*it)->_value == nullptr) continue;
+            if((*it)->_type == ShaderUniform::Types::Int) glUniform1i((*it)->GetGPULocation(), ((int*)(*it)->_value)[0]);
+            if((*it)->_type == ShaderUniform::Types::Float) glUniform1f((*it)->GetGPULocation(), ((float*)(*it)->_value)[0]);
+            if((*it)->_type == ShaderUniform::Types::Vec2) glUniform2f((*it)->GetGPULocation(), ((float*)(*it)->_value)[0], ((float*)(*it)->_value)[1]);
+            if((*it)->_type == ShaderUniform::Types::Vec3) glUniform3f((*it)->GetGPULocation(), ((float*)(*it)->_value)[0], ((float*)(*it)->_value)[1], ((float*)(*it)->_value)[2]);
+            if((*it)->_type == ShaderUniform::Types::Vec4) glUniform4f((*it)->GetGPULocation(), ((float*)(*it)->_value)[0], ((float*)(*it)->_value)[1], ((float*)(*it)->_value)[2], ((float*)(*it)->_value)[3]);
+            if((*it)->_type == ShaderUniform::Types::Mat4) {
+                glUniformMatrix4fv((*it)->GetGPULocation(), 1, GL_FALSE, (float*)&(((glm::mat4*)(*it)->_value)[0][0]));
             }
         }
     }

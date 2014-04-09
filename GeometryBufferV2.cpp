@@ -70,6 +70,16 @@ void VertexFormatCustom::UnBind() {
     }
 }
 
+bool VertexFormatCustom::Equal(IVertexFormat* vf){
+    if(Size() != vf->Size()) return false;
+    auto it2 = _Attributes()->begin();
+    for(auto it = _attribs.begin(); it != _attribs.end(); ++it){
+        if( !((*it)->Equal(*it2)) ) return false;
+        ++it2;
+    }
+    return true;
+}
+
 VertexFormatCustom::VertexFormatCustom() : _attribs(), _pointers(), _nextPtr(0), _size(0) {
 }
 

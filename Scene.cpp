@@ -59,11 +59,14 @@ Entity* MR::SceneManager::CreateEntity(const std::string& modelSrc) {
     if(modelSrc != ""){
         model = MR::ModelManager::Instance()->NeedModel(modelSrc);
     }
-    return CreateEntity(model);
+    Entity* ent = CreateEntity(model);
+    AddEntity(ent);
+    return ent;
 }
 
 Entity* MR::SceneManager::CreateEntity(MR::Model* model) {
     Entity* ent = MR::Entity::CreateEntity(model);
+    AddEntity(ent);
     OnEntityCreated(this, ent);
     return ent;
 }

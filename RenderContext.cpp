@@ -46,6 +46,14 @@ void RenderContext::UseShader(Shader* sh) {
     if(_sh != nullptr) {
         if(sh->Use(this)) OnShaderUsed(this, _sh);
     }
+    /*if(_sh != sh){
+        _sh = sh;
+        if(_sh != nullptr) {
+            if(sh->Use(this)) OnShaderUsed(this, _sh);
+        } else {
+            glUseProgramObjectARB(0);
+        }
+    }*/
 }
 
 void RenderContext::ActiveTextureUnit(const GLenum & u) {
@@ -94,6 +102,12 @@ void RenderContext::BindTexture(Texture* tx, const unsigned int& texStage) {
 
 void RenderContext::BindVertexFormat(IVertexFormat* format){
     if(_vformat != format){
+        if((_vformat != nullptr) && (format != nullptr)){
+            if(_vformat->Equal(format)) {
+                _vformat = format;
+                return;
+            }
+        }
         if(_vformat != nullptr) _vformat->UnBind();
         if(format != nullptr){
             _vformat = format;
@@ -146,7 +160,7 @@ void RenderContext::UseDefaultMaterial(const bool& s) {
 
 void RenderContext::DrawGeometryBuffer(GeometryBuffer* gb) {
     //UseGeometryBuffer(gb);
-    gb->Draw(this);
+    if(gb) gb->Draw(this);
 }
 
 void RenderContext::DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::GeometryBuffer* g, MR::MaterialPass* mat_pass) {
@@ -186,6 +200,7 @@ void RenderContext::DrawEntity(MR::Entity* ent) {
     if(!ent->GetModel()) return;
     float dist = MR::Transform::CalcDist( *_cam->GetPosition(), ent->GetTransformP()->GetPos() );
     ModelLod* lod = ent->GetModel()->GetLod( dist );
+    if(!lod) return;
     for(unsigned short i = 0; i < lod->GetMeshesNum(); ++i) {
         MR::Mesh* mesh = lod->GetMesh(i);
         if(mesh->GetMaterialsNum() == 0) {
@@ -244,6 +259,7 @@ void RenderContext::DrawEntity(MR::Entity** ent_list, const unsigned int& num, c
 
             float dist = MR::Transform::CalcDist( *_cam->GetPosition(), ent_list[it]->GetTransformP()->GetPos() );
             MR::ModelLod* lod = ent_list[it]->GetModel()->GetLod(dist);
+            if(!lod) continue;
             for(unsigned short it_lod_mesh = 0; it_lod_mesh < lod->GetMeshesNum(); ++it_lod_mesh){
                 for(unsigned int it_lod_mesh_geom = 0; it_lod_mesh_geom < lod->GetMesh(it_lod_mesh)->GetGeomBuffersNum(); ++it_lod_mesh_geom){
                     if(lod->GetMesh(it_lod_mesh)->GetMaterialsNum() == 0) {
@@ -320,7 +336,6 @@ RenderContext::~RenderContext() {
     delete MR::ModelManager::Instance();
     MR::ShaderManager::Instance()->RemoveAll();
     delete MR::ShaderManager::Instance();
-    delete MR::UIManager::Instance();
     glfwTerminate();
 }
 

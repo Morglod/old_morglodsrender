@@ -25,6 +25,12 @@ public:
     virtual T Copy() = 0;
 };
 
+template<typename T>
+class Comparable {
+public:
+    virtual bool Equal(T) = 0;
+};
+
 template<typename flag_t>
 class IFlags {
 public:
@@ -82,6 +88,24 @@ public:
 protected:
     _t* _top;
     size_t _num;
+};
+
+template<typename ParentT, typename ChildrenT>
+class ForEachArray {
+public:
+    ParentT* parent;
+    std::vector<ChildrenT*> children;
+};
+
+template<typename T>
+class Singleton {
+public:
+    static T* Instance() {
+        if(!_instance) _instance = new T();
+        return _instance;
+    }
+private:
+    static T* _instance;
 };
 
 }

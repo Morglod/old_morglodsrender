@@ -23,6 +23,7 @@ namespace MR{
     class RenderContext;
 
     class IShaderUniform {
+        friend class Shader;
     public:
         enum class Types : unsigned char {
             Float = 0,
@@ -37,13 +38,21 @@ namespace MR{
         MR::Event<IShader*, const int&> OnMapped; //as args (shader program, new uniform location)
 
         virtual std::string GetName() = 0;
-        virtual Types GetType() = 0;
+        virtual Types GetType() { return _type; }
         virtual void SetValue(void* ptr) = 0;
-        virtual void* GetValue() = 0;
+        virtual void* GetValue() { return _value; }
         virtual bool Map(IShader* shader) = 0;
         virtual int GetGPULocation() = 0;
 
+        /* Name - shader uniform name in shader
+           Type - type of shader uniform
+           Value - pointer to value of uniform
+           shader_program - OpenGL shader program object */
+        IShaderUniform(const char* Name, const IShaderUniform::Types& Type, void* Value, IShader* shader) : _type(Type), _value(Value) {}
         virtual ~IShaderUniform() {}
+    protected:
+        Types _type;
+        void* _value;
     };
 
     /** Named uniform of shader
@@ -55,10 +64,8 @@ namespace MR{
         friend class ShaderManager;
     public:
         inline std::string GetName();
-        inline Types GetType();
 
         inline void  SetValue(void* p) override;
-        inline void* GetValue() override;
 
         //Call after shader linked
         bool Map(IShader* shader) override;
@@ -75,8 +82,6 @@ namespace MR{
         virtual ~ShaderUniform();
     protected:
         std::string _name;
-        Types _type;
-        void* _value;
         int _uniform_location;
     };
 
@@ -251,6 +256,7 @@ namespace MR{
         //Link attached subs
         bool Link() override;
 
+        /* USE RC->UseShader Instead of this */
         bool Use(RenderContext* context) override;
 
         void AttachSubShader(ISubShader* sub) override;
@@ -295,17 +301,9 @@ std::string MR::ShaderUniform::GetName(){
     return _name;
 }
 
-MR::ShaderUniform::Types MR::ShaderUniform::GetType(){
-    return _type;
-}
-
 void MR::ShaderUniform::SetValue(void* p){
     _value = p;
     OnNewValuePtr(this, p);
-}
-
-void* MR::ShaderUniform::GetValue(){
-    return _value;
 }
 
 int MR::ShaderUniform::GetGPULocation() {
