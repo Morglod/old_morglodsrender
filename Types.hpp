@@ -8,15 +8,16 @@
 #include <memory>
 #include <string>
 #include <string.h>
+#include <bitset>
 
-namespace MR{
+namespace MR {
 
-class Super {
+class Object {
 public:
     virtual std::string ToString();
 
-    Super();
-    virtual ~Super();
+    Object();
+    virtual ~Object();
 };
 
 template<typename T>
@@ -42,12 +43,10 @@ public:
 
     virtual void operator += (const flag_t& t) = 0;
     virtual void operator -= (const flag_t& t) = 0;
-
-    virtual ~IFlags(){}
 };
 
 template<typename flag_t>
-class Flags : public Super, public IFlags<flag_t> {
+class Flags : public Object, public IFlags<flag_t> {
 public:
     void Add(const flag_t& f) override;
     void Remove(const flag_t& f) override;
@@ -68,23 +67,63 @@ protected:
 
 class IArray {
 public:
-    virtual void* TopPtr() = 0;
+    virtual void* TopPtr() = 0; //first element
     virtual size_t TypeSize() = 0; //size of one element in array
     virtual size_t Num() = 0; //num of elements in array
     virtual void* At(const size_t& index) = 0;
 };
 
 template<typename _t>
-class Array : public IArray {
+class Array : public IArray, public Copyable< MR::Array<_t> >, public Comparable<IArray*> {
 public:
-    inline void* TopPtr() override { return _top; }
-    inline size_t TypeSize() override { return sizeof(_t); }
-    inline size_t Num() override { return _num; }
-    inline void* At(const size_t& index) override { return &_top[index]; }
-    inline _t* ElementPtr(const size_t& index) { return &_top[index]; }
-    inline _t Element(const size_t& index) { return _top[index]; }
+    inline void* TopPtr() override {
+        return _top;
+    }
+    inline size_t TypeSize() override {
+        return sizeof(_t);
+    }
+    inline size_t Num() override {
+        return _num;
+    }
+    inline void* At(const size_t& index) override {
+        return &_top[index];
+    }
 
+    Array Copy() override {
+        _t* a = new _t[_num];
+        for(size_t i = 0; i < _num; ++i) {
+            a[i] = _top[i];
+        }
+        return Array(a, _num);
+    }
+
+    bool Equal(IArray * a) override {
+        if(a->Num() != _num) return false;
+        if(a->TypeSize() != sizeof(_t)) return false;
+        for(size_t i = 0; i < _num; ++i) {
+            if( !( ((_t*)(a->TopPtr()))[i] == _top[i]) ) return false;
+        }
+        return true;
+    }
+
+    inline _t* GetPtr(const size_t& index) {
+        return &_top[index];
+    }
+    inline _t Get(const size_t& index) {
+        return _top[index];
+    }
+    inline void Set(const size_t& index, _t value) {
+        _top[index] = value;
+    }
+    inline size_t TotalSize() {
+        return sizeof(_t) * _num;
+    }
+
+    Array(const size_t& num) : _top( new _t[num] ), _num(num) {}
     Array(_t* a, const size_t& num) : _top(a), _num(num) {}
+    virtual ~Array() {
+        delete [] _top;
+    }
 protected:
     _t* _top;
     size_t _num;
@@ -97,15 +136,23 @@ public:
     std::vector<ChildrenT*> children;
 };
 
-template<typename T>
-class Singleton {
-public:
-    static T* Instance() {
-        if(!_instance) _instance = new T();
-        return _instance;
+union Byte {
+    unsigned char byte;
+
+    struct {
+        bool bit1 : 1;
+        bool bit2 : 1;
+        bool bit3 : 1;
+        bool bit4 : 1;
+        bool bit5 : 1;
+        bool bit6 : 1;
+        bool bit7 : 1;
+        bool bit8 : 1;
+    };
+
+    std::string ToString() {
+        return std::to_string(bit8) + std::to_string(bit7) + std::to_string(bit6) + std::to_string(bit5) + std::to_string(bit4) + std::to_string(bit3) + std::to_string(bit2) + std::to_string(bit1);
     }
-private:
-    static T* _instance;
 };
 
 }

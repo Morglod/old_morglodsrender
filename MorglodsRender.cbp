@@ -8,12 +8,11 @@
 		<Build>
 			<Target title="Debug">
 				<Option output="BUILD/dMorglodsRender" prefix_auto="1" extension_auto="1" />
-				<Option working_dir="BUILD" />
+				<Option working_dir="" />
 				<Option object_output="obj/Debug/" />
-				<Option type="3" />
+				<Option type="2" />
 				<Option compiler="gcc" />
 				<Option createDefFile="1" />
-				<Option createStaticLib="1" />
 				<Compiler>
 					<Add option="-Wall" />
 					<Add option="-pg" />
@@ -71,11 +70,22 @@
 		<Unit filename="Material.hpp" />
 		<Unit filename="Mesh.cpp" />
 		<Unit filename="Mesh.hpp" />
+		<Unit filename="MeshV2.hpp">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
 		<Unit filename="Model.cpp" />
 		<Unit filename="Model.hpp" />
+		<Unit filename="ModelV2.cpp">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="ModelV2.hpp">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
 		<Unit filename="MorglodsRender.hpp" />
 		<Unit filename="RenderContext.cpp" />
 		<Unit filename="RenderContext.hpp" />
+		<Unit filename="RenderSystem.cpp" />
+		<Unit filename="RenderSystem.hpp" />
 		<Unit filename="RenderTarget.cpp" />
 		<Unit filename="RenderTarget.hpp" />
 		<Unit filename="RenderTechnique.cpp" />
@@ -95,6 +105,7 @@
 		<Unit filename="SpriteBatch.hpp" />
 		<Unit filename="Texture.cpp" />
 		<Unit filename="Texture.hpp" />
+		<Unit filename="Time.hpp" />
 		<Unit filename="Transformation.cpp" />
 		<Unit filename="Transformation.hpp" />
 		<Unit filename="Types.cpp" />

@@ -32,7 +32,7 @@ public:
     virtual bool Equal(IRect* rect) = 0;
 };
 
-class Rect : public Super, public IRect {
+class Rect : public Object, public IRect {
     friend class UIElement;
 public:
     inline glm::vec2 GetPos() override;
@@ -51,9 +51,9 @@ public:
 
     std::string ToString() override { return "Rect("+std::to_string(v2[0].x)+", "+std::to_string(v2[0].y)+", "+std::to_string(v2[1].x)+", "+std::to_string(v2[1].y)+")"; }
 
-    Rect() : Super(), v2(new glm::vec2[2]) {}
-    Rect(const glm::vec2& p, const glm::vec2& s) : Super(), v2(new glm::vec2[2]{p,s}) {}
-    Rect(const float& px, const float& py, const float& sx, const float& sy) : Super(), v2(new glm::vec2[2]{glm::vec2(px,py),glm::vec2(sx,sy)}) {}
+    Rect() : Object(), v2(new glm::vec2[2]) {}
+    Rect(const glm::vec2& p, const glm::vec2& s) : Object(), v2(new glm::vec2[2]{p,s}) {}
+    Rect(const float& px, const float& py, const float& sx, const float& sy) : Object(), v2(new glm::vec2[2]{glm::vec2(px,py),glm::vec2(sx,sy)}) {}
     virtual ~Rect(){ delete [] v2; }
 protected:
     glm::vec2* v2;
@@ -71,18 +71,18 @@ public:
     virtual void SetColor(const glm::vec4& rgba) = 0;
     virtual glm::vec4 GetColor() = 0;
 
-    virtual void SetScale(const glm::vec2& scale) = 0;
-    virtual glm::vec2 GetScale() = 0;
-
     virtual void Add(IUIElement* element) = 0;
     virtual void Remove(IUIElement* element) = 0;
 
     virtual void Draw(RenderContext* rc, const float& delta) = 0;
 
+    //parent_mat, all parent matricies combined
+    virtual void Draw(RenderContext* rc, const float& delta, IUIElement* parent, const glm::mat4& parent_mat) = 0;
+
     virtual ~IUIElement(){}
 };
 
-class UIElement : public Super, public IUIElement {
+class UIElement : public Object, public IUIElement {
     friend class UIManager;
 public:
     void SetRect(const Rect& r) override;
@@ -90,9 +90,6 @@ public:
 
     void SetColor(const glm::vec4& rgba) override;
     inline glm::vec4 GetColor() override;
-
-    void SetScale(const glm::vec2& scale) override;
-    inline glm::vec2 GetScale() override;
 
     //Add already exist / remove from list but don't free memory
     void Add(IUIElement* element) override;
@@ -103,14 +100,18 @@ public:
     virtual void Delete(UIElement* element);
 
     void Draw(RenderContext* rc, const float& delta) override;
+    void Draw(RenderContext* rc, const float& delta, IUIElement* parent, const glm::mat4& parent_mat) override;
 
     UIElement(UIManager* m, const Rect& r);
     virtual ~UIElement();
 protected:
+    void _CalcMatrix();
+
     Rect _rect;
     bool _visible;
     glm::vec4 _color;
-    glm::vec2 _scale; //rect = _rect * _scale
+    glm::mat4* _model_mat;
+    glm::mat4* _model_mat_for_children;
     UIManager* _manager;
 
     std::vector<IUIElement*> _elements;
@@ -125,8 +126,6 @@ public:
     inline UIElement** GetLayouts();
 
     virtual void Draw(RenderContext* rc, const float& delta);
-    virtual void SetScreenRect(const glm::vec2& size);
-    inline glm::vec2 GetScreenRect();
 
     static inline UIManager* Instance();
 
@@ -135,12 +134,9 @@ public:
 protected:
     std::vector<UIElement*> _layouts;
     GeometryBuffer* _quad_geom;
-    glm::mat4* _projectionMatrix;
-    glm::mat4* _viewMatrix;
-    glm::mat4* _mvp;
+    glm::mat4* _modelMatrix;
     glm::vec4* _color;
-    int* _albedo_tex_unit;
-    glm::vec2 _screen_size;
+    int* _tex_unit;
     MR::Shader* _shader;
 };
 
@@ -170,10 +166,6 @@ glm::vec4 MR::UIElement::GetColor(){
     return _color;
 }
 
-glm::vec2 MR::UIElement::GetScale(){
-    return _scale;
-}
-
 void MR::UIManager::Add(UIElement* l){
     _layouts.push_back(l);
 }
@@ -188,10 +180,6 @@ MR::UIElement* MR::UIManager::GetLayout(const size_t& i) {
 
 MR::UIElement** MR::UIManager::GetLayouts() {
     return _layouts.data();
-}
-
-glm::vec2 MR::UIManager::GetScreenRect(){
-    return _screen_size;
 }
 
 MR::UIManager* MR::UIManager::Instance() {

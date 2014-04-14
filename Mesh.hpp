@@ -12,7 +12,7 @@ class Transform;
 
 class Mesh {
 public:
-    MR::Event<Material**, unsigned int> OnMaterialsChanged;
+    MR::Event<Material*> OnMaterialChanged;
     MR::Event<GeometryBuffer**, unsigned int> OnGeometryBuffersChanged;
     MR::Event<const bool&> OnResourceFreeStateChanged;
 
@@ -22,27 +22,24 @@ public:
     */
     virtual void SetResourceFreeState(const bool& state);
 
-    void SetMaterials(Material** m, const unsigned int & mnum);
+    void SetMaterial(Material* m);
     void SetGeomBuffers(GeometryBuffer** gb, const unsigned int & n);
 
-    inline unsigned int GetGeomBuffersNum(){ return geom_buffers_num; }
-    inline Material** GetMaterials(){ return materials; }
-    inline unsigned int GetMaterialsNum(){ return materials_num; }
     inline GeometryBuffer** GetGeomBuffers(){ return geom_buffers; }
+    inline unsigned int GetGeomBuffersNum(){ return geom_buffers_num; }
 
-    /*inline MR::Transform* GetTransform(){
-        return _transform;
-    }*/
+    inline Material* GetMaterial(){ return material; }
 
-    Mesh(GeometryBuffer** gb, unsigned int nm, Material** m, unsigned int mnum);
+    /*  gb - array of pointers to GeomBuffers
+    */
+    Mesh(GeometryBuffer** gb, unsigned int nm, Material* m);
     virtual ~Mesh();
 
 protected:
     GeometryBuffer** geom_buffers = nullptr; //array of pointers to GeomBuffers
     unsigned int geom_buffers_num;
 
-    Material** materials = nullptr; //array of pointers to Materials, num of geom_buffers_num; if null, not used; if (SingleMaterial) so it is size of 1
-    unsigned int materials_num;
+    Material* material = nullptr;
 
     bool _res_free_state;
 };

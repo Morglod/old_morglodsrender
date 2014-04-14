@@ -5,13 +5,26 @@
 
 #include "Events.hpp"
 #include "RenderContext.hpp"
+#include "Types.hpp"
 
 class GLFWwindow;
 class GLFWgammaramp;
 
 namespace MR {
 
-class RenderWindow {
+class IRenderWindow {
+public:
+    virtual void SetPos(const int& x, const int& y) = 0;
+    virtual void SetSize(const int& w, const int& h) = 0;
+
+    virtual void GetPos(int* x, int* y) = 0;
+    virtual void GetSize(int* w, int* h) = 0;
+
+    virtual void SetTitleC(const char* s) = 0;
+    virtual const char* GetTitle() = 0;
+};
+
+class RenderWindow : public IRenderWindow, public MR::Object {
 public:
 
     //sender - RenderWindow
@@ -113,16 +126,16 @@ protected:
 public:
 
     inline GLFWwindow* GetHandle() { return glfw_handle; }
-    void GetPos(int* x, int* y);
-    void GetSize(int* w, int* h);
+    void GetPos(int* x, int* y) override;
+    void GetSize(int* w, int* h) override;
     void GetFrameBufferSize(int* w, int* h);
     const GLFWgammaramp* GetGLFWGammaRamp();
-    inline const char* GetTitle(){ return titlec; }
+    inline const char* GetTitle() override { return titlec; }
     const char* GetClipboardString();
 
-    void SetPos(const int& x, const int& y);
-    void SetSize(const int& w, const int& h);
-    void SetTitleC(const char* s);
+    void SetPos(const int& x, const int& y) override;
+    void SetSize(const int& w, const int& h) override;
+    void SetTitleC(const char* s) override;
 
     inline void SetTitle(const std::string& s){ SetTitleC(s.c_str()); }
     void SetClipboardString(const char* s);

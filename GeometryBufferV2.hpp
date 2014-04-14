@@ -217,7 +217,7 @@ public:
     virtual void Release() = 0;
 };
 
-class VertexBuffer : public Super, public IGLBuffer {
+class VertexBuffer : public Object, public IGLBuffer {
     friend class GeometryBuffer;
 public:
     bool Buffer(void* data, const unsigned int& size, const unsigned int& usage, const unsigned int& accessFlag) override;
@@ -237,7 +237,7 @@ protected:
 };
 
 /*!! UNSIGNED INT ONLY !!*/
-class IndexBuffer : public Super, public IGLBuffer {
+class IndexBuffer : public Object, public IGLBuffer {
     friend class GeometryBuffer;
 public:
     bool Buffer(void* data, const unsigned int& size, const unsigned int& usage, const unsigned int& accessFlag) override;
@@ -277,7 +277,7 @@ public:
     virtual ~IGeometryBuffer() {}
 };
 
-class GeometryBuffer : public Super, public IGeometryBuffer {
+class GeometryBuffer : public Object, public IGeometryBuffer {
     friend class VertexBuffer;
     friend class IndexBuffer;
 public:

@@ -12,9 +12,7 @@ const char* code_ui_vert =
     "#version 330\n"
     "#extension GL_ARB_separate_shader_objects : enable\n"
     "#pragma optimize(on)\n"
-    "uniform	mat4 mvp;"
-    "uniform	mat4 viewMatrix;"
-    "uniform	mat4 projMatrix;"
+    "uniform mat4 modelMatrix;"
     "layout (location = 0) in vec3 position;"
     "layout (location = 1) in vec3 normal;"
     "layout (location = 2) in vec4 color;"
@@ -28,7 +26,7 @@ const char* code_ui_vert =
     "	VertexColor = color;"
     "	VertexNormal = normal;"
     "	VertexTexCoord = texCoord;"
-    "	gl_Position = (mvp) * vec4(position,1);"
+    "	gl_Position = (modelMatrix) * vec4(position,1);"
     "}";
 
 const char* code_ui_frag_color_only =
@@ -62,17 +60,13 @@ namespace MR{
 
 void UIElement::SetRect(const Rect& r){
     _rect = r;
+    _CalcMatrix();
     OnRectChanged(this, r);
 }
 
 void UIElement::SetColor(const glm::vec4& rgba){
     _color = rgba;
     OnColorChanged(this, rgba);
-}
-
-void UIElement::SetScale(const glm::vec2& scale){
-    _scale = scale;
-    OnScaleChanged(this, scale);
 }
 
 void UIElement::Add(IUIElement* element){
@@ -99,31 +93,45 @@ void UIElement::Delete(UIElement* element){
 }
 
 void UIElement::Draw(RenderContext* rc, const float& delta){
+    Draw(rc, delta, nullptr, glm::mat4(1.0f));
+}
+
+void UIElement::Draw(RenderContext* rc, const float& delta, IUIElement* parent, const glm::mat4& parent_mat){
     if(_visible){
         glDisable(GL_DEPTH_TEST);
 
         *(_manager->_color) = _color;
-        /*glm::mat4 modelMat = glm::translate(glm::vec3(_rect.GetPos(), 0.0f)) * glm::scale(glm::vec3(_rect.GetSize()*_scale, 1.0f));
-        *(_manager->_mvp) = modelMat * (*(_manager->_projectionMatrix)) * (*(_manager->_viewMatrix));*/
+
+        *(_manager->_modelMatrix) = *_model_mat;
 
         _manager->_shader->Use(rc);
-        //_manager->_quad_geom->Draw();
-
-        glBegin(GL_QUADS);
-        glVertex2f(_rect.GetPos().x,                            _rect.GetPos().y);
-        glVertex2f(_rect.GetPos().x+_rect.GetSize().x*_scale.x, _rect.GetPos().y);
-        glVertex2f(_rect.GetPos().x+_rect.GetSize().x*_scale.x, _rect.GetPos().y+_rect.GetSize().y*_scale.y);
-        glVertex2f(_rect.GetPos().x,                            _rect.GetPos().y+_rect.GetSize().y*_scale.y);
-        glEnd();
+        _manager->_quad_geom->Draw(rc);
 
         glEnable(GL_DEPTH_TEST);
+
+        for(auto it = _elements.begin(); it != _elements.end(); ++it){
+            (*it)->Draw(rc, delta, this, (*_model_mat));
+        }
     }
 }
 
-UIElement::UIElement(UIManager* m, const Rect& r) : Super(), _rect(r), _visible(true), _color(0.0f,0.0f,0.0f,1.0f), _scale(1.0f, 1.0f), _manager(m) {
+void UIElement::_CalcMatrix(){
+    glm::mat4 t = glm::translate(_rect.GetPos().x/100.0f*2.0f-1.0f, _rect.GetPos().y/-100.0f*2.0f+1.0f, 0.0f);
+    glm::mat4 s = glm::scale(_rect.GetSize().x/100.0f*2.0f, _rect.GetSize().y/100.0f*2.0f, 0.0f);
+    *_model_mat = t * s;
+
+    glm::mat4 parent_t = glm::translate(_rect.GetPos().x/100.0f, _rect.GetPos().y/100.0f, 0.0f);
+    glm::mat4 parent_s = glm::scale(_rect.GetSize().x/100.0f, _rect.GetSize().y/100.0f, 1.0f);
+    *_model_mat_for_children = parent_t * parent_s;
+}
+
+UIElement::UIElement(UIManager* m, const Rect& r) : Object(), _rect(r), _visible(true), _color(0.0f,0.0f,0.0f,1.0f), _model_mat(new glm::mat4(1.0f)), _model_mat_for_children(new glm::mat4(1.0f)), _manager(m) {
+    _CalcMatrix();
 }
 
 UIElement::~UIElement(){
+    delete _model_mat;
+    delete _model_mat_for_children;
 }
 
 void UIManager::Draw(RenderContext* rc, const float& delta){
@@ -132,25 +140,21 @@ void UIManager::Draw(RenderContext* rc, const float& delta){
     }
 }
 
-void UIManager::SetScreenRect(const glm::vec2& size){
-    *_projectionMatrix = glm::ortho(0.0f, size.x, size.y, 0.0f);
-    *_viewMatrix = glm::mat4(1.0f);
-    *_mvp = (*_projectionMatrix) * (*_viewMatrix);
-    _screen_size = size;
-}
+UIManager::UIManager()
+ :
+_modelMatrix(new glm::mat4(1.0f)),
+_color(new glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), _tex_unit(new int(0)), _shader(0)
 
-UIManager::UIManager() : _projectionMatrix(new glm::mat4(1.0f)), _viewMatrix(new glm::mat4(1.0f)), _mvp(new glm::mat4(1.0f)), _color(new glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), _albedo_tex_unit(new int(0)), _screen_size(640.0f, 480.0f), _shader(0) {
-    _quad_geom = MR::GeometryBuffer::Plane(glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0,0,0), MR::IGLBuffer::Static+MR::IGLBuffer::Draw, MR::IGeometryBuffer::Draw_Quads);
+{
+    _quad_geom = MR::GeometryBuffer::Plane(glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(0.5f, -0.5f, 0.0f), MR::IGLBuffer::Static+MR::IGLBuffer::Draw, MR::IGeometryBuffer::Draw_Quads);
 
     _shader = new MR::Shader(MR::ShaderManager::Instance(), "UIDefaultShader", "FromMem");
     _shader->AttachSubShader(new MR::SubShader(code_ui_vert, MR::ISubShader::Type::Vertex));
     _shader->AttachSubShader(new MR::SubShader(code_ui_frag_color_only, MR::ISubShader::Type::Fragment));
     _shader->Link();
-    _shader->CreateUniform("viewMatrix", _viewMatrix);
-    _shader->CreateUniform("projMatrix", _projectionMatrix);
-    _shader->CreateUniform("mvp", _mvp);
+    _shader->CreateUniform("modelMatrix", _modelMatrix);
     _shader->CreateUniform("ENGINE_COLOR", _color);
-    //_shader->CreateUniform("ENGINE_ALBEDO", _albedo_tex_unit);
+    _shader->CreateUniform("ENGINE_ALBEDO", _tex_unit);
 }
 
 UIManager::~UIManager(){
@@ -160,10 +164,9 @@ UIManager::~UIManager(){
     _layouts.clear();
     delete _shader;
     delete _quad_geom;
-    delete _projectionMatrix;
-    delete _viewMatrix;
+    delete _modelMatrix;
     delete _color;
-    delete _albedo_tex_unit;
+    delete _tex_unit;
 }
 
 }

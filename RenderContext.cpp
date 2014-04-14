@@ -22,6 +22,11 @@
 
 #include <vector>
 
+void _OutOfMemory(){
+    MR::Log::LogString("Out of memory", MR_LOG_LEVEL_ERROR);
+    throw std::bad_alloc();
+}
+
 namespace MR {
 
 RenderContext* RenderContext::_instance;
@@ -88,6 +93,7 @@ void RenderContext::BindTexture(Texture* tx, const unsigned int& texStage) {
 
             if(MR::MachineInfo::IsDirectStateAccessSupported()){
                 glBindMultiTextureEXT(GL_TEXTURE0+texStage, (unsigned int)tx->_target, _tx[texStage]);
+                UseTextureSettings(tx->GetSettings(), texStage);
             } else {
                 ActiveTextureUnit(texStage);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, _tx[texStage]);
@@ -203,23 +209,16 @@ void RenderContext::DrawEntity(MR::Entity* ent) {
     if(!lod) return;
     for(unsigned short i = 0; i < lod->GetMeshesNum(); ++i) {
         MR::Mesh* mesh = lod->GetMesh(i);
-        if(mesh->GetMaterialsNum() == 0) {
+        if(mesh->GetMaterial() == nullptr) {
             for(unsigned short gi = 0; gi < mesh->GetGeomBuffersNum(); ++gi) {
                 if(ent->GetMaterial() == nullptr) DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeomBuffers()[gi], nullptr);
                 else DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeomBuffers()[gi], ent->GetMaterial());
             }
         }
-        if(mesh->GetMaterialsNum() == 1) {
+        else {
             for(unsigned short gi = 0; gi < mesh->GetGeomBuffersNum(); ++gi) {
-                if(ent->GetMaterial() == nullptr) DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeomBuffers()[gi], mesh->GetMaterials()[0]);
+                if(ent->GetMaterial() == nullptr) DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeomBuffers()[gi], mesh->GetMaterial());
                 else DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeomBuffers()[gi], ent->GetMaterial());
-            }
-        } else {
-            for(unsigned short mi = 0; mi < mesh->GetMaterialsNum(); ++mi) {
-                if(ent->GetMaterial() == nullptr ) DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeomBuffers()[mi], mesh->GetMaterials()[mi]);
-                else {
-                        DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeomBuffers()[mi], ent->GetMaterial());
-                }
             }
         }
     }
@@ -262,17 +261,11 @@ void RenderContext::DrawEntity(MR::Entity** ent_list, const unsigned int& num, c
             if(!lod) continue;
             for(unsigned short it_lod_mesh = 0; it_lod_mesh < lod->GetMeshesNum(); ++it_lod_mesh){
                 for(unsigned int it_lod_mesh_geom = 0; it_lod_mesh_geom < lod->GetMesh(it_lod_mesh)->GetGeomBuffersNum(); ++it_lod_mesh_geom){
-                    if(lod->GetMesh(it_lod_mesh)->GetMaterialsNum() == 0) {
+                    if(lod->GetMesh(it_lod_mesh)->GetMaterial() == nullptr) {
                         _IncSceneGeom(scene_geometry, ent_list[it], lod->GetMesh(it_lod_mesh)->GetGeomBuffers()[it_lod_mesh_geom], nullptr);
-                    } else if(lod->GetMesh(it_lod_mesh)->GetMaterialsNum() == 1) {
-                        for(unsigned short mpass = 0; mpass < lod->GetMesh(it_lod_mesh)->GetMaterials()[0]->GetPassesNum(); ++mpass) {
-                            _IncSceneGeom(scene_geometry, ent_list[it], lod->GetMesh(it_lod_mesh)->GetGeomBuffers()[it_lod_mesh_geom], lod->GetMesh(it_lod_mesh)->GetMaterials()[0]->GetPass(mpass) );
-                        }
                     } else {
-                        for(unsigned short mats_it = 0; mats_it < lod->GetMesh(it_lod_mesh)->GetMaterialsNum(); ++mats_it) {
-                            for(unsigned short mpass = 0; mpass < lod->GetMesh(it_lod_mesh)->GetMaterials()[0]->GetPassesNum(); ++mpass) {
-                                _IncSceneGeom(scene_geometry, ent_list[it], lod->GetMesh(it_lod_mesh)->GetGeomBuffers()[it_lod_mesh_geom], lod->GetMesh(it_lod_mesh)->GetMaterials()[mats_it]->GetPass(mpass) );
-                            }
+                        for(unsigned short mpass = 0; mpass < lod->GetMesh(it_lod_mesh)->GetMaterial()->GetPassesNum(); ++mpass) {
+                            _IncSceneGeom(scene_geometry, ent_list[it], lod->GetMesh(it_lod_mesh)->GetGeomBuffers()[it_lod_mesh_geom], lod->GetMesh(it_lod_mesh)->GetMaterial()->GetPass(mpass) );
                         }
                     }
                 }
@@ -308,6 +301,8 @@ void RenderContext::DrawEntity(MR::Entity** ent_list, const unsigned int& num, c
 }
 
 bool RenderContext::Init() {
+    std::set_new_handler(_OutOfMemory);
+
     MR::Log::LogString("MorglodsRender context initialization", MR_LOG_LEVEL_INFO);
     if(!glfwInit()) {
         MR::Log::LogString("glfw initialization failed", MR_LOG_LEVEL_ERROR);

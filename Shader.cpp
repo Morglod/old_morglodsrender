@@ -167,7 +167,7 @@ std::string MR::ShaderUniform::ToString() {
     return "ShaderUniform(" + std::string(_name) + ") with data at " + std::to_string((unsigned long) _value);
 }
 
-MR::ShaderUniform::ShaderUniform(const char* Name, const IShaderUniform::Types& Type, void* Value, IShader* shader_program) : Super(), IShaderUniform(Name, Type, Value, shader_program), _name(Name) {
+MR::ShaderUniform::ShaderUniform(const char* Name, const IShaderUniform::Types& Type, void* Value, IShader* shader_program) : Object(), IShaderUniform(Name, Type, Value, shader_program), _name(Name) {
     Map(shader_program);
 }
 
@@ -207,7 +207,7 @@ bool MR::ShaderUniformBlock::BufferData(unsigned char* data, const size_t& size,
 }
 
 MR::ShaderUniformBlock::ShaderUniformBlock(const std::string& Name, const int& NumUniforms, std::string* UniformNames, IShader* shader) :
-    Super(), _name(Name), _data(NULL), _uniform_block_index(0), _block_size(0), _num_uniforms(NumUniforms), _uniform_names(UniformNames), _uniform_indecies( new unsigned int[NumUniforms] ), _uniform_offsets( new int[NumUniforms] ), /*type(Type),*/ _ubo(0) {
+    Object(), _name(Name), _data(NULL), _uniform_block_index(0), _block_size(0), _num_uniforms(NumUniforms), _uniform_names(UniformNames), _uniform_indecies( new unsigned int[NumUniforms] ), _uniform_offsets( new int[NumUniforms] ), /*type(Type),*/ _ubo(0) {
     Map(shader);
 }
 
@@ -244,7 +244,7 @@ std::string MR::SubShader::ToString() {
     return "SubShader";
 }
 
-MR::SubShader::SubShader(const std::string& code, const ISubShader::Type& type) : Super(), _shader(0) {
+MR::SubShader::SubShader(const std::string& code, const ISubShader::Type& type) : Object(), _shader(0) {
     this->Compile(code, type);
 }
 
@@ -483,7 +483,7 @@ void MR::Shader::DetachAllSubShaders(){
     _sub_shaders.clear();
 }
 
-MR::Shader::Shader(ResourceManager* manager, const std::string& name, const std::string& source) : Resource(manager, name, source), Super(), _program(0) {
+MR::Shader::Shader(ResourceManager* manager, const std::string& name, const std::string& source) : Resource(manager, name, source), Object(), _program(0) {
     //this->Link(sub_shaders, num);
 }
 

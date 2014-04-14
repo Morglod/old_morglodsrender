@@ -3,14 +3,14 @@
 
 namespace MR {
 
-std::string Super::ToString(){
+std::string Object::ToString(){
     return "Base";
 }
 
-Super::Super(){
+Object::Object(){
 }
 
-Super::~Super(){
+Object::~Object(){
 }
 
 template<typename flag_t>
@@ -54,7 +54,7 @@ std::string Flags<flag_t>::ToString(){
 }
 
 template<typename flag_t>
-Flags<flag_t>::Flags() : Super(), _flags() {
+Flags<flag_t>::Flags() : Object(), _flags() {
 }
 
 template<typename flag_t>

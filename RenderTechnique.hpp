@@ -20,7 +20,7 @@ public:
     virtual void Use(RenderContext* rc) = 0;
 };
 
-class RenderTechnique : public Super, public IRenderTechnique {
+class RenderTechnique : public Object, public IRenderTechnique {
 public:
     inline void SetDepthTest(const bool& state) override { _depth_test = state; }
     inline bool GetDepthTest() override { return _depth_test; }

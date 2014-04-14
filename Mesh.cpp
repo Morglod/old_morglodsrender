@@ -10,11 +10,10 @@ void MR::Mesh::SetResourceFreeState(const bool& state) {
     }
 }
 
-void MR::Mesh::SetMaterials(Material** m, const unsigned int & mnum) {
-    if((materials != m) || (materials_num != mnum)) {
-        materials = m;
-        materials_num = mnum;
-        OnMaterialsChanged(this, m, mnum);
+void MR::Mesh::SetMaterial(Material* m) {
+    if(material != m) {
+        material = m;
+        OnMaterialChanged(this, m);
     }
 }
 
@@ -26,8 +25,8 @@ void MR::Mesh::SetGeomBuffers(GeometryBuffer** gb, const unsigned int & n) {
     }
 }
 
-MR::Mesh::Mesh(GeometryBuffer** gb, unsigned int nm, Material** m, unsigned int mnum) :
-    geom_buffers(gb), geom_buffers_num(nm), materials(m), materials_num(mnum), _res_free_state(true) {
+MR::Mesh::Mesh(GeometryBuffer** gb, unsigned int nm, Material* m) :
+    geom_buffers(gb), geom_buffers_num(nm), material(m), _res_free_state(true) {
 }
 
 MR::Mesh::~Mesh() {
@@ -39,12 +38,9 @@ MR::Mesh::~Mesh() {
             free(geom_buffers);
             geom_buffers = nullptr;
         }
-        if(materials) {
-            for(unsigned int i = 0; i < this->materials_num; ++i) {
-                delete this->materials[i];
-            }
-            free(materials);
-            materials = nullptr;
+        if(material) {
+            delete material;
+            material = nullptr;
         }
     }
 }

@@ -30,7 +30,7 @@ public:
     virtual void SetView(const glm::mat4& v) = 0;
 };
 
-class ShadowMapDepth : public Super, public IShadowMap {
+class ShadowMapDepth : public Object, public IShadowMap {
 public:
     inline ILightSource* GetLight() override { return _captured_from; }
     inline int GetWidth() override { return _w; }
@@ -51,7 +51,7 @@ protected:
     int _w, _h;
 };
 
-class ShadowMapColor : public Super, public IShadowMap {
+class ShadowMapColor : public Object, public IShadowMap {
 public:
     inline ILightSource* GetLight() override { return _captured_from; }
     inline int GetWidth() override { return _w; }
@@ -85,7 +85,7 @@ public:
     virtual LightManager* GetManager() = 0;
 };
 
-class LightSource : public Super, public ILightSource {
+class LightSource : public Object, public ILightSource {
 public:
     void SetShadowMap(IShadowMap* map) override;
     glm::vec3 GetPos() override;
@@ -98,7 +98,7 @@ public:
 
     virtual ~LightSource();
 private:
-    LightSource() : Super() {}
+    LightSource() : Object() {}
 
 protected:
     IShadowMap* _captured;
@@ -110,7 +110,7 @@ protected:
     float _radius;
 };
 
-class LightManager : public Super {
+class LightManager : public Object {
 public:
     MR::IShader* GetDepth() { return _depth; }
 

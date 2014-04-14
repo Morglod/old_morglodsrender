@@ -141,7 +141,7 @@ void VertexBuffer::Release(){
     }
 }
 
-VertexBuffer::VertexBuffer() : Super(), _usage(0), _accessFlag(0), _handle(0) {
+VertexBuffer::VertexBuffer() : Object(), _usage(0), _accessFlag(0), _handle(0) {
 }
 
 VertexBuffer::~VertexBuffer(){
@@ -185,7 +185,7 @@ void IndexBuffer::Release(){
     }
 }
 
-IndexBuffer::IndexBuffer() : Super(), _usage(0), _accessFlag(0), _handle(0) {
+IndexBuffer::IndexBuffer() : Object(), _usage(0), _accessFlag(0), _handle(0) {
 }
 
 IndexBuffer::~IndexBuffer(){

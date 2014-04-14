@@ -58,7 +58,7 @@ namespace MR{
     /** Named uniform of shader
      *  After shader recompilation, call MapUniform method
      */
-    class ShaderUniform : public Super, public IShaderUniform {
+    class ShaderUniform : public Object, public IShaderUniform {
         friend class SubShader;
         friend class Shader;
         friend class ShaderManager;
@@ -104,7 +104,7 @@ namespace MR{
         virtual ~IShaderUniformBlock(){}
     };
 
-    class ShaderUniformBlock : public Super, public IShaderUniformBlock {
+    class ShaderUniformBlock : public Object, public IShaderUniformBlock {
     public:
         inline unsigned char* GetData() override;
         inline std::string GetName() override;
@@ -164,7 +164,7 @@ namespace MR{
         virtual ~ISubShader(){}
     };
 
-    class SubShader : public Super, public ISubShader {
+    class SubShader : public Object, public ISubShader {
     public:
 
         /** Compiles or Recompiles OpenGL shader
@@ -220,7 +220,7 @@ namespace MR{
         virtual ~IShader(){}
     };
 
-    class Shader : public Super, public IShader, public virtual Resource {
+    class Shader : public Object, public IShader, public virtual Resource {
     public:
 
         /* Create new shader uniform

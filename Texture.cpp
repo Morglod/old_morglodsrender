@@ -242,15 +242,15 @@ MR::TextureSettings::Ptr MR::TextureSettings::Copy(){
 MR::TextureSettings::TextureSettings() :
     _sampler(0), _lod_bias(MR_DEFAULT_TEXTURE_SETTINGS_LOD_BIAS),
     _border_color{MR_DEFAULT_TEXTURE_SETTINGS_BORDER_COLOR},
-    _min_filter(MR_DEFAULT_TEXTURE_SETTINGS_MIN_FILTER),
-    _mag_filter(MR_DEFAULT_TEXTURE_SETTINGS_MAG_FILTER),
+    _min_filter((MinFilter)MR_DEFAULT_TEXTURE_SETTINGS_MIN_FILTER),
+    _mag_filter((MagFilter)MR_DEFAULT_TEXTURE_SETTINGS_MAG_FILTER),
     _min_lod(MR_DEFAULT_TEXTURE_SETTINGS_MIN_LOD),
     _max_lod(MR_DEFAULT_TEXTURE_SETTINGS_MAX_LOD),
-    _wrap_s(MR_DEFAULT_TEXTURE_SETTINGS_WRAP_S),
-    _wrap_r(MR_DEFAULT_TEXTURE_SETTINGS_WRAP_R),
-    _wrap_t(MR_DEFAULT_TEXTURE_SETTINGS_WRAP_T),
-     _compare_mode(MR_DEFAULT_TEXTURE_SETTINGS_COMPARE_MODE),
-     _compare_func(MR_DEFAULT_TEXTURE_SETTINGS_COMPARE_FUNC) {
+    _wrap_s((Wrap)MR_DEFAULT_TEXTURE_SETTINGS_WRAP_S),
+    _wrap_r((Wrap)MR_DEFAULT_TEXTURE_SETTINGS_WRAP_R),
+    _wrap_t((Wrap)MR_DEFAULT_TEXTURE_SETTINGS_WRAP_T),
+     _compare_mode((CompareMode)MR_DEFAULT_TEXTURE_SETTINGS_COMPARE_MODE),
+     _compare_func((CompareFunc)MR_DEFAULT_TEXTURE_SETTINGS_COMPARE_FUNC) {
 
     glGenSamplers(1, &_sampler);
     glSamplerParameterf(_sampler, GL_TEXTURE_LOD_BIAS, _lod_bias);

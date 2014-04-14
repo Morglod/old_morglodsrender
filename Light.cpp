@@ -128,7 +128,7 @@ void ShadowMapDepth::SetView(const glm::mat4& v){
     _view = v;
 }
 
-ShadowMapDepth::ShadowMapDepth(ILightSource* light, const int& width, const int& height) : Super(), _captured_from(light), _w(width), _h(height) {
+ShadowMapDepth::ShadowMapDepth(ILightSource* light, const int& width, const int& height) : Object(), _captured_from(light), _w(width), _h(height) {
     //depth texture
 	glGenTextures(1, &_gl_texture);
 	glBindTexture(GL_TEXTURE_2D, _gl_texture);
@@ -183,7 +183,7 @@ void ShadowMapColor::SetView(const glm::mat4& v){
     _view = v;
 }
 
-ShadowMapColor::ShadowMapColor(ILightSource* light, const int& width, const int& height) : Super(), _captured_from(light), _w(width), _h(height) {
+ShadowMapColor::ShadowMapColor(ILightSource* light, const int& width, const int& height) : Object(), _captured_from(light), _w(width), _h(height) {
     //texture
     glGenTextures(1, &_gl_texture);
 	glBindTexture(GL_TEXTURE_2D, _gl_texture);
