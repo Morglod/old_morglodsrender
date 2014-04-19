@@ -3,7 +3,7 @@
 #ifndef _MR_SIMPLE_APP_H_
 #define _MR_SIMPLE_APP_H_
 
-#include "RenderContext.hpp"
+#include "RenderSystem.hpp"
 #include "RenderWindow.hpp"
 #include "Exception.hpp"
 
@@ -46,18 +46,20 @@ public:
 
         MR::Log::Add(LogString);
 
-        if(!context.Init()){
+        window = new MR::RenderWindow(WindowName, WindowWidth, WindowHeight, hints, callbacks);
+        context = new MR::RenderSystem();
+
+        if(!context->Init(window)){
             if(ThrowExceptions()){
                 throw MR::Exception("Failed context initialization SimpleApp::Go. Check log");
             }
             return false;
         }
-        window = new MR::RenderWindow(WindowName, WindowWidth, WindowHeight, hints, callbacks);
 
         camera = new MR::Camera( MR::Transform::WorldBackwardVector(), glm::vec3(0,0,0), 90.0f, 0.1f, 1000.0f, aspect);
         camera->SetAutoRecalc(true); //Matrixes will recalc automaticly, when pos/rot/etc of camera changed
         camera->SetCameraMode(MR::Camera::CameraMode::Direction);
-        context.UseCamera(camera); //set this camera as default
+        context->UseCamera(camera); //set this camera as default
 
         scene.AddCamera(camera);
         scene.SetMainCamera(camera);
@@ -109,13 +111,13 @@ public:
         if(invModelViewMatrix != "") sh->CreateUniform(modelMatrix, camera->GetInvModelViewMatrix());
     }
 
-    SimpleApp() : window_width(1), window_height(1), aspect(1.0f), context(), window(NULL) {}
+    SimpleApp() : window_width(1), window_height(1), aspect(1.0f), context(nullptr), window(NULL) {}
     virtual ~SimpleApp() {}
 protected:
     unsigned short window_width, window_height;
     float aspect;
 
-    MR::RenderContext context;
+    MR::RenderSystem* context;
     MR::RenderWindow* window;
 
     MR::Camera* camera;

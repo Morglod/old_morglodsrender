@@ -1,5 +1,5 @@
 #include "Texture.hpp"
-#include "RenderContext.hpp"
+#include "RenderSystem.hpp"
 #include "Camera.hpp"
 #include "RenderTarget.hpp"
 
@@ -223,7 +223,7 @@ void MR::TextureSettings::SetCompareFunc(const CompareFunc& v) {
     OnCompareFuncChanged(this, v);
 }
 
-MR::TextureSettings::Ptr MR::TextureSettings::Copy(){
+ITextureSettings* MR::TextureSettings::Copy(){
     TextureSettings* ts = new TextureSettings();
     ts->SetLodBias(_lod_bias);
     ts->SetBorderColor(&_border_color[0]);
@@ -236,7 +236,7 @@ MR::TextureSettings::Ptr MR::TextureSettings::Copy(){
     ts->SetWrapR(_wrap_r);
     ts->SetCompareMode(_compare_mode);
     ts->SetCompareFunc(_compare_func);
-    return MR::TextureSettings::Ptr(ts);
+    return ts;
 }
 
 MR::TextureSettings::TextureSettings() :
@@ -266,7 +266,7 @@ MR::TextureSettings::TextureSettings() :
 }
 
 MR::TextureSettings::~TextureSettings() {
-    if(RenderContext::Alive()) glDeleteSamplers(1, &_sampler);
+    if(MR::AnyRenderSystemAlive()) glDeleteSamplers(1, &_sampler);
 }
 
 void MR::Texture::GetData(const int& mipMapLevel, const MR::Texture::Format& format, const MR::Texture::Type& type, void* dstBuffer) {
@@ -316,7 +316,6 @@ void MR::Texture::ResetInfo() {
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_BLUE_SIZE, (int*)(&gl_blue_bits_num));
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_DEPTH_SIZE, (int*)(&gl_depth_bits_num));
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_ALPHA_SIZE, (int*)(&gl_alpha_bits_num));
-    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_COMPRESSED_IMAGE_SIZE, (int*)(&gl_mem_compressed_img_size));
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_COMPRESSED, (int*)(&gl_compressed));
     gl_mem_image_size = ((gl_red_bits_num+gl_green_bits_num+gl_blue_bits_num+gl_depth_bits_num+gl_alpha_bits_num)/8)*gl_width*gl_height;
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -391,7 +390,7 @@ void MR::Texture::UnLoad(){
     if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") unloading", MR_LOG_LEVEL_INFO);
     if(_res_free_state) {
         if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") -> ResFreeState is on, deleting data", MR_LOG_LEVEL_INFO);
-        if(RenderContext::Alive()) glDeleteTextures(1, &this->gl_texture);
+        if(MR::AnyRenderSystemAlive()) glDeleteTextures(1, &this->gl_texture);
     } else{
         if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") -> ResFreeState is off", MR_LOG_LEVEL_INFO);
     }
@@ -457,8 +456,8 @@ void MR::CubeMap::SetCapturePoint(const glm::vec3& p){
     }
 }
 
-void MR::CubeMap::Capture(RenderContext* context){
-    _rtarget->Bind(context);
+void MR::CubeMap::Capture(IRenderSystem* rs){
+    rs->BindRenderTarget(_rtarget);
     _cam->SetPosition(_world_point_pos);
 
     //forward
@@ -617,8 +616,8 @@ TextureArray* TextureManager::_StoreTexture(unsigned int* texArrayIndex, void* d
 TextureManager::TextureManager() : ResourceManager() {
     _white = new MR::Texture(this, "White", "FromMem");
     unsigned char pixel_white_data[4]{255,255,255,255};
-    MR::Texture::CreateOpenGLTexture(&pixel_white_data[0], 1, 1, GLTextureLoadFormat::RGBA, &_white->gl_texture, GLTextureLoadFlags::None);
-    Add(_white);
+    MR::Texture::CreateOpenGLTexture(&pixel_white_data[0], 1, 1, GLTextureLoadFormat::RGBA, &(dynamic_cast<MR::Texture*>(_white)->gl_texture), GLTextureLoadFlags::None);
+    Add(dynamic_cast<Resource*>(_white));
 }
 
 TextureManager::~TextureManager(){

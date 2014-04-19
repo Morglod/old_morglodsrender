@@ -17,26 +17,26 @@ void MR::Mesh::SetMaterial(Material* m) {
     }
 }
 
-void MR::Mesh::SetGeomBuffers(GeometryBuffer** gb, const unsigned int & n) {
-    if( (geom_buffers != gb) || (geom_buffers_num != n) ) {
-        geom_buffers = gb;
-        geom_buffers_num = n;
-        OnGeometryBuffersChanged(this, gb, n);
+void MR::Mesh::SetGeoms(IGeometry** gb, const unsigned int & n) {
+    if( (geoms != gb) || (geoms_num != n) ) {
+        geoms = gb;
+        geoms_num = n;
+        OnGeometryChanged(this, gb, n);
     }
 }
 
-MR::Mesh::Mesh(GeometryBuffer** gb, unsigned int nm, Material* m) :
-    geom_buffers(gb), geom_buffers_num(nm), material(m), _res_free_state(true) {
+MR::Mesh::Mesh(IGeometry** gb, unsigned int nm, Material* m) :
+    geoms(gb), geoms_num(nm), material(m), _res_free_state(true) {
 }
 
 MR::Mesh::~Mesh() {
     if(_res_free_state) {
-        if(geom_buffers) {
-            for(unsigned int i = 0; i < this->geom_buffers_num; ++i) {
-                delete this->geom_buffers[i];
+        if(geoms) {
+            for(unsigned int i = 0; i < this->geoms_num; ++i) {
+                delete this->geoms[i];
             }
-            free(geom_buffers);
-            geom_buffers = nullptr;
+            free(geoms);
+            geoms = nullptr;
         }
         if(material) {
             delete material;

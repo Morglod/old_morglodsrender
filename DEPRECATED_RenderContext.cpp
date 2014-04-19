@@ -1,4 +1,4 @@
-#include "RenderContext.hpp"
+#include "DEPRECATED_RenderContext.hpp"
 
 #include "Log.hpp"
 #include "Camera.hpp"
@@ -22,10 +22,10 @@
 
 #include <vector>
 
-void _OutOfMemory(){
+/*void _OutOfMemory(){
     MR::Log::LogString("Out of memory", MR_LOG_LEVEL_ERROR);
     throw std::bad_alloc();
-}
+}*/
 
 namespace MR {
 
@@ -49,7 +49,7 @@ void RenderContext::UseCamera(Camera* cam){
 void RenderContext::UseShader(Shader* sh) {
     _sh = sh;
     if(_sh != nullptr) {
-        if(sh->Use(this)) OnShaderUsed(this, _sh);
+  /*      if(sh->Use(this)) OnShaderUsed(this, _sh);*/
     }
     /*if(_sh != sh){
         _sh = sh;
@@ -84,15 +84,15 @@ void RenderContext::BindTexture(const Texture::Target& target, const GLuint& tx,
 }
 
 void RenderContext::BindTexture(Texture* tx, const unsigned int& texStage) {
-    if(tx->_inTextureArray) {
+    if(tx->InTextureArray()) {
         //MR::Log::LogString("Bind tex array; Index = "+std::to_string(tx->_textureArrayIndex)+"; GLTexture = "+std::to_string(tx->_texArray->GetGLTexture())+"; stage = "+std::to_string( (int)(texStage - GL_TEXTURE0)));
-        if( _tx[texStage] != tx->GetGLTexture() ){
+        if( _tx[texStage] != tx->GetGPUHandle() ){
             _tab[texStage] = true;
-            _tai[texStage] = tx->_textureArrayIndex;
-            _tx[texStage] = tx->_texArray->GetGLTexture();
+   /*         _tai[texStage] = tx->_textureArrayIndex;  */
+     /*       _tx[texStage] = tx->_texArray->GetGPUHandle();*/
 
             if(MR::MachineInfo::IsDirectStateAccessSupported()){
-                glBindMultiTextureEXT(GL_TEXTURE0+texStage, (unsigned int)tx->_target, _tx[texStage]);
+       /*         glBindMultiTextureEXT(GL_TEXTURE0+texStage, (unsigned int)tx->_target, _tx[texStage]);*/
                 UseTextureSettings(tx->GetSettings(), texStage);
             } else {
                 ActiveTextureUnit(texStage);
@@ -101,7 +101,7 @@ void RenderContext::BindTexture(Texture* tx, const unsigned int& texStage) {
             }
         }
     } else {
-        BindTexture(tx->_target, tx->GetGLTexture(), texStage);
+    /*    BindTexture(tx->_target, tx->GetGPUHandle(), texStage);*/
         UseTextureSettings(tx->GetSettings(), texStage);
     }
 }
@@ -164,40 +164,33 @@ void RenderContext::UseDefaultMaterial(const bool& s) {
     }
 }
 
-void RenderContext::DrawGeometryBuffer(GeometryBuffer* gb) {
-    //UseGeometryBuffer(gb);
-    if(gb) gb->Draw(this);
+void RenderContext::DrawGeometry(IGeometry* g) {
+    if(g) g->Draw(0 /* this */);
 }
 
-void RenderContext::DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::GeometryBuffer* g, MR::MaterialPass* mat_pass) {
-    if(mat_pass) {
-        _cam->SetModelMatrix(model_mat);
-        mat_pass->Use(this);
-        DrawGeometryBuffer(g);
-    } else {
-        _cam->SetModelMatrix(model_mat);
-        DrawGeometryBuffer(g);
-    }
+void RenderContext::DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::IGeometry* g, MR::MaterialPass* mat_pass) {
+    _cam->SetModelMatrix(model_mat);
+    if(mat_pass) mat_pass->Use(0 /* this*/ );
+    DrawGeometry(g);
 }
 
-void RenderContext::DrawGeomWithMaterial(glm::mat4* model_mat, MR::GeometryBuffer* g, MR::Material* mat) {
-    //UseGeometryBuffer(g);
+void RenderContext::DrawGeomWithMaterial(glm::mat4* model_mat, MR::IGeometry* g, MR::Material* mat) {
     if(mat) {
         for(unsigned short i = 0; i < mat->GetPassesNum(); ++i) {
             _cam->SetModelMatrix(model_mat);
-            mat->GetPass(i)->Use(this);
-            DrawGeometryBuffer(g);
+            mat->GetPass(i)->Use(0 /* this */);
+            DrawGeometry(g);
         }
     } else {
         if(useDefaultMaterial && defaultMaterial) {
             for(unsigned short i = 0; i < defaultMaterial->GetPassesNum(); ++i) {
                 _cam->SetModelMatrix(model_mat);
-                defaultMaterial->GetPass(i)->Use(this);
-                DrawGeometryBuffer(g);
+                defaultMaterial->GetPass(i)->Use(0 /* this */);
+                DrawGeometry(g);
             }
         } else {
             _cam->SetModelMatrix(model_mat);
-            DrawGeometryBuffer(g);
+            DrawGeometry(g);
         }
     }
 }
@@ -210,15 +203,15 @@ void RenderContext::DrawEntity(MR::Entity* ent) {
     for(unsigned short i = 0; i < lod->GetMeshesNum(); ++i) {
         MR::Mesh* mesh = lod->GetMesh(i);
         if(mesh->GetMaterial() == nullptr) {
-            for(unsigned short gi = 0; gi < mesh->GetGeomBuffersNum(); ++gi) {
-                if(ent->GetMaterial() == nullptr) DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeomBuffers()[gi], nullptr);
-                else DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeomBuffers()[gi], ent->GetMaterial());
+            for(unsigned short gi = 0; gi < mesh->GetGeomNum(); ++gi) {
+                if(ent->GetMaterial() == nullptr) DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeoms()[gi], nullptr);
+                else DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeoms()[gi], ent->GetMaterial());
             }
         }
         else {
-            for(unsigned short gi = 0; gi < mesh->GetGeomBuffersNum(); ++gi) {
-                if(ent->GetMaterial() == nullptr) DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeomBuffers()[gi], mesh->GetMaterial());
-                else DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeomBuffers()[gi], ent->GetMaterial());
+            for(unsigned short gi = 0; gi < mesh->GetGeomNum(); ++gi) {
+                if(ent->GetMaterial() == nullptr) DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeoms()[gi], mesh->GetMaterial());
+                else DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeoms()[gi], ent->GetMaterial());
             }
         }
     }
@@ -248,7 +241,7 @@ inline void _IncSceneGeom(std::vector<_DrawParam>& sg, MR::Entity* e, GeometryBu
 }
 
 void RenderContext::DrawEntity(MR::Entity** ent_list, const unsigned int& num, const bool& instancing){
-    if(instancing)
+    /*if(instancing)
     {
         //First analize entities
         std::vector<_DrawParam> scene_geometry;
@@ -260,12 +253,12 @@ void RenderContext::DrawEntity(MR::Entity** ent_list, const unsigned int& num, c
             MR::ModelLod* lod = ent_list[it]->GetModel()->GetLod(dist);
             if(!lod) continue;
             for(unsigned short it_lod_mesh = 0; it_lod_mesh < lod->GetMeshesNum(); ++it_lod_mesh){
-                for(unsigned int it_lod_mesh_geom = 0; it_lod_mesh_geom < lod->GetMesh(it_lod_mesh)->GetGeomBuffersNum(); ++it_lod_mesh_geom){
+                for(unsigned int it_lod_mesh_geom = 0; it_lod_mesh_geom < lod->GetMesh(it_lod_mesh)->GetGeomNum(); ++it_lod_mesh_geom){
                     if(lod->GetMesh(it_lod_mesh)->GetMaterial() == nullptr) {
-                        _IncSceneGeom(scene_geometry, ent_list[it], lod->GetMesh(it_lod_mesh)->GetGeomBuffers()[it_lod_mesh_geom], nullptr);
+                        _IncSceneGeom(scene_geometry, ent_list[it], lod->GetMesh(it_lod_mesh)->GetGeoms()[it_lod_mesh_geom], nullptr);
                     } else {
                         for(unsigned short mpass = 0; mpass < lod->GetMesh(it_lod_mesh)->GetMaterial()->GetPassesNum(); ++mpass) {
-                            _IncSceneGeom(scene_geometry, ent_list[it], lod->GetMesh(it_lod_mesh)->GetGeomBuffers()[it_lod_mesh_geom], lod->GetMesh(it_lod_mesh)->GetMaterial()->GetPass(mpass) );
+                            _IncSceneGeom(scene_geometry, ent_list[it], lod->GetMesh(it_lod_mesh)->GetGeoms()[it_lod_mesh_geom], lod->GetMesh(it_lod_mesh)->GetMaterial()->GetPass(mpass) );
                         }
                     }
                 }
@@ -293,15 +286,15 @@ void RenderContext::DrawEntity(MR::Entity** ent_list, const unsigned int& num, c
                 DrawGeomWithMaterialPass((*mit), it->buffer, it->mat);
             }
         }
-    } else {
+    } else {*/
         for(unsigned int it = 0; it < num; ++it){
             DrawEntity(ent_list[it]);
         }
-    }
+    //}
 }
 
 bool RenderContext::Init() {
-    std::set_new_handler(_OutOfMemory);
+    //std::set_new_handler(_OutOfMemory);
 
     MR::Log::LogString("MorglodsRender context initialization", MR_LOG_LEVEL_INFO);
     if(!glfwInit()) {

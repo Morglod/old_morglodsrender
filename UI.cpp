@@ -2,7 +2,7 @@
 
 #include "GeometryBufferV2.hpp"
 #include "Shader.hpp"
-#include "RenderContext.hpp"
+#include "RenderSystem.hpp"
 #include "Log.hpp"
 
 #include <GL/glew.h>
@@ -37,9 +37,10 @@ const char* code_ui_frag_color_only =
     "layout (location = 1) in vec4 VertexNormal;"
     "layout (location = 2) in vec4 VertexColor;"
     "layout (location = 3) in vec2 VertexTexCoord;"
+    "out vec4 fragColor;"
     "uniform vec4 ENGINE_COLOR;"
     "void main() {"
-    "	gl_FragColor = ENGINE_COLOR;"
+    "	fragColor = ENGINE_COLOR;"
     "}";
 
 const char* code_ui_frag_color_texture =
@@ -50,10 +51,11 @@ const char* code_ui_frag_color_texture =
     "layout (location = 1) in vec4 VertexNormal;"
     "layout (location = 2) in vec4 VertexColor;"
     "layout (location = 3) in vec2 VertexTexCoord;"
+    "out vec4 fragColor;"
     "uniform sampler2D ENGINE_ALBEDO;"
     "uniform vec4 ENGINE_COLOR;"
     "void main() {"
-    "	gl_FragColor = texture(ENGINE_ALBEDO, VertexTexCoord) * ENGINE_COLOR;"
+    "	fragColor = texture(ENGINE_ALBEDO, VertexTexCoord) * ENGINE_COLOR;"
     "}";
 
 namespace MR{
@@ -92,11 +94,11 @@ void UIElement::Delete(UIElement* element){
     _elements.erase(it);
 }
 
-void UIElement::Draw(RenderContext* rc, const float& delta){
+void UIElement::Draw(IRenderSystem* rc, const float& delta){
     Draw(rc, delta, nullptr, glm::mat4(1.0f));
 }
 
-void UIElement::Draw(RenderContext* rc, const float& delta, IUIElement* parent, const glm::mat4& parent_mat){
+void UIElement::Draw(IRenderSystem* rc, const float& delta, IUIElement* parent, const glm::mat4& parent_mat){
     if(_visible){
         glDisable(GL_DEPTH_TEST);
 
@@ -134,7 +136,7 @@ UIElement::~UIElement(){
     delete _model_mat_for_children;
 }
 
-void UIManager::Draw(RenderContext* rc, const float& delta){
+void UIManager::Draw(IRenderSystem* rc, const float& delta){
     for(UIElement* l : _layouts){
         l->Draw(rc, delta);
     }
@@ -146,7 +148,8 @@ _modelMatrix(new glm::mat4(1.0f)),
 _color(new glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), _tex_unit(new int(0)), _shader(0)
 
 {
-    _quad_geom = MR::GeometryBuffer::Plane(glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(0.5f, -0.5f, 0.0f), MR::IGLBuffer::Static+MR::IGLBuffer::Draw, MR::IGeometryBuffer::Draw_Quads);
+    _quad_geom_buffer = MR::GeometryBuffer::Plane(glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(0.5f, -0.5f, 0.0f), MR::IGLBuffer::Static+MR::IGLBuffer::Draw, MR::IGeometryBuffer::Draw_Quads);
+    _quad_geom = new MR::Geometry(_quad_geom_buffer, 0, 4, 4);
 
     _shader = new MR::Shader(MR::ShaderManager::Instance(), "UIDefaultShader", "FromMem");
     _shader->AttachSubShader(new MR::SubShader(code_ui_vert, MR::ISubShader::Type::Vertex));
@@ -164,6 +167,7 @@ UIManager::~UIManager(){
     _layouts.clear();
     delete _shader;
     delete _quad_geom;
+    delete _quad_geom_buffer;
     delete _modelMatrix;
     delete _color;
     delete _tex_unit;

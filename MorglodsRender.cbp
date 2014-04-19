@@ -53,6 +53,8 @@
 		<Unit filename="Camera.cpp" />
 		<Unit filename="Camera.hpp" />
 		<Unit filename="Config.hpp" />
+		<Unit filename="DEPRECATED_RenderContext.cpp" />
+		<Unit filename="DEPRECATED_RenderContext.hpp" />
 		<Unit filename="Entity.cpp" />
 		<Unit filename="Entity.hpp" />
 		<Unit filename="Events.hpp" />
@@ -70,20 +72,9 @@
 		<Unit filename="Material.hpp" />
 		<Unit filename="Mesh.cpp" />
 		<Unit filename="Mesh.hpp" />
-		<Unit filename="MeshV2.hpp">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
 		<Unit filename="Model.cpp" />
 		<Unit filename="Model.hpp" />
-		<Unit filename="ModelV2.cpp">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
-		<Unit filename="ModelV2.hpp">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
 		<Unit filename="MorglodsRender.hpp" />
-		<Unit filename="RenderContext.cpp" />
-		<Unit filename="RenderContext.hpp" />
 		<Unit filename="RenderSystem.cpp" />
 		<Unit filename="RenderSystem.hpp" />
 		<Unit filename="RenderTarget.cpp" />
@@ -112,6 +103,8 @@
 		<Unit filename="Types.hpp" />
 		<Unit filename="UI.cpp" />
 		<Unit filename="UI.hpp" />
+		<Unit filename="Viewport.cpp" />
+		<Unit filename="Viewport.hpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />

@@ -7,7 +7,7 @@
 
 namespace MR {
 
-class RenderContext;
+class IRenderSystem;
 
 class IRenderTechnique {
 public:
@@ -17,7 +17,7 @@ public:
     virtual void SetCullFace(const bool& state) = 0;
     virtual bool GetCullFace() = 0;
 
-    virtual void Use(RenderContext* rc) = 0;
+    virtual void Use(IRenderSystem* rc) = 0;
 };
 
 class RenderTechnique : public Object, public IRenderTechnique {
@@ -28,7 +28,7 @@ public:
     inline void SetCullFace(const bool& state) override { _cull_face = state; }
     inline bool GetCullFace() override { return _cull_face; }
 
-    void Use(RenderContext* rc) override;
+    void Use(IRenderSystem* rc) override;
 protected:
     bool _depth_test = false;
     bool _cull_face = false;

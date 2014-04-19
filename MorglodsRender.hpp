@@ -30,7 +30,7 @@ zlib http://www.zlib.net
 #include "Model.hpp"
 #include "Scene.hpp"
 #include "Shader.hpp"
-#include "RenderContext.hpp"
+#include "RenderSystem.hpp"
 #include "RenderTarget.hpp"
 #include "RenderWindow.hpp"
 #include "ResourceManager.hpp"

@@ -4,7 +4,7 @@
 #define _MR_RENDER_TARGET_H_
 
 #include "Events.hpp"
-#include "RenderContext.hpp"
+#include "Texture.hpp"
 
 #include <string>
 
@@ -12,24 +12,21 @@ namespace MR {
 
 class RenderTarget {
 public:
-    MR::Event<const std::string&> OnNameChanged;
+    MR::EventListener<const std::string&> OnNameChanged;
 
     inline std::string GetName();
     void SetName(const std::string& n);
 
-    void Bind(RenderContext& rc);
-    void Bind(RenderContext* rc);
-
-    void Unbind();
     inline unsigned short GetWidth();
     inline unsigned short GetHeight();
     inline unsigned int GetTargetTexture(const unsigned char & i);
+    inline unsigned int GetFrameBuffer() { return _frameBuffer; }
 
     /** i - index of texture in (targetTextures)
         iFormat - internal format
     */
-    void CreateTargetTexture        (const unsigned char & i, const MR::Texture::InternalFormat & iFormat, const MR::Texture::Format & Format, const MR::Texture::Type & Type);
-    void CreateCubeMapTargetTexture (const unsigned char & i, const MR::Texture::InternalFormat & iFormat, const MR::Texture::Format & Format, const MR::Texture::Type & Type);
+    void CreateTargetTexture        (const unsigned char & i, const MR::ITexture::InternalFormat & iFormat, const MR::ITexture::Format & Format, const MR::ITexture::Type & Type);
+    void CreateCubeMapTargetTexture (const unsigned char & i, const MR::ITexture::InternalFormat & iFormat, const MR::ITexture::Format & Format, const MR::ITexture::Type & Type);
 
     /** TargetTexturesNum - 15 Max
     */

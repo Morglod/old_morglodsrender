@@ -105,19 +105,17 @@ namespace MR{
 
     /** **/
     class Camera;
-    class RenderContext;
+    class IRenderSystem;
 
     class Texture;
-    class TextureArray;
-    class TextureSettings;
+    class ITextureArray;
+    class ITextureSettings;
     class TextureManager;
 
     class RenderTarget;
 
-    class TextureSettings : public Copyable<std::shared_ptr<TextureSettings>> {
+    class ITextureSettings : public Copyable<ITextureSettings*> {
     public:
-        typedef std::shared_ptr<TextureSettings> Ptr;
-
         enum class MinFilter : int {
             NEAREST_MIPMAP_NEAREST = 0x2700,
             LINEAR_MIPMAP_NEAREST = 0x2701,
@@ -156,50 +154,79 @@ namespace MR{
         };
 
         /* SENDER - TextureSettings pointer */
-        MR::Event<const float&> OnLodBiasChanged;
-        MR::Event<float*> OnBorderColorChanged; //as param used pointer to _border_color
-        MR::Event<const MinFilter&> OnMinFilterChanged;
-        MR::Event<const MagFilter&> OnMagFilterChanged;
-        MR::Event<const int&> OnMinLodChanged;
-        MR::Event<const int&> OnMaxLodChanged;
-        MR::Event<const Wrap&> OnWrapSChanged;
-        MR::Event<const Wrap&> OnWrapRChanged;
-        MR::Event<const Wrap&> OnWrapTChanged;
-        MR::Event<const CompareMode&> OnCompareModeChanged;
-        MR::Event<const CompareFunc&> OnCompareFuncChanged;
+        MR::EventListener<const float&> OnLodBiasChanged;
+        MR::EventListener<float*> OnBorderColorChanged; //as param used pointer to _border_color
+        MR::EventListener<const MinFilter&> OnMinFilterChanged;
+        MR::EventListener<const MagFilter&> OnMagFilterChanged;
+        MR::EventListener<const int&> OnMinLodChanged;
+        MR::EventListener<const int&> OnMaxLodChanged;
+        MR::EventListener<const Wrap&> OnWrapSChanged;
+        MR::EventListener<const Wrap&> OnWrapRChanged;
+        MR::EventListener<const Wrap&> OnWrapTChanged;
+        MR::EventListener<const CompareMode&> OnCompareModeChanged;
+        MR::EventListener<const CompareFunc&> OnCompareFuncChanged;
 
-        TextureSettings::Ptr Copy();
+        virtual void SetLodBias(const float& v) = 0;
+        virtual void SetBorderColor(float* rgba) = 0;
+        virtual void SetBorderColor(const float& r, const float& g, const float& b, const float& a) = 0;
+        virtual void SetMinFilter(const MinFilter& v) = 0;
+        virtual void SetMagFilter(const MagFilter& v) = 0;
+        virtual void SetMinLod(const int& v) = 0;
+        virtual void SetMaxLod(const int& v) = 0;
+        virtual void SetWrapS(const Wrap& v) = 0;
+        virtual void SetWrapR(const Wrap& v) = 0;
+        virtual void SetWrapT(const Wrap& v) = 0;
+        virtual void SetCompareMode(const CompareMode& v) = 0;
+        virtual void SetCompareFunc(const CompareFunc& v) = 0;
 
-        void SetLodBias(const float& v);
-        void SetBorderColor(float* rgba);
-        void SetBorderColor(const float& r, const float& g, const float& b, const float& a);
-        void SetMinFilter(const MinFilter& v);
-        void SetMagFilter(const MagFilter& v);
-        void SetMinLod(const int& v);
-        void SetMaxLod(const int& v);
-        void SetWrapS(const Wrap& v);
-        void SetWrapR(const Wrap& v);
-        void SetWrapT(const Wrap& v);
-        void SetCompareMode(const CompareMode& v);
-        void SetCompareFunc(const CompareFunc& v);
+        virtual unsigned int GetGLSampler() = 0;
+        virtual float GetLodBias() = 0;
+        virtual float* GetBorderColor() = 0;
+        virtual MinFilter GetMinFilter() = 0;
+        virtual MagFilter GetMagFilter() = 0;
+        virtual int GetMinLod() = 0;
+        virtual int GetMaxLod() = 0;
+        virtual Wrap GetWrapS() = 0;
+        virtual Wrap GetWrapR() = 0;
+        virtual Wrap GetWrapT() = 0;
+        virtual CompareMode GetCompareMode() = 0;
+        virtual CompareFunc GetCompareFunc() = 0;
 
-        inline unsigned int GetGLSampler(){return _sampler;}
-        inline float GetLodBias(){return _lod_bias;}
-        inline float* GetBorderColor(){return _border_color;}
-        inline MinFilter GetMinFilter(){return _min_filter;}
-        inline MagFilter GetMagFilter(){return _mag_filter;}
-        inline int GetMinLod(){return _min_lod;}
-        inline int GetMaxLod(){return _max_lod;}
-        inline Wrap GetWrapS(){return _wrap_s;}
-        inline Wrap GetWrapR(){return _wrap_r;}
-        inline Wrap GetWrapT(){return _wrap_t;}
-        inline CompareMode GetCompareMode(){return _compare_mode;}
-        inline CompareFunc GetCompareFunc(){return _compare_func;}
+        virtual ~ITextureSettings() {}
+    };
+
+    class TextureSettings : public Object, public ITextureSettings {
+    public:
+        ITextureSettings* Copy() override;
+
+        void SetLodBias(const float& v) override ;
+        void SetBorderColor(float* rgba) override ;
+        void SetBorderColor(const float& r, const float& g, const float& b, const float& a) override ;
+        void SetMinFilter(const MinFilter& v) override ;
+        void SetMagFilter(const MagFilter& v) override ;
+        void SetMinLod(const int& v) override ;
+        void SetMaxLod(const int& v) override ;
+        void SetWrapS(const Wrap& v) override ;
+        void SetWrapR(const Wrap& v) override ;
+        void SetWrapT(const Wrap& v) override ;
+        void SetCompareMode(const CompareMode& v) override ;
+        void SetCompareFunc(const CompareFunc& v) override ;
+
+        inline unsigned int GetGLSampler() override {return _sampler;}
+        inline float GetLodBias() override {return _lod_bias;}
+        inline float* GetBorderColor() override {return _border_color;}
+        inline MinFilter GetMinFilter() override {return _min_filter;}
+        inline MagFilter GetMagFilter() override {return _mag_filter;}
+        inline int GetMinLod() override {return _min_lod;}
+        inline int GetMaxLod() override {return _max_lod;}
+        inline Wrap GetWrapS() override {return _wrap_s;}
+        inline Wrap GetWrapR() override {return _wrap_r;}
+        inline Wrap GetWrapT() override {return _wrap_t;}
+        inline CompareMode GetCompareMode() override {return _compare_mode;}
+        inline CompareFunc GetCompareFunc() override {return _compare_func;}
 
         TextureSettings();
         virtual ~TextureSettings();
-
-        inline static TextureSettings::Ptr Create(){ return TextureSettings::Ptr(new TextureSettings()); }
     protected:
         unsigned int _sampler;
         float _lod_bias;
@@ -212,10 +239,8 @@ namespace MR{
         CompareFunc _compare_func;
     };
 
-    class Texture : public virtual Resource {
+    class ITexture {
     public:
-        typedef std::shared_ptr<Texture> Ptr;
-
         enum class InternalFormat : int {
             ALPHA = 0x1906,
             ALPHA4 = 0x803B,
@@ -308,37 +333,66 @@ namespace MR{
         };
 
         /* SENDER - Texture pointer */
-        MR::Event<void*> OnInfoReset;
+        MR::EventListener<void*> OnInfoReset;
 
         /* mipMapLevel, internalFormat, width, height, format, type, data
          *  invokes from SetData method */
-        MR::Event<const int&, const InternalFormat&, const int&, const int&, const Format&, const Type&, void*> OnDataChanged;
+        MR::EventListener<const int&, const InternalFormat&, const int&, const int&, const Format&, const Type&, void*> OnDataChanged;
 
         /* mipMapLevel, xOffset, yOffset, width, height, format, type, data
          *  invokes form UpdateData method */
-        MR::Event<const int&, const int&, const int&, const int&, const int&, const Format&, const Type&, void*> OnDataUpdated;
+        MR::EventListener<const int&, const int&, const int&, const int&, const int&, const Format&, const Type&, void*> OnDataUpdated;
 
-        MR::Event<TextureSettings::Ptr> OnSettingsChanged;
+        MR::EventListener<ITextureSettings*> OnSettingsChanged;
 
-        inline TextureSettings::Ptr GetSettings() const { return _settings; } //May be nullptr
-        inline unsigned short GetWidth() const { return gl_width; }
-        inline unsigned short GetHeight() const { return gl_height; }
-        inline unsigned short GetDepth() const { return gl_depth; }
-        inline InternalFormat GetInternalFormat() const { return (InternalFormat)gl_internal_format; }
-        inline unsigned int GetImageSize() const { return gl_mem_image_size; }
-        inline unsigned int GetCompressedImageSize() const { return gl_mem_compressed_img_size; }
-        inline unsigned char GetRedBitsNum() const { return gl_red_bits_num; }
-        inline unsigned char GetGreenBitsNum() const { return gl_green_bits_num; }
-        inline unsigned char GetBlueBitsNum() const { return gl_blue_bits_num; }
-        inline unsigned char GetDepthBitsNum() const { return gl_depth_bits_num; }
-        inline unsigned char GetAlphaBitsNum() const { return gl_alpha_bits_num; }
-        inline bool IsCompressed() const { return gl_compressed; }
-        inline unsigned int GetGLTexture() const { return this->gl_texture; }
+        virtual ITextureSettings* GetSettings() = 0;
+        virtual void SetSettings(ITextureSettings* ts) = 0;
 
-        inline unsigned int GetTextureArrayIndex() const { return this->_textureArrayIndex; }
-        inline TextureArray* GetTextureArray() const { return this->_texArray; }
+        virtual unsigned short GetWidth() = 0;
+        virtual unsigned short GetHeight() = 0;
+        virtual unsigned short GetDepth() = 0;
+        virtual InternalFormat GetInternalFormat() = 0;
+        virtual unsigned int GetImageSize() = 0;
+        virtual unsigned char GetRedBitsNum() = 0;
+        virtual unsigned char GetGreenBitsNum() = 0;
+        virtual unsigned char GetBlueBitsNum() = 0;
+        virtual unsigned char GetDepthBitsNum() = 0;
+        virtual unsigned char GetAlphaBitsNum() = 0;
+        virtual bool IsCompressed() = 0;
+        virtual unsigned int GetGPUHandle() = 0;
+        virtual unsigned int GetTextureArrayIndex() = 0;
+        virtual ITextureArray* GetTextureArray() = 0;
+        virtual Target GetTarget() = 0;
+        virtual void ResetInfo() = 0;
+        virtual void GetData(const int& mipMapLevel, const Format& format, const Type& type, void* dstBuffer) = 0;
+        virtual void SetData(const int& mipMapLevel, const InternalFormat& internalFormat, const int& width, const int& height, const Format& format, const Type& type, void* data) = 0;
+        virtual void UpdateData(const int& mipMapLevel, const int& xOffset, const int& yOffset, const int& width, const int& height, const Format& format, const Type& type, void* data) = 0;
 
-        inline void SetSettings(TextureSettings::Ptr ts) {
+        virtual ~ITexture() {}
+    };
+
+    class Texture : public Object, public virtual ITexture, public virtual Resource {
+    public:
+        inline ITextureSettings* GetSettings() override { return _settings; } //May be nullptr
+        inline unsigned short GetWidth() override { return gl_width; }
+        inline unsigned short GetHeight() override { return gl_height; }
+        inline unsigned short GetDepth() override { return gl_depth; }
+        inline InternalFormat GetInternalFormat() override { return (InternalFormat)gl_internal_format; }
+        inline unsigned int GetImageSize() override { return gl_mem_image_size; }
+        inline unsigned char GetRedBitsNum() override { return gl_red_bits_num; }
+        inline unsigned char GetGreenBitsNum() override { return gl_green_bits_num; }
+        inline unsigned char GetBlueBitsNum() override { return gl_blue_bits_num; }
+        inline unsigned char GetDepthBitsNum() override { return gl_depth_bits_num; }
+        inline unsigned char GetAlphaBitsNum() override { return gl_alpha_bits_num; }
+        inline bool IsCompressed() override { return gl_compressed; }
+        inline unsigned int GetGPUHandle() override { return this->gl_texture; }
+        inline Target GetTarget() override { return _target; }
+
+        inline unsigned int GetTextureArrayIndex() override { return this->_textureArrayIndex; }
+        inline ITextureArray* GetTextureArray() override { return this->_texArray; }
+        inline bool InTextureArray() { return _inTextureArray; }
+
+        inline void SetSettings(ITextureSettings* ts) {
             if(_settings != ts){
                 _settings = ts;
                 OnSettingsChanged(this, ts);
@@ -364,31 +418,31 @@ namespace MR{
     protected:
         unsigned short gl_width = 0, gl_height = 0, gl_depth = 0;
         unsigned char gl_red_bits_num = 0, gl_green_bits_num = 0, gl_blue_bits_num = 0, gl_depth_bits_num = 0, gl_alpha_bits_num = 0;
-        unsigned int gl_mem_image_size = 0, gl_mem_compressed_img_size = 0, gl_internal_format = 0;
+        unsigned int gl_mem_image_size = 0, gl_internal_format = 0;
         bool gl_compressed = false;
         unsigned int gl_texture; //OpenGL texture
-        TextureSettings::Ptr _settings;
+        ITextureSettings* _settings = nullptr;
 
         Target _target = Target::Base2D;
 
         bool _inTextureArray = false;
         unsigned int _textureArrayIndex = 0;
-        TextureArray* _texArray = nullptr;
+        ITextureArray* _texArray = nullptr;
     private:
-        friend class RenderContext;
-        friend class TextureArray;
+        friend class IRenderSystem;
+        friend class ITextureArray;
         friend class TextureManager;
         Texture(MR::ResourceManager* m, const std::string& name, const std::string& source, const unsigned int & glTexture);
     };
 
     class CubeMap : public virtual Texture {
     public:
-        MR::Event<const glm::vec3&> OnCapturePointChanged;
+        MR::EventListener<const glm::vec3&> OnCapturePointChanged;
 
         void SetCapturePoint(const glm::vec3& p);
         inline glm::vec3 GetCapturePoint();
 
-        void Capture(RenderContext* context);
+        void Capture(IRenderSystem* context);
 
         MR::RenderTarget* GetRenderTarget();
 
@@ -400,26 +454,43 @@ namespace MR{
         MR::RenderTarget* _rtarget;
     };
 
-    class TextureArray {
+    class ITextureArray {
+    public:
+        virtual unsigned int GetGPUHandle() = 0;
+        virtual Texture::InternalFormat GetInternalFormat() = 0;
+        virtual Texture::Format GetFormat() = 0;
+        virtual Texture::Type GetType() = 0;
+        virtual unsigned short GetWidth() = 0;
+        virtual unsigned short GetHeight() = 0;
+        virtual unsigned short GetDepth() = 0;
+        virtual int GetTexturesNum() = 0;
+
+        virtual unsigned int Add(void* newData) = 0; //returns texture index in array
+        virtual void Update(const unsigned int& textureIndex, void* newData) = 0;
+
+        virtual bool CanStore(const ITexture::InternalFormat& iformat, const ITexture::Format& format, const ITexture::Type& type, const unsigned short& width, const unsigned short& height) = 0;
+    };
+
+    class TextureArray : public Object, public ITextureArray {
         friend class Texture;
         friend class TextureManager;
     public:
-        inline unsigned int GetGLTexture(){return _gl_texture;}
-        inline Texture::InternalFormat GetInternalFormat(){return _internal_format;}
-        inline Texture::Format GetFormat(){return _format;}
-        inline Texture::Type GetType(){return _type;}
-        inline unsigned short GetWidth(){return _width;}
-        inline unsigned short GetHeight(){return _height;}
-        inline unsigned short GetDepth(){return _depth;}
-        inline int GetTexturesNum(){return _storedTexNum;}
+        inline unsigned int GetGPUHandle() override {return _gl_texture;}
+        inline Texture::InternalFormat GetInternalFormat() override {return _internal_format;}
+        inline Texture::Format GetFormat() override {return _format;}
+        inline Texture::Type GetType() override {return _type;}
+        inline unsigned short GetWidth() override {return _width;}
+        inline unsigned short GetHeight() override {return _height;}
+        inline unsigned short GetDepth() override {return _depth;}
+        inline int GetTexturesNum() override {return _storedTexNum;}
 
         /*  Should be with current TextureArray.GetWidth/Height/Format/Type/InternalFormat
             textureIndex - index of texture in array */
 
-        virtual unsigned int Add(void* newData); //returns texture index in array
-        virtual void Update(const unsigned int& textureIndex, void* newData);
+        virtual unsigned int Add(void* newData) override; //returns texture index in array
+        virtual void Update(const unsigned int& textureIndex, void* newData) override;
 
-        inline bool CanStore(const Texture::InternalFormat& iformat, const Texture::Format& format, const Texture::Type& type, const unsigned short& width, const unsigned short& height){
+        inline bool CanStore(const ITexture::InternalFormat& iformat, const ITexture::Format& format, const ITexture::Type& type, const unsigned short& width, const unsigned short& height) override {
             return ((iformat == _internal_format)&&(format == _format)&&(type == _type)&&(width == _width)&&(height == _height)&&(_storedTexNum < _maxTextures));
         }
 
@@ -443,7 +514,7 @@ namespace MR{
         virtual Resource* Create(const std::string& name, const std::string& source);
         virtual Resource* Create(const std::string& name, const unsigned int & gl_texture);
         inline Texture* NeedTexture(const std::string& source) { return dynamic_cast<Texture*>(Need(source)); }
-        inline Texture* WhiteTexture();
+        inline ITexture* WhiteTexture();
 
         TextureManager();
         virtual ~TextureManager();
@@ -453,13 +524,13 @@ namespace MR{
             return m;
         }
     protected:
-        MR::Texture* _white;
+        MR::ITexture* _white;
 
         bool _useTexArrays = false; //experimental
         unsigned int _maxTexturesInArray = 50;
         std::vector<TextureArray*> _tex_arrays;
 
-        TextureArray* _StoreTexture(unsigned int* texArrayIndex, void* data, const Texture::InternalFormat& iformat, const Texture::Format& format, const Texture::Type& type, const unsigned short& width, const unsigned short& height);
+        TextureArray* _StoreTexture(unsigned int* texArrayIndex, void* data, const ITexture::InternalFormat& iformat, const ITexture::Format& format, const ITexture::Type& type, const unsigned short& width, const unsigned short& height);
     };
 }
 
@@ -467,8 +538,8 @@ glm::vec3 MR::CubeMap::GetCapturePoint(){
     return _world_point_pos;
 }
 
-MR::Texture* MR::TextureManager::WhiteTexture(){
-    return _white;
+MR::ITexture* MR::TextureManager::WhiteTexture(){
+    return dynamic_cast<ITexture*>(_white);
 }
 
 #endif // _MR_TEXTURE_H_

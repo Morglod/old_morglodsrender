@@ -24,7 +24,7 @@ namespace MR{
         /** sender - Resource object
          *  arg1 - new state
          */
-        MR::Event<const bool&> OnResourceFreeStateChanged;
+        MR::EventListener<const bool&> OnResourceFreeStateChanged;
 
         /** If true, resource data will be destroyed after unloading/deleting resource
          *  For example geometry buffers after unloading/deleting Mesh resource
@@ -101,7 +101,7 @@ namespace MR{
         /** sender - Resource object
          *  arg1 - new state
          */
-        MR::Event<const bool&> OnDebugMessagesStateChanged;
+        MR::EventListener<const bool&> OnDebugMessagesStateChanged;
 
         /** Turn on/off debug messages
          *  False by default

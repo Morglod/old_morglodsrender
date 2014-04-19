@@ -1,5 +1,5 @@
 #include "Material.hpp"
-#include "RenderContext.hpp"
+#include "RenderSystem.hpp"
 #include "Texture.hpp"
 #include "Shader.hpp"
 
@@ -7,12 +7,12 @@
 #   include <GL\glew.h>
 #endif
 
-void MR::MaterialPass::Use(RenderContext* rc){
+void MR::MaterialPass::Use(IRenderSystem* rs){
     if( (_flag.always) || (_parent->GetManager()->ActivedFlag() == _flag.flag) ){
-        if(_albedo)     rc->BindTexture(_albedo,        _albedoStage);
-        if(_emissive)   rc->BindTexture(_emissive,      _emissiveStage);
-        if(_environment)rc->BindTexture(_environment,   _environmentStage);
-        if(_shader)     rc->UseShader(_shader);
+        if(_albedo)     rs->BindTexture(_albedo,        _albedoStage);
+        if(_emissive)   rs->BindTexture(_emissive,      _emissiveStage);
+        if(_environment)rs->BindTexture(_environment,   _environmentStage);
+        if(_shader)     rs->UseShader(_shader);
 
         if(_twoSided)   glDisable(GL_CULL_FACE);
         else            glEnable(GL_CULL_FACE);

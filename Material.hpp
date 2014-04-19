@@ -14,13 +14,15 @@
 
 namespace MR {
 
+class RenderContext;
+
 class Shader;
 class ShaderUniform;
 class IShaderUniform;
 
-class Texture;
+class ITexture;
 
-class RenderContext;
+class IRenderSystem;
 
 class Material;
 class MaterialManager;
@@ -39,7 +41,7 @@ public:
 
 class MaterialPass {
 public:
-    virtual void Use(RenderContext* rc);
+    virtual void Use(IRenderSystem* rs);
     inline MaterialFlag GetFlag();
     inline MaterialFlag* GetFlagPtr();
 
@@ -47,22 +49,22 @@ public:
     inline Shader* GetShader();
     virtual void SetShader(Shader* sh);
 
-    inline Texture* GetAlbedoTexture();
+    inline ITexture* GetAlbedoTexture();
     inline unsigned int GetAlbedoTextureStage();
 
-    inline void SetAlbedoTexture(Texture* t) {_albedo = t;}
+    inline void SetAlbedoTexture(ITexture* t) {_albedo = t;}
     inline void SetAlbedoTextureStage(const unsigned int& s) {_albedoStage = s;}
 
-    inline Texture* GetEmissiveTexture();
+    inline ITexture* GetEmissiveTexture();
     inline unsigned int GetEmissiveTextureStage();
 
-    inline void SetEmissiveTexture(Texture* t) {_emissive = t;}
+    inline void SetEmissiveTexture(ITexture* t) {_emissive = t;}
     inline void SetEmissiveTextureStage(const unsigned int& s) {_emissiveStage = s;}
 
-    inline Texture* GetEnvironmentTexture();
+    inline ITexture* GetEnvironmentTexture();
     inline unsigned int GetEnvironmentTextureStage();
 
-    inline void SetEnvironmentTexture(Texture* t) {_environment = t;}
+    inline void SetEnvironmentTexture(ITexture* t) {_environment = t;}
     inline void SetEnvironmentTextureStage(const unsigned int& s) {_environmentStage = s;}
 
     inline bool IsTwoSided();
@@ -81,15 +83,15 @@ protected:
 
     MaterialFlag _flag;
 
-    Texture* _albedo;
+    ITexture* _albedo;
     int _albedoStage; //GL_TEXTURE0 is 0 / GL_TEXTURE1 i s1 / GL_TEXTURE2 is 2 etc
     MR::IShaderUniform* _albedo_sample;
 
-    Texture* _emissive;
+    ITexture* _emissive;
     int _emissiveStage;
     MR::IShaderUniform* _emissive_sample;
 
-    Texture* _environment;
+    ITexture* _environment;
     int _environmentStage;
     MR::IShaderUniform* _environment_sample;
 
@@ -156,7 +158,7 @@ MR::Shader* MR::MaterialPass::GetShader() {
     return _shader;
 }
 
-MR::Texture* MR::MaterialPass::GetAlbedoTexture() {
+MR::ITexture* MR::MaterialPass::GetAlbedoTexture() {
     return _albedo;
 }
 
@@ -164,7 +166,7 @@ unsigned int MR::MaterialPass::GetAlbedoTextureStage() {
     return _albedoStage;
 }
 
-MR::Texture* MR::MaterialPass::GetEmissiveTexture() {
+MR::ITexture* MR::MaterialPass::GetEmissiveTexture() {
     return _emissive;
 }
 
@@ -172,7 +174,7 @@ unsigned int MR::MaterialPass::GetEmissiveTextureStage() {
     return _emissiveStage;
 }
 
-MR::Texture* MR::MaterialPass::GetEnvironmentTexture() {
+MR::ITexture* MR::MaterialPass::GetEnvironmentTexture() {
     return _environment;
 }
 

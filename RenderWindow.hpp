@@ -4,7 +4,6 @@
 #define _MR_RENDER_WINDOW_H_
 
 #include "Events.hpp"
-#include "RenderContext.hpp"
 #include "Types.hpp"
 
 class GLFWwindow;
@@ -12,8 +11,13 @@ class GLFWgammaramp;
 
 namespace MR {
 
+class IRenderSystem;
+
 class IRenderWindow {
 public:
+    virtual bool Init() = 0;
+    virtual void Close() = 0;
+
     virtual void SetPos(const int& x, const int& y) = 0;
     virtual void SetSize(const int& w, const int& h) = 0;
 
@@ -29,78 +33,78 @@ public:
 
     //sender - RenderWindow
     //arg1, arg2 - new x,y
-    MR::Event<const int&, const int&> OnPosChanged;
+    MR::EventListener<const int&, const int&> OnPosChanged;
 
     //sender - RenderWindow
     //arg1, arg2 - new w,h
-    MR::Event<const int&, const int&> OnSizeChanged;
+    MR::EventListener<const int&, const int&> OnSizeChanged;
 
     //sender - RenderWindow
     //arg1 - new title
-    MR::Event<const char*> OnTitleChanged;
+    MR::EventListener<const char*> OnTitleChanged;
 
     //sender - RenderWindow
     //arg1 - new refreshes num
-    MR::Event<const int&> OnSyncChanged;
+    MR::EventListener<const int&> OnSyncChanged;
 
     //sender - RenderWindow
     //arg1 - new state
-    MR::Event<const bool&> OnVisibilityChanged;
+    MR::EventListener<const bool&> OnVisibilityChanged;
 
     //sender - RenderWindow
     //arg1 - unicode char of key
-    MR::Event<const unsigned int&> OnChar;
+    MR::EventListener<const unsigned int&> OnChar;
 
     //sender - RenderWindow
     //arg1 - glfw key GLFW_A, GLFW_B etc
     //arg2 - system scan code
     //arg3 - glfw key action GLFW_PRESS, GLFW_RELEASE, GLFW_REPEAT
     //arg4 - glfw mods bit
-    MR::Event<const int&, const int&, const int&, const int&> OnKey;
+    MR::EventListener<const int&, const int&, const int&, const int&> OnKey;
 
     //sender - RenderWindow
     //arg1 - glfw button
     //arg2 - glfw key action GLFW_PRESS, GLFW_RELEASE
     //arg3 - glfw mods bit
-    MR::Event<const int&, const int&, const int&> OnMouseButton;
+    MR::EventListener<const int&, const int&, const int&> OnMouseButton;
 
     //sender - RenderWindow
     //arg1 - GL_TRUE or GL_FALSE
-    MR::Event<const int&> OnCursorEnterStateChanged;
+    MR::EventListener<const int&> OnCursorEnterStateChanged;
 
     //sender - RenderWindow
     //arg1 - x
     //arg2 - y
-    MR::Event<const double&, const double&> OnCursorPosChanged;
+    MR::EventListener<const double&, const double&> OnCursorPosChanged;
 
     //sender - RenderWindow
     //arg1 - x offset
     //arg2 - y offset
-    MR::Event<const double&, const double&> OnScroll;
+    MR::EventListener<const double&, const double&> OnScroll;
 
     //sender - RenderWindow
     //arg1, arg2 - new w,h
-    MR::Event<const int&, const int&> OnFrameBufferSizeChanged;
+    MR::EventListener<const int&, const int&> OnFrameBufferSizeChanged;
 
     //sender - RenderWindow
     //arg1 - new monitor gamma
-    MR::Event<const float&> OnGammaChanged;
+    MR::EventListener<const float&> OnGammaChanged;
 
     //sender - RenderWindow
     //arg1 - nullptr
-    MR::Event<void*> OnClose;
+    MR::EventListener<void*> OnClose;
 
     //sender - RenderWindow
     //arg1 - GL_TRUE, GL_FALSE
-    MR::Event<const int&> OnFocusChanged;
+    MR::EventListener<const int&> OnFocusChanged;
 
     //sender - RenderWindow
     //arg1 - GL_TRUE, GL_FALSE
-    MR::Event<const int&> OnIconificationStateChanged;
+    MR::EventListener<const int&> OnIconificationStateChanged;
 
     //sender - RenderWindow
     //arg1 - nullptr
-    MR::Event<void*> OnRefresh;
+    MR::EventListener<void*> OnRefresh;
 
 protected:
     /* MR_DELTA_TYPE delta_last_time;
@@ -124,6 +128,9 @@ protected:
     static void framebuffer_size_callback(GLFWwindow* window, int w, int h);
 
 public:
+
+    bool Init() override;
+    void Close() override;
 
     inline GLFWwindow* GetHandle() { return glfw_handle; }
     void GetPos(int* x, int* y) override;
@@ -153,21 +160,10 @@ public:
     bool IsResizable();
     bool IsDecorated();
     bool ShouldClose();
-    void Close();
     void SwapBuffers();
     void MakeCurrent();
 
-    inline void ResetViewport(RenderContext& rc){
-        int w = 1, h = 1;
-        GetSize(&w, &h);
-        rc.SetViewport(0, 0, w, h);
-    }
-
-    inline void ResetViewport(RenderContext* rc){
-        int w = 1, h = 1;
-        GetSize(&w, &h);
-        rc->SetViewport(0, 0, w, h);
-    }
+    void ResetViewport(IRenderSystem* rs);
 
     struct RenderWindowCallbacks {
     public:
@@ -219,10 +215,20 @@ public:
         RenderWindowHints();
     };
 
-    RenderWindow(const std::string& title, const int& width, const int& height, const RenderWindowHints& hints = RenderWindowHints(), const RenderWindowCallbacks& callbacks = RenderWindowCallbacks(), GLFWwindow* parent_share_resources = NULL);
+    RenderWindow(const std::string& title, const int& width, const int& height);
+    RenderWindow(const std::string& title, const int& width, const int& height, const RenderWindowHints& hints, const RenderWindowCallbacks& callbacks = RenderWindowCallbacks(), GLFWwindow* parent_share_resources = NULL);
     ~RenderWindow();
 
     static RenderWindow* Create(const std::string& title, const int& width, const int& height) { return new RenderWindow(title, width, height); }
+
+protected:
+    RenderWindowHints _creationHints;
+    RenderWindowCallbacks _creationCallbacks;
+    GLFWwindow* _creationParent;
+    int _creationWidth;
+    int _creationHeight;
+
+    bool _inited;
 };
 
 }

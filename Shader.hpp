@@ -20,7 +20,7 @@ namespace MR{
     class SubShader;
 
     class ShaderManager;
-    class RenderContext;
+    class IRenderSystem;
 
     class IShaderUniform {
         friend class Shader;
@@ -34,8 +34,8 @@ namespace MR{
             Int = 5 //int or sampler2D etc; uniform1i
         };
 
-        MR::Event<void*> OnNewValuePtr;
-        MR::Event<IShader*, const int&> OnMapped; //as args (shader program, new uniform location)
+        MR::EventListener<void*> OnNewValuePtr;
+        MR::EventListener<IShader*, const int&> OnMapped; //as args (shader program, new uniform location)
 
         virtual std::string GetName() = 0;
         virtual Types GetType() { return _type; }
@@ -152,7 +152,7 @@ namespace MR{
          *  arg1 - new code
          *  arg2 - new shader_type
          */
-        MR::Event<const std::string&, const ISubShader::Type&> OnCompiled;
+        MR::EventListener<const std::string&, const ISubShader::Type&> OnCompiled;
 
         /** Compiles or Recompiles OpenGL shader
          *  code - OpenGL shader code */
@@ -215,7 +215,7 @@ namespace MR{
         virtual void DetachSubShader(ISubShader* sub) = 0;
         virtual void DetachAllSubShaders() = 0;
 
-        virtual bool Use(RenderContext* context) = 0;
+        virtual bool Use(IRenderSystem* context) = 0;
 
         virtual ~IShader(){}
     };
@@ -257,7 +257,7 @@ namespace MR{
         bool Link() override;
 
         /* USE RC->UseShader Instead of this */
-        bool Use(RenderContext* context) override;
+        bool Use(IRenderSystem* context) override;
 
         void AttachSubShader(ISubShader* sub) override;
         void DetachSubShader(ISubShader* sub) override;
@@ -267,6 +267,7 @@ namespace MR{
         virtual void UnLoad();
 
         /*  Links sub shaders together (in OpenGL program)
+         *  manager - ShaderManager
          *  sub_shaders - Array of SubShader objects
          *  num - num of elements in array */
         Shader(ResourceManager* manager, const std::string& name, const std::string& source);
@@ -280,10 +281,12 @@ namespace MR{
         std::vector<IShaderUniformBlock*> _shaderUniformBlocks;
     };
 
-    class ShaderManager : public virtual MR::ResourceManager{
+    class ShaderManager : public virtual MR::ResourceManager {
     public:
         virtual Resource* Create(const std::string& name, const std::string& source);
         inline Shader* NeedShader(const std::string& source);
+
+        bool BindDefaultShaderInOut(IShader* shader);
 
         ShaderManager() : ResourceManager() {}
         virtual ~ShaderManager() {}

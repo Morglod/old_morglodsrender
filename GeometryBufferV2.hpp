@@ -15,7 +15,7 @@
 
 namespace MR {
 
-class RenderContext;
+class IRenderSystem;
 class Geometry;
 class GeometryBuffer;
 
@@ -223,6 +223,7 @@ public:
     bool Buffer(void* data, const unsigned int& size, const unsigned int& usage, const unsigned int& accessFlag) override;
     void Release() override;
     inline void SetNum(const unsigned int & num) { _num = num; }
+    inline unsigned int GetNum() { return _num; }
 
     VertexBuffer();
     virtual ~VertexBuffer();
@@ -236,12 +237,12 @@ protected:
     unsigned int _num;
 };
 
-/*!! UNSIGNED INT ONLY !!*/
 class IndexBuffer : public Object, public IGLBuffer {
     friend class GeometryBuffer;
 public:
     bool Buffer(void* data, const unsigned int& size, const unsigned int& usage, const unsigned int& accessFlag) override;
     inline void SetNum(const unsigned int & num) { _num = num; }
+    inline unsigned int GetNum() { return _num; }
     void Release() override;
 
     IndexBuffer();
@@ -254,6 +255,24 @@ protected:
     unsigned int _accessFlag;
     unsigned int _handle;
     unsigned int _num;
+};
+
+class IndirectDrawBuffer : public Object, public IGLBuffer {
+    friend class Geometry;
+public:
+    bool Buffer(void* data, const unsigned int& size, const unsigned int& usage, const unsigned int& accessFlag) override;
+    void Release() override;
+    inline unsigned int GetHandle() { return _handle; }
+
+    IndirectDrawBuffer();
+    virtual ~IndirectDrawBuffer();
+
+protected:
+    uint64_t _resident_ptr;
+    int _buffer_size;
+    unsigned int _usage;
+    unsigned int _accessFlag;
+    unsigned int _handle;
 };
 
 class IGeometryBuffer {
@@ -271,8 +290,12 @@ public:
     };
 
     virtual bool SetVertexBuffer(VertexBuffer* buf) = 0;
+    virtual VertexBuffer* GetVertexBuffer() = 0;
+
     virtual bool SetIndexBuffer(IndexBuffer* buf) = 0;
-    virtual void Draw(RenderContext* rc) = 0;
+    virtual IndexBuffer* GetIndexBuffer() = 0;
+
+    virtual void Draw(IRenderSystem* rc, const unsigned int& start, const unsigned int& end, const int& count) = 0;
     virtual void SetFormat(IVertexFormat* f, IIndexFormat* fi) = 0;
     virtual ~IGeometryBuffer() {}
 };
@@ -282,8 +305,10 @@ class GeometryBuffer : public Object, public IGeometryBuffer {
     friend class IndexBuffer;
 public:
     bool SetVertexBuffer(VertexBuffer* buf) override;
+    inline VertexBuffer* GetVertexBuffer() override { return _vb; }
     bool SetIndexBuffer(IndexBuffer* buf) override;
-    void Draw(RenderContext* rc) override;
+    inline IndexBuffer* GetIndexBuffer() override { return _ib; }
+    void Draw(IRenderSystem* rc, const unsigned int& start, const unsigned int& end, const int& count) override;
     inline void SetFormat(IVertexFormat* f, IIndexFormat* fi) override { _format = f; _iformat = fi; }
 
     static GeometryBuffer* Plane(const glm::vec3& scale, const glm::vec3 pos, const unsigned int& usage, const unsigned int& drawm);
@@ -297,6 +322,35 @@ protected:
     IIndexFormat* _iformat;
     unsigned int _vao;
     unsigned int _draw_mode;
+};
+
+class IGeometry {
+public:
+    virtual void SetGeometryBuffer(IGeometryBuffer* buffer) = 0;
+    virtual void SetStart(const unsigned int& i) = 0;
+    virtual void SetEnd(const unsigned int& i) = 0;
+    virtual void SetCount(const int& i) = 0;
+    virtual void Draw(IRenderSystem* rc) = 0;
+    virtual ~IGeometry() {}
+};
+
+class Geometry : public IGeometry, public Object {
+public:
+    void SetGeometryBuffer(IGeometryBuffer* buffer) override;
+    void SetStart(const unsigned int& i) override;
+    void SetEnd(const unsigned int& i) override;
+    void SetCount(const int& i) override;
+    void Draw(IRenderSystem* rc) override;
+
+    Geometry(IGeometryBuffer* buffer, const unsigned int& istart, const unsigned int& iend, const int& icount);
+    virtual ~Geometry();
+
+protected:
+    void _MakeBuffer(); //make indirect drawing buffer
+    IGeometryBuffer* _buffer;
+    IndirectDrawBuffer* _draw_buffer; //buffer start, end, count values for indirect drawing
+    unsigned int _start, _end;
+    int _count;
 };
 
 }

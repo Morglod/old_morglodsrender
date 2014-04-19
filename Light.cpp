@@ -100,7 +100,7 @@ namespace MR{
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }*/
 
-void ShadowMapDepth::BeginCapture(RenderContext* context, ILightSource* light){
+void ShadowMapDepth::BeginCapture(IRenderSystem* context, ILightSource* light){
     _captured_from = light;
 
     glViewport(0, 0, _w, _h);
@@ -115,7 +115,7 @@ void ShadowMapDepth::BeginCapture(RenderContext* context, ILightSource* light){
 	SetView(glm::lookAt(light->GetPos(), light->GetPos()+light->GetDir(), glm::vec3(0.0f, 1.0f, 0.0f)));
 }
 
-void ShadowMapDepth::EndCapture(RenderContext* context, ILightSource* light){
+void ShadowMapDepth::EndCapture(IRenderSystem* context, ILightSource* light){
     glDisable(GL_POLYGON_OFFSET_FILL);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 }
@@ -151,7 +151,7 @@ ShadowMapDepth::ShadowMapDepth(ILightSource* light, const int& width, const int&
 ShadowMapDepth::~ShadowMapDepth(){
 }
 
-void ShadowMapColor::BeginCapture(RenderContext* context, ILightSource* light){
+void ShadowMapColor::BeginCapture(IRenderSystem* context, ILightSource* light){
     _captured_from = light;
 
     glViewport(0, 0, _w, _h);
@@ -169,7 +169,7 @@ void ShadowMapColor::BeginCapture(RenderContext* context, ILightSource* light){
     light->GetManager()->GetDepth()->Use(context);
 }
 
-void ShadowMapColor::EndCapture(RenderContext* context, ILightSource* light){
+void ShadowMapColor::EndCapture(IRenderSystem* context, ILightSource* light){
     glUseProgramObjectARB(0);
     glDisable(GL_POLYGON_OFFSET_FILL);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
@@ -226,6 +226,17 @@ glm::vec3 LightSource::GetDir(){
 }
 
 LightSource::~LightSource(){
+}
+
+LightsList LightsList::MakeList(const glm::vec3& point, const float& r, ILightSource** listOfPtrs, const size_t& listSize){
+    std::vector<ILightSource*> l;
+    for(size_t i = 0; i < listSize; ++i){
+        if( glm::distance(listOfPtrs[i]->GetPos(), point) <= (r+listOfPtrs[i]->GetRadius()) ) l.push_back(listOfPtrs[i]);
+    }
+    return LightsList(l);
+}
+
+LightsList::LightsList(const std::vector<ILightSource*>& l) : _lights(l) {
 }
 
 LightManager::LightManager(ShaderManager* sm){

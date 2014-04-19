@@ -24,8 +24,8 @@ public:
     virtual ILightSource* GetLight() = 0;
     virtual int GetWidth() = 0;
     virtual int GetHeight()= 0;
-    virtual void BeginCapture(RenderContext* context, ILightSource* light) = 0;
-    virtual void EndCapture(RenderContext* context, ILightSource* light) = 0;
+    virtual void BeginCapture(IRenderSystem* context, ILightSource* light) = 0;
+    virtual void EndCapture(IRenderSystem* context, ILightSource* light) = 0;
     virtual void SetProjection(const glm::mat4& p) = 0;
     virtual void SetView(const glm::mat4& v) = 0;
 };
@@ -36,8 +36,8 @@ public:
     inline int GetWidth() override { return _w; }
     inline int GetHeight() override { return _h; }
 
-    void BeginCapture(RenderContext* context, ILightSource* light) override;
-    void EndCapture(RenderContext* context, ILightSource* light) override;
+    void BeginCapture(IRenderSystem* context, ILightSource* light) override;
+    void EndCapture(IRenderSystem* context, ILightSource* light) override;
 
     void SetProjection(const glm::mat4& p) override;
     void SetView(const glm::mat4& v) override;
@@ -57,8 +57,8 @@ public:
     inline int GetWidth() override { return _w; }
     inline int GetHeight() override { return _h; }
 
-    void BeginCapture(RenderContext* context, ILightSource* light) override;
-    void EndCapture(RenderContext* context, ILightSource* light) override;
+    void BeginCapture(IRenderSystem* context, ILightSource* light) override;
+    void EndCapture(IRenderSystem* context, ILightSource* light) override;
 
     void SetProjection(const glm::mat4& p) override;
     void SetView(const glm::mat4& v) override;
@@ -82,7 +82,9 @@ public:
     virtual void SetShadowMap(IShadowMap* map) = 0;
     virtual glm::vec3 GetPos() = 0;
     virtual glm::vec3 GetDir() = 0;
+    virtual float GetRadius() = 0;
     virtual LightManager* GetManager() = 0;
+    virtual bool CastShadows() = 0;
 };
 
 class LightSource : public Object, public ILightSource {
@@ -90,7 +92,9 @@ public:
     void SetShadowMap(IShadowMap* map) override;
     glm::vec3 GetPos() override;
     glm::vec3 GetDir() override;
+    inline float GetRadius() override { return _radius; }
     inline LightManager* GetManager() override {return _manager;}
+    inline bool CastShadows() override { return _castShadows; }
 
     ///TODO
     static ILightSource* CreateSpotLight(const glm::vec3& pos, const glm::vec4& color, const float& radius);
@@ -107,7 +111,25 @@ protected:
     glm::vec3 _pos;
     glm::vec3 _dir;
     glm::vec4 _color; //r,g,b,multiply
-    float _radius;
+    float _radius; //max effect radius/distance
+    bool _castShadows;
+};
+
+class LightsList {
+public:
+    /**
+        Find which lights affects on some area
+
+        point - sphere center
+        r - sphere radius
+        listOfPtrs - array of pointers to lights
+        listSize - num of elements in listOfPtrs
+    **/
+    static LightsList MakeList(const glm::vec3& point, const float& r, ILightSource** listOfPtrs, const size_t& listSize);
+private:
+    LightsList(const std::vector<ILightSource*>& l);
+protected:
+    std::vector<ILightSource*> _lights;
 };
 
 class LightManager : public Object {

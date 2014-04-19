@@ -14,20 +14,6 @@ void RenderTarget::SetName(const std::string& n) {
     }
 }
 
-void RenderTarget::Bind(RenderContext& rc){
-    glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffer);
-    rc.SetViewport(0, 0, _width, _height);
-}
-
-void RenderTarget::Bind(RenderContext* rc){
-    glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffer);
-    rc->SetViewport(0, 0, _width, _height);
-}
-
-void RenderTarget::Unbind(){
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
 void RenderTarget::CreateTargetTexture(const unsigned char & i, const MR::Texture::InternalFormat & iFormat, const MR::Texture::Format & Format, const MR::Texture::Type & Type){
     glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffer);
 

@@ -78,5 +78,68 @@ protected:
     float timerCurrentTime;
 };
 
+template<typename... Args>
+class EventListener;
+
+template<typename... Args>
+class EventHandle {
+public:
+    virtual void Invoke(void* sender, EventListener<Args...>*, Args...) {}
+    virtual ~EventHandle() {}
+};
+
+template<typename... Args>
+class EventListener {
+public:
+    inline virtual void RegisterHandle(EventHandle<Args...>* h) {
+        _handles.push_back(h);
+    }
+
+    inline virtual void UnRegisterHandle(EventHandle<Args...>* h){
+        auto it = std::find(_handles.begin(), _handles.end(), h);
+        if(it == _handles.end()) return;
+        _handles.erase(it);
+    }
+
+    template<typename HandleClass, typename... ConstructArgs>
+    inline HandleClass* CreateHandle(ConstructArgs... args){
+        HandleClass* h = new HandleClass(args...);
+        RegisterHandle(h);
+        return h;
+    }
+
+    template<typename HandleClass>
+    inline void DeleteHandle(HandleClass* h){
+        auto it = std::find(_handles.begin(), _handles.end(), h);
+        if(it == _handles.end()) return;
+        _handles.erase(it);
+        delete h;
+    }
+
+    inline virtual void Call(void* sender, Args... args) const {
+        if(_handles.size() != 0){
+            for(auto it = _handles.begin(); it != _handles.end(); ++it)
+                (*it)->Invoke(sender, (EventListener<Args...>*)this, args...);
+        }
+    }
+
+    inline void operator() (void* s, Args... args) const { Call(s, args...); }
+
+    bool freePermissions;
+
+    EventListener() : freePermissions(true) { }
+    virtual ~EventListener(){
+        if(freePermissions){
+            while(_handles.size() > 0){
+                delete _handles.back();
+                _handles.pop_back();
+            }
+        }
+    }
+
+protected:
+    std::vector<EventHandle<Args...>*> _handles;
+};
+
 }
 #endif

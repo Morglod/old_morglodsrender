@@ -20,15 +20,15 @@ const char* code_default_vert =
     "layout (location = 1) in vec3 normal;"
     "layout (location = 2) in vec4 color;"
     "layout (location = 3) in vec2 texCoord;"
-    "layout (location = 0) out vec3 VertexPos;"
-    "layout (location = 1) out vec3 VertexNormal;"
-    "layout (location = 2) out vec4 VertexColor;"
-    "layout (location = 3) out vec2 VertexTexCoord;"
+    "layout (location = 0) out vec3 OutVertexPos;"
+    "layout (location = 1) out vec3 OutVertexNormal;"
+    "layout (location = 2) out vec4 OutVertexColor;"
+    "layout (location = 3) out vec2 OutVertexTexCoord;"
     "void main() {"
-    "	VertexPos = position;"
-    "	VertexColor = color;"
-    "	VertexNormal = normal;"
-    "	VertexTexCoord = texCoord;"
+    "	OutVertexPos = position;"
+    "	OutVertexColor = color;"
+    "	OutVertexNormal = normal;"
+    "	OutVertexTexCoord = texCoord;"
     "	gl_Position = (mvp) * vec4(position,1);"
     "}";
 
@@ -36,14 +36,15 @@ const char* code_default_frag =
     "#version 330\n"
     "#extension GL_ARB_separate_shader_objects : enable\n"
     "#pragma optimize(on)\n"
-    "layout (location = 0) in vec3 VertexPos;"
-    "layout (location = 1) in vec4 VertexNormal;"
-    "layout (location = 2) in vec4 VertexColor;"
-    "layout (location = 3) in vec2 VertexTexCoord;"
+    "layout (location = 0) in vec3 InVertexPos;"
+    "layout (location = 1) in vec4 InVertexNormal;"
+    "layout (location = 2) in vec4 InVertexColor;"
+    "layout (location = 3) in vec2 InVertexTexCoord;"
+    "out vec4 fragColor;"
     "uniform sampler2D ENGINE_ALBEDO;"
     "uniform vec4 ENGINE_COLOR;"
     "void main() {"
-    "	gl_FragColor = texture(ENGINE_ALBEDO, VertexTexCoord) * ENGINE_COLOR;"
+    "	fragColor = texture(ENGINE_ALBEDO, InVertexTexCoord) * ENGINE_COLOR;"
     "}";
 
 const char* code_rtt_vert = code_default_vert;
@@ -52,10 +53,10 @@ const char* code_rtt_frag =
     "#version 330\n"
     "#extension GL_ARB_separate_shader_objects : enable\n"
     "#pragma optimize(on)\n"
-    "layout (location = 0) in vec3 VertexPos;"
-    "layout (location = 1) in vec4 VertexNormal;"
-    "layout (location = 2) in vec4 VertexColor;"
-    "layout (location = 3) in vec2 VertexTexCoord;"
+    "layout (location = 0) in vec3 InVertexPos;"
+    "layout (location = 1) in vec4 InVertexNormal;"
+    "layout (location = 2) in vec4 InVertexColor;"
+    "layout (location = 3) in vec2 InVertexTexCoord;"
     "layout (location = 0) out vec3 fragColor;"
     "uniform sampler2D ENGINE_ALBEDO;"
     "uniform sampler2D screenColor;"
@@ -66,11 +67,11 @@ const char* code_rtt_frag =
     "   return pow( v, vec3(f, f, f) );"
     "}"
     "vec3 ENGINE_LIGHT(){"
-    "   vec3 a = texture(ENGINE_ENVIRONMENT, normalize(VertexNormal.xyz)).xyz;"
+    "   vec3 a = texture(ENGINE_ENVIRONMENT, normalize(InVertexNormal.xyz)).xyz;"
     "   return vec3(1,1,1);"
     "}"
     "void main() {"
-    "	fragColor = (texture(ENGINE_ALBEDO, VertexTexCoord).xyz * ENGINE_COLOR.xyz) * ENGINE_LIGHT();"
+    "	fragColor = (texture(ENGINE_ALBEDO, InVertexTexCoord).xyz * ENGINE_COLOR.xyz) * ENGINE_LIGHT();"
     "}";
 
 const char* code_rtt_discard_vert = code_rtt_vert;
@@ -79,10 +80,10 @@ const char* code_rtt_discard_frag =
     "#version 330\n"
     "#extension GL_ARB_separate_shader_objects : enable\n"
     "#pragma optimize(on)\n"
-    "layout (location = 0) in vec3 VertexPos;"
-    "layout (location = 1) in vec4 VertexNormal;"
-    "layout (location = 2) in vec4 VertexColor;"
-    "layout (location = 3) in vec2 VertexTexCoord;"
+    "layout (location = 0) in vec3 InVertexPos;"
+    "layout (location = 1) in vec4 InVertexNormal;"
+    "layout (location = 2) in vec4 InVertexColor;"
+    "layout (location = 3) in vec2 InVertexTexCoord;"
     "layout (location = 0) out vec3 fragColor;"
     "uniform sampler2D ENGINE_ALBEDO;"
     "uniform sampler2D screenColor;"
@@ -90,7 +91,7 @@ const char* code_rtt_discard_frag =
     "uniform vec4 ENGINE_COLOR;"
     "uniform float ENGINE_ALPHA_DISCARD;"
     "void main() {"
-    "    vec4 c = texture(ENGINE_ALBEDO, VertexTexCoord);"
+    "   vec4 c = texture(ENGINE_ALBEDO, InVertexTexCoord);"
     "	if(c.w < ENGINE_ALPHA_DISCARD) discard;"
     "	fragColor = c.xyz * ENGINE_COLOR.xyz;"
     "}";
@@ -103,15 +104,15 @@ const char* code_screen_vert =
     "layout (location = 1) in vec3 normal;"
     "layout (location = 2) in vec4 color;"
     "layout (location = 3) in vec2 texCoord;"
-    "layout (location = 0) out vec3 VertexPos;"
-    "layout (location = 1) out vec3 VertexNormal;"
-    "layout (location = 2) out vec4 VertexColor;"
-    "layout (location = 3) out vec2 VertexTexCoord;"
+    "layout (location = 0) out vec3 OutVertexPos;"
+    "layout (location = 1) out vec3 OutVertexNormal;"
+    "layout (location = 2) out vec4 OutVertexColor;"
+    "layout (location = 3) out vec2 OutVertexTexCoord;"
     "void main() {"
-    "	VertexPos = position;"
-    "	VertexColor = color;"
-    "	VertexNormal = normal;"
-    "	VertexTexCoord = texCoord;"
+    "	OutVertexPos = position;"
+    "	OutVertexColor = color;"
+    "	OutVertexNormal = normal;"
+    "	OutVertexTexCoord = texCoord;"
     "	gl_Position = vec4(position,1);"
     "}";
 
@@ -119,14 +120,14 @@ const char* code_screen_frag =
     "#version 330\n"
     "#extension GL_ARB_separate_shader_objects : enable\n"
     "#pragma optimize(on)\n"
-    "layout (location = 0) in vec3 VertexPos;"
-    "layout (location = 1) in vec4 VertexNormal; "
-    "layout (location = 2) in vec4 VertexColor; "
-    "layout (location = 3) in vec2 VertexTexCoord;"
+    "layout (location = 0) in vec3 InVertexPos;"
+    "layout (location = 1) in vec4 InVertexNormal; "
+    "layout (location = 2) in vec4 InVertexColor; "
+    "layout (location = 3) in vec2 InVertexTexCoord;"
     "layout (location = 0) out vec3 fragColor;"
     "uniform sampler2D ENGINE_ALBEDO;"
     "void main() {"
-    "	fragColor = texture(ENGINE_ALBEDO, VertexTexCoord).xyz;"
+    "	fragColor = texture(ENGINE_ALBEDO, InVertexTexCoord).xyz;"
     "}";
 
 char *textFileRead(const char *fn, int * count = nullptr) {
@@ -218,22 +219,39 @@ MR::ShaderUniformBlock::~ShaderUniformBlock() {
 
 //SUB SHADER
 bool MR::SubShader::Compile(const std::string& code, const ISubShader::Type& shader_type) {
-    if(this->_shader != 0) glDeleteObjectARB(this->_shader);
+    MR::MachineInfo::ClearError();
+
+    if(this->_shader != 0) glDeleteShader(this->_shader);
     this->_type = shader_type;
-    this->_shader = glCreateShaderObjectARB((unsigned int)shader_type);
+    this->_shader = glCreateShader((unsigned int)shader_type);
     const char* ccode = code.c_str();
-    glShaderSourceARB(this->_shader, 1, &ccode, NULL);
-    glCompileShaderARB(this->_shader);
+    glShaderSource(this->_shader, 1, &ccode, NULL);
+    glCompileShader(this->_shader);
+
+    std::string ErrorOutput = "";
+    if(MR::MachineInfo::CatchError(ErrorOutput, NULL)){
+        MR::Log::LogString("Error in sub shader compilation \""+ErrorOutput+"\"", MR_LOG_LEVEL_ERROR);
+    }
 
     int bufflen = 0;
     glGetShaderiv(this->_shader, GL_INFO_LOG_LENGTH, &bufflen);
     if(bufflen > 1) {
-        GLchar* logString = new GLchar[bufflen + 1];
-        glGetShaderInfoLog(this->_shader, bufflen, 0, logString);
-        MR::Log::LogString("Sub shader output: "+std::string(logString), MR_LOG_LEVEL_WARNING);
+        std::string logString;
+        logString.resize((size_t)bufflen + 1);
 
-        delete [] logString;
-        logString = 0;
+        glGetShaderInfoLog(this->_shader, bufflen, 0, &logString[0]);
+        MR::Log::LogString("Sub shader output: "+logString, MR_LOG_LEVEL_INFO);
+
+        if(logString.find("error") != std::string::npos) {
+            MR::Log::LogString("Sub shader compilation failed", MR_LOG_LEVEL_ERROR);
+        }
+    }
+
+    int compile_status = -1;
+    glGetShaderiv(_shader, GL_COMPILE_STATUS, &compile_status);
+    if(compile_status == GL_FALSE){
+        MR::Log::LogString("Sub shader compilation failed", MR_LOG_LEVEL_ERROR);
+        return false;
     }
 
     OnCompiled(this, code, shader_type);
@@ -249,7 +267,7 @@ MR::SubShader::SubShader(const std::string& code, const ISubShader::Type& type) 
 }
 
 MR::SubShader::~SubShader() {
-    glDeleteObjectARB(this->_shader);
+    glDeleteShader(this->_shader);
 }
 
 MR::SubShader* MR::SubShader::FromFile(const std::string& file, const SubShader::Type& shader_type) {
@@ -290,28 +308,48 @@ MR::SubShader* MR::SubShader::DefaultScreenFrag() {
 
 //SHADER
 bool MR::Shader::Link(ISubShader** sub_shaders, const unsigned int& num) {
-    if(this->_program != 0) glDeleteObjectARB(this->_program);
-    this->_program = glCreateProgramObjectARB();
+    MR::MachineInfo::ClearError();
+
+    if(this->_program != 0) glDeleteProgram(this->_program);
+    this->_program = glCreateProgram();
     for(unsigned int i = 0; i < num; ++i) {
-        glAttachObjectARB(_program, sub_shaders[i]->GetGPUId());
+        glAttachShader(_program, sub_shaders[i]->GetGPUId());
     }
-    glLinkProgramARB(_program);
+    glLinkProgram(_program);
+
+    std::string ErrorOutput = "";
+    if(MR::MachineInfo::CatchError(ErrorOutput, NULL)){
+        MR::Log::LogString("Error shader linking \""+ErrorOutput+"\"", MR_LOG_LEVEL_ERROR);
+    }
 
     int bufflen = 0;
     glGetProgramiv(this->_program, GL_INFO_LOG_LENGTH, &bufflen);
     if(bufflen > 1) {
-        GLchar* logString = new GLchar[bufflen + 1];
-        glGetProgramInfoLog(this->_program, bufflen, 0, logString);
-        MR::Log::LogString("Shader output: "+std::string(logString), MR_LOG_LEVEL_WARNING);
+        std::string logString;
+        logString.resize(bufflen + 1);
 
-        delete [] logString;
-        logString = 0;
+        glGetProgramInfoLog(this->_program, bufflen, 0, &logString[0]);
+        MR::Log::LogString("Shader output: "+logString, MR_LOG_LEVEL_INFO);
+
+        if(logString.find("error") != std::string::npos) {
+            MR::Log::LogString("Shader linking failed", MR_LOG_LEVEL_ERROR);
+            return false;
+        }
     }
+
+    int link_status = -1;
+    glGetShaderiv(_program, GL_LINK_STATUS, &link_status);
+    if(link_status == GL_FALSE){
+        MR::Log::LogString("Shader linking failed", MR_LOG_LEVEL_ERROR);
+        return false;
+    }
+
     return true;
 }
 
 bool MR::Shader::Link() {
     Link(_sub_shaders.data(), _sub_shaders.size());
+    dynamic_cast<ShaderManager*>(_resource_manager)->BindDefaultShaderInOut(this);
     return true;
 }
 
@@ -392,13 +430,13 @@ bool MR::Shader::Load() {
 void MR::Shader::UnLoad() {
     if(_loaded) {
         if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Shader "+this->_name+" ("+this->_source+") unloading", MR_LOG_LEVEL_INFO);
-        glDeleteObjectARB(this->_program);
+        glDeleteProgram(this->_program);
     }
 }
 
-bool MR::Shader::Use(MR::RenderContext* context) {
+bool MR::Shader::Use(MR::IRenderSystem* context) {
     if(MR::MachineInfo::IsDirectStateAccessSupported()) {
-        glUseProgramObjectARB(_program);
+        glUseProgram(_program);
         for(auto it = _shaderUniforms.begin(); it != _shaderUniforms.end(); ++it) {
             if((*it)->_value == nullptr) continue;
             if((*it)->_type == ShaderUniform::Types::Int) glProgramUniform1iEXT(_program, (*it)->GetGPULocation(), ((int*)(*it)->_value)[0]);
@@ -411,7 +449,7 @@ bool MR::Shader::Use(MR::RenderContext* context) {
             }
         }
     } else {
-        glUseProgramObjectARB(_program);
+        glUseProgram(_program);
         for(auto it = _shaderUniforms.begin(); it != _shaderUniforms.end(); ++it) {
             if((*it)->_value == nullptr) continue;
             if((*it)->_type == ShaderUniform::Types::Int) glUniform1i((*it)->GetGPULocation(), ((int*)(*it)->_value)[0]);
@@ -505,4 +543,51 @@ MR::Resource* MR::ShaderManager::Create(const std::string& name, const std::stri
     Shader * s = new Shader(this, name, source);
     this->_resources.push_back(s);
     return s;
+}
+
+bool MR::ShaderManager::BindDefaultShaderInOut(IShader* shader){
+    if(!shader) return false;
+
+    MR::MachineInfo::ClearError();
+
+    bool status = true;
+    std::string errorStr = "";
+    unsigned int p = shader->GetGPUProgramId();
+    if(glIsProgram(p)){
+        glBindAttribLocation(p, MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION, MR_SHADER_VERTEX_POSITION_ATTRIB_NAME);
+
+        if(MR::MachineInfo::CatchError(errorStr, NULL)){
+            MR::Log::LogString("Error while binding vertex position shader's attribute \""+errorStr+"\"", MR_LOG_LEVEL_ERROR);
+            status = false;
+        }
+
+        glBindAttribLocation(p, MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION, MR_SHADER_VERTEX_NORMAL_ATTRIB_NAME);
+
+        if(MR::MachineInfo::CatchError(errorStr, NULL)){
+            MR::Log::LogString("Error while binding vertex normal shader's attribute \""+errorStr+"\"", MR_LOG_LEVEL_ERROR);
+            status = false;
+        }
+
+        glBindAttribLocation(p, MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION, MR_SHADER_VERTEX_COLOR_ATTRIB_NAME);
+
+        if(MR::MachineInfo::CatchError(errorStr, NULL)){
+            MR::Log::LogString("Error while binding vertex color shader's attribute \""+errorStr+"\"", MR_LOG_LEVEL_ERROR);
+            status = false;
+        }
+
+        glBindAttribLocation(p, MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION, MR_SHADER_VERTEX_TEXCOORD_ATTRIB_NAME);
+
+        if(MR::MachineInfo::CatchError(errorStr, NULL)){
+            MR::Log::LogString("Error while binding vertex texcoord shader's attribute \""+errorStr+"\"", MR_LOG_LEVEL_ERROR);
+            status = false;
+        }
+
+        glBindFragDataLocation(p, MR_SHADER_DEFAULT_FRAG_DATA_LOCATION, MR_SHADER_DEFAULT_FRAG_DATA_NAME);
+
+        if(MR::MachineInfo::CatchError(errorStr, NULL)){
+            MR::Log::LogString("Error while binding shader's frag data output \""+errorStr+"\"", MR_LOG_LEVEL_ERROR);
+            status = false;
+        }
+    }
+    return status;
 }

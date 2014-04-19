@@ -17,7 +17,8 @@ namespace MR {
 class Shader;
 class IShaderUniform;
 
-class RenderContext;
+class IRenderSystem;
+class IGeometry;
 class GeometryBuffer;
 
 class UIElement;
@@ -61,9 +62,9 @@ protected:
 
 class IUIElement {
 public:
-    MR::Event<const Rect&> OnRectChanged;
-    MR::Event<const glm::vec4&> OnColorChanged;
-    MR::Event<const glm::vec2&> OnScaleChanged;
+    MR::EventListener<const Rect&> OnRectChanged;
+    MR::EventListener<const glm::vec4&> OnColorChanged;
+    MR::EventListener<const glm::vec2&> OnScaleChanged;
 
     virtual void SetRect(const Rect& r) = 0;
     virtual Rect* GetRectPtr() = 0;
@@ -74,10 +75,10 @@ public:
     virtual void Add(IUIElement* element) = 0;
     virtual void Remove(IUIElement* element) = 0;
 
-    virtual void Draw(RenderContext* rc, const float& delta) = 0;
+    virtual void Draw(IRenderSystem* rc, const float& delta) = 0;
 
     //parent_mat, all parent matricies combined
-    virtual void Draw(RenderContext* rc, const float& delta, IUIElement* parent, const glm::mat4& parent_mat) = 0;
+    virtual void Draw(IRenderSystem* rc, const float& delta, IUIElement* parent, const glm::mat4& parent_mat) = 0;
 
     virtual ~IUIElement(){}
 };
@@ -99,8 +100,8 @@ public:
     virtual UIElement* Create(MR::UIManager* m, const Rect& r);
     virtual void Delete(UIElement* element);
 
-    void Draw(RenderContext* rc, const float& delta) override;
-    void Draw(RenderContext* rc, const float& delta, IUIElement* parent, const glm::mat4& parent_mat) override;
+    void Draw(IRenderSystem* rc, const float& delta) override;
+    void Draw(IRenderSystem* rc, const float& delta, IUIElement* parent, const glm::mat4& parent_mat) override;
 
     UIElement(UIManager* m, const Rect& r);
     virtual ~UIElement();
@@ -125,7 +126,7 @@ public:
     inline UIElement* GetLayout(const size_t& i);
     inline UIElement** GetLayouts();
 
-    virtual void Draw(RenderContext* rc, const float& delta);
+    virtual void Draw(IRenderSystem* rc, const float& delta);
 
     static inline UIManager* Instance();
 
@@ -133,7 +134,8 @@ public:
     virtual ~UIManager();
 protected:
     std::vector<UIElement*> _layouts;
-    GeometryBuffer* _quad_geom;
+    GeometryBuffer* _quad_geom_buffer;
+    IGeometry* _quad_geom;
     glm::mat4* _modelMatrix;
     glm::vec4* _color;
     int* _tex_unit;

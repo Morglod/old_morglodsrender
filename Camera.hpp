@@ -5,6 +5,7 @@
 
 #include "Events.hpp"
 #include "Transformation.hpp"
+#include "Types.hpp"
 
 #ifndef glm_glm
 #   include <glm/glm.hpp>
@@ -14,7 +15,8 @@
 namespace MR {
 
 class RenderTarget;
-class Camera {
+
+class ICamera {
 public:
     enum class CameraMode : unsigned char {
         Target = 0, //camera looks at target point, camera rotates around target point
@@ -26,68 +28,129 @@ public:
         Ortho = 1
     };
 
-    MR::Event<const CameraMode&> OnModeChanged;
-    MR::Event<const CameraProjection&> OnProjectionChanged;
-    MR::Event<const glm::vec3&> OnPositionChanged;
-    MR::Event<const glm::vec3&> OnTargetChanged;
-    MR::Event<const glm::vec3&> OnDirectionChanged;
-    MR::Event<RenderTarget*> OnRenderTargetChanged;
-    MR::Event<glm::mat4*> OnMVPRecalc;
+    MR::EventListener<const CameraMode&> OnModeChanged;
+    MR::EventListener<const CameraProjection&> OnProjectionChanged;
+    MR::EventListener<const glm::vec3&> OnPositionChanged;
+    MR::EventListener<const glm::vec3&> OnTargetChanged;
+    MR::EventListener<const glm::vec3&> OnDirectionChanged;
+    MR::EventListener<RenderTarget*> OnRenderTargetChanged;
+    MR::EventListener<glm::mat4*> OnMVPRecalc;
 
-    virtual void Use(const unsigned int & matrixUniform);
-    inline bool IsAutoRecalc();
+    virtual void Use(const unsigned int & matrixUniform) = 0;
 
-    inline CameraMode GetCameraMode();
-    inline CameraProjection GetCameraProjection();
+    virtual void SetAutoRecalc(const bool& state) = 0;
+    virtual bool IsAutoRecalc() = 0;
 
-    inline glm::vec3 GetDirection();
-    inline glm::vec3 GetLeftDirection();
-    inline glm::vec3 GetUpDirection();
+    virtual CameraMode GetCameraMode() = 0;
+    virtual CameraProjection GetCameraProjection() = 0;
 
-    inline glm::vec3* GetPosition();
-    inline glm::vec3 GetTarget();
-    inline glm::vec3 GetUp();
+    virtual glm::vec3 GetDirection() = 0;
+    virtual glm::vec3 GetLeftDirection() = 0;
+    virtual glm::vec3 GetUpDirection() = 0;
 
-    inline float GetFovY();
-    inline float* GetFovYP();
-    inline float GetNearZ();
-    inline float GetFarZ();
-    inline float GetAspectRatio();
-    inline float* GetAspectRatioP();
+    virtual glm::vec3* GetPosition() = 0;
+    virtual glm::vec3 GetTarget() = 0;
+    virtual glm::vec3 GetUp() = 0;
 
-    inline glm::mat4* GetModelMatrix();
-    inline glm::mat4* GetViewMatrix();
-    inline glm::mat4* GetProjectMatrix();
-    inline glm::mat4* GetInvModelViewMatrix();
-    inline glm::mat4* GetMVP();
+    virtual float GetFovY() = 0;
+    virtual float* GetFovYP() = 0;
+    virtual float GetNearZ() = 0;
+    virtual float GetFarZ() = 0;
+    virtual float GetAspectRatio() = 0;
+    virtual float* GetAspectRatioP() = 0;
 
-    inline MR::RenderTarget* GetRenderTarget();
-    virtual void SetRenderTarget(MR::RenderTarget* rt);
+    virtual glm::mat4* GetModelMatrix() = 0;
+    virtual glm::mat4* GetViewMatrix() = 0;
+    virtual glm::mat4* GetProjectMatrix() = 0;
+    virtual glm::mat4* GetInvModelViewMatrix() = 0;
+    virtual glm::mat4* GetMVP() = 0;
 
-    virtual void MoveForward(const glm::vec3& v);
-    virtual void MoveLeft(const glm::vec3& v);
-    virtual void MoveUp(const glm::vec3& v);
+    virtual MR::RenderTarget* GetRenderTarget() = 0;
+    virtual void SetRenderTarget(MR::RenderTarget* rt) = 0;
 
-    virtual void Move(const glm::vec3& v);
-    virtual void MoveTarget(const glm::vec3& t); //for target mode only
+    virtual void MoveForward(const glm::vec3& v) = 0;
+    virtual void MoveLeft(const glm::vec3& v) = 0;
+    virtual void MoveUp(const glm::vec3& v) = 0;
 
-    virtual void Yaw(const float& v);
-    virtual void Pitch(const float& v);
-    virtual void Roll(const float& v);
+    virtual void Move(const glm::vec3& v) = 0;
+    virtual void MoveTarget(const glm::vec3& t) = 0; //for target mode only
 
-    virtual void SetDirection(const glm::vec3& d, const glm::vec3& left_d, const glm::vec3& up_d);
-    virtual void SetCameraMode(const CameraMode& cm);
-    virtual void SetCameraProjection(const CameraProjection& cp);
-    virtual void SetModelMatrix(glm::mat4* m);
-    virtual void SetAutoRecalc(const bool& state);
+    virtual void Yaw(const float& v) = 0;
+    virtual void Pitch(const float& v) = 0;
+    virtual void Roll(const float& v) = 0;
 
-    virtual void SetPosition(const glm::vec3& p);
-    virtual void SetRotation(const glm::vec3& p);
+    virtual void SetDirection(const glm::vec3& d, const glm::vec3& left_d, const glm::vec3& up_d) = 0;
+    virtual void SetCameraMode(const CameraMode& cm) = 0;
+    virtual void SetCameraProjection(const CameraProjection& cp) = 0;
+    virtual void SetModelMatrix(glm::mat4* m) = 0;
 
-    virtual void CalcViewMatrix();
-    virtual void CalcProjectionMatrix();
-    virtual void CalcMVP();
-    virtual void Calc();
+    virtual void SetPosition(const glm::vec3& p) = 0;
+    virtual void SetRotation(const glm::vec3& p) = 0;
+
+    virtual void CalcViewMatrix() = 0;
+    virtual void CalcProjectionMatrix() = 0;
+    virtual void CalcMVP() = 0;
+    virtual void Calc() = 0;
+
+    virtual ~ICamera() {}
+};
+
+class Camera : public MR::Object, public ICamera{
+public:
+    void Use(const unsigned int & matrixUniform) override;
+    inline bool IsAutoRecalc() override;
+
+    inline CameraMode GetCameraMode() override;
+    inline CameraProjection GetCameraProjection() override;
+
+    inline glm::vec3 GetDirection() override;
+    inline glm::vec3 GetLeftDirection() override;
+    inline glm::vec3 GetUpDirection() override;
+
+    inline glm::vec3* GetPosition() override;
+    inline glm::vec3 GetTarget() override;
+    inline glm::vec3 GetUp() override;
+
+    inline float GetFovY() override;
+    inline float* GetFovYP() override;
+    inline float GetNearZ() override;
+    inline float GetFarZ() override;
+    inline float GetAspectRatio() override;
+    inline float* GetAspectRatioP() override;
+
+    inline glm::mat4* GetModelMatrix() override;
+    inline glm::mat4* GetViewMatrix() override;
+    inline glm::mat4* GetProjectMatrix() override;
+    inline glm::mat4* GetInvModelViewMatrix() override;
+    inline glm::mat4* GetMVP() override;
+
+    inline MR::RenderTarget* GetRenderTarget() override;
+    void SetRenderTarget(MR::RenderTarget* rt) override;
+
+    void MoveForward(const glm::vec3& v) override;
+    void MoveLeft(const glm::vec3& v) override;
+    void MoveUp(const glm::vec3& v) override;
+
+    void Move(const glm::vec3& v) override;
+    void MoveTarget(const glm::vec3& t) override; //for target mode only
+
+    void Yaw(const float& v) override;
+    void Pitch(const float& v) override;
+    void Roll(const float& v) override;
+
+    void SetDirection(const glm::vec3& d, const glm::vec3& left_d, const glm::vec3& up_d) override;
+    void SetCameraMode(const CameraMode& cm) override;
+    void SetCameraProjection(const CameraProjection& cp) override;
+    void SetModelMatrix(glm::mat4* m) override;
+    void SetAutoRecalc(const bool& state) override;
+
+    void SetPosition(const glm::vec3& p) override;
+    void SetRotation(const glm::vec3& p) override;
+
+    void CalcViewMatrix() override;
+    void CalcProjectionMatrix() override;
+    void CalcMVP() override;
+    void Calc() override;
 
     Camera(const glm::vec3& camPos, const glm::vec3& camTarget, const float& fov, const float& nearZ, const float& farZ, const float& aspectR);
     virtual ~Camera();

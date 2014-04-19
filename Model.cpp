@@ -251,10 +251,10 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool bindexes, bool log)
                 break;
             }
 
-            TextureSettings::Ptr texs = TextureSettings::Create();
+            TextureSettings* texs = new TextureSettings();
             tex->SetSettings(texs);
-            texs->SetWrapS((TextureSettings::Wrap)wmS);
-            texs->SetWrapT((TextureSettings::Wrap)wmT);
+            texs->SetWrapS((ITextureSettings::Wrap)wmS);
+            texs->SetWrapT((ITextureSettings::Wrap)wmT);
         }
         if(textureFile != ""){
             MR::MaterialPass* mp = new MR::MaterialPass(matPtr);
@@ -384,9 +384,15 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool bindexes, bool log)
     MR::Mesh** meshes = new MR::Mesh*[for_meshes.size()];
 
     for(size_t mi = 0; mi < for_meshes.size(); ++mi){
-        MR::GeometryBuffer** mesh_geometry = new MR::GeometryBuffer*[for_meshes[mi].buffers.size()];
+        MR::IGeometry** mesh_geometry = new MR::IGeometry*[for_meshes[mi].buffers.size()];
         for(size_t gmi = 0; gmi < for_meshes[mi].buffers.size(); ++gmi){
-            mesh_geometry[gmi] = for_meshes[mi].buffers[gmi];
+            unsigned int iend = 0;
+            if(for_meshes[mi].buffers[gmi]->GetIndexBuffer()){
+                iend = for_meshes[mi].buffers[gmi]->GetIndexBuffer()->GetNum();
+            } else if(for_meshes[mi].buffers[gmi]->GetVertexBuffer()){
+                iend = for_meshes[mi].buffers[gmi]->GetVertexBuffer()->GetNum();
+            }
+            mesh_geometry[gmi] = new MR::Geometry(for_meshes[mi].buffers[gmi], 0, iend, (int)iend);
         }
         meshes[mi] = new MR::Mesh(mesh_geometry, for_meshes[mi].buffers.size(), for_meshes[mi].mat);
     }

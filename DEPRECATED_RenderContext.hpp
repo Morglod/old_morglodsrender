@@ -19,7 +19,7 @@ class Entity;
 class Model;
 class Mesh;
 class Shader;
-class GeometryBuffer;
+class IGeometry;
 class Material;
 class MaterialPass;
 class Texture;
@@ -31,13 +31,13 @@ class IIndexFormat;
 class RenderContext {
     friend class Texture;
 public:
-    MR::Event<Camera*> OnCameraUsed;
-    //MR::Event<GeometryBuffer*> OnGeometryBufferUsed;
-    MR::Event<Shader*> OnShaderUsed;
-    MR::Event<const unsigned int&> OnTextureUnitActived;
+    MR::EventListener<Camera*> OnCameraUsed;
+    //MR::EventListener<GeometryBuffer*> OnGeometryBufferUsed;
+    MR::EventListener<Shader*> OnShaderUsed;
+    MR::EventListener<const unsigned int&> OnTextureUnitActived;
 
-    MR::Event<Material*> OnDefaultMaterialChanged;
-    MR::Event<bool> OnDefaultMaterialUsingStateChanged;
+    MR::EventListener<Material*> OnDefaultMaterialChanged;
+    MR::EventListener<bool> OnDefaultMaterialUsingStateChanged;
 
     inline Camera* GetCurrentCamera();
     //inline GeometryBuffer* GetCurrentGeometryBuffer();
@@ -61,9 +61,9 @@ public:
     void SetDefaultMaterial(Material* mat);
     void SetViewport(const unsigned short & x, const unsigned short & y, const unsigned short & width, const unsigned short & height);
 
-    void DrawGeometryBuffer(GeometryBuffer* gb);
-    void DrawGeomWithMaterial(glm::mat4* model_mat, MR::GeometryBuffer* g, MR::Material* mat);
-    void DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::GeometryBuffer* g, MR::MaterialPass* mat_pass);
+    void DrawGeometry(IGeometry* gb);
+    void DrawGeomWithMaterial(glm::mat4* model_mat, MR::IGeometry* g, MR::Material* mat);
+    void DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::IGeometry* g, MR::MaterialPass* mat_pass);
 
     void DrawEntity(MR::Entity* ent);
     void DrawEntity(MR::Entity** ent_list, const unsigned int& num, const bool& instancing = false);

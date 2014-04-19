@@ -11,16 +11,18 @@ namespace MR{
 
 class Entity;
 class Camera;
-class RenderContext;
+class IRenderSystem;
+class ILightSource;
+class LightsList;
 
 class SceneManager {
 public:
     /** CAMERAS **/
-    MR::Event<Camera*> OnMainCameraChanged;
-    MR::Event<Camera*> OnCameraCreated;
-    MR::Event<Camera*> OnCameraDeletting; //before deleted
-    MR::Event<Camera*> OnCameraAdded;
-    MR::Event<Camera*> OnCameraRemoving; //before removed
+    MR::EventListener<Camera*> OnMainCameraChanged;
+    MR::EventListener<Camera*> OnCameraCreated;
+    MR::EventListener<Camera*> OnCameraDeletting; //before deleted
+    MR::EventListener<Camera*> OnCameraAdded;
+    MR::EventListener<Camera*> OnCameraRemoving; //before removed
 
     virtual void AddCamera(Camera* cam);
     virtual void RemoveCamera(Camera* cam);
@@ -29,10 +31,10 @@ public:
     virtual void SetMainCamera(Camera* cam); //Camera should be in cameras list
 
     /** ENTITIES **/
-    MR::Event<Entity*> OnEntityAdded;
-    MR::Event<Entity*> OnEntityRemoving; //before removed
-    MR::Event<Entity*> OnEntityCreated;
-    MR::Event<Entity*> OnEntityDeletting; //before deleted
+    MR::EventListener<Entity*> OnEntityAdded;
+    MR::EventListener<Entity*> OnEntityRemoving; //before removed
+    MR::EventListener<Entity*> OnEntityCreated;
+    MR::EventListener<Entity*> OnEntityDeletting; //before deleted
 
     virtual void AddEntity(Entity* ent);
     virtual void RemoveEntity(Entity* ent);
@@ -41,8 +43,7 @@ public:
     virtual void DeleteEntity(Entity* ent);
 
     /** **/
-    virtual void Draw(RenderContext& rc);
-    virtual void Draw(RenderContext* rc);
+    virtual void Draw(IRenderSystem* rc);
 
     SceneManager();
     virtual ~SceneManager();
@@ -50,7 +51,11 @@ public:
 protected:
     std::vector<Entity*> _entities;
     std::vector<Camera*> _cameras;
+    std::vector<ILightSource*> _lights;
+
     Camera* _mainCamera;
+
+    bool _light; //toggle light working
 };
 
 }

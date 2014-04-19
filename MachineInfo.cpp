@@ -184,10 +184,66 @@ bool MR::MachineInfo::IsDirectStateAccessSupported(){
     return state;
 }
 
+bool MR::MachineInfo::CatchError(std::string& errorOutput, unsigned int * glCode){
+    GLenum er = glGetError();
+    if(glCode) *glCode = er;
+
+    switch(er){
+    case GL_INVALID_ENUM:
+        errorOutput = "Invalid enumiration";
+        return true;
+        break;
+    case GL_INVALID_FRAMEBUFFER_OPERATION:
+        errorOutput = "Invalid framebuffer operation";
+        return true;
+        break;
+    case GL_INVALID_INDEX:
+        errorOutput = "Invalid index";
+        return true;
+        break;
+    case GL_INVALID_OPERATION:
+        errorOutput = "Invalid operation";
+        return true;
+        break;
+    case GL_INVALID_VALUE:
+        errorOutput = "Invalid value";
+        return true;
+        break;
+    case GL_OUT_OF_MEMORY:
+        MR::Log::LogString("Out of memory", MR_LOG_LEVEL_ERROR);
+        errorOutput = "Out of memory";
+        return true;
+        break;
+    case GL_STACK_UNDERFLOW:
+        errorOutput = "Stack underflow";
+        return true;
+        break;
+    case GL_STACK_OVERFLOW:
+        errorOutput = "Stack overflow";
+        return true;
+        break;
+    default:
+        return false;
+        break;
+    }
+}
+
+void MR::MachineInfo::ClearError(){
+    glGetError();
+}
+
 int MR::MachineInfo::MaxTextureSize(){
     static int s = -10;
     if(s == -10){
         glGetIntegerv(GL_MAX_TEXTURE_SIZE, &s);
+    }
+    return s;
+}
+
+int MR::MachineInfo::MaxTextureUnits(){
+    static int s = 0;
+    if(s == 0){
+        glGetIntegerv(GL_MAX_TEXTURE_UNITS, &s);
     }
     return s;
 }

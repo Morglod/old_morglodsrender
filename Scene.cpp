@@ -1,6 +1,6 @@
 #include "Scene.hpp"
 #include "Camera.hpp"
-#include "RenderContext.hpp"
+#include "RenderSystem.hpp"
 #include "Model.hpp"
 
 namespace MR {
@@ -79,19 +79,29 @@ void MR::SceneManager::DeleteEntity(Entity* ent) {
     OnEntityRemoving(this, ent);
     delete ent;
 }
-
-void MR::SceneManager::Draw(RenderContext& rc){
-    /*for(MR::Entity* ent : _entities){
-        rc.DrawEntity(ent);
-    }*/
-    rc.DrawEntity(_entities.data(), _entities.size(), false);
+/*
+void MR::SceneManager::AddLight(ILightSource* ls){
+    _lights.push_back(ls);
 }
 
-void MR::SceneManager::Draw(RenderContext* rc){
+void MR::SceneManager::RemoveLight(ILightSource* ls){
+    std::vector<ILightSource*>::iterator it = std::find(_lights.begin(), _lights.end(), ls);
+    if(it == _lights.end()) return;
+    _lights.erase(it);
+}
+
+LightsList MR::SceneManager::MakeLightsList(Entity* ent){
+    return LightsList(std::vector<ILightSource*>());
+}
+*/
+
+void MR::SceneManager::Draw(IRenderSystem* rc){
     /*for(MR::Entity* ent : _entities){
         rc->DrawEntity(ent);
     }*/
-    rc->DrawEntity(_entities.data(), _entities.size(), false);
+    for(auto it = _entities.begin(); it != _entities.end(); ++it){
+        rc->DrawEntity(*it);
+    }
 }
 
 MR::SceneManager::SceneManager() : _mainCamera(nullptr){

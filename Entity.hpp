@@ -19,8 +19,8 @@ class Material;
 */
 class Entity : public Copyable<Entity*> {
 public:
-    MR::Event<MR::Model*> OnModelChanged; //new model
-    MR::Event<MR::Material*> OnMaterialChanged; //new material
+    MR::EventListener<MR::Model*> OnModelChanged; //new model
+    MR::EventListener<MR::Material*> OnMaterialChanged; //new material
 
     inline MR::Model* GetModel() { return _model; }
     inline MR::Material* GetMaterial(){ return _material; }

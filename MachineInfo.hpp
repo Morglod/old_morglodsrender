@@ -51,11 +51,13 @@ namespace MR{
         bool FeatureNV_GPUPTR(); //direct access to gpu's addresses (for vertex buffers)
 
         /** EXTENSIONS **/
-
         bool IsDirectStateAccessSupported();
 
         /** GL INFO **/
+        bool CatchError(std::string& errorOutput, unsigned int* glCode); //return true on error and print error's description in string; glCode can be NULL
+        void ClearError(); //set error status to no_error
         int MaxTextureSize();
+        int MaxTextureUnits();
     }
 }
 

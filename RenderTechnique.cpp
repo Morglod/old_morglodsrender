@@ -1,11 +1,10 @@
 #include "RenderTechnique.hpp"
-#include "RenderContext.hpp"
 
 #include <GL/glew.h>
 
 namespace MR {
 
-void RenderTechnique::Use(RenderContext* rc){
+void RenderTechnique::Use(IRenderSystem* rc){
     if(_depth_test) glEnable(GL_DEPTH_TEST);
     else glDisable(GL_DEPTH_TEST);
 
