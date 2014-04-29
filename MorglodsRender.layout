@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Release" />
-	<File name="Texture.cpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Model.hpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="14376" topLine="292" />
+			<Cursor1 position="730" topLine="9" />
+		</Cursor>
+	</File>
+	<File name="GL\Context.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="597" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Mesh.hpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1136" topLine="14" />
 		</Cursor>
 	</File>
 	<File name="Entity.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -11,39 +21,24 @@
 			<Cursor1 position="312" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="Texture.hpp" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="8676" topLine="199" />
-		</Cursor>
-	</File>
 	<File name="MorglodsRender.hpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="527" topLine="3" />
+			<Cursor1 position="834" topLine="7" />
 		</Cursor>
 	</File>
-	<File name="Time.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="RenderSystem.cpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1652" topLine="33" />
-		</Cursor>
-	</File>
-	<File name="RenderContext.cpp" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2487" topLine="44" />
-		</Cursor>
-	</File>
-	<File name="Transformation.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1129" topLine="33" />
+			<Cursor1 position="2937" topLine="85" />
 		</Cursor>
 	</File>
 	<File name="Light.hpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="3856" topLine="103" />
+			<Cursor1 position="1486" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="Transformation.hpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="RenderWindow.cpp" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1263" topLine="21" />
+			<Cursor1 position="2295" topLine="46" />
 		</Cursor>
 	</File>
 	<File name="Exception.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -51,39 +46,44 @@
 			<Cursor1 position="457" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="Types.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="RenderWindow.hpp" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="138" topLine="0" />
+			<Cursor1 position="3410" topLine="109" />
 		</Cursor>
 	</File>
 	<File name="Material.hpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="3043" topLine="103" />
+			<Cursor1 position="3184" topLine="88" />
 		</Cursor>
 	</File>
-	<File name="Types.hpp" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="GL\Context.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="179" topLine="0" />
+			<Cursor1 position="264" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="RenderContext.hpp" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="ResourceManager.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1136" topLine="28" />
+			<Cursor1 position="644" topLine="9" />
 		</Cursor>
 	</File>
-	<File name="UI.cpp" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="RenderSystem.hpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="5544" topLine="141" />
+			<Cursor1 position="2240" topLine="50" />
 		</Cursor>
 	</File>
-	<File name="RenderSystem.cpp" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="ResourceManager.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="2722" topLine="76" />
+			<Cursor1 position="3434" topLine="114" />
 		</Cursor>
 	</File>
-	<File name="UI.hpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="RenderTarget.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1953" topLine="56" />
+			<Cursor1 position="265" topLine="4" />
+		</Cursor>
+	</File>
+	<File name="Scene.cpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="43" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="Anim.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -91,64 +91,64 @@
 			<Cursor1 position="266" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="Viewport.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Scene.hpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="273" topLine="0" />
+			<Cursor1 position="580" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="Anim.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="508" topLine="22" />
+			<Cursor1 position="268" topLine="24" />
+		</Cursor>
+	</File>
+	<File name="Shader.cpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="25246" topLine="615" />
 		</Cursor>
 	</File>
 	<File name="GeometryBufferV2.hpp" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="8765" topLine="250" />
+			<Cursor1 position="11171" topLine="325" />
 		</Cursor>
 	</File>
-	<File name="RenderTarget.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Shader.hpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1603" topLine="40" />
+			<Cursor1 position="11836" topLine="296" />
 		</Cursor>
 	</File>
 	<File name="Material.cpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1932" topLine="15" />
+			<Cursor1 position="2213" topLine="23" />
+		</Cursor>
+	</File>
+	<File name="SimpleApp.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2456" topLine="87" />
 		</Cursor>
 	</File>
 	<File name="RenderTarget.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="203" topLine="8" />
+			<Cursor1 position="1004" topLine="27" />
 		</Cursor>
 	</File>
-	<File name="RenderSystem.hpp" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Texture.cpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="118" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="RenderTechnique.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="125" topLine="0" />
+			<Cursor1 position="10384" topLine="214" />
 		</Cursor>
 	</File>
 	<File name="Light.cpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="8412" topLine="209" />
+			<Cursor1 position="6167" topLine="144" />
 		</Cursor>
 	</File>
-	<File name="RenderTechnique.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Texture.hpp" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="836" topLine="4" />
+			<Cursor1 position="8624" topLine="183" />
 		</Cursor>
 	</File>
 	<File name="GeometryBufferV2.cpp" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="13289" topLine="336" />
-		</Cursor>
-	</File>
-	<File name="RenderWindow.cpp" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="6418" topLine="112" />
+			<Cursor1 position="16661" topLine="460" />
 		</Cursor>
 	</File>
 	<File name="Mesh.cpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -156,104 +156,104 @@
 			<Cursor1 position="1139" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="Exception.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Threads.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="561" topLine="0" />
+			<Cursor1 position="514" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="RenderWindow.hpp" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Exception.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="7495" topLine="0" />
+			<Cursor1 position="611" topLine="1" />
 		</Cursor>
 	</File>
 	<File name="MachineInfo.hpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1713" topLine="30" />
+			<Cursor1 position="801" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="ResourceManager.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Threads.hpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1518" topLine="13" />
+			<Cursor1 position="1553" topLine="43" />
 		</Cursor>
 	</File>
 	<File name="Camera.hpp" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1008" topLine="0" />
+			<Cursor1 position="6437" topLine="162" />
 		</Cursor>
 	</File>
-	<File name="ResourceManager.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Time.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="256" topLine="0" />
+			<Cursor1 position="1652" topLine="33" />
 		</Cursor>
 	</File>
-	<File name="Model.cpp" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Model.cpp" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="9738" topLine="229" />
+			<Cursor1 position="14311" topLine="329" />
+		</Cursor>
+	</File>
+	<File name="Transformation.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1129" topLine="33" />
 		</Cursor>
 	</File>
 	<File name="Config.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="152" topLine="8" />
+			<Cursor1 position="2622" topLine="30" />
 		</Cursor>
 	</File>
-	<File name="ResourceSource.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Transformation.hpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="146" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="Viewport.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="113" topLine="0" />
+			<Cursor1 position="1263" topLine="21" />
 		</Cursor>
 	</File>
 	<File name="Camera.cpp" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="4741" topLine="89" />
+			<Cursor1 position="709" topLine="9" />
 		</Cursor>
 	</File>
-	<File name="Scene.cpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Types.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="2937" topLine="67" />
+			<Cursor1 position="138" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="Log.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="309" topLine="0" />
+			<Cursor1 position="324" topLine="8" />
 		</Cursor>
 	</File>
-	<File name="Scene.hpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Types.hpp" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1219" topLine="25" />
+			<Cursor1 position="465" topLine="8" />
 		</Cursor>
 	</File>
 	<File name="MachineInfo.cpp" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="5814" topLine="159" />
+			<Cursor1 position="5681" topLine="159" />
 		</Cursor>
 	</File>
-	<File name="Shader.cpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="UI.cpp" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="11931" topLine="317" />
+			<Cursor1 position="2826" topLine="76" />
 		</Cursor>
 	</File>
 	<File name="Entity.hpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="431" topLine="7" />
+			<Cursor1 position="184" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="Shader.hpp" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="UI.hpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="5076" topLine="146" />
+			<Cursor1 position="1559" topLine="31" />
 		</Cursor>
 	</File>
-	<File name="Events.hpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Events.hpp" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="2508" topLine="74" />
+			<Cursor1 position="3611" topLine="102" />
 		</Cursor>
 	</File>
-	<File name="SimpleApp.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Viewport.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1683" topLine="33" />
+			<Cursor1 position="273" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="Log.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -261,24 +261,9 @@
 			<Cursor1 position="133" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="Sprite.hpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Viewport.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="247" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="Model.hpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="273" topLine="14" />
-		</Cursor>
-	</File>
-	<File name="SpriteBatch.hpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="142" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="Mesh.hpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="331" topLine="0" />
+			<Cursor1 position="113" topLine="0" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>

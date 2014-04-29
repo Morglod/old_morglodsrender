@@ -12,9 +12,9 @@ class Transform;
 
 class Mesh {
 public:
-    MR::EventListener<Material*> OnMaterialChanged;
-    MR::EventListener<IGeometry**, unsigned int> OnGeometryChanged;
-    MR::EventListener<const bool&> OnResourceFreeStateChanged;
+    MR::EventListener<Mesh*, Material*> OnMaterialChanged;
+    MR::EventListener<Mesh*, IGeometry**, unsigned int> OnGeometryChanged;
+    MR::EventListener<Mesh*, const bool&> OnResourceFreeStateChanged;
 
     /** If true, resource data will be destroyed after unloading/deleting resource
     *  For example geometry buffers after unloading/deleting Mesh resource

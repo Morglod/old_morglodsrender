@@ -34,7 +34,6 @@ zlib http://www.zlib.net
 #include "RenderTarget.hpp"
 #include "RenderWindow.hpp"
 #include "ResourceManager.hpp"
-#include "ResourceSource.hpp"
 #include "Texture.hpp"
 #include "Transformation.hpp"
 #include "UI.hpp"

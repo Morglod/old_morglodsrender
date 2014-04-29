@@ -60,6 +60,7 @@ void RenderWindow::window_scroll_callback(GLFWwindow* window, double x_offset, d
 void RenderWindow::window_close_callback(GLFWwindow* window) {
     RenderWindow* p = (RenderWindow*)glfwGetWindowUserPointer(window);
     p->OnClose(p, nullptr);
+    p->Free();
 }
 
 void RenderWindow::window_focus_changed_callback(GLFWwindow* window, int state) {
@@ -142,8 +143,17 @@ bool RenderWindow::Init() {
     }
 }
 
-void RenderWindow::Close() {
-    glfwDestroyWindow(glfw_handle);
+void RenderWindow::Destroy(){
+    if(glfw_handle) glfwDestroyWindow(glfw_handle);
+}
+
+void RenderWindow::Close(const bool& safe) {
+    if(safe) glfwSetWindowShouldClose(glfw_handle, 1);
+    else Destroy();
+}
+
+bool RenderWindow::GetMouseButtonDown(const int& button) {
+    return glfwGetMouseButton(glfw_handle, button);
 }
 
 void RenderWindow::GetPos(int* x, int* y) {
@@ -233,6 +243,15 @@ void RenderWindow::SwapBuffers() {
 }
 void RenderWindow::MakeCurrent() {
     glfwMakeContextCurrent(glfw_handle);
+    GL::SetCurrent(this);
+}
+
+bool RenderWindow::ExtensionSupported(const char* ext) {
+    return glfwExtensionSupported(ext);
+}
+
+GL::IContext::ProcFunc RenderWindow::GetProcAddress(const char* procname) {
+    return glfwGetProcAddress(procname);
 }
 
 void RenderWindow::ResetViewport(IRenderSystem* rs){

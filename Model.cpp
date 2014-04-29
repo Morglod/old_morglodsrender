@@ -3,6 +3,7 @@
 #include "GeometryBufferV2.hpp"
 #include "Material.hpp"
 #include "Texture.hpp"
+#include "Shader.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
@@ -45,7 +46,7 @@ bool Model::Load() {
         return false;
     }
 
-    MR::ModelFile* mfl = ModelFile::ImportModelFile(this->_source, true, this->_resource_manager->GetDebugMessagesState());
+    MR::ModelFile* mfl = ModelFile::ImportModelFile(this->_source, this->_resource_manager->GetDebugMessagesState());
     if(mfl == nullptr) {
         MR::Log::LogString("Model "+this->_name+" ("+this->_source+") load failed. ModelFile is null", MR_LOG_LEVEL_ERROR);
         this->_loaded = false;
@@ -81,7 +82,7 @@ Resource* ModelManager::Create(const std::string& name, const std::string& sourc
 
 ModelFile::ModelFile() : meshes(nullptr), meshes_num(0) {}
 
-ModelFile* ModelFile::ImportModelFile(std::string file, bool bindexes, bool log) {
+ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::ModelFile::ImportSettings& isettings) {
     if(log) MR::Log::LogString("Importing geometry from ("+file+")", MR_LOG_LEVEL_INFO);
     std::ifstream ffile(file, std::ios::in | std::ios::binary);
     if(!ffile.is_open()) {
@@ -119,7 +120,10 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool bindexes, bool log)
 
     struct MeshContainer {
         Material* mat;
-        std::vector<GeometryBuffer*> buffers;
+        std::vector<float> combine_vertdata;
+        std::vector<unsigned int> combine_inddata;
+
+        std::vector<IGeometryBuffer*> buffers;
         MeshContainer(Material* m) : mat(m), buffers() {}
     };
 
@@ -169,10 +173,16 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool bindexes, bool log)
         if(log) MR::Log::LogString("Textures num "+std::to_string(TexturesNum), MR_LOG_LEVEL_INFO);
 
         //diffuse only
-        std::string textureFile = "";
 
-        unsigned char wrapModeU = 0;
-        unsigned char wrapModeV = 0;
+        struct TextureContainer {
+            std::string file;
+            unsigned char type;
+            unsigned char wrapModeU;
+            unsigned char wrapModeV;
+            TextureContainer(const std::string& f, const unsigned char& t, const unsigned char& wu, const unsigned char& wv) : file(f), type(t), wrapModeU(wu), wrapModeV(wv) {}
+        };
+
+        std::vector<TextureContainer> textures;
 
         for(int ti = 0; ti < TexturesNum; ++ti) {
             float blendFactor = 0.0f;
@@ -189,7 +199,7 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool bindexes, bool log)
             }
             ((char *)texName)[textureFileLength] = '\0';
 
-            //textureFile = std::string((char*)texName);
+            std::string textureFile = std::string((char*)texName);
             if(log) MR::Log::LogString("Material texture file name "+textureFile, MR_LOG_LEVEL_INFO);
 
             //Skip flags
@@ -204,64 +214,85 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool bindexes, bool log)
             //Read texture type
             unsigned char texType = 0;
             ffile.read( reinterpret_cast<char*>(&texType), sizeof(char));
-            if(texType == 2) textureFile = std::string((char*)texName); //diffuse
 
             //Skip uv index
             ffile.seekg( sizeof(unsigned int) * 1 , std::ios::cur);
 
             //uv mapping
+            unsigned char wrapModeU = 0;
+            unsigned char wrapModeV = 0;
             ffile.read( reinterpret_cast<char*>(&wrapModeU), sizeof(unsigned char));
             ffile.read( reinterpret_cast<char*>(&wrapModeV), sizeof(unsigned char));
             if(log) MR::Log::LogString("Material texture UV WrapModes "+std::to_string(wrapModeU)+" "+std::to_string(wrapModeV), MR_LOG_LEVEL_INFO);
+
+            textures.push_back(TextureContainer(textureFile, texType, wrapModeU, wrapModeV));
         }
 
         MR::Material* matPtr = new MR::Material(MR::MaterialManager::Instance(), materialName);
+        MR::MaterialPass* matPassPtr = new MR::MaterialPass(matPtr);
+        matPtr->AddPass(matPassPtr);
         for_meshes.push_back(MeshContainer(matPtr));
 
-        MR::Texture* tex = nullptr;
-        if(textureFile != "") {
-            tex = dynamic_cast<MR::Texture*>(MR::TextureManager::Instance()->Need( MR::DirectoryFromFilePath(file) + "/" + textureFile ));
-            GLint wmT = GL_CLAMP_TO_EDGE, wmS = GL_CLAMP_TO_EDGE;;
-            switch(wrapModeU) {
-            case 1: //clamp
-                wmT = GL_CLAMP_TO_EDGE;
-                break;
-            case 2: //decal
-                wmT = GL_DECAL;
-                break;
-            case 3: //mirror
-                wmT = GL_MIRRORED_REPEAT;
-                break;
-            case 4: //wrap
-                wmT = GL_REPEAT;
-                break;
-            }
-            switch(wrapModeV) {
-            case 1: //clamp
-                wmS = GL_CLAMP_TO_EDGE;
-                break;
-            case 2: //decal
-                wmS = GL_DECAL;
-                break;
-            case 3: //mirror
-                wmS = GL_MIRRORED_REPEAT;
-                break;
-            case 4: //wrap
-                wmS = GL_REPEAT;
-                break;
-            }
+        MR::ShaderManager::DefaultShaderRequest shaderRequest;
 
-            TextureSettings* texs = new TextureSettings();
-            tex->SetSettings(texs);
-            texs->SetWrapS((ITextureSettings::Wrap)wmS);
-            texs->SetWrapT((ITextureSettings::Wrap)wmT);
+        for(auto it = textures.begin(); it != textures.end(); ++it){
+            MR::Texture* tex = nullptr;
+            if( (it->type != 1) && (it->type != 2) && (it->type != 9) ) continue;
+            if(it->file != "") {
+                tex = dynamic_cast<MR::Texture*>(MR::TextureManager::Instance()->Need( MR::DirectoryFromFilePath(file) + "/" + it->file ));
+                GLint wmT = GL_CLAMP_TO_EDGE, wmS = GL_CLAMP_TO_EDGE;
+                switch(it->wrapModeU) {
+                case 1: //clamp
+                    wmT = GL_CLAMP_TO_EDGE;
+                    break;
+                case 2: //decal
+                    wmT = GL_DECAL;
+                    break;
+                case 3: //mirror
+                    wmT = GL_MIRRORED_REPEAT;
+                    break;
+                case 4: //wrap
+                    wmT = GL_REPEAT;
+                    break;
+                }
+                switch(it->wrapModeV) {
+                case 1: //clamp
+                    wmS = GL_CLAMP_TO_EDGE;
+                    break;
+                case 2: //decal
+                    wmS = GL_DECAL;
+                    break;
+                case 3: //mirror
+                    wmS = GL_MIRRORED_REPEAT;
+                    break;
+                case 4: //wrap
+                    wmS = GL_REPEAT;
+                    break;
+                }
+
+                TextureSettings* texs = new TextureSettings();
+                tex->SetSettings(texs);
+                texs->SetWrapS((ITextureSettings::Wrap)wmS);
+                texs->SetWrapT((ITextureSettings::Wrap)wmT);
+
+                switch(it->type){
+                case 1: //ambient
+                    matPassPtr->SetAmbientTexture(tex);
+                    shaderRequest.ambient = true;
+                    break;
+                case 2: //diffuse
+                    matPassPtr->SetDiffuseTexture(tex);
+                    shaderRequest.diffuse = true;
+                    break;
+                case 9: //opacity
+                    matPassPtr->SetOpacityTexture(tex);
+                    shaderRequest.opacity = true;
+                    break;
+                }
+            }
         }
-        if(textureFile != ""){
-            MR::MaterialPass* mp = new MR::MaterialPass(matPtr);
-            mp->SetAlbedoTexture(tex);
-            matPtr->AddPass(mp);
-        }
-        else matPtr->AddPass(new MR::MaterialPass(matPtr));
+
+        matPassPtr->SetShader( MR::ShaderManager::DefaultShaderRequest::MakeRequest(shaderRequest) );
     }
 
     for(int i = 0; i < NumMeshes; ++i) {
@@ -360,7 +391,7 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool bindexes, bool log)
         IndexFormatCustom* gl_i_format = nullptr;
         IndexBuffer* gl_i_buffer = nullptr;
 
-        if(bindexes) {
+        if(isettings.indecies) {
             gl_i_format = new IndexFormatCustom(VertexDataTypeUInt::Instance());
 
             gl_i_buffer = new IndexBuffer();

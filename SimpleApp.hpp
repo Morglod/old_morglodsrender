@@ -47,9 +47,9 @@ public:
         MR::Log::Add(LogString);
 
         window = new MR::RenderWindow(WindowName, WindowWidth, WindowHeight, hints, callbacks);
-        context = new MR::RenderSystem();
+        sys = new MR::RenderSystem();
 
-        if(!context->Init(window)){
+        if(!sys->Init(window)){
             if(ThrowExceptions()){
                 throw MR::Exception("Failed context initialization SimpleApp::Go. Check log");
             }
@@ -59,7 +59,7 @@ public:
         camera = new MR::Camera( MR::Transform::WorldBackwardVector(), glm::vec3(0,0,0), 90.0f, 0.1f, 1000.0f, aspect);
         camera->SetAutoRecalc(true); //Matrixes will recalc automaticly, when pos/rot/etc of camera changed
         camera->SetCameraMode(MR::Camera::CameraMode::Direction);
-        context->UseCamera(camera); //set this camera as default
+        sys->UseCamera(camera); //set this camera as default
 
         scene.AddCamera(camera);
         scene.SetMainCamera(camera);
@@ -87,6 +87,7 @@ public:
 
         Free();
         delete camera;
+        delete sys;
         delete window;
 
         return true;
@@ -97,27 +98,19 @@ public:
     }
 
     virtual void Frame(const float& delta){
-        scene.Draw(context);
+        scene.Draw(sys);
     }
 
     virtual void Free(){
     }
 
-    virtual void CameraUniforms(MR::Shader* sh, const std::string& projMatrix, const std::string& viewMatrix, const std::string& mvp, const std::string& modelMatrix, const std::string& invModelViewMatrix){
-        if(projMatrix != "") sh->CreateUniform(projMatrix, camera->GetProjectMatrix());
-        if(viewMatrix != "") sh->CreateUniform(viewMatrix, camera->GetViewMatrix());
-        if(mvp != "") sh->CreateUniform(mvp, camera->GetMVP());
-        if(modelMatrix != "") sh->CreateUniform(modelMatrix, camera->GetModelMatrix());
-        if(invModelViewMatrix != "") sh->CreateUniform(modelMatrix, camera->GetInvModelViewMatrix());
-    }
-
-    SimpleApp() : window_width(1), window_height(1), aspect(1.0f), context(nullptr), window(NULL) {}
+    SimpleApp() : window_width(1), window_height(1), aspect(1.0f), sys(nullptr), window(NULL) {}
     virtual ~SimpleApp() {}
 protected:
     unsigned short window_width, window_height;
     float aspect;
 
-    MR::RenderSystem* context;
+    MR::RenderSystem* sys;
     MR::RenderWindow* window;
 
     MR::Camera* camera;

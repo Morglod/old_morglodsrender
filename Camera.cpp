@@ -1,12 +1,44 @@
 #include "Camera.hpp"
 #include "RenderTarget.hpp"
+#include "Shader.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
 #endif
 
-void MR::Camera::Use(const GLuint& matrixUniform) {
-    glUniformMatrix4fv(matrixUniform, 1, GL_FALSE, &(*_mvp)[0][0]);
+void MR::Camera::AttachToShader(IShader* shader) {
+    for(auto it = _attachedShaders.begin(); it != _attachedShaders.end(); ++it){
+        if(it->_shader == shader) return;
+    }
+
+    if(shader){
+        AttachedShader as;
+        as._shader = shader;
+
+        IShaderUniform* su = shader->FindShaderUniform(MR_SHADER_MVP_MAT4);
+        if(su) {
+            as._mvpUniform = su;
+            as._mvpUniform->SetValue(&(*_mvp)[0][0]);
+        }
+        else as._mvpUniform = shader->CreateUniform(MR_SHADER_MVP_MAT4, IShaderUniform::Types::Mat4, &(*_mvp)[0][0]);
+
+        su = shader->FindShaderUniform(MR_SHADER_VIEW_MAT4);
+        if(su) {
+            as._viewUniform = su;
+            as._viewUniform->SetValue(&(*_viewMatrix)[0][0]);
+        }
+        else as._viewUniform = shader->CreateUniform(MR_SHADER_VIEW_MAT4, IShaderUniform::Types::Mat4, &(*_viewMatrix)[0][0]);
+
+        su = shader->FindShaderUniform(MR_SHADER_PROJ_MAT4);
+        if(su) {
+            as._projUniform = su;
+            as._projUniform->SetValue(&(*_projectionMatrix)[0][0]);
+        }
+        else as._projUniform = shader->CreateUniform(MR_SHADER_PROJ_MAT4, IShaderUniform::Types::Mat4, &(*_projectionMatrix)[0][0]);
+
+        _attachedShaders.push_back(as);
+    }
+    //glUniformMatrix4fv(matrixUniform, 1, GL_FALSE, &(*_mvp)[0][0]);
 }
 
 void MR::Camera::MoveForward(const glm::vec3& v) {

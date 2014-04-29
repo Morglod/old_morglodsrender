@@ -54,7 +54,15 @@ public:
     Mesh** meshes;
     unsigned short meshes_num;
     ModelFile();
-    static ModelFile* ImportModelFile(std::string file, bool bindexes, bool log);
+
+    class ImportSettings {
+    public:
+        bool indecies;
+        bool combineSameMaterialsGeom;
+        ImportSettings() : indecies(true), combineSameMaterialsGeom(true) {}
+    };
+
+    static ModelFile* ImportModelFile(std::string file, bool log, const ImportSettings& settings = ImportSettings());
 };
 
 class ModelManager : public virtual ResourceManager {

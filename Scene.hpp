@@ -18,11 +18,11 @@ class LightsList;
 class SceneManager {
 public:
     /** CAMERAS **/
-    MR::EventListener<Camera*> OnMainCameraChanged;
-    MR::EventListener<Camera*> OnCameraCreated;
-    MR::EventListener<Camera*> OnCameraDeletting; //before deleted
-    MR::EventListener<Camera*> OnCameraAdded;
-    MR::EventListener<Camera*> OnCameraRemoving; //before removed
+    MR::EventListener<SceneManager*, Camera*> OnMainCameraChanged;
+    MR::EventListener<SceneManager*, Camera*> OnCameraCreated;
+    MR::EventListener<SceneManager*, Camera*> OnCameraDeletting; //before deleted
+    MR::EventListener<SceneManager*, Camera*> OnCameraAdded;
+    MR::EventListener<SceneManager*, Camera*> OnCameraRemoving; //before removed
 
     virtual void AddCamera(Camera* cam);
     virtual void RemoveCamera(Camera* cam);
@@ -31,10 +31,10 @@ public:
     virtual void SetMainCamera(Camera* cam); //Camera should be in cameras list
 
     /** ENTITIES **/
-    MR::EventListener<Entity*> OnEntityAdded;
-    MR::EventListener<Entity*> OnEntityRemoving; //before removed
-    MR::EventListener<Entity*> OnEntityCreated;
-    MR::EventListener<Entity*> OnEntityDeletting; //before deleted
+    MR::EventListener<SceneManager*, Entity*> OnEntityAdded;
+    MR::EventListener<SceneManager*, Entity*> OnEntityRemoving; //before removed
+    MR::EventListener<SceneManager*, Entity*> OnEntityCreated;
+    MR::EventListener<SceneManager*, Entity*> OnEntityDeletting; //before deleted
 
     virtual void AddEntity(Entity* ent);
     virtual void RemoveEntity(Entity* ent);
@@ -55,7 +55,7 @@ protected:
 
     Camera* _mainCamera;
 
-    bool _light; //toggle light working
+    bool _light; //toggle lights
 };
 
 }

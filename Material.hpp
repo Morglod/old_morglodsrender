@@ -16,8 +16,7 @@ namespace MR {
 
 class RenderContext;
 
-class Shader;
-class ShaderUniform;
+class IShader;
 class IShaderUniform;
 
 class ITexture;
@@ -46,26 +45,26 @@ public:
     inline MaterialFlag* GetFlagPtr();
 
     inline Material* GetMaterial();
-    inline Shader* GetShader();
-    virtual void SetShader(Shader* sh);
+    inline IShader* GetShader();
+    virtual void SetShader(IShader* sh);
 
-    inline ITexture* GetAlbedoTexture();
-    inline unsigned int GetAlbedoTextureStage();
+    inline ITexture* GetAmbientTexture() { return _ambient; }
+    inline unsigned int GetAmbientTextureUnit() { return _ambientUnit; }
 
-    inline void SetAlbedoTexture(ITexture* t) {_albedo = t;}
-    inline void SetAlbedoTextureStage(const unsigned int& s) {_albedoStage = s;}
+    inline void SetAmbientTexture(ITexture* t) {_ambient = t;}
+    inline void SetAmbientTextureUnit(const unsigned int& s) {_ambientUnit = s;}
 
-    inline ITexture* GetEmissiveTexture();
-    inline unsigned int GetEmissiveTextureStage();
+    inline ITexture* GetDiffuseTexture() { return _diffuse; }
+    inline unsigned int GetDiffuseTextureUnit() { return _diffuseUnit; }
 
-    inline void SetEmissiveTexture(ITexture* t) {_emissive = t;}
-    inline void SetEmissiveTextureStage(const unsigned int& s) {_emissiveStage = s;}
+    inline void SetDiffuseTexture(ITexture* t) {_diffuse = t;}
+    inline void SetDiffuseTextureUnit(const unsigned int& s) {_diffuseUnit = s;}
 
-    inline ITexture* GetEnvironmentTexture();
-    inline unsigned int GetEnvironmentTextureStage();
+    inline ITexture* GetOpacityTexture() { return _opacity; }
+    inline unsigned int GetOpacityTextureUnit() { return _opacityUnit; }
 
-    inline void SetEnvironmentTexture(ITexture* t) {_environment = t;}
-    inline void SetEnvironmentTextureStage(const unsigned int& s) {_environmentStage = s;}
+    inline void SetOpacityTexture(ITexture* t) {_opacity = t;}
+    inline void SetOpacityTextureUnit(const unsigned int& s) {_opacityUnit = s;}
 
     inline bool IsTwoSided();
     inline void SetTwoSided(const bool& ts);
@@ -74,32 +73,26 @@ public:
     ~MaterialPass();
 protected:
     Material* _parent;
-    Shader* _shader;
+    IShader* _shader;
 
     bool _twoSided;
 
-    float _alphaDiscard; //discard alpha clamp value; eg ( value = 0.7; if( alpha < 0.7 ){ discard; } )
-    MR::IShaderUniform* _uniform_a_discard;
-
     MaterialFlag _flag;
 
-    ITexture* _albedo;
-    int _albedoStage; //GL_TEXTURE0 is 0 / GL_TEXTURE1 i s1 / GL_TEXTURE2 is 2 etc
-    MR::IShaderUniform* _albedo_sample;
+    ITexture* _ambient;
+    int _ambientUnit; //GL_TEXTURE0 is 0 / GL_TEXTURE1 i s1 / GL_TEXTURE2 is 2 etc
+    MR::IShaderUniform* _ambient_sampler;
 
-    ITexture* _emissive;
-    int _emissiveStage;
-    MR::IShaderUniform* _emissive_sample;
+    ITexture* _diffuse;
+    int _diffuseUnit; //GL_TEXTURE0 is 0 / GL_TEXTURE1 i s1 / GL_TEXTURE2 is 2 etc
+    MR::IShaderUniform* _diffuse_sampler;
 
-    ITexture* _environment;
-    int _environmentStage;
-    MR::IShaderUniform* _environment_sample;
+    ITexture* _opacity;
+    int _opacityUnit;
+    MR::IShaderUniform* _opacity_sampler;
 
-    glm::vec4* _color; //effects by light
+    glm::vec4* _color; //light filter
     MR::IShaderUniform* _uniform_color;
-
-    glm::vec4* _emissive_color; // result = _color * light + _emissive_color;
-    MR::IShaderUniform* _uniform_emissive_color;
 };
 
 class Material {
@@ -154,32 +147,8 @@ MR::Material* MR::MaterialPass::GetMaterial() {
     return _parent;
 }
 
-MR::Shader* MR::MaterialPass::GetShader() {
+MR::IShader* MR::MaterialPass::GetShader() {
     return _shader;
-}
-
-MR::ITexture* MR::MaterialPass::GetAlbedoTexture() {
-    return _albedo;
-}
-
-unsigned int MR::MaterialPass::GetAlbedoTextureStage() {
-    return _albedoStage;
-}
-
-MR::ITexture* MR::MaterialPass::GetEmissiveTexture() {
-    return _emissive;
-}
-
-unsigned int MR::MaterialPass::GetEmissiveTextureStage() {
-    return _emissiveStage;
-}
-
-MR::ITexture* MR::MaterialPass::GetEnvironmentTexture() {
-    return _environment;
-}
-
-unsigned int MR::MaterialPass::GetEnvironmentTextureStage() {
-    return _environmentStage;
 }
 
 bool MR::MaterialPass::IsTwoSided() {

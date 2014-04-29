@@ -12,7 +12,7 @@ namespace MR{
 
 class IViewport {
 public:
-    MR::EventListener<const glm::ivec4&> OnRectChanged;
+    MR::EventListener<IViewport*, const glm::ivec4&> OnRectChanged;
 
     virtual glm::ivec4 GetRect() = 0;
     virtual void SetRect(const glm::ivec4& r) = 0;

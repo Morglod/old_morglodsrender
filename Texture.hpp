@@ -154,17 +154,17 @@ namespace MR{
         };
 
         /* SENDER - TextureSettings pointer */
-        MR::EventListener<const float&> OnLodBiasChanged;
-        MR::EventListener<float*> OnBorderColorChanged; //as param used pointer to _border_color
-        MR::EventListener<const MinFilter&> OnMinFilterChanged;
-        MR::EventListener<const MagFilter&> OnMagFilterChanged;
-        MR::EventListener<const int&> OnMinLodChanged;
-        MR::EventListener<const int&> OnMaxLodChanged;
-        MR::EventListener<const Wrap&> OnWrapSChanged;
-        MR::EventListener<const Wrap&> OnWrapRChanged;
-        MR::EventListener<const Wrap&> OnWrapTChanged;
-        MR::EventListener<const CompareMode&> OnCompareModeChanged;
-        MR::EventListener<const CompareFunc&> OnCompareFuncChanged;
+        MR::EventListener<ITextureSettings*, const float&> OnLodBiasChanged;
+        MR::EventListener<ITextureSettings*, float*> OnBorderColorChanged; //as param used pointer to _border_color
+        MR::EventListener<ITextureSettings*, const MinFilter&> OnMinFilterChanged;
+        MR::EventListener<ITextureSettings*, const MagFilter&> OnMagFilterChanged;
+        MR::EventListener<ITextureSettings*, const int&> OnMinLodChanged;
+        MR::EventListener<ITextureSettings*, const int&> OnMaxLodChanged;
+        MR::EventListener<ITextureSettings*, const Wrap&> OnWrapSChanged;
+        MR::EventListener<ITextureSettings*, const Wrap&> OnWrapRChanged;
+        MR::EventListener<ITextureSettings*, const Wrap&> OnWrapTChanged;
+        MR::EventListener<ITextureSettings*, const CompareMode&> OnCompareModeChanged;
+        MR::EventListener<ITextureSettings*, const CompareFunc&> OnCompareFuncChanged;
 
         virtual void SetLodBias(const float& v) = 0;
         virtual void SetBorderColor(float* rgba) = 0;
@@ -333,17 +333,17 @@ namespace MR{
         };
 
         /* SENDER - Texture pointer */
-        MR::EventListener<void*> OnInfoReset;
+        MR::EventListener<ITexture*, void*> OnInfoReset;
 
         /* mipMapLevel, internalFormat, width, height, format, type, data
          *  invokes from SetData method */
-        MR::EventListener<const int&, const InternalFormat&, const int&, const int&, const Format&, const Type&, void*> OnDataChanged;
+        MR::EventListener<ITexture*, const int&, const InternalFormat&, const int&, const int&, const Format&, const Type&, void*> OnDataChanged;
 
         /* mipMapLevel, xOffset, yOffset, width, height, format, type, data
          *  invokes form UpdateData method */
-        MR::EventListener<const int&, const int&, const int&, const int&, const int&, const Format&, const Type&, void*> OnDataUpdated;
+        MR::EventListener<ITexture*, const int&, const int&, const int&, const int&, const int&, const Format&, const Type&, void*> OnDataUpdated;
 
-        MR::EventListener<ITextureSettings*> OnSettingsChanged;
+        MR::EventListener<ITexture*, ITextureSettings*> OnSettingsChanged;
 
         virtual ITextureSettings* GetSettings() = 0;
         virtual void SetSettings(ITextureSettings* ts) = 0;
@@ -437,7 +437,7 @@ namespace MR{
 
     class CubeMap : public virtual Texture {
     public:
-        MR::EventListener<const glm::vec3&> OnCapturePointChanged;
+        MR::EventListener<CubeMap*, const glm::vec3&> OnCapturePointChanged;
 
         void SetCapturePoint(const glm::vec3& p);
         inline glm::vec3 GetCapturePoint();

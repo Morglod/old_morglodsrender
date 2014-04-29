@@ -31,6 +31,8 @@
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
 				<Compiler>
+					<Add option="-fexpensive-optimizations" />
+					<Add option="-O3" />
 					<Add option="-Wall" />
 				</Compiler>
 			</Target>
@@ -46,20 +48,20 @@
 			<Add library="glu32" />
 			<Add library="gdi32" />
 			<Add library="winmm" />
-			<Add library="zlib" />
+			<Add library="pthread" />
 		</Linker>
 		<Unit filename="Anim.cpp" />
 		<Unit filename="Anim.hpp" />
 		<Unit filename="Camera.cpp" />
 		<Unit filename="Camera.hpp" />
 		<Unit filename="Config.hpp" />
-		<Unit filename="DEPRECATED_RenderContext.cpp" />
-		<Unit filename="DEPRECATED_RenderContext.hpp" />
 		<Unit filename="Entity.cpp" />
 		<Unit filename="Entity.hpp" />
 		<Unit filename="Events.hpp" />
 		<Unit filename="Exception.cpp" />
 		<Unit filename="Exception.hpp" />
+		<Unit filename="GL/Context.cpp" />
+		<Unit filename="GL/Context.hpp" />
 		<Unit filename="GeometryBufferV2.cpp" />
 		<Unit filename="GeometryBufferV2.hpp" />
 		<Unit filename="Light.cpp" />
@@ -79,23 +81,19 @@
 		<Unit filename="RenderSystem.hpp" />
 		<Unit filename="RenderTarget.cpp" />
 		<Unit filename="RenderTarget.hpp" />
-		<Unit filename="RenderTechnique.cpp" />
-		<Unit filename="RenderTechnique.hpp" />
 		<Unit filename="RenderWindow.cpp" />
 		<Unit filename="RenderWindow.hpp" />
 		<Unit filename="ResourceManager.cpp" />
 		<Unit filename="ResourceManager.hpp" />
-		<Unit filename="ResourceSource.cpp" />
-		<Unit filename="ResourceSource.hpp" />
 		<Unit filename="Scene.cpp" />
 		<Unit filename="Scene.hpp" />
 		<Unit filename="Shader.cpp" />
 		<Unit filename="Shader.hpp" />
 		<Unit filename="SimpleApp.hpp" />
-		<Unit filename="Sprite.hpp" />
-		<Unit filename="SpriteBatch.hpp" />
 		<Unit filename="Texture.cpp" />
 		<Unit filename="Texture.hpp" />
+		<Unit filename="Threads.cpp" />
+		<Unit filename="Threads.hpp" />
 		<Unit filename="Time.hpp" />
 		<Unit filename="Transformation.cpp" />
 		<Unit filename="Transformation.hpp" />

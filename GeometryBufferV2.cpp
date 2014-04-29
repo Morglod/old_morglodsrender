@@ -141,7 +141,7 @@ void VertexBuffer::Release(){
     }
 }
 
-VertexBuffer::VertexBuffer() : Object(), _usage(0), _accessFlag(0), _handle(0) {
+VertexBuffer::VertexBuffer() : Object(), _usage(0), _accessFlag(0), _handle(0), _buffer_size(0), _num(0) {
 }
 
 VertexBuffer::~VertexBuffer(){
@@ -185,7 +185,7 @@ void IndexBuffer::Release(){
     }
 }
 
-IndexBuffer::IndexBuffer() : Object(), _usage(0), _accessFlag(0), _handle(0) {
+IndexBuffer::IndexBuffer() : Object(), _usage(0), _accessFlag(0), _handle(0), _buffer_size(0), _num(0) {
 }
 
 IndexBuffer::~IndexBuffer(){
@@ -229,7 +229,7 @@ void IndirectDrawBuffer::Release(){
     }
 }
 
-IndirectDrawBuffer::IndirectDrawBuffer() : Object(), _usage(0), _accessFlag(0), _handle(0) {
+IndirectDrawBuffer::IndirectDrawBuffer() : Object(), _usage(0), _accessFlag(0), _handle(0), _buffer_size(0) {
 }
 
 IndirectDrawBuffer::~IndirectDrawBuffer(){

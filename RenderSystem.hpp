@@ -27,6 +27,12 @@ class RenderTarget;
 /* LOW LEVEL METHODS */
 class IRenderSystem {
 public:
+    enum PolygonMode : unsigned int {
+        Point = 0x1B00,
+        Line = 0x1B01,
+        Fill = 0x1B02
+    };
+
     virtual bool Init(IRenderWindow* window) = 0;
     virtual void Shutdown() = 0;
 
@@ -36,6 +42,9 @@ public:
     virtual void SetViewport(const unsigned short & x, const unsigned short & y, const unsigned short & width, const unsigned short & height) = 0;
     virtual void SetViewport(IViewport* v) = 0;
     virtual IViewport* GetViewport() = 0;
+
+    virtual void SetPolygonMode(const PolygonMode& pm) = 0;
+    virtual PolygonMode GetPolygonMode() = 0;
 
     virtual void UseCamera(Camera* cam) = 0;
     virtual Camera* GetCamera() = 0;
@@ -61,6 +70,9 @@ public:
     virtual void DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::IGeometry* g, MR::MaterialPass* mat_pass) = 0;
 
     virtual void DrawEntity(Entity* ent) = 0;
+
+    //Get actived window
+    virtual IRenderWindow* GetWindow() = 0;
 };
 
 /** BASE RENDER SYSTEM CALLS THIS METHODS AUTOMATICALLY **/
@@ -92,6 +104,9 @@ public:
     void SetViewport(IViewport* vp) override;
     inline IViewport* GetViewport() override { return _viewport; }
 
+    void SetPolygonMode(const PolygonMode& pm) override;
+    PolygonMode GetPolygonMode() override;
+
     void UseCamera(Camera* cam) override;
     inline Camera* GetCamera() override { return _cam; }
 
@@ -119,6 +134,8 @@ public:
     void DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::IGeometry* g, MR::MaterialPass* mat_pass) override;
 
     void DrawEntity(MR::Entity* ent) override;
+
+    IRenderWindow* GetWindow() override { return _window; }
 
     RenderSystem();
     ~RenderSystem();
@@ -149,15 +166,14 @@ protected:
 
     IVertexFormat* _vformat;
     IIndexFormat* _iformat;
-
     Camera* _cam;
-
     IShader* _shader;
-
     bool _useDefaultMaterial;
     Material* _defaultMaterial;
-
     RenderTarget* _renderTarget;
+    PolygonMode _poly_mode;
+
+    IRenderWindow* _window;
 };
 
 }

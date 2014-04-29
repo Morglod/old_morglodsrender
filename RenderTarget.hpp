@@ -12,7 +12,7 @@ namespace MR {
 
 class RenderTarget {
 public:
-    MR::EventListener<const std::string&> OnNameChanged;
+    MR::EventListener<RenderTarget*, const std::string&> OnNameChanged;
 
     inline std::string GetName();
     void SetName(const std::string& n);

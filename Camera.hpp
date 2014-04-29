@@ -14,6 +14,8 @@
 
 namespace MR {
 
+class IShader;
+class IShaderUniform;
 class RenderTarget;
 
 class ICamera {
@@ -28,15 +30,15 @@ public:
         Ortho = 1
     };
 
-    MR::EventListener<const CameraMode&> OnModeChanged;
-    MR::EventListener<const CameraProjection&> OnProjectionChanged;
-    MR::EventListener<const glm::vec3&> OnPositionChanged;
-    MR::EventListener<const glm::vec3&> OnTargetChanged;
-    MR::EventListener<const glm::vec3&> OnDirectionChanged;
-    MR::EventListener<RenderTarget*> OnRenderTargetChanged;
-    MR::EventListener<glm::mat4*> OnMVPRecalc;
+    MR::EventListener<ICamera*, const CameraMode&> OnModeChanged;
+    MR::EventListener<ICamera*, const CameraProjection&> OnProjectionChanged;
+    MR::EventListener<ICamera*, const glm::vec3&> OnPositionChanged;
+    MR::EventListener<ICamera*, const glm::vec3&> OnTargetChanged;
+    MR::EventListener<ICamera*, const glm::vec3&> OnDirectionChanged;
+    MR::EventListener<ICamera*, RenderTarget*> OnRenderTargetChanged;
+    MR::EventListener<ICamera*, glm::mat4*> OnMVPRecalc;
 
-    virtual void Use(const unsigned int & matrixUniform) = 0;
+    virtual void AttachToShader(IShader* shader) = 0;
 
     virtual void SetAutoRecalc(const bool& state) = 0;
     virtual bool IsAutoRecalc() = 0;
@@ -95,9 +97,9 @@ public:
     virtual ~ICamera() {}
 };
 
-class Camera : public MR::Object, public ICamera{
+class Camera : public MR::Object, public ICamera {
 public:
-    void Use(const unsigned int & matrixUniform) override;
+    void AttachToShader(IShader* shader) override;
     inline bool IsAutoRecalc() override;
 
     inline CameraMode GetCameraMode() override;
@@ -182,8 +184,17 @@ protected:
     glm::mat4* _inv_modelViewMatrix = new glm::mat4(1.0f);
     glm::mat4* _mvp = new glm::mat4(1.0f);
 
-    bool _autoReCalc;
+    class AttachedShader {
+    public:
+        IShader* _shader = nullptr;
+        IShaderUniform* _viewUniform = nullptr;
+        IShaderUniform* _projUniform = nullptr;
+        IShaderUniform* _mvpUniform = nullptr;
+    };
 
+    std::vector<AttachedShader> _attachedShaders;
+
+    bool _autoReCalc;
     MR::RenderTarget* _render_target;
 private:
     Camera(const Camera&);

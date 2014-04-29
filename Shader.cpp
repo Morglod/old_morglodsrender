@@ -536,6 +536,163 @@ MR::Shader::~Shader() {
     }
 }
 
+//SHADER BUILDER
+
+void MR::ShaderBuilder::SetCode(const std::string& code) {
+    _code = code;
+}
+
+std::string MR::ShaderBuilder::BuildCode() {
+    return "";
+}
+
+MR::ShaderBuilder::ShaderBuilder(const ISubShader::Type& type) : _type(type) {
+}
+
+MR::ShaderBuilder::~ShaderBuilder() {
+}
+
+//DEFAULT SHADER REQUEST
+
+MR::IShader* MR::ShaderManager::DefaultShaderRequest::MakeRequest(const DefaultShaderRequest& req){
+    for(auto it = MR::ShaderManager::Instance()->_defaultShaders.begin(); it != MR::ShaderManager::Instance()->_defaultShaders.end(); ++it){
+        if(it->first == req) {
+            return it->second;
+        }
+    }
+
+    std::string fragCode =
+        "#version 330\n"
+        "#extension GL_ARB_separate_shader_objects : enable\n"
+        "#pragma optimize(on)\n"
+        "layout (location = 0) in vec3 InVertexPos;\n"
+        "layout (location = 1) in vec4 InVertexNormal;\n"
+        "layout (location = 2) in vec4 InVertexColor;\n"
+        "layout (location = 3) in vec2 InVertexTexCoord;\n"
+        "out vec4 "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME)+";\n";
+
+    std::string vertCode =
+        "#version 330\n"
+        "#extension GL_ARB_separate_shader_objects : enable\n"
+        "#pragma optimize(on)\n"
+        "layout (location = 0) in vec3 "+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+";\n"
+        "layout (location = 1) in vec3 "+std::string(MR_SHADER_VERTEX_NORMAL_ATTRIB_NAME)+";\n"
+        "layout (location = 2) in vec4 "+std::string(MR_SHADER_VERTEX_COLOR_ATTRIB_NAME)+";\n"
+        "layout (location = 3) in vec2 "+std::string(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_NAME)+";\n"
+        "layout (location = 0) out vec3 OutVertexPos;\n"
+        "layout (location = 1) out vec3 OutVertexNormal;\n"
+        "layout (location = 2) out vec4 OutVertexColor;\n"
+        "layout (location = 3) out vec2 OutVertexTexCoord;\n";
+
+    if(req.toScreen){
+        vertCode +=
+            "void main() {"
+            "	OutVertexPos = "+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+";\n"
+            "	OutVertexNormal = "+std::string(MR_SHADER_VERTEX_NORMAL_ATTRIB_NAME)+";\n"
+            "	OutVertexColor = "+std::string(MR_SHADER_VERTEX_COLOR_ATTRIB_NAME)+";\n"
+            "	OutVertexTexCoord = "+std::string(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_NAME)+";\n"
+            "	gl_Position = vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
+            "}";
+    } else {
+        vertCode +=
+            "uniform mat4 "+std::string(MR_SHADER_MVP_MAT4)+";\n"
+            "uniform mat4 "+std::string(MR_SHADER_VIEW_MAT4)+";\n"
+            "uniform mat4 "+std::string(MR_SHADER_PROJ_MAT4)+";\n"
+            "void main() {\n"
+            "	OutVertexPos = "+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+";\n"
+            "	OutVertexNormal = "+std::string(MR_SHADER_VERTEX_NORMAL_ATTRIB_NAME)+";\n"
+            "	OutVertexColor = "+std::string(MR_SHADER_VERTEX_COLOR_ATTRIB_NAME)+";\n"
+            "	OutVertexTexCoord = "+std::string(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_NAME)+";\n"
+            "	gl_Position = "+std::string(MR_SHADER_MVP_MAT4)+" * vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
+            "}";
+    }
+
+    //FRAG
+
+    if(req.ambient){
+        fragCode +=
+            "uniform sampler2D "+std::string(MR_SHADER_AMBIENT_TEX)+";\n";
+    }
+    if(req.diffuse){
+        fragCode +=
+            "uniform sampler2D "+std::string(MR_SHADER_DIFFUSE_TEX)+";\n";
+    }
+    if(req.opacity){
+        fragCode +=
+            "uniform sampler2D "+std::string(MR_SHADER_OPACITY_TEX)+";\n";
+    }
+    if(req.colorFilter){
+        fragCode +=
+            "uniform vec4 "+std::string(MR_SHADER_COLOR_V4)+";\n";
+    }
+
+    //MAKE LIGHT
+    fragCode +=
+        "\n"
+        "float light(){\n"
+        "   return 0.0;"
+        "}";
+
+    //MAKE FRAG MAIN
+
+    fragCode +=
+        "\n"
+        "void main(){\n";
+
+    if(req.opacity && req.opacityDiscardOnAlpha){
+        if(req.opacityDiscardValue == 1.0f){
+            fragCode += "   discard;\n";
+        } else {
+            fragCode +=
+                "   if( texture("+std::string(MR_SHADER_OPACITY_TEX)+", InVertexTexCoord).x < "+std::to_string(req.opacityDiscardValue)+" ) {\n"
+                "       discard;\n"
+                "   }\n";
+        }
+    }
+
+    fragCode += "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME)+" = ";
+
+    bool bVoidFrag = true;
+    bool bAnyColor = false;
+    if(req.ambient){
+        fragCode +=
+            " texture("+std::string(MR_SHADER_AMBIENT_TEX)+", InVertexTexCoord) ";
+        bAnyColor = true; bVoidFrag = false;
+    }
+    if(req.diffuse){
+        if(bAnyColor) fragCode += " + ";
+        fragCode +=
+            "(texture("+std::string(MR_SHADER_DIFFUSE_TEX)+", InVertexTexCoord) * light())";
+        bAnyColor = true; bVoidFrag = false;
+    }
+
+    if(req.colorFilter){
+        if(bAnyColor) fragCode += " * ";
+        fragCode +=
+            std::string(MR_SHADER_COLOR_V4)+" ";
+        bVoidFrag = false;
+    }
+
+    if(bVoidFrag) fragCode += " vec4(1.0, 1.0, 1.0, 1.0)";
+    fragCode += ";\n}";
+
+    IShader* shader = dynamic_cast<MR::Shader*>(MR::ShaderManager::Instance()->Create("Auto", "FromSubs"));
+    SubShader* vertSub = new MR::SubShader(vertCode, ISubShader::Type::Vertex);
+    SubShader* fragSub = new MR::SubShader(fragCode, ISubShader::Type::Fragment);
+    shader->AttachSubShader(vertSub);
+    shader->AttachSubShader(fragSub);
+
+    MR::ShaderManager::Instance()->_defaultShaders.push_back(std::make_pair(req, shader));
+
+    if(!shader->Link()){
+        return nullptr;
+    }
+
+    MR::ShaderManager::Instance()->BindDefaultShaderInOut(shader);
+
+    return shader;
+}
+
 //SHADER MANAGER
 
 MR::Resource* MR::ShaderManager::Create(const std::string& name, const std::string& source) {

@@ -28,8 +28,9 @@ public:
 
     inline virtual void Call(void* sender, Args... args) const {
         if(_funcs.size() != 0){
-            for(auto it = _funcs.begin(); it != _funcs.end(); ++it)
-                (*it)(sender, args...);
+            for(auto it = _funcs.begin(); it != _funcs.end(); ++it) {
+                if(*it) (*it)(sender, args...);
+            }
         }
     }
 
@@ -84,7 +85,7 @@ class EventListener;
 template<typename... Args>
 class EventHandle {
 public:
-    virtual void Invoke(void* sender, EventListener<Args...>*, Args...) {}
+    virtual void Invoke(EventListener<Args...>*, Args...) {}
     virtual ~EventHandle() {}
 };
 
@@ -116,14 +117,15 @@ public:
         delete h;
     }
 
-    inline virtual void Call(void* sender, Args... args) const {
+    inline virtual void Call(Args... args) const {
         if(_handles.size() != 0){
-            for(auto it = _handles.begin(); it != _handles.end(); ++it)
-                (*it)->Invoke(sender, (EventListener<Args...>*)this, args...);
+            for(size_t i = 0; i < _handles.size(); ++i) {
+                _handles[i]->Invoke((EventListener<Args...>*)this, args...);
+            }
         }
     }
 
-    inline void operator() (void* s, Args... args) const { Call(s, args...); }
+    inline void operator() (Args... args) const { Call(args...); }
 
     bool freePermissions;
 

@@ -111,10 +111,16 @@ bool RenderSystem::Init(IRenderWindow* window) {
         _init = true;
     }
 
+    _window = window;
+
     return true;
 }
 
 void RenderSystem::Shutdown() {
+    delete MR::ModelManager::Instance();
+    delete MR::ShaderManager::Instance();
+    delete MR::TextureManager::Instance();
+
     MR::Log::LogString("RenderSystem shutdown", MR_LOG_LEVEL_INFO);
 
     _alive = false;
@@ -133,6 +139,15 @@ void RenderSystem::SetViewport(IViewport* vp) {
         SetViewport(v.x, v.y, v.z, v.w);
         _viewport = vp;
     }
+}
+
+void RenderSystem::SetPolygonMode(const PolygonMode& pm){
+    glPolygonMode(GL_FRONT_AND_BACK, pm);
+    _poly_mode = pm;
+}
+
+IRenderSystem::PolygonMode RenderSystem::GetPolygonMode(){
+    return _poly_mode;
 }
 
 void RenderSystem::UseCamera(Camera* cam){
@@ -304,7 +319,7 @@ void RenderSystem::DrawEntity(MR::Entity* ent) {
 
 
 RenderSystem::RenderSystem() : MR::Object(), _init(false), _alive(false), _glew(false), _glfw(false),
-    _viewport(nullptr), _nextFreeUnit(0), _vformat(nullptr), _iformat(nullptr), _cam(nullptr), _shader(nullptr), _useDefaultMaterial(true), _defaultMaterial(nullptr), _renderTarget(nullptr) {
+    _viewport(nullptr), _nextFreeUnit(0), _vformat(nullptr), _iformat(nullptr), _cam(nullptr), _shader(nullptr), _useDefaultMaterial(true), _defaultMaterial(nullptr), _renderTarget(nullptr), _poly_mode((IRenderSystem::PolygonMode)GL_FILL), _window(nullptr) {
 
     RegisterRenderSystem(this);
 }

@@ -258,19 +258,19 @@ LightManager::LightManager(ShaderManager* sm){
     _shadow_color->AttachSubShader(new MR::SubShader(shadow_color_frag, MR::ISubShader::Type::Fragment));
     _shadow_color->AttachSubShader(new MR::SubShader(shadow_vert, MR::ISubShader::Type::Vertex));
     _shadow_color->Link();
-    ((Shader*)_shadow_color)->CreateUniform("shadowMap", _shadow_color_map_unit);
-    ((Shader*)_shadow_color)->CreateUniform("lightMatrix", _shadow_color_mat_light);
-    ((Shader*)_shadow_color)->CreateUniform("lightPos", _shadow_color_vec3_light_pos);
-    ((Shader*)_shadow_color)->CreateUniform("lightDir", _shadow_color_vec3_light_dir);
+    _shadow_color->CreateUniform("shadowMap", IShaderUniform::Types::Int, _shadow_color_map_unit);
+    _shadow_color->CreateUniform("lightMatrix", IShaderUniform::Types::Mat4, _shadow_color_mat_light);
+    _shadow_color->CreateUniform("lightPos", IShaderUniform::Types::Vec3, _shadow_color_vec3_light_pos);
+    _shadow_color->CreateUniform("lightDir", IShaderUniform::Types::Vec3, _shadow_color_vec3_light_dir);
 
     _shadow_depth = new MR::Shader(sm, "ShadowDepth", "FromMem");
     _shadow_depth->AttachSubShader(new MR::SubShader(shadow_depth_frag, MR::ISubShader::Type::Fragment));
     _shadow_depth->AttachSubShader(new MR::SubShader(shadow_vert, MR::ISubShader::Type::Vertex));
     _shadow_depth->Link();
-    ((Shader*)_shadow_depth)->CreateUniform("shadowMap", _shadow_depth_map_unit);
-    ((Shader*)_shadow_depth)->CreateUniform("lightMatrix", _shadow_depth_mat_light);
-    ((Shader*)_shadow_depth)->CreateUniform("lightPos", _shadow_depth_vec3_light_pos);
-    ((Shader*)_shadow_depth)->CreateUniform("lightDir", _shadow_depth_vec3_light_dir);
+    _shadow_depth->CreateUniform("shadowMap", IShaderUniform::Types::Int, _shadow_depth_map_unit);
+    _shadow_depth->CreateUniform("lightMatrix", IShaderUniform::Types::Mat4, _shadow_depth_mat_light);
+    _shadow_depth->CreateUniform("lightPos", IShaderUniform::Types::Vec3, _shadow_depth_vec3_light_pos);
+    _shadow_depth->CreateUniform("lightDir", IShaderUniform::Types::Vec3, _shadow_depth_vec3_light_dir);
 }
 
 LightManager::~LightManager(){

@@ -3,6 +3,7 @@
 #include "GeometryBufferV2.hpp"
 #include "Shader.hpp"
 #include "RenderSystem.hpp"
+#include "RenderWindow.hpp"
 #include "Log.hpp"
 
 #include <GL/glew.h>
@@ -71,49 +72,63 @@ void UIElement::SetColor(const glm::vec4& rgba){
     OnColorChanged(this, rgba);
 }
 
-void UIElement::Add(IUIElement* element){
-    _elements.push_back(element);
-}
-
-void UIElement::Remove(IUIElement* element){
-    auto it = std::find(_elements.begin(), _elements.end(), element);
-    if(it == _elements.end()) return;
-    _elements.erase(it);
-}
-
-UIElement* UIElement::Create(MR::UIManager* m, const Rect& r){
-    UIElement* p = new UIElement(m, r);
-    Add(p);
-    return p;
-}
-
-void UIElement::Delete(UIElement* element){
-    std::vector<IUIElement*>::iterator it = std::find(_elements.begin(), _elements.end(), element);
-    if(it == _elements.end()) return;
-    delete (*it);
-    _elements.erase(it);
-}
-
-void UIElement::Draw(IRenderSystem* rc, const float& delta){
-    Draw(rc, delta, nullptr, glm::mat4(1.0f));
-}
-
-void UIElement::Draw(IRenderSystem* rc, const float& delta, IUIElement* parent, const glm::mat4& parent_mat){
+void UIElement::Frame(IRenderSystem* rc, const float& delta){
     if(_visible){
+        if(_hover){
+            int ww, wh;
+            rc->GetWindow()->GetSize(&ww, &wh);
+
+            double mousex, mousey;
+            rc->GetWindow()->GetMousePos(&mousex, &mousey);
+            glm::vec2 mp(mousex / (ww/100.0f), mousey / (wh/100.0f));
+
+            if(GetRect().TestPoint(glm::vec2(mp))) {
+                if(!_hover_state) OnMouseHoverStateChanged.Call(this, mp, true);
+                if(_click){
+                    if(rc->GetWindow()->GetMouseButtonDown(0)) {
+                        if(!_mouse_down[0])
+                            OnMouseHoverDownStateChanged.Call(this, mp, 0, true);
+                        _mouse_down[0] = true;
+                    } else if(_mouse_down[0]) {
+                        OnMouseHoverDownStateChanged.Call(this, mp, 0, false);
+                        _mouse_down[0] = false;
+                    }
+
+                    if(rc->GetWindow()->GetMouseButtonDown(1)) {
+                        if(!_mouse_down[1])
+                            OnMouseHoverDownStateChanged.Call(this, mp, 1, true);
+                        _mouse_down[1] = true;
+                    } else if(_mouse_down[1]) {
+                        OnMouseHoverDownStateChanged.Call(this, mp, 1, false);
+                        _mouse_down[1] = false;
+                    }
+
+                    if(rc->GetWindow()->GetMouseButtonDown(2)) {
+                        if(!_mouse_down[2])
+                            OnMouseHoverDownStateChanged.Call(this, mp, 2, true);
+                        _mouse_down[2] = true;
+                    } else if(_mouse_down[2]) {
+                        OnMouseHoverDownStateChanged.Call(this, mp, 2, false);
+                        _mouse_down[2] = false;
+                    }
+                }
+            } else {
+                if(_hover_state) _hover_state = false;
+                OnMouseHoverStateChanged.Call(this, mp, false);
+            }
+        }
+
         glDisable(GL_DEPTH_TEST);
 
-        *(_manager->_color) = _color;
+        if(_manager){
+            *(_manager->_color) = _color;
+            *(_manager->_modelMatrix) = *_model_mat;
 
-        *(_manager->_modelMatrix) = *_model_mat;
-
-        _manager->_shader->Use(rc);
-        _manager->_quad_geom->Draw(rc);
+            _manager->_shader->Use(rc);
+            _manager->_quad_geom->Draw(rc);
+        }
 
         glEnable(GL_DEPTH_TEST);
-
-        for(auto it = _elements.begin(); it != _elements.end(); ++it){
-            (*it)->Draw(rc, delta, this, (*_model_mat));
-        }
     }
 }
 
@@ -121,24 +136,19 @@ void UIElement::_CalcMatrix(){
     glm::mat4 t = glm::translate(_rect.GetPos().x/100.0f*2.0f-1.0f, _rect.GetPos().y/-100.0f*2.0f+1.0f, 0.0f);
     glm::mat4 s = glm::scale(_rect.GetSize().x/100.0f*2.0f, _rect.GetSize().y/100.0f*2.0f, 0.0f);
     *_model_mat = t * s;
-
-    glm::mat4 parent_t = glm::translate(_rect.GetPos().x/100.0f, _rect.GetPos().y/100.0f, 0.0f);
-    glm::mat4 parent_s = glm::scale(_rect.GetSize().x/100.0f, _rect.GetSize().y/100.0f, 1.0f);
-    *_model_mat_for_children = parent_t * parent_s;
 }
 
-UIElement::UIElement(UIManager* m, const Rect& r) : Object(), _rect(r), _visible(true), _color(0.0f,0.0f,0.0f,1.0f), _model_mat(new glm::mat4(1.0f)), _model_mat_for_children(new glm::mat4(1.0f)), _manager(m) {
+UIElement::UIElement(UIManager* m, const Rect& r) : Object(), _rect(r), _visible(true), _color(0.0f,0.0f,0.0f,1.0f), _model_mat(new glm::mat4(1.0f)), _manager(m), _hover(true), _hover_state(false), _click(true), _mouse_down { false, false, false} {
     _CalcMatrix();
 }
 
 UIElement::~UIElement(){
     delete _model_mat;
-    delete _model_mat_for_children;
 }
 
-void UIManager::Draw(IRenderSystem* rc, const float& delta){
-    for(UIElement* l : _layouts){
-        l->Draw(rc, delta);
+void UIManager::Frame(IRenderSystem* rc, const float& delta){
+    for(IUIElement* l : _layouts){
+        l->Frame(rc, delta);
     }
 }
 
@@ -161,7 +171,7 @@ _color(new glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), _tex_unit(new int(0)), _shader(0)
 }
 
 UIManager::~UIManager(){
-    for(UIElement* l : _layouts){
+    for(IUIElement* l : _layouts){
         delete l;
     }
     _layouts.clear();
