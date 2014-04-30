@@ -39,6 +39,7 @@
 
 //Shader uniforms
 #define MR_SHADER_MVP_MAT4      "MAT_MVP"
+#define MR_SHADER_MODEL_MAT4    "MAT_MODEL"
 #define MR_SHADER_VIEW_MAT4     "MAT_VIEW"
 #define MR_SHADER_PROJ_MAT4     "MAT_PROJ"
 
@@ -50,6 +51,8 @@
 #define MR_SHADER_COLOR_V4          "ENGINE_COLOR"
 #define MR_SHADER_EMISSIVE_V4       "ENGINE_EMISSIVE"
 #define MR_SHADER_OPACITY_TEX       "ENGINE_OPACITY_MAP"
+
+#define MR_SHADER_MAX_POINT_LIGHTS 20
 
 //Material default values
 #define MR_MATERIAL_AMBIENT_TEX_DEFAULT     10

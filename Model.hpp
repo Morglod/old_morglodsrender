@@ -59,7 +59,8 @@ public:
     public:
         bool indecies;
         bool combineSameMaterialsGeom;
-        ImportSettings() : indecies(true), combineSameMaterialsGeom(true) {}
+        bool ambientTextures;
+        ImportSettings() : indecies(true), combineSameMaterialsGeom(true), ambientTextures(false) {}
     };
 
     static ModelFile* ImportModelFile(std::string file, bool log, const ImportSettings& settings = ImportSettings());

@@ -19,6 +19,13 @@ void MR::MaterialPass::Use(IRenderSystem* rs){
     }
 }
 
+void MR::MaterialPass::UnUse(IRenderSystem* rs){
+    if(_ambient) rs->UnBindTexture(_ambientUnit);
+    if(_diffuse) rs->UnBindTexture(_diffuseUnit);
+    if(_opacity) rs->UnBindTexture(_opacityUnit);
+    rs->UseShader(nullptr);
+}
+
 void MR::MaterialPass::SetShader(IShader* sh) {
     _shader = sh;
     if(sh != nullptr) {

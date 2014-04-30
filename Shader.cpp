@@ -521,6 +521,10 @@ void MR::Shader::DetachAllSubShaders(){
     _sub_shaders.clear();
 }
 
+MR::IShader::ShaderFeatures MR::Shader::GetFeatures(){
+    return _features;
+}
+
 MR::Shader::Shader(ResourceManager* manager, const std::string& name, const std::string& source) : Resource(manager, name, source), Object(), _program(0) {
     //this->Link(sub_shaders, num);
 }
@@ -536,25 +540,9 @@ MR::Shader::~Shader() {
     }
 }
 
-//SHADER BUILDER
-
-void MR::ShaderBuilder::SetCode(const std::string& code) {
-    _code = code;
-}
-
-std::string MR::ShaderBuilder::BuildCode() {
-    return "";
-}
-
-MR::ShaderBuilder::ShaderBuilder(const ISubShader::Type& type) : _type(type) {
-}
-
-MR::ShaderBuilder::~ShaderBuilder() {
-}
-
 //DEFAULT SHADER REQUEST
 
-MR::IShader* MR::ShaderManager::DefaultShaderRequest::MakeRequest(const DefaultShaderRequest& req){
+MR::IShader* MR::ShaderManager::RequestDefault(const MR::IShader::ShaderFeatures& req){
     for(auto it = MR::ShaderManager::Instance()->_defaultShaders.begin(); it != MR::ShaderManager::Instance()->_defaultShaders.end(); ++it){
         if(it->first == req) {
             return it->second;
@@ -596,6 +584,7 @@ MR::IShader* MR::ShaderManager::DefaultShaderRequest::MakeRequest(const DefaultS
     } else {
         vertCode +=
             "uniform mat4 "+std::string(MR_SHADER_MVP_MAT4)+";\n"
+            "uniform mat4 "+std::string(MR_SHADER_MODEL_MAT4)+";\n"
             "uniform mat4 "+std::string(MR_SHADER_VIEW_MAT4)+";\n"
             "uniform mat4 "+std::string(MR_SHADER_PROJ_MAT4)+";\n"
             "void main() {\n"
@@ -605,6 +594,11 @@ MR::IShader* MR::ShaderManager::DefaultShaderRequest::MakeRequest(const DefaultS
             "	OutVertexTexCoord = "+std::string(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_NAME)+";\n"
             "	gl_Position = "+std::string(MR_SHADER_MVP_MAT4)+" * vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
             "}";
+        fragCode +=
+            "uniform mat4 "+std::string(MR_SHADER_MVP_MAT4)+";\n"
+            "uniform mat4 "+std::string(MR_SHADER_MODEL_MAT4)+";\n"
+            "uniform mat4 "+std::string(MR_SHADER_VIEW_MAT4)+";\n"
+            "uniform mat4 "+std::string(MR_SHADER_PROJ_MAT4)+";\n";
     }
 
     //FRAG
@@ -627,11 +621,43 @@ MR::IShader* MR::ShaderManager::DefaultShaderRequest::MakeRequest(const DefaultS
     }
 
     //MAKE LIGHT
-    fragCode +=
-        "\n"
-        "float light(){\n"
-        "   return 0.0;"
-        "}";
+    if(req.light){
+        fragCode +=
+            "\n"
+            "struct PointLight {\n"
+            "   vec3 pos;\n"
+            "   vec3 emission;\n"
+            "   float attenuation;\n"
+            "   float power;\n"
+            "   float radius;\n"
+            "};\n"
+            "int PointightsNum;\n"
+            "PointLight PointLights["+std::to_string(MR_SHADER_MAX_POINT_LIGHTS)+"];\n"
+            "\n"
+            "void randomizeLights(){\n"
+            "   PointightsNum = "+std::to_string(MR_SHADER_MAX_POINT_LIGHTS)+";"
+            "   for(int i = 0; i < PointightsNum; i++){\n"
+            "       PointLights[i].pos = vec3(i * 1.0, 0.0, 0.0);\n"
+            "       PointLights[i].emission = vec3(2.1, 2.1, 2.1);\n"
+            "       PointLights[i].attenuation = 10.0;\n"
+            "       PointLights[i].power = 2.0;\n"
+            "       PointLights[i].radius = 1.0;\n"
+            "   }\n"
+            "}\n"
+            "\n"
+            "vec3 light(){\n"
+            "   randomizeLights();\n"
+            "   vec3 fragLight = vec3(0.0, 0.0, 0.0);\n"
+            "   for(int i = 0; i < PointightsNum; i++){\n"
+            "       float Ld = distance(PointLights[i].pos, (vec4(InVertexPos, 1.0) * "+std::string(MR_SHADER_MODEL_MAT4)+").xyz);\n"
+            "       float att = 1.0 / (1.0 + PointLights[i].attenuation * pow(Ld, PointLights[i].power));\n"
+            "       float Lmult = (PointLights[i].radius - Ld) / PointLights[i].radius;\n"
+            "       if(Lmult < 0) Lmult = 0.0;\n"
+            "       fragLight += (att * PointLights[i].emission) * Lmult;\n"
+            "   }\n"
+            "   return fragLight;\n"
+            "}\n";
+    }
 
     //MAKE FRAG MAIN
 
@@ -662,7 +688,11 @@ MR::IShader* MR::ShaderManager::DefaultShaderRequest::MakeRequest(const DefaultS
     if(req.diffuse){
         if(bAnyColor) fragCode += " + ";
         fragCode +=
-            "(texture("+std::string(MR_SHADER_DIFFUSE_TEX)+", InVertexTexCoord) * light())";
+            "(texture("+std::string(MR_SHADER_DIFFUSE_TEX)+", InVertexTexCoord) ";
+        if(req.light){
+            fragCode += "* vec4(light(), 1.0)";
+        }
+        fragCode += ")";
         bAnyColor = true; bVoidFrag = false;
     }
 

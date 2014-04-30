@@ -233,11 +233,12 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
         matPtr->AddPass(matPassPtr);
         for_meshes.push_back(MeshContainer(matPtr));
 
-        MR::ShaderManager::DefaultShaderRequest shaderRequest;
+        MR::IShader::ShaderFeatures shaderRequest;
 
         for(auto it = textures.begin(); it != textures.end(); ++it){
             MR::Texture* tex = nullptr;
             if( (it->type != 1) && (it->type != 2) && (it->type != 9) ) continue;
+            if(!isettings.ambientTextures && (it->type == 1)) continue;
             if(it->file != "") {
                 tex = dynamic_cast<MR::Texture*>(MR::TextureManager::Instance()->Need( MR::DirectoryFromFilePath(file) + "/" + it->file ));
                 GLint wmT = GL_CLAMP_TO_EDGE, wmS = GL_CLAMP_TO_EDGE;
@@ -292,7 +293,7 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
             }
         }
 
-        matPassPtr->SetShader( MR::ShaderManager::DefaultShaderRequest::MakeRequest(shaderRequest) );
+        matPassPtr->SetShader( MR::ShaderManager::RequestDefault(shaderRequest) );
     }
 
     for(int i = 0; i < NumMeshes; ++i) {

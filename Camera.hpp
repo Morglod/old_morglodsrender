@@ -189,6 +189,7 @@ protected:
         IShader* _shader = nullptr;
         IShaderUniform* _viewUniform = nullptr;
         IShaderUniform* _projUniform = nullptr;
+        IShaderUniform* _modelUniform = nullptr;
         IShaderUniform* _mvpUniform = nullptr;
     };
 

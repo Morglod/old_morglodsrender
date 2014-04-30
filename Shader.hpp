@@ -204,6 +204,55 @@ namespace MR{
 
     class IShader {
     public:
+        class ShaderFeatures {
+        public:
+            //Options
+            bool colorFilter = false;
+            bool opacityDiscardOnAlpha = true;
+            float opacityDiscardValue = 0.9f;
+
+            //List of used maps
+            bool ambient = false;
+            bool diffuse = false;
+            bool displacement = false;
+            bool emissive = false;
+            bool height = false;
+            bool baked_lightmap = false;
+            bool normal = false;
+            bool opacity = false;
+            bool reflection = false;
+            bool shininess = false;
+            bool specular = false;
+
+            //Output (not both, use only one of two if needed)
+            bool toRenderTarget = false;
+            bool toScreen = false;
+
+            //Tech
+            bool light = true;
+
+            inline bool operator == (const ShaderFeatures& dsr1) const {
+                return (
+                   (dsr1.colorFilter == colorFilter) &&
+                   (dsr1.opacityDiscardOnAlpha == opacityDiscardOnAlpha) &&
+                   (dsr1.opacityDiscardValue == opacityDiscardValue) &&
+                   (dsr1.ambient == ambient) &&
+                   (dsr1.diffuse == diffuse) &&
+                   (dsr1.displacement == displacement) &&
+                   (dsr1.emissive == emissive) &&
+                   (dsr1.height == height) &&
+                   (dsr1.baked_lightmap == baked_lightmap) &&
+                   (dsr1.normal == normal) &&
+                   (dsr1.opacity == opacity) &&
+                   (dsr1.reflection == reflection) &&
+                   (dsr1.shininess == shininess) &&
+                   (dsr1.specular == specular) &&
+                   (dsr1.toRenderTarget == toRenderTarget) &&
+                   (dsr1.toScreen == toScreen) &&
+                   (dsr1.light == light)      );
+            }
+        };
+
         virtual IShaderUniform* CreateUniform(const std::string& name, const MR::IShaderUniform::Types& type, void* value) = 0;
         virtual IShaderUniformBlock* CreateUniformBlock(const std::string& name, const int& numUniforms, std::string* uniformNames) = 0;
         virtual void DeleteUniform(IShaderUniform* su) = 0;
@@ -218,6 +267,8 @@ namespace MR{
         virtual void DetachAllSubShaders() = 0;
 
         virtual bool Use(IRenderSystem* context) = 0;
+
+        virtual ShaderFeatures GetFeatures() = 0;
 
         virtual ~IShader(){}
     };
@@ -265,6 +316,8 @@ namespace MR{
         void DetachSubShader(ISubShader* sub) override;
         void DetachAllSubShaders() override;
 
+        MR::IShader::ShaderFeatures GetFeatures() override;
+
         virtual bool Load();
         virtual void UnLoad();
 
@@ -281,68 +334,12 @@ namespace MR{
         std::vector<ISubShader*> _sub_shaders;
         std::vector<IShaderUniform*> _shaderUniforms;
         std::vector<IShaderUniformBlock*> _shaderUniformBlocks;
-    };
-
-    class ShaderBuilder {
-    public:
-        void SetCode(const std::string& code);
-        std::string BuildCode();
-
-        ShaderBuilder(const ISubShader::Type& type);
-        ~ShaderBuilder();
-    protected:
-        ISubShader::Type _type;
-        std::string _code;
+        MR::IShader::ShaderFeatures _features;
     };
 
     class ShaderManager : public virtual MR::ResourceManager {
     public:
-        class DefaultShaderRequest {
-        public:
-            //Options
-            bool colorFilter = false;
-            bool opacityDiscardOnAlpha = true;
-            float opacityDiscardValue = 0.9f;
-
-            //List of used maps
-            bool ambient = false;
-            bool diffuse = false;
-            bool displacement = false;
-            bool emissive = false;
-            bool height = false;
-            bool baked_lightmap = false;
-            bool normal = false;
-            bool opacity = false;
-            bool reflection = false;
-            bool shininess = false;
-            bool specular = false;
-
-            //Output (not both, use only one of two if needed)
-            bool toRenderTarget = false;
-            bool toScreen = false;
-
-            static IShader* MakeRequest(const DefaultShaderRequest& req);
-
-            inline bool operator == (const DefaultShaderRequest& dsr1) const {
-                return (
-                   (dsr1.colorFilter == colorFilter) &&
-                   (dsr1.opacityDiscardOnAlpha == opacityDiscardOnAlpha) &&
-                   (dsr1.opacityDiscardValue == opacityDiscardValue) &&
-                   (dsr1.ambient == ambient) &&
-                   (dsr1.diffuse == diffuse) &&
-                   (dsr1.displacement == displacement) &&
-                   (dsr1.emissive == emissive) &&
-                   (dsr1.height == height) &&
-                   (dsr1.baked_lightmap == baked_lightmap) &&
-                   (dsr1.normal == normal) &&
-                   (dsr1.opacity == opacity) &&
-                   (dsr1.reflection == reflection) &&
-                   (dsr1.shininess == shininess) &&
-                   (dsr1.specular == specular) &&
-                   (dsr1.toRenderTarget == toRenderTarget) &&
-                   (dsr1.toScreen == toScreen) );
-            }
-        };
+        static IShader* RequestDefault(const MR::IShader::ShaderFeatures& req);
 
         virtual Resource* Create(const std::string& name, const std::string& source);
         inline Shader* NeedShader(const std::string& source);
@@ -357,7 +354,7 @@ namespace MR{
             return m;
         }
     protected:
-        std::vector<std::pair<DefaultShaderRequest, IShader*>> _defaultShaders;
+        std::vector<std::pair<MR::IShader::ShaderFeatures, IShader*>> _defaultShaders;
     };
 }
 

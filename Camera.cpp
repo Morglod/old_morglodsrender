@@ -22,6 +22,13 @@ void MR::Camera::AttachToShader(IShader* shader) {
         }
         else as._mvpUniform = shader->CreateUniform(MR_SHADER_MVP_MAT4, IShaderUniform::Types::Mat4, &(*_mvp)[0][0]);
 
+        su = shader->FindShaderUniform(MR_SHADER_MODEL_MAT4);
+        if(su) {
+            as._modelUniform = su;
+            as._modelUniform->SetValue(&(*_modelMatrix)[0][0]);
+        }
+        else as._modelUniform = shader->CreateUniform(MR_SHADER_MODEL_MAT4, IShaderUniform::Types::Mat4, &(*_modelMatrix)[0][0]);
+
         su = shader->FindShaderUniform(MR_SHADER_VIEW_MAT4);
         if(su) {
             as._viewUniform = su;

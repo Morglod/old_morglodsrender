@@ -274,6 +274,7 @@ void RenderSystem::DrawGeomWithMaterial(glm::mat4* model_mat, MR::IGeometry* g, 
             _cam->SetModelMatrix(model_mat);
             mat->GetPass(i)->Use(this);
             DrawGeometry(g);
+            mat->GetPass(i)->UnUse(this);
         }
     } else {
         if(_useDefaultMaterial && _defaultMaterial) {
@@ -281,6 +282,7 @@ void RenderSystem::DrawGeomWithMaterial(glm::mat4* model_mat, MR::IGeometry* g, 
                 _cam->SetModelMatrix(model_mat);
                 _defaultMaterial->GetPass(i)->Use(this);
                 DrawGeometry(g);
+                _defaultMaterial->GetPass(i)->UnUse(this);
             }
         } else {
             _cam->SetModelMatrix(model_mat);
@@ -293,6 +295,7 @@ void RenderSystem::DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::IGeometry*
     _cam->SetModelMatrix(model_mat);
     if(mat_pass) mat_pass->Use(this);
     DrawGeometry(g);
+    if(mat_pass) mat_pass->UnUse(this);
 }
 
 void RenderSystem::DrawEntity(MR::Entity* ent) {
@@ -316,7 +319,6 @@ void RenderSystem::DrawEntity(MR::Entity* ent) {
         }
     }
 }
-
 
 RenderSystem::RenderSystem() : MR::Object(), _init(false), _alive(false), _glew(false), _glfw(false),
     _viewport(nullptr), _nextFreeUnit(0), _vformat(nullptr), _iformat(nullptr), _cam(nullptr), _shader(nullptr), _useDefaultMaterial(true), _defaultMaterial(nullptr), _renderTarget(nullptr), _poly_mode((IRenderSystem::PolygonMode)GL_FILL), _window(nullptr) {

@@ -41,6 +41,8 @@ public:
 class MaterialPass {
 public:
     virtual void Use(IRenderSystem* rs);
+    virtual void UnUse(IRenderSystem* rs);
+
     inline MaterialFlag GetFlag();
     inline MaterialFlag* GetFlagPtr();
 
