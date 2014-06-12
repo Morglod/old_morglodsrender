@@ -1,11 +1,17 @@
 #include "Context.hpp"
+#include "GLObject.hpp"
+
+#include <algorithm>
 
 MR::GL::IContext* currentContext = nullptr;
 
 namespace MR{
 namespace GL {
 
-void IContext::Free(){
+IContext::IContext() {
+}
+
+IContext::~IContext() {
 }
 
 void SetCurrent(IContext* ctx){

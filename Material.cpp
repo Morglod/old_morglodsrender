@@ -12,7 +12,7 @@ void MR::MaterialPass::Use(IRenderSystem* rs){
         if(_ambient)    rs->BindTexture(_ambient, _ambientUnit);
         if(_diffuse)    rs->BindTexture(_diffuse, _diffuseUnit);
         if(_opacity)    rs->BindTexture(_opacity, _opacityUnit);
-        if(_shader) { rs->UseShader(_shader); }
+        rs->UseShader(_shader);
 
         if(_twoSided)   glDisable(GL_CULL_FACE);
         else            glEnable(GL_CULL_FACE);

@@ -4,6 +4,7 @@
 #include "Material.hpp"
 #include "Texture.hpp"
 #include "Shader.hpp"
+#include "GL/Context.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
@@ -36,46 +37,58 @@ ModelLod* Model::GetLod(const float & dist) {
     return lods[lods.size()-1];
 }
 
-bool Model::Load() {
-    if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Model "+this->_name+" ("+this->_source+") loading", MR_LOG_LEVEL_INFO);
-    if(this->_source == "") {
-        if(this->_resource_manager->GetDebugMessagesState()) {
-            MR::Log::LogString("Model "+this->_name+" ("+this->_source+") load failed. Source is null", MR_LOG_LEVEL_ERROR);
-        }
-        this->_loaded = false;
-        return false;
-    }
-
-    MR::ModelFile* mfl = ModelFile::ImportModelFile(this->_source, this->_resource_manager->GetDebugMessagesState());
-    if(mfl == nullptr) {
-        MR::Log::LogString("Model "+this->_name+" ("+this->_source+") load failed. ModelFile is null", MR_LOG_LEVEL_ERROR);
-        this->_loaded = false;
-        return false;
-    } else {
-        //lods = new ModelLod*[1];
-        AddLod( new ModelLod(mfl->meshes, mfl->meshes_num) );
-    }
-
-    this->_loaded = true;
-    return true;
+void Model::_CpuUnLoading() {
+    RequestGPUUnLoad();
 }
 
-void Model::UnLoad() {
+void Model::_GpuUnLoading() {
+    if(_async_cpu_unloading_handle.NoErrors()) _async_cpu_unloading_handle.End();
+
     for(ModelLod* mlod : lods) {
         delete mlod;
     }
     lods.clear();
 }
 
-Model::Model(ModelManager* manager, std::string name, std::string source) :
-    Resource(manager, name, source) {}
+bool Model::_CpuLoading() {
+    RequestGPULoad();
+    return true;
+}
+
+bool Model::_GpuLoading() {
+    if(_async_cpu_loading_handle.NoErrors()) if(!_async_cpu_loading_handle.End()) return false;
+
+    if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Model "+this->_name+" ("+this->_source+") loading", MR_LOG_LEVEL_INFO);
+    if(this->_source == "") {
+        if(this->_resource_manager->GetDebugMessagesState()) {
+            MR::Log::LogString("Model "+this->_name+" ("+this->_source+") load failed. Source is null", MR_LOG_LEVEL_ERROR);
+        }
+        return false;
+    }
+
+    MR::ModelFile* mfl = ModelFile::ImportModelFile(this->_source, this->_resource_manager->GetDebugMessagesState());
+    if(mfl == nullptr) {
+        MR::Log::LogString("Model "+this->_name+" ("+this->_source+") load failed. ModelFile is null", MR_LOG_LEVEL_ERROR);
+        return false;
+    } else {
+        //lods = new ModelLod*[1];
+        AddLod( new ModelLod(mfl->meshes, mfl->meshes_num) );
+    }
+
+    _aabb.ReMake(mfl->minPoint, mfl->maxPoint);
+
+    return true;
+}
+
+Model::Model(ResourceManager* manager, std::string name, std::string source) :
+    Resource(manager, name, source), _aabb(glm::vec3(0,0,0), glm::vec3(1,1,1)) {}
 
 Model::~Model() {
 }
 
 Resource* ModelManager::Create(const std::string& name, const std::string& source) {
     if(this->_debugMessages) MR::Log::LogString("ModelManager "+name+" ("+source+") creating", MR_LOG_LEVEL_INFO);
-    Model * m = new Model(this, name, source);
+    Model * m = new Model(dynamic_cast<MR::ResourceManager*>(this), name, source);
     this->_resources.push_back(m);
     return m;
 }
@@ -240,6 +253,7 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
             if( (it->type != 1) && (it->type != 2) && (it->type != 9) ) continue;
             if(!isettings.ambientTextures && (it->type == 1)) continue;
             if(it->file != "") {
+
                 tex = dynamic_cast<MR::Texture*>(MR::TextureManager::Instance()->Need( MR::DirectoryFromFilePath(file) + "/" + it->file ));
                 GLint wmT = GL_CLAMP_TO_EDGE, wmS = GL_CLAMP_TO_EDGE;
                 switch(it->wrapModeU) {
@@ -295,6 +309,8 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
 
         matPassPtr->SetShader( MR::ShaderManager::RequestDefault(shaderRequest) );
     }
+
+    glm::vec3 MinPoint, MaxPoint;
 
     for(int i = 0; i < NumMeshes; ++i) {
         //Read model name
@@ -382,11 +398,27 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
 
         if(log) MR::Log::LogString("Decls " + std::to_string(declarations ), MR_LOG_LEVEL_INFO);
 
+        //Make min/max points
+        //If it's first mesh
+        if(i == 0) {
+            MinPoint = glm::vec3(vbuffer[0], vbuffer[1], vbuffer[2]);
+        }
+
+        //Walk over all positions and find min/max
+        for(size_t ipm = 0; ipm < vbufferSize; ipm += (vformat->Size() / sizeof(float))){
+            if(vbuffer[ipm] < MinPoint.x) MinPoint.x = vbuffer[ipm];
+            if(vbuffer[ipm+1] < MinPoint.y) MinPoint.y = vbuffer[ipm+1];
+            if(vbuffer[ipm+2] < MinPoint.z) MinPoint.z = vbuffer[ipm+2];
+            if(vbuffer[ipm] > MaxPoint.x) MaxPoint.x = vbuffer[ipm];
+            if(vbuffer[ipm+1] > MaxPoint.y) MaxPoint.y = vbuffer[ipm+1];
+            if(vbuffer[ipm+2] > MaxPoint.z) MaxPoint.z = vbuffer[ipm+2];
+        }
+
         //MR::VertexDeclaration* vDecl = new MR::VertexDeclaration(&vdtypes[0], declarations, VertexDeclaration::DataType::Float);
         //MR::IndexDeclaration* iDecl = new MR::IndexDeclaration(IndexDeclaration::DataType::UInt);
 
-        VertexBuffer* gl_v_buffer = new VertexBuffer();
-        gl_v_buffer->Buffer(&vbuffer[0], vbufferSize, IGLBuffer::Static+IGLBuffer::Draw, IGLBuffer::ReadOnly);
+        VertexBuffer* gl_v_buffer = new VertexBuffer(GL::GetCurrent());
+        gl_v_buffer->Buffer(&vbuffer[0], vbufferSize, IBuffer::Static+IBuffer::Draw, IBuffer::ReadOnly);
         gl_v_buffer->SetNum(numVerts);
 
         IndexFormatCustom* gl_i_format = nullptr;
@@ -395,12 +427,12 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
         if(isettings.indecies) {
             gl_i_format = new IndexFormatCustom(VertexDataTypeUInt::Instance());
 
-            gl_i_buffer = new IndexBuffer();
-            gl_i_buffer->Buffer(&ibuffer[0], ibufferSize, IGLBuffer::Static+IGLBuffer::Draw, IGLBuffer::ReadOnly);
+            gl_i_buffer = new IndexBuffer(GL::GetCurrent());
+            gl_i_buffer->Buffer(&ibuffer[0], ibufferSize, IBuffer::Static+IBuffer::Draw, IBuffer::ReadOnly);
             gl_i_buffer->SetNum(indsNum);
         }
 
-        MR::GeometryBuffer* new_gb = new GeometryBuffer(gl_v_buffer, gl_i_buffer, vformat, gl_i_format, GL_TRIANGLES);
+        MR::GeometryBuffer* new_gb = new GeometryBuffer(GL::GetCurrent(), gl_v_buffer, gl_i_buffer, vformat, gl_i_format, GL_TRIANGLES);
         for_meshes[materialId-1].buffers.push_back(new_gb);
 
         delete meshName;
@@ -429,6 +461,8 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
         meshes[mi] = new MR::Mesh(mesh_geometry, for_meshes[mi].buffers.size(), for_meshes[mi].mat);
     }
 
+    mfile->minPoint = MinPoint;
+    mfile->maxPoint = MaxPoint;
     mfile->meshes = meshes;
     mfile->meshes_num = for_meshes.size();
 

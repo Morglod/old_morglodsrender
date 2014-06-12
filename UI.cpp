@@ -158,7 +158,7 @@ _modelMatrix(new glm::mat4(1.0f)),
 _color(new glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), _tex_unit(new int(0)), _shader(0)
 
 {
-    _quad_geom_buffer = MR::GeometryBuffer::Plane(glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(0.5f, -0.5f, 0.0f), MR::IGLBuffer::Static+MR::IGLBuffer::Draw, MR::IGeometryBuffer::Draw_Quads);
+    _quad_geom_buffer = MR::GeometryBuffer::Plane(GL::GetCurrent(), glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(0.5f, -0.5f, 0.0f), MR::IBuffer::Static+MR::IBuffer::Draw, MR::IGeometryBuffer::Draw_Quads);
     _quad_geom = new MR::Geometry(_quad_geom_buffer, 0, 4, 4);
 
     _shader = new MR::Shader(MR::ShaderManager::Instance(), "UIDefaultShader", "FromMem");

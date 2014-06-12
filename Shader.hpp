@@ -230,30 +230,13 @@ namespace MR{
 
             //Tech
             bool light = true;
+            bool fog = false;
 
-            inline bool operator == (const ShaderFeatures& dsr1) const {
-                return (
-                   (dsr1.colorFilter == colorFilter) &&
-                   (dsr1.opacityDiscardOnAlpha == opacityDiscardOnAlpha) &&
-                   (dsr1.opacityDiscardValue == opacityDiscardValue) &&
-                   (dsr1.ambient == ambient) &&
-                   (dsr1.diffuse == diffuse) &&
-                   (dsr1.displacement == displacement) &&
-                   (dsr1.emissive == emissive) &&
-                   (dsr1.height == height) &&
-                   (dsr1.baked_lightmap == baked_lightmap) &&
-                   (dsr1.normal == normal) &&
-                   (dsr1.opacity == opacity) &&
-                   (dsr1.reflection == reflection) &&
-                   (dsr1.shininess == shininess) &&
-                   (dsr1.specular == specular) &&
-                   (dsr1.toRenderTarget == toRenderTarget) &&
-                   (dsr1.toScreen == toScreen) &&
-                   (dsr1.light == light)      );
-            }
+            bool operator == (const ShaderFeatures& dsr1) const;
         };
 
         virtual IShaderUniform* CreateUniform(const std::string& name, const MR::IShaderUniform::Types& type, void* value) = 0;
+        virtual void SetUniform(const std::string& name, const MR::IShaderUniform::Types& type, void* value) = 0;
         virtual IShaderUniformBlock* CreateUniformBlock(const std::string& name, const int& numUniforms, std::string* uniformNames) = 0;
         virtual void DeleteUniform(IShaderUniform* su) = 0;
         virtual void DeleteUniformBlock(IShaderUniformBlock* sub) = 0;
@@ -288,6 +271,18 @@ namespace MR{
         inline IShaderUniform* CreateUniform(const std::string& name, glm::vec4* value);
         inline IShaderUniform* CreateUniform(const std::string& name, glm::mat4* value);
 
+        /* Sets shader's uniform
+         *  uniform_name - name of shader's uniform
+         *  type - type of shader uniform
+         *  value - pointer to uniform's value */
+        void SetUniform(const std::string& name, const MR::IShaderUniform::Types& type, void* value) override;
+        inline void SetUniform(const std::string& name, int* value);
+        inline void SetUniform(const std::string& name, float* value);
+        inline void SetUniform(const std::string& name, glm::vec2* value);
+        inline void SetUniform(const std::string& name, glm::vec3* value);
+        inline void SetUniform(const std::string& name, glm::vec4* value);
+        inline void SetUniform(const std::string& name, glm::mat4* value);
+
         IShaderUniformBlock* CreateUniformBlock(const std::string& name, const int& mumUniforms, std::string* uniformNames) override;
 
         void DeleteUniform(IShaderUniform* su) override;
@@ -318,9 +313,6 @@ namespace MR{
 
         MR::IShader::ShaderFeatures GetFeatures() override;
 
-        virtual bool Load();
-        virtual void UnLoad();
-
         /*  Links sub shaders together (in OpenGL program)
          *  manager - ShaderManager
          *  sub_shaders - Array of SubShader objects
@@ -329,7 +321,18 @@ namespace MR{
 
         /* Deletes OpenGL shader object */
         virtual ~Shader();
+
+        /*
+            CPU to GPU interface
+        */
     protected:
+
+        bool _CpuLoading() override;
+        bool _GpuLoading() override;
+
+        void _CpuUnLoading() override;
+        void _GpuUnLoading() override;
+
         unsigned int _program; //OpenGL shader program
         std::vector<ISubShader*> _sub_shaders;
         std::vector<IShaderUniform*> _shaderUniforms;
@@ -431,6 +434,30 @@ MR::IShaderUniform* MR::Shader::CreateUniform(const std::string& uniform_name, g
 
 MR::IShaderUniform* MR::Shader::CreateUniform(const std::string& uniform_name, glm::mat4* value){
     return CreateUniform(uniform_name, MR::ShaderUniform::Types::Mat4, value);
+}
+
+void MR::Shader::SetUniform(const std::string& uniform_name, int* value){
+    SetUniform(uniform_name, MR::ShaderUniform::Types::Int, value);
+}
+
+void MR::Shader::SetUniform(const std::string& uniform_name, float* value){
+    SetUniform(uniform_name, MR::ShaderUniform::Types::Float, value);
+}
+
+void MR::Shader::SetUniform(const std::string& uniform_name, glm::vec2* value){
+    SetUniform(uniform_name, MR::ShaderUniform::Types::Vec2, value);
+}
+
+void MR::Shader::SetUniform(const std::string& uniform_name, glm::vec3* value){
+    SetUniform(uniform_name, MR::ShaderUniform::Types::Vec3, value);
+}
+
+void MR::Shader::SetUniform(const std::string& uniform_name, glm::vec4* value){
+    SetUniform(uniform_name, MR::ShaderUniform::Types::Vec4, value);
+}
+
+void MR::Shader::SetUniform(const std::string& uniform_name, glm::mat4* value){
+    SetUniform(uniform_name, MR::ShaderUniform::Types::Mat4, value);
 }
 
 unsigned int MR::Shader::GetGPUProgramId(){

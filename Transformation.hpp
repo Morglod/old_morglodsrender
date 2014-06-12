@@ -3,6 +3,8 @@
 #ifndef _MR_TRANSFORMATION_H_
 #define _MR_TRANSFORMATION_H_
 
+#include "Events.hpp"
+
 #ifndef glm_glm
 #   include <glm/glm.hpp>
 #   include <glm/gtc/matrix_transform.hpp>
@@ -11,6 +13,8 @@
 namespace MR{
 class Transform{
 public:
+    MR::EventListener<Transform*, const glm::mat4&> OnChanged;
+
     void Calc();
 
     inline bool IsAutoRecalc(){ return _autoReCalc; }

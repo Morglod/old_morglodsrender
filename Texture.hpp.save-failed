@@ -114,8 +114,10 @@ namespace MR{
 
     class RenderTarget;
 
-    class ITextureSettings : public Copyable<ITextureSettings*> {
+    class ITextureSettings : public Copyable<std::shared_ptr<ITextureSettings>> {
     public:
+        typedef std::shared_ptr<ITextureSettings> Ptr;
+
         enum class MinFilter : int {
             NEAREST_MIPMAP_NEAREST = 0x2700,
             LINEAR_MIPMAP_NEAREST = 0x2701,
@@ -154,17 +156,17 @@ namespace MR{
         };
 
         /* SENDER - TextureSettings pointer */
-        MR::EventListener<ITextureSettings*, const float&> OnLodBiasChanged;
-        MR::EventListener<ITextureSettings*, float*> OnBorderColorChanged; //as param used pointer to _border_color
-        MR::EventListener<ITextureSettings*, const MinFilter&> OnMinFilterChanged;
-        MR::EventListener<ITextureSettings*, const MagFilter&> OnMagFilterChanged;
-        MR::EventListener<ITextureSettings*, const int&> OnMinLodChanged;
-        MR::EventListener<ITextureSettings*, const int&> OnMaxLodChanged;
-        MR::EventListener<ITextureSettings*, const Wrap&> OnWrapSChanged;
-        MR::EventListener<ITextureSettings*, const Wrap&> OnWrapRChanged;
-        MR::EventListener<ITextureSettings*, const Wrap&> OnWrapTChanged;
-        MR::EventListener<ITextureSettings*, const CompareMode&> OnCompareModeChanged;
-        MR::EventListener<ITextureSettings*, const CompareFunc&> OnCompareFuncChanged;
+        MR::EventListener<const float&> OnLodBiasChanged;
+        MR::EventListener<float*> OnBorderColorChanged; //as param used pointer to _border_color
+        MR::EventListener<const MinFilter&> OnMinFilterChanged;
+        MR::EventListener<const MagFilter&> OnMagFilterChanged;
+        MR::EventListener<const int&> OnMinLodChanged;
+        MR::EventListener<const int&> OnMaxLodChanged;
+        MR::EventListener<const Wrap&> OnWrapSChanged;
+        MR::EventListener<const Wrap&> OnWrapRChanged;
+        MR::EventListener<const Wrap&> OnWrapTChanged;
+        MR::EventListener<const CompareMode&> OnCompareModeChanged;
+        MR::EventListener<const CompareFunc&> OnCompareFuncChanged;
 
         virtual void SetLodBias(const float& v) = 0;
         virtual void SetBorderColor(float* rgba) = 0;
@@ -332,29 +334,20 @@ namespace MR{
             Multisample2DArray = 0x9102
         };
 
-        enum class CompressionMode : unsigned int {
-            NoCompression = 0,
-            Default,
-            S3TC,
-            ETC2
-        };
-
         /* SENDER - Texture pointer */
-        MR::EventListener<ITexture*, void*> OnInfoReset;
+        MR::EventListener<void*> OnInfoReset;
 
         /* mipMapLevel, internalFormat, width, height, format, type, data
          *  invokes from SetData method */
-        MR::EventListener<ITexture*, const int&, const InternalFormat&, const int&, const int&, const Format&, const Type&, void*> OnDataChanged;
+        MR::EventListener<const int&, const InternalFormat&, const int&, const int&, const Format&, const Type&, void*> OnDataChanged;
 
         /* mipMapLevel, xOffset, yOffset, width, height, format, type, data
          *  invokes form UpdateData method */
-        MR::EventListener<ITexture*, const int&, const int&, const int&, const int&, const int&, const Format&, const Type&, void*> OnDataUpdated;
+        MR::EventListener<const int&, const int&, const int&, const int&, const int&, const Format&, const Type&, void*> OnDataUpdated;
 
-        MR::EventListener<ITexture*, ITextureSettings*> OnSettingsChanged;
+        MR::EventListener<TextureSettings::Ptr> OnSettingsChanged;
 
-        virtual ITextureSettings* GetSettings() = 0;
-        virtual void SetSettings(ITextureSettings* ts) = 0;
-
+        virtual ITextureSettings::Ptr GetSettings() = 0;
         virtual unsigned short GetWidth() = 0;
         virtual unsigned short GetHeight() = 0;
         virtual unsigned short GetDepth() = 0;
@@ -370,18 +363,18 @@ namespace MR{
         virtual unsigned int GetTextureArrayIndex() = 0;
         virtual ITextureArray* GetTextureArray() = 0;
         virtual Target GetTarget() = 0;
+        virtual void SetSettings(ITextureSettings::Ptr ts) = 0;
         virtual void ResetInfo() = 0;
         virtual void GetData(const int& mipMapLevel, const Format& format, const Type& type, void* dstBuffer) = 0;
         virtual void SetData(const int& mipMapLevel, const InternalFormat& internalFormat, const int& width, const int& height, const Format& format, const Type& type, void* data) = 0;
         virtual void UpdateData(const int& mipMapLevel, const int& xOffset, const int& yOffset, const int& width, const int& height, const Format& format, const Type& type, void* data) = 0;
-        virtual ITexture::CompressionMode GetCompressionMode() = 0;
 
         virtual ~ITexture() {}
     };
 
     class Texture : public Object, public virtual ITexture, public virtual Resource {
     public:
-        inline ITextureSettings* GetSettings() override { return _settings; } //May be nullptr
+        inline ITextureSettings::Ptr GetSettings() override { return _settings; } //May be nullptr
         inline unsigned short GetWidth() override { return gl_width; }
         inline unsigned short GetHeight() override { return gl_height; }
         inline unsigned short GetDepth() override { return gl_depth; }
@@ -395,13 +388,12 @@ namespace MR{
         inline bool IsCompressed() override { return gl_compressed; }
         inline unsigned int GetGPUHandle() override { return this->gl_texture; }
         inline Target GetTarget() override { return _target; }
-        inline ITexture::CompressionMode GetCompressionMode() { return _compression_mode; }
 
         inline unsigned int GetTextureArrayIndex() override { return this->_textureArrayIndex; }
         inline ITextureArray* GetTextureArray() override { return this->_texArray; }
         inline bool InTextureArray() { return _inTextureArray; }
 
-        inline void SetSettings(ITextureSettings* ts) {
+        inline void SetSettings(ITextureSettings::Ptr ts) {
             if(_settings != ts){
                 _settings = ts;
                 OnSettingsChanged(this, ts);
@@ -414,6 +406,9 @@ namespace MR{
         void SetData(const int& mipMapLevel, const InternalFormat& internalFormat, const int& width, const int& height, const Format& format, const Type& type, void* data);
         void UpdateData(const int& mipMapLevel, const int& xOffset, const int& yOffset, const int& width, const int& height, const Format& format, const Type& type, void* data);
 
+        virtual bool Load();
+        virtual void UnLoad();
+
         Texture(MR::ResourceManager* m, const std::string& name, const std::string& source);
         virtual ~Texture();
 
@@ -421,33 +416,19 @@ namespace MR{
         static void CreateOpenGLTexture(unsigned int* TexDst, const InternalFormat& internalFormat, const int& Width, const int& Height, const Format& format, const Type& type);
         static void CreateOpenGLTexture(const unsigned char *const data, const int& width, const int& height, const GLTextureLoadFormat& format, unsigned int * TexDst = new unsigned int(0), const GLTextureLoadFlags& flags = GLTextureLoadFlags::MipMaps);
         static void CreateOpenGLTexture(const unsigned char *const data, const char face_order[6], const int& width, const int& height, const GLTextureLoadFormat& format, unsigned int * TexDst = new unsigned int(0), const GLTextureLoadFlags& flags = GLTextureLoadFlags::MipMaps);
-
     protected:
-
         unsigned short gl_width = 0, gl_height = 0, gl_depth = 0;
         unsigned char gl_red_bits_num = 0, gl_green_bits_num = 0, gl_blue_bits_num = 0, gl_depth_bits_num = 0, gl_alpha_bits_num = 0;
         unsigned int gl_mem_image_size = 0, gl_internal_format = 0;
         bool gl_compressed = false;
         unsigned int gl_texture; //OpenGL texture
-        ITextureSettings* _settings = nullptr;
-
-        ITexture::CompressionMode _compression_mode;
+        ITextureSettings::Ptr _settings = nullptr;
 
         Target _target = Target::Base2D;
 
         bool _inTextureArray = false;
         unsigned int _textureArrayIndex = 0;
         ITextureArray* _texArray = nullptr;
-
-        bool _CpuLoading() override;
-        bool _GpuLoading() override;
-        void _CpuUnLoading() override;
-        void _GpuUnLoading() override;
-
-        unsigned char* _async_data = 0;
-        int _async_iform = 0;
-        int _async_form = 0;
-
     private:
         friend class IRenderSystem;
         friend class ITextureArray;
@@ -457,7 +438,7 @@ namespace MR{
 
     class CubeMap : public virtual Texture {
     public:
-        MR::EventListener<CubeMap*, const glm::vec3&> OnCapturePointChanged;
+        MR::EventListener<const glm::vec3&> OnCapturePointChanged;
 
         void SetCapturePoint(const glm::vec3& p);
         inline glm::vec3 GetCapturePoint();
@@ -536,21 +517,19 @@ namespace MR{
         inline Texture* NeedTexture(const std::string& source) { return dynamic_cast<Texture*>(Need(source)); }
         inline ITexture* WhiteTexture();
 
-        inline void SetCompressionMode(const ITexture::CompressionMode& cm) { _defaultCompressionMode = cm; }
-        inline ITexture::CompressionMode GetCompressionMode() { return _defaultCompressionMode; }
-
         TextureManager();
         virtual ~TextureManager();
 
-        static TextureManager* Instance();
+        static TextureManager* Instance(){
+            static TextureManager* m = new TextureManager();
+            return m;
+        }
     protected:
         MR::ITexture* _white;
 
         bool _useTexArrays = false; //experimental
         unsigned int _maxTexturesInArray = 50;
         std::vector<TextureArray*> _tex_arrays;
-
-        ITexture::CompressionMode _defaultCompressionMode;
 
         TextureArray* _StoreTexture(unsigned int* texArrayIndex, void* data, const ITexture::InternalFormat& iformat, const ITexture::Format& format, const ITexture::Type& type, const unsigned short& width, const unsigned short& height);
     };

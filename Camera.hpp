@@ -39,6 +39,7 @@ public:
     MR::EventListener<ICamera*, glm::mat4*> OnMVPRecalc;
 
     virtual void AttachToShader(IShader* shader) = 0;
+    virtual void UpdateShader(IShader* shader) = 0;
 
     virtual void SetAutoRecalc(const bool& state) = 0;
     virtual bool IsAutoRecalc() = 0;
@@ -100,6 +101,8 @@ public:
 class Camera : public MR::Object, public ICamera {
 public:
     void AttachToShader(IShader* shader) override;
+    void UpdateShader(IShader* shader) override;
+
     inline bool IsAutoRecalc() override;
 
     inline CameraMode GetCameraMode() override;
@@ -191,6 +194,8 @@ protected:
         IShaderUniform* _projUniform = nullptr;
         IShaderUniform* _modelUniform = nullptr;
         IShaderUniform* _mvpUniform = nullptr;
+        IShaderUniform* _posUniform = nullptr;
+        IShaderUniform* _dirUniform = nullptr;
     };
 
     std::vector<AttachedShader> _attachedShaders;

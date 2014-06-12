@@ -6,6 +6,8 @@
 #   include <GL\glew.h>
 #endif
 
+#include <glm/gtc/matrix_transform.hpp>
+
 void MR::Camera::AttachToShader(IShader* shader) {
     for(auto it = _attachedShaders.begin(); it != _attachedShaders.end(); ++it){
         if(it->_shader == shader) return;
@@ -43,9 +45,32 @@ void MR::Camera::AttachToShader(IShader* shader) {
         }
         else as._projUniform = shader->CreateUniform(MR_SHADER_PROJ_MAT4, IShaderUniform::Types::Mat4, &(*_projectionMatrix)[0][0]);
 
+        su = shader->FindShaderUniform(MR_SHADER_CAM_POS);
+        if(su) {
+            as._posUniform = su;
+            as._posUniform->SetValue(&(*_pos));
+        }
+        else as._posUniform = shader->CreateUniform(MR_SHADER_CAM_POS, MR::IShaderUniform::Types::Vec3, &(*_pos));
+
+        su = shader->FindShaderUniform(MR_SHADER_CAM_DIR);
+        if(su) {
+            as._dirUniform = su;
+            as._dirUniform->SetValue(&_direction);
+        }
+        else as._dirUniform = shader->CreateUniform(MR_SHADER_CAM_DIR, MR::IShaderUniform::Types::Vec3, &_direction);
+
         _attachedShaders.push_back(as);
     }
     //glUniformMatrix4fv(matrixUniform, 1, GL_FALSE, &(*_mvp)[0][0]);
+}
+
+void MR::Camera::UpdateShader(IShader* shader) {
+    shader->SetUniform(MR_SHADER_MVP_MAT4, IShaderUniform::Types::Mat4, &(*_mvp)[0][0]);
+    shader->SetUniform(MR_SHADER_MODEL_MAT4, IShaderUniform::Types::Mat4, &(*_modelMatrix)[0][0]);
+    shader->SetUniform(MR_SHADER_VIEW_MAT4, IShaderUniform::Types::Mat4, &(*_viewMatrix)[0][0]);
+    shader->SetUniform(MR_SHADER_PROJ_MAT4, IShaderUniform::Types::Mat4, &(*_projectionMatrix)[0][0]);
+    shader->SetUniform(MR_SHADER_CAM_POS, MR::IShaderUniform::Types::Vec3, &(*_pos));
+    shader->SetUniform(MR_SHADER_CAM_DIR, MR::IShaderUniform::Types::Vec3, &_direction);
 }
 
 void MR::Camera::MoveForward(const glm::vec3& v) {

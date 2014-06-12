@@ -5,6 +5,8 @@
 
 namespace MR {
 
+/* MUTEX */
+
 void Mutex::Lock(){
     _lastErCode = pthread_mutex_lock((pthread_mutex_t*)_handle);
     if(!_lastErCode) _locked = true;
@@ -34,78 +36,66 @@ Mutex::~Mutex(){
     delete ((pthread_mutex_t*)_handle);
 }
 
-bool Thread::Start(void* arg, const bool& joinable){
-    _joinable = joinable;
+/* THREAD */
 
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
+bool Thread::Start(void* arg){
+    _runArg = arg;
 
-    if(joinable)    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-    else            pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-
-    ThreadArg* thrArg = new ThreadArg(_entry, arg, 0);
-
-    if (pthread_create((pthread_t*)_handle, &attr, ThreadFunction, thrArg) != 0) {
-        pthread_attr_destroy(&attr);
+    if (pthread_create((pthread_t*)_handle, NULL, threadFunc, (void*)this) != 0) {
         return false;
     }
 
-    pthread_attr_destroy(&attr);
     return true;
+}
+
+void* Thread::threadFunc(void* th) {
+    return ((Thread*)th)->Run(((Thread*)th)->_runArg);
 }
 
 void* Thread::Join(Thread* thread){
     if(!thread) return NULL;
 
-    ThreadArg* res = new ThreadArg(0,0,0);
-    pthread_join(*((pthread_t*)thread->_handle), (void**)&res);
-    if(res) return res->returned;
-    else return 0;
+    void* rptr = 0;
+    pthread_join(*((pthread_t*)(thread->_handle)), &rptr);
+
+    return rptr;
 }
 
 void Thread::Detach(Thread* thread){
-    pthread_detach(*((pthread_t*)thread->_handle));
+    pthread_detach(*((pthread_t*)(thread->_handle)));
 }
 
 bool Thread::IsRunning(){
-    return !(pthread_kill(*((pthread_t*)_handle), 0));
+    return !(pthread_kill(*((pthread_t*)(_handle)), 0));
 }
 
 void Thread::ExitThis(void* result){
     pthread_exit(result);
 }
 
-Thread Thread::Self(){
-    pthread_t t = pthread_self();
-    return Thread(&t);
+Thread* Thread::Self(){
+    return new SelfThread(new pthread_t(pthread_self()));
 }
 
 bool Thread::operator==(const Thread& thread){
-    if( (*((pthread_t*)thread._handle)).p == (*((pthread_t*)_handle)).p ) return true;
+    if( ((pthread_t*)(thread._handle))->p == ((pthread_t*)(_handle))->p ) return true;
     return false;
 }
 
-Thread::Thread(const Thread& t) : _handle(t._handle), _entry(t._entry), _joinable(t._joinable) {
+Thread::Thread(const Thread& t) : _handle(t._handle), _runArg(t._runArg) {
 }
 
-Thread::Thread(void* handle) : _handle(handle), _entry(0), _joinable(false) {
+Thread::Thread(void* handle) : _handle(handle), _runArg(0) {
 }
 
-Thread::Thread(ThreadEntryPtr entry) : _handle(new pthread_t()), _entry(entry), _joinable(false) {
+Thread::Thread() : _handle(new pthread_t()), _runArg(0) {
 
 }
 
 Thread::~Thread(){
 }
 
-void* Thread::ThreadFunction(void* threadArg){
-    ThreadArg* arg = (ThreadArg*)threadArg;
-    if(arg->entry == nullptr) {
-        arg->returned = 0;
-        return NULL;
-    }
-    arg->returned = arg->entry(arg->arg);
-    return arg->returned;
+SelfThread::SelfThread(void* handle) : Thread(handle) {
 }
 
 void* AsyncHandle::End(){
@@ -117,9 +107,20 @@ AsyncHandle::AsyncHandle(Thread* thread, void* arg, const bool& noErrors) : _noE
 AsyncHandle::~AsyncHandle(){
 }
 
-AsyncHandle AsyncCall(Thread::ThreadEntryPtr entry, void* arg){
-    Thread* thread = new Thread(entry);
-    return AsyncHandle(thread, arg, thread->Start(arg, true));
+class AsyncThread : public Thread {
+public:
+    AsyncHandle::MethodPtr _method;
+
+    void* Run(void* arg) override {
+        return _method(arg);
+    }
+
+    AsyncThread(AsyncHandle::MethodPtr method) : Thread(), _method(method) {}
+};
+
+AsyncHandle AsyncCall(AsyncHandle::MethodPtr entry, void* arg){
+    AsyncThread* thread = new AsyncThread(entry);
+    return AsyncHandle(dynamic_cast<Thread*>(thread), arg, thread->Start(arg));
 }
 
 }

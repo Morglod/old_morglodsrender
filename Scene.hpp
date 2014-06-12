@@ -6,6 +6,7 @@
 #include "Config.hpp"
 #include "Events.hpp"
 #include "Entity.hpp"
+#include "Light.hpp"
 
 namespace MR{
 
@@ -17,6 +18,14 @@ class LightsList;
 
 class SceneManager {
 public:
+    class EntityDrawParams {
+    public:
+        LightsList* _llist = nullptr;
+        float* _fogMin = nullptr;
+        float* _fogMax = nullptr;
+        glm::vec4* _fogColor = nullptr;
+    };
+
     /** CAMERAS **/
     MR::EventListener<SceneManager*, Camera*> OnMainCameraChanged;
     MR::EventListener<SceneManager*, Camera*> OnCameraCreated;
@@ -30,6 +39,8 @@ public:
     virtual void DeleteCamera(Camera* cam); //Camera should be in cameras list
     virtual void SetMainCamera(Camera* cam); //Camera should be in cameras list
 
+    virtual Entity** CullEntities(Camera* cam);
+
     /** ENTITIES **/
     MR::EventListener<SceneManager*, Entity*> OnEntityAdded;
     MR::EventListener<SceneManager*, Entity*> OnEntityRemoving; //before removed
@@ -41,6 +52,15 @@ public:
     virtual Entity* CreateEntity(MR::Model* model);
     virtual Entity* CreateEntity(const std::string& modelSrc);
     virtual void DeleteEntity(Entity* ent);
+
+    /** LIGHTS **/
+    virtual void AddLight(ILightSource* l);
+    virtual void RemoveLight(ILightSource* l);
+    virtual MR::LightsList MakeLightsList(Entity* ent);
+
+    /** FOG **/
+    virtual void SetFog(const float& minDist, const float& maxDist, const glm::vec4& color);
+    virtual void GetFogInfo(float* minDist, float* maxDist, glm::vec4* color);
 
     /** **/
     virtual void Draw(IRenderSystem* rc);
@@ -56,6 +76,11 @@ protected:
     Camera* _mainCamera;
 
     bool _light; //toggle lights
+
+    //FOG
+    float _fogMin;
+    float _fogMax;
+    glm::vec4 _fogColor;
 };
 
 }

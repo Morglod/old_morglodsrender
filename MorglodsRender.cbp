@@ -52,6 +52,8 @@
 		</Linker>
 		<Unit filename="Anim.cpp" />
 		<Unit filename="Anim.hpp" />
+		<Unit filename="Boxes.cpp" />
+		<Unit filename="Boxes.hpp" />
 		<Unit filename="Camera.cpp" />
 		<Unit filename="Camera.hpp" />
 		<Unit filename="Config.hpp" />
@@ -62,8 +64,13 @@
 		<Unit filename="Exception.hpp" />
 		<Unit filename="GL/Context.cpp" />
 		<Unit filename="GL/Context.hpp" />
+		<Unit filename="GL/GLObject.cpp" />
+		<Unit filename="GL/GLObject.hpp" />
 		<Unit filename="GeometryBufferV2.cpp" />
 		<Unit filename="GeometryBufferV2.hpp" />
+		<Unit filename="Importer.cpp" />
+		<Unit filename="Importer.hpp" />
+		<Unit filename="InstancedGeometry.hpp" />
 		<Unit filename="Light.cpp" />
 		<Unit filename="Light.hpp" />
 		<Unit filename="Log.cpp" />

@@ -42,6 +42,19 @@ void MR::SceneManager::SetMainCamera(Camera* cam) {
     }
 }
 
+MR::Entity** MR::SceneManager::CullEntities(Camera* cam){
+    //std::vector<MR::Entity*> ent;
+
+    // MAKE CAMERA AABB
+    //float camH = glm::sin(cam->GetFovY());
+
+    // CULL ENTITIES
+    /*for(auto it = _entities.begin(); it != _entities.end(); ++it){
+        if((*it)->GetBBP()->TestAABB()) ent.push_back(*it);
+    }*/
+    return _entities.data();
+}
+
 void MR::SceneManager::AddEntity(Entity* ent) {
     _entities.push_back(ent);
     OnEntityAdded(this, ent);
@@ -79,7 +92,7 @@ void MR::SceneManager::DeleteEntity(Entity* ent) {
     OnEntityRemoving(this, ent);
     delete ent;
 }
-/*
+
 void MR::SceneManager::AddLight(ILightSource* ls){
     _lights.push_back(ls);
 }
@@ -91,16 +104,31 @@ void MR::SceneManager::RemoveLight(ILightSource* ls){
 }
 
 LightsList MR::SceneManager::MakeLightsList(Entity* ent){
-    return LightsList(std::vector<ILightSource*>());
+    return LightsList::MakeList(ent->GetBBP(), _lights.data(), _lights.size());
 }
-*/
+
+void MR::SceneManager::SetFog(const float& minDist, const float& maxDist, const glm::vec4& color){
+    _fogMin = minDist;
+    _fogMax = maxDist;
+    _fogColor = color;
+}
+
+void MR::SceneManager::GetFogInfo(float* minDist, float* maxDist, glm::vec4* color){
+    if(minDist) *minDist = _fogMin;
+    if(maxDist) *maxDist = _fogMax;
+    if(color) *color = _fogColor;
+}
 
 void MR::SceneManager::Draw(IRenderSystem* rc){
-    /*for(MR::Entity* ent : _entities){
-        rc->DrawEntity(ent);
-    }*/
+    EntityDrawParams edparams;
+    edparams._fogColor = &_fogColor;
+    edparams._fogMax = &_fogMax;
+    edparams._fogMin = &_fogMin;
+
     for(auto it = _entities.begin(); it != _entities.end(); ++it){
-        rc->DrawEntity(*it);
+        LightsList ll = MakeLightsList(*it);
+        edparams._llist = &ll;
+        rc->DrawEntity(*it, &edparams);
     }
 }
 

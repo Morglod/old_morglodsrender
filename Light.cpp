@@ -11,10 +11,12 @@ namespace MR{
 LightSource::~LightSource(){
 }
 
-LightsList LightsList::MakeList(const glm::vec3& point, const float& r, ILightSource** listOfPtrs, const size_t& listSize){
+LightsList LightsList::MakeList(MR::ICollidable* bound, ILightSource** listOfPtrs, const size_t& listSize){
     std::vector<ILightSource*> l;
-    for(size_t i = 0; i < listSize; ++i){
-        if( glm::distance(listOfPtrs[i]->GetPos(), point) <= (r+listOfPtrs[i]->GetRadius()) ) l.push_back(listOfPtrs[i]);
+    if(bound){
+        for(size_t i = 0; i < listSize; ++i){
+            if( bound->TestSphere(listOfPtrs[i]->GetPos(), listOfPtrs[i]->GetRadius()) || (listOfPtrs[i]->GetType() == MR::ILightSource::Type::Dir) ) l.push_back(listOfPtrs[i]);
+        }
     }
     return LightsList(l);
 }
@@ -22,16 +24,24 @@ LightsList LightsList::MakeList(const glm::vec3& point, const float& r, ILightSo
 LightsList::LightsList(const std::vector<ILightSource*>& l) : _lights(l) {
 }
 
-LightManager::LightManager(ShaderManager* sm){  }
-
-LightManager::~LightManager(){  }
-
-ILightSource* LightSource::CreatePointLight(const glm::vec3& pos, const glm::vec4& color, const float& radius) {
+ILightSource* LightSource::CreatePointLight(const glm::vec3& pos, const glm::vec3& emission, const glm::vec3& ambient, const float& attenuation, const float& power, const float& radius) {
     LightSource* lsrc = new LightSource();
     lsrc->_pos = pos;
-    lsrc->_color = color;
+    lsrc->_em = emission;
+    lsrc->_ambient = ambient;
+    lsrc->_att = attenuation;
+    lsrc->_power = power;
     lsrc->_radius = radius;
     lsrc->_type = Type::Point;
+    return lsrc;
+}
+
+ILightSource* LightSource::CreateDirLight(const glm::vec3& dir, const glm::vec3& emission, const glm::vec3& ambient){
+    LightSource* lsrc = new LightSource();
+    lsrc->_dir = dir;
+    lsrc->_ambient = ambient;
+    lsrc->_em = emission;
+    lsrc->_type = Type::Dir;
     return lsrc;
 }
 

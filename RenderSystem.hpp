@@ -23,6 +23,7 @@ class Entity;
 class Material;
 class MaterialPass;
 class RenderTarget;
+class LightsList;
 
 /* LOW LEVEL METHODS */
 class IRenderSystem {
@@ -33,7 +34,7 @@ public:
         Fill = 0x1B02
     };
 
-    virtual bool Init(IRenderWindow* window) = 0;
+    virtual bool Init(IRenderWindow* window, bool multithreaded = false) = 0;
     virtual void Shutdown() = 0;
 
     /* Is Initializated and not shutdowned */
@@ -66,10 +67,10 @@ public:
     virtual void UnBindRenderTarget() = 0;
 
     virtual void DrawGeometry(IGeometry* gb) = 0;
-    virtual void DrawGeomWithMaterial(glm::mat4* model_mat, MR::IGeometry* g, MR::Material* mat) = 0;
-    virtual void DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::IGeometry* g, MR::MaterialPass* mat_pass) = 0;
+    virtual void DrawGeomWithMaterial(glm::mat4* model_mat, MR::IGeometry* g, MR::Material* mat, void* edp) = 0; //MR::SceneManager::EntityDrawParams* edp
+    virtual void DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::IGeometry* g, MR::MaterialPass* mat_pass, void* edp) = 0; //MR::SceneManager::EntityDrawParams* edp
 
-    virtual void DrawEntity(Entity* ent) = 0;
+    virtual void DrawEntity(Entity* ent, void* edp) = 0; //MR::SceneManager::EntityDrawParams* edp
 
     //Get actived window
     virtual IRenderWindow* GetWindow() = 0;
@@ -95,7 +96,7 @@ class RenderSystem : public MR::IRenderSystem, public MR::Object {
 public:
     inline std::string ToString() override { return "RenderSystem(base)"; }
 
-    bool Init(IRenderWindow* window) override;
+    bool Init(IRenderWindow* window, bool multithreaded = false) override;
     void Shutdown() override;
 
     inline bool Alive() override { return _alive; }
@@ -130,10 +131,10 @@ public:
     void UnBindRenderTarget() override;
 
     void DrawGeometry(IGeometry* gb) override;
-    void DrawGeomWithMaterial(glm::mat4* model_mat, MR::IGeometry* g, MR::Material* mat) override;
-    void DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::IGeometry* g, MR::MaterialPass* mat_pass) override;
+    void DrawGeomWithMaterial(glm::mat4* model_mat, MR::IGeometry* g, MR::Material* mat, void* edp) override;
+    void DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::IGeometry* g, MR::MaterialPass* mat_pass, void* edp) override;
 
-    void DrawEntity(MR::Entity* ent) override;
+    void DrawEntity(MR::Entity* ent, void* edp) override;
 
     IRenderWindow* GetWindow() override { return _window; }
 

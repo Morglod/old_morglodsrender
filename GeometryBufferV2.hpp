@@ -6,6 +6,8 @@
 #include "Types.hpp"
 #include "Config.hpp"
 
+#include "GL/GLObject.hpp"
+
 #ifndef glm_glm
 #   include <glm/glm.hpp>
 #   include <glm/gtc/matrix_transform.hpp>
@@ -194,7 +196,7 @@ protected:
     IVertexDataType* _dataType;
 };
 
-class IGLBuffer {
+class IBuffer {
 public:
     enum UsageFlags {
         Stream = 0x88E0,
@@ -217,7 +219,7 @@ public:
     virtual void Release() = 0;
 };
 
-class VertexBuffer : public Object, public IGLBuffer {
+class VertexBuffer : public Object, public IBuffer, public GL::IGLObject {
     friend class GeometryBuffer;
 public:
     bool Buffer(void* data, const unsigned int& size, const unsigned int& usage, const unsigned int& accessFlag) override;
@@ -225,7 +227,9 @@ public:
     inline void SetNum(const unsigned int & num) { _num = num; }
     inline unsigned int GetNum() { return _num; }
 
-    VertexBuffer();
+    bool IsAvailable() override { return (_handle != 0); }
+
+    VertexBuffer(GL::IContext* ctx);
     virtual ~VertexBuffer();
 
 protected:
@@ -237,7 +241,7 @@ protected:
     unsigned int _num;
 };
 
-class IndexBuffer : public Object, public IGLBuffer {
+class IndexBuffer : public Object, public IBuffer, public GL::IGLObject {
     friend class GeometryBuffer;
 public:
     bool Buffer(void* data, const unsigned int& size, const unsigned int& usage, const unsigned int& accessFlag) override;
@@ -245,7 +249,9 @@ public:
     inline unsigned int GetNum() { return _num; }
     void Release() override;
 
-    IndexBuffer();
+    bool IsAvailable() override { return (_handle != 0); }
+
+    IndexBuffer(GL::IContext* ctx);
     virtual ~IndexBuffer();
 
 protected:
@@ -255,24 +261,6 @@ protected:
     unsigned int _accessFlag;
     unsigned int _handle;
     unsigned int _num;
-};
-
-class IndirectDrawBuffer : public Object, public IGLBuffer {
-    friend class Geometry;
-public:
-    bool Buffer(void* data, const unsigned int& size, const unsigned int& usage, const unsigned int& accessFlag) override;
-    void Release() override;
-    inline unsigned int GetHandle() { return _handle; }
-
-    IndirectDrawBuffer();
-    virtual ~IndirectDrawBuffer();
-
-protected:
-    uint64_t _resident_ptr;
-    int _buffer_size;
-    unsigned int _usage;
-    unsigned int _accessFlag;
-    unsigned int _handle;
 };
 
 class IGeometryBuffer {
@@ -300,7 +288,7 @@ public:
     virtual ~IGeometryBuffer() {}
 };
 
-class GeometryBuffer : public Object, public IGeometryBuffer {
+class GeometryBuffer : public Object, public IGeometryBuffer, public GL::IGLObject {
     friend class VertexBuffer;
     friend class IndexBuffer;
 public:
@@ -311,9 +299,12 @@ public:
     void Draw(IRenderSystem* rc, const unsigned int& start, const unsigned int& end, const int& count) override;
     inline void SetFormat(IVertexFormat* f, IIndexFormat* fi) override { _format = f; _iformat = fi; }
 
-    static GeometryBuffer* Plane(const glm::vec3& scale, const glm::vec3 pos, const unsigned int& usage, const unsigned int& drawm);
+    bool IsAvailable() override { return true; }
+    void Release() override;
 
-    GeometryBuffer(VertexBuffer* vb, IndexBuffer* ib, IVertexFormat* f, IIndexFormat* fi, const unsigned int& drawMode);
+    static GeometryBuffer* Plane(GL::IContext* ctx, const glm::vec3& scale, const glm::vec3 pos, const unsigned int& usage, const unsigned int& drawm);
+
+    GeometryBuffer(GL::IContext* ctx, VertexBuffer* vb, IndexBuffer* ib, IVertexFormat* f, IIndexFormat* fi, const unsigned int& drawMode);
     virtual ~GeometryBuffer();
 protected:
     VertexBuffer* _vb;
@@ -346,9 +337,7 @@ public:
     virtual ~Geometry();
 
 protected:
-    void _MakeBuffer(); //make indirect drawing buffer
     IGeometryBuffer* _buffer;
-    IndirectDrawBuffer* _draw_buffer; //buffer start, end, count values for indirect drawing
     unsigned int _start, _end;
     int _count;
 };

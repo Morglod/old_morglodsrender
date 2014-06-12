@@ -141,7 +141,7 @@ void VertexBuffer::Release(){
     }
 }
 
-VertexBuffer::VertexBuffer() : Object(), _usage(0), _accessFlag(0), _handle(0), _buffer_size(0), _num(0) {
+VertexBuffer::VertexBuffer(GL::IContext* ctx) : Object(), IGLObject(ctx, GL::IGLObject::ObjectType::Buffer, &_handle), _usage(0), _accessFlag(0), _handle(0), _buffer_size(0), _num(0) {
 }
 
 VertexBuffer::~VertexBuffer(){
@@ -185,58 +185,14 @@ void IndexBuffer::Release(){
     }
 }
 
-IndexBuffer::IndexBuffer() : Object(), _usage(0), _accessFlag(0), _handle(0), _buffer_size(0), _num(0) {
+IndexBuffer::IndexBuffer(GL::IContext* ctx) : Object(), IGLObject(ctx, GL::IGLObject::ObjectType::Buffer, &_handle), _usage(0), _accessFlag(0), _handle(0), _buffer_size(0), _num(0) {
 }
 
 IndexBuffer::~IndexBuffer(){
     Release();
 }
 
-bool IndirectDrawBuffer::Buffer(void* data, const unsigned int& size, const unsigned int& usage, const unsigned int& accessFlag){
-    _usage = usage;
-    _accessFlag = accessFlag;
-    if(_handle == 0) {
-        glGenBuffers(1, &_handle);
-    }
-    if(MR::MachineInfo::IsDirectStateAccessSupported()){
-        glNamedBufferDataEXT(_handle, size, data, usage);
-    } else {
-        glBindBuffer(GL_DRAW_INDIRECT_BUFFER, _handle);
-        glBufferData(GL_DRAW_INDIRECT_BUFFER, size, data, usage);
-        glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
-    }
-    if(MR::MachineInfo::FeatureNV_GPUPTR()){
-        if(MR::MachineInfo::IsDirectStateAccessSupported()){
-            glGetNamedBufferParameterui64vNV(_handle, GL_BUFFER_GPU_ADDRESS_NV, &_resident_ptr);
-            glGetNamedBufferParameterivEXT(_handle, GL_BUFFER_SIZE, &_buffer_size);
-            //glMakeNamedBufferResidentNV(_handle, accessFlag);
-        } else {
-            glBindBuffer(GL_DRAW_INDIRECT_BUFFER, _handle);
-            glGetBufferParameterui64vNV(GL_DRAW_INDIRECT_BUFFER, GL_BUFFER_GPU_ADDRESS_NV, &_resident_ptr);
-            glGetBufferParameteriv(GL_DRAW_INDIRECT_BUFFER, GL_BUFFER_SIZE, &_buffer_size);
-            //glMakeBufferResidentNV(GL_DRAW_INDIRECT_BUFFER, accessFlag);
-            glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
-        }
-    }
-
-    return true;
-}
-
-void IndirectDrawBuffer::Release(){
-    if(_handle != 0){
-        glDeleteBuffers(1, &_handle);
-        _handle = 0;
-    }
-}
-
-IndirectDrawBuffer::IndirectDrawBuffer() : Object(), _usage(0), _accessFlag(0), _handle(0), _buffer_size(0) {
-}
-
-IndirectDrawBuffer::~IndirectDrawBuffer(){
-    Release();
-}
-
-GeometryBuffer* GeometryBuffer::Plane(const glm::vec3& scale, const glm::vec3 pos, const unsigned int& usage, const unsigned int& drawm){
+GeometryBuffer* GeometryBuffer::Plane(GL::IContext* ctx, const glm::vec3& scale, const glm::vec3 pos, const unsigned int& usage, const unsigned int& drawm){
     const int per_verts_elements = 5;
     const int garray_size = per_verts_elements * 4;
     float garray[garray_size] {
@@ -278,18 +234,18 @@ GeometryBuffer* GeometryBuffer::Plane(const glm::vec3& scale, const glm::vec3 po
     vformat->AddVertexAttribute(new MR::VertexAttributeCustom(3, VertexDataTypeFloat::Instance(), IVertexAttribute::ShaderIndex_Position));
     vformat->AddVertexAttribute(new MR::VertexAttributeCustom(2, VertexDataTypeFloat::Instance(), IVertexAttribute::ShaderIndex_TexCoord));
 
-    MR::VertexBuffer* vbuffer = new VertexBuffer();
+    MR::VertexBuffer* vbuffer = new VertexBuffer(ctx);
     vbuffer->Buffer(&garray[0], sizeof(float)*garray_size, usage, drawm);
     vbuffer->SetNum(4); //set vertexes num
 
     MR::IndexFormatCustom* iformat = new IndexFormatCustom(VertexDataTypeUInt::Instance());
 
-    MR::IndexBuffer* ibuffer = new IndexBuffer();
+    MR::IndexBuffer* ibuffer = new IndexBuffer(ctx);
     ibuffer->Buffer(&iarray[0], sizeof(unsigned int)*iarray_size, usage, drawm);
     ibuffer->SetNum(iarray_size);
 
     //Create geometry buffer
-    MR::GeometryBuffer* gb = new GeometryBuffer(vbuffer, ibuffer, vformat, iformat, drawm); //new MR::GeometryBuffer(vDecl, iDecl, &garray[0], sizeof(float)*garray_size, &iarray[0], sizeof(unsigned int)*iarray_size, garray_size / per_verts_elements, iarray_size, usage, usage, drawm);
+    MR::GeometryBuffer* gb = new GeometryBuffer(ctx, vbuffer, ibuffer, vformat, iformat, drawm); //new MR::GeometryBuffer(vDecl, iDecl, &garray[0], sizeof(float)*garray_size, &iarray[0], sizeof(unsigned int)*iarray_size, garray_size / per_verts_elements, iarray_size, usage, usage, drawm);
     delete [] iarray;
 
     return gb;
@@ -406,8 +362,13 @@ void GeometryBuffer::Draw(IRenderSystem* rc, const unsigned int& start, const un
     }
 }
 
-GeometryBuffer::GeometryBuffer(VertexBuffer* vb, IndexBuffer* ib, IVertexFormat* f, IIndexFormat* fi, const unsigned int& drawMode) :
-    _vb(vb), _ib(ib), _format(f), _iformat(fi), _vao(0), _draw_mode(drawMode) {
+void GeometryBuffer::Release() {
+    if(_vao != 0) glDeleteVertexArrays(1, &_vao);
+    _vao = 0;
+}
+
+GeometryBuffer::GeometryBuffer(GL::IContext* ctx, VertexBuffer* vb, IndexBuffer* ib, IVertexFormat* f, IIndexFormat* fi, const unsigned int& drawMode) :
+    IGLObject(ctx, GL::IGLObject::ObjectType::Buffer, &_vao), _vb(vb), _ib(ib), _format(f), _iformat(fi), _vao(0), _draw_mode(drawMode) {
 
     if(!MR::MachineInfo::FeatureNV_GPUPTR()){
         glGenVertexArrays(1, &_vao);
@@ -429,8 +390,7 @@ GeometryBuffer::GeometryBuffer(VertexBuffer* vb, IndexBuffer* ib, IVertexFormat*
 }
 
 GeometryBuffer::~GeometryBuffer(){
-    glDeleteVertexArrays(1, &_vao);
-    _vao = 0;
+    Release();
 }
 
 void Geometry::SetGeometryBuffer(IGeometryBuffer* buffer) {
@@ -461,47 +421,11 @@ void Geometry::Draw(IRenderSystem* rc){
 }
 
 Geometry::Geometry(IGeometryBuffer* buffer, const unsigned int& istart, const unsigned int& iend, const int& icount)
- : _buffer(buffer), _draw_buffer(nullptr), _start(istart), _end(iend), _count(icount) {
+ : _buffer(buffer), _start(istart), _end(iend), _count(icount) {
      //if(MR::MachineInfo::Feature_DrawIndirect()) _MakeBuffer();
 }
 
 Geometry::~Geometry(){
-}
-
-void Geometry::_MakeBuffer(){
-    typedef struct {
-        //Arrays
-        unsigned int acount;
-        unsigned int ainstanceCount;
-        unsigned int afirst;
-        unsigned int abaseInstance;
-        //Elements 16 bytes offset
-        unsigned int ecount;
-        unsigned int eprimCount;
-        unsigned int efirstIndex;
-        unsigned int ebaseVertex;
-        unsigned int ebaseInstance;
-    } SDrawIndirectCommand;
-
-    SDrawIndirectCommand DrawIndirectCommand;
-
-    DrawIndirectCommand.acount = _count;
-    DrawIndirectCommand.ainstanceCount = 1;
-    DrawIndirectCommand.afirst = _start;
-    DrawIndirectCommand.abaseInstance = 0;
-
-    DrawIndirectCommand.ecount = _count;
-    DrawIndirectCommand.ebaseVertex = 0;
-    DrawIndirectCommand.ebaseInstance = 0;
-    DrawIndirectCommand.eprimCount = 0;
-    if(_buffer->GetIndexBuffer()) DrawIndirectCommand.eprimCount = _buffer->GetIndexBuffer()->GetNum();
-    DrawIndirectCommand.efirstIndex = _start;
-
-    if(!_draw_buffer){
-        _draw_buffer = new MR::IndirectDrawBuffer();
-    }
-
-    _draw_buffer->Buffer(&DrawIndirectCommand, sizeof(DrawIndirectCommand), GL_DYNAMIC_READ, GL_READ_WRITE);
 }
 
 }

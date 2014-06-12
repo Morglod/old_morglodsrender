@@ -357,7 +357,17 @@ std::string MR::Shader::ToString() {
     return "Shader";
 }
 
-bool MR::Shader::Load() {
+bool MR::Shader::_CpuLoading() {
+    RequestGPULoad();
+    return true;
+}
+void MR::Shader::_CpuUnLoading() {
+    RequestGPUUnLoad();
+}
+
+bool MR::Shader::_GpuLoading() {
+    if(_async_cpu_loading_handle.NoErrors()) if(!_async_cpu_loading_handle.End()) return false;
+
     if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Shader "+this->_name+" ("+this->_source+") loading", MR_LOG_LEVEL_INFO);
     if(this->_source != "") {
         if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Importing shader from ("+this->_source+")", MR_LOG_LEVEL_INFO);
@@ -414,20 +424,19 @@ bool MR::Shader::Load() {
         Link((ISubShader**)subs, sub_shaders_num);
     } else if(this->_resource_manager->GetDebugMessagesState()) {
         MR::Log::LogString("Shader "+this->_name+" ("+this->_source+") load failed. Source is null", MR_LOG_LEVEL_ERROR);
-        this->_loaded = false;
         return false;
     }
     if(this->_program == 0) {
         MR::Log::LogString("Shader "+this->_name+" ("+this->_source+") loading failed. GL_PROGRAM is null", MR_LOG_LEVEL_ERROR);
-        this->_loaded = false;
         return false;
     }
 
-    this->_loaded = true;
     return true;
 }
 
-void MR::Shader::UnLoad() {
+void MR::Shader::_GpuUnLoading() {
+    if(_async_cpu_unloading_handle.NoErrors()) _async_cpu_unloading_handle.End();
+
     if(_loaded) {
         if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Shader "+this->_name+" ("+this->_source+") unloading", MR_LOG_LEVEL_INFO);
         glDeleteProgram(this->_program);
@@ -471,6 +480,30 @@ MR::IShaderUniform* MR::Shader::CreateUniform(const std::string& uniform_name, c
     MR::ShaderUniform* p = new MR::ShaderUniform(uniform_name.c_str(), type, value, this);
     _shaderUniforms.push_back(p);
     return p;
+}
+
+void MR::Shader::SetUniform(const std::string& name, const MR::IShaderUniform::Types& type, void* value) {
+    if(!value) return;
+    switch(type) {
+    case ShaderUniform::Types::Int:
+        glProgramUniform1iEXT(_program, glGetUniformLocation(_program, name.c_str()), ((int*)value)[0]);
+        break;
+    case ShaderUniform::Types::Float:
+        glProgramUniform1fEXT(_program, glGetUniformLocation(_program, name.c_str()), ((float*)value)[0]);
+        break;
+    case ShaderUniform::Types::Vec2:
+        glProgramUniform2fEXT(_program, glGetUniformLocation(_program, name.c_str()), ((float*)value)[0], ((float*)value)[1]);
+        break;
+    case ShaderUniform::Types::Vec3:
+        glProgramUniform3fEXT(_program, glGetUniformLocation(_program, name.c_str()), ((float*)value)[0], ((float*)value)[1], ((float*)value)[2]);
+        break;
+    case ShaderUniform::Types::Vec4:
+        glProgramUniform4fEXT(_program, glGetUniformLocation(_program, name.c_str()), ((float*)value)[0], ((float*)value)[1], ((float*)value)[2], ((float*)value)[3]);
+        break;
+    case ShaderUniform::Types::Mat4:
+        glProgramUniformMatrix4fvEXT(_program, glGetUniformLocation(_program, name.c_str()), 1, GL_FALSE, (float*)&(((glm::mat4*)value)[0][0]));
+        break;
+    }
 }
 
 MR::IShaderUniformBlock* MR::Shader::CreateUniformBlock(const std::string& Name, const int& NumUniforms, std::string* UniformNames) {
@@ -542,6 +575,28 @@ MR::Shader::~Shader() {
 
 //DEFAULT SHADER REQUEST
 
+bool MR::IShader::ShaderFeatures::operator==(const MR::IShader::ShaderFeatures& dsr1) const {
+    return (
+               (dsr1.colorFilter == colorFilter) &&
+               (dsr1.opacityDiscardOnAlpha == opacityDiscardOnAlpha) &&
+               (dsr1.opacityDiscardValue == opacityDiscardValue) &&
+               (dsr1.ambient == ambient) &&
+               (dsr1.diffuse == diffuse) &&
+               (dsr1.displacement == displacement) &&
+               (dsr1.emissive == emissive) &&
+               (dsr1.height == height) &&
+               (dsr1.baked_lightmap == baked_lightmap) &&
+               (dsr1.normal == normal) &&
+               (dsr1.opacity == opacity) &&
+               (dsr1.reflection == reflection) &&
+               (dsr1.shininess == shininess) &&
+               (dsr1.specular == specular) &&
+               (dsr1.toRenderTarget == toRenderTarget) &&
+               (dsr1.toScreen == toScreen) &&
+               (dsr1.light == light) &&
+               (dsr1.fog == fog)   );
+}
+
 MR::IShader* MR::ShaderManager::RequestDefault(const MR::IShader::ShaderFeatures& req){
     for(auto it = MR::ShaderManager::Instance()->_defaultShaders.begin(); it != MR::ShaderManager::Instance()->_defaultShaders.end(); ++it){
         if(it->first == req) {
@@ -554,10 +609,12 @@ MR::IShader* MR::ShaderManager::RequestDefault(const MR::IShader::ShaderFeatures
         "#extension GL_ARB_separate_shader_objects : enable\n"
         "#pragma optimize(on)\n"
         "layout (location = 0) in vec3 InVertexPos;\n"
-        "layout (location = 1) in vec4 InVertexNormal;\n"
+        "layout (location = 1) in vec3 InVertexNormal;\n"
         "layout (location = 2) in vec4 InVertexColor;\n"
         "layout (location = 3) in vec2 InVertexTexCoord;\n"
-        "out vec4 "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME)+";\n";
+        "out vec4 "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME)+";\n"
+        "uniform vec3 "+std::string(MR_SHADER_CAM_POS)+";\n"
+        "uniform vec3 "+std::string(MR_SHADER_CAM_DIR)+";\n";
 
     std::string vertCode =
         "#version 330\n"
@@ -603,6 +660,7 @@ MR::IShader* MR::ShaderManager::RequestDefault(const MR::IShader::ShaderFeatures
 
     //FRAG
 
+    //UNIFORMS
     if(req.ambient){
         fragCode +=
             "uniform sampler2D "+std::string(MR_SHADER_AMBIENT_TEX)+";\n";
@@ -619,6 +677,12 @@ MR::IShader* MR::ShaderManager::RequestDefault(const MR::IShader::ShaderFeatures
         fragCode +=
             "uniform vec4 "+std::string(MR_SHADER_COLOR_V4)+";\n";
     }
+    if(req.fog){
+        fragCode +=
+            "uniform float "+std::string(MR_SHADER_FOG_MAX_DIST)+";\n"
+            "uniform float "+std::string(MR_SHADER_FOG_MIN_DIST)+";\n"
+            "uniform vec4 "+std::string(MR_SHADER_FOG_COLOR)+";\n";
+    }
 
     //MAKE LIGHT
     if(req.light){
@@ -627,37 +691,52 @@ MR::IShader* MR::ShaderManager::RequestDefault(const MR::IShader::ShaderFeatures
             "struct PointLight {\n"
             "   vec3 pos;\n"
             "   vec3 emission;\n"
+            "   vec3 ambient;\n"
             "   float attenuation;\n"
             "   float power;\n"
             "   float radius;\n"
             "};\n"
-            "int PointightsNum;\n"
-            "PointLight PointLights["+std::to_string(MR_SHADER_MAX_POINT_LIGHTS)+"];\n"
             "\n"
-            "void randomizeLights(){\n"
-            "   PointightsNum = "+std::to_string(MR_SHADER_MAX_POINT_LIGHTS)+";"
-            "   for(int i = 0; i < PointightsNum; i++){\n"
-            "       PointLights[i].pos = vec3(i * 1.0, 0.0, 0.0);\n"
-            "       PointLights[i].emission = vec3(2.1, 2.1, 2.1);\n"
-            "       PointLights[i].attenuation = 10.0;\n"
-            "       PointLights[i].power = 2.0;\n"
-            "       PointLights[i].radius = 1.0;\n"
-            "   }\n"
-            "}\n"
+            "struct DirLight {\n"
+            "   vec3 dir;\n"
+            "   vec3 emission;\n"
+            "   vec3 ambient;\n"
+            "};\n"
+            "\n"
+            "uniform int "+std::string(MR_SHADER_POINT_LIGHTS_NUM)+";\n"
+            "uniform PointLight "+std::string(MR_SHADER_POINT_LIGHTS)+"["+std::to_string(MR_SHADER_MAX_POINT_LIGHTS)+"];\n"
+            "\n"
+            "uniform int "+std::string(MR_SHADER_DIR_LIGHTS_NUM)+";\n"
+            "uniform DirLight "+std::string(MR_SHADER_DIR_LIGHTS)+"["+std::to_string(MR_SHADER_MAX_DIR_LIGHTS)+"];\n"
             "\n"
             "vec3 light(){\n"
-            "   randomizeLights();\n"
             "   vec3 fragLight = vec3(0.0, 0.0, 0.0);\n"
-            "   for(int i = 0; i < PointightsNum; i++){\n"
-            "       float Ld = distance(PointLights[i].pos, (vec4(InVertexPos, 1.0) * "+std::string(MR_SHADER_MODEL_MAT4)+").xyz);\n"
-            "       float att = 1.0 / (1.0 + PointLights[i].attenuation * pow(Ld, PointLights[i].power));\n"
-            "       float Lmult = (PointLights[i].radius - Ld) / PointLights[i].radius;\n"
-            "       if(Lmult < 0) Lmult = 0.0;\n"
-            "       fragLight += (att * PointLights[i].emission) * Lmult;\n"
+            "   for(int i = 0; i < "+std::string(MR_SHADER_POINT_LIGHTS_NUM)+"; i++){\n"
+            "       float Ld = distance("+std::string(MR_SHADER_POINT_LIGHTS)+"[i].pos, (vec4(InVertexPos, 1.0) * "+std::string(MR_SHADER_MODEL_MAT4)+").xyz);\n"
+            "       float att = 1.0 / (1.0 + "+std::string(MR_SHADER_POINT_LIGHTS)+"[i].attenuation * pow(Ld, "+std::string(MR_SHADER_POINT_LIGHTS)+"[i].power));\n"
+            "       float Lmult = ("+std::string(MR_SHADER_POINT_LIGHTS)+"[i].radius - Ld) / "+std::string(MR_SHADER_POINT_LIGHTS)+"[i].radius;\n"
+            "       Lmult = max(0.0, Lmult);\n" //if(Lmult < 0) Lmult = 0.0;\n"
+            "       fragLight += (att * "+std::string(MR_SHADER_POINT_LIGHTS)+"[i].emission) * (Lmult * "+std::string(MR_SHADER_POINT_LIGHTS)+"[i].ambient);\n"
+            "   }\n"
+            "   for(int di = 0; di < "+std::string(MR_SHADER_DIR_LIGHTS_NUM)+"; di++){\n"
+            "       vec3 surfN = normalize(vec4(InVertexNormal, 0.0) * "+std::string(MR_SHADER_MODEL_MAT4)+").xyz;\n"
+            "       float NdotL = dot(surfN, -"+std::string(MR_SHADER_DIR_LIGHTS)+"[di].dir);\n"
+            "       float diff = (NdotL * 0.5) + 0.5;\n"
+            "       fragLight += vec3(diff, diff, diff);\n"//max(ld, 0.0) * "+std::string(MR_SHADER_DIR_LIGHTS)+"[di].emission + "+std::string(MR_SHADER_DIR_LIGHTS)+"[di].ambient;\n"
             "   }\n"
             "   return fragLight;\n"
             "}\n";
     }
+
+    /*if(req.fog){
+        fragCode +=
+            "vec3 fog(){\n"
+            "   float fogFactor = gl_FragCoord.z - "+std::string(MR_SHADER_FOG_MIN_DIST)+";\n"
+            //"   float fogFactor = ( "+std::string(MR_SHADER_FOG_MAX_DIST)+" - dist ) / ( "+std::string(MR_SHADER_FOG_MAX_DIST)+" - "+std::string(MR_SHADER_FOG_MIN_DIST)+" );\n"
+            "   fogFactor = clamp(fogFactor, 0.0, 1.0);\n"
+            "   return vec3(fogFactor, fogFactor, fogFactor); //(fogFactor * "+std::string(MR_SHADER_FOG_COLOR)+".xyz * "+std::string(MR_SHADER_FOG_COLOR)+".w);\n"
+            "}\n";
+    }*/
 
     //MAKE FRAG MAIN
 
@@ -702,6 +781,12 @@ MR::IShader* MR::ShaderManager::RequestDefault(const MR::IShader::ShaderFeatures
             std::string(MR_SHADER_COLOR_V4)+" ";
         bVoidFrag = false;
     }
+
+    /*if(req.fog){
+        if(bAnyColor) fragCode += " + ";
+        fragCode += " vec4(fog(), 0.0) ";
+        bVoidFrag = false;
+    }*/
 
     if(bVoidFrag) fragCode += " vec4(1.0, 1.0, 1.0, 1.0)";
     fragCode += ";\n}";

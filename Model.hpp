@@ -6,6 +6,7 @@
 #include "Mesh.hpp"
 #include "ResourceManager.hpp"
 #include "Events.hpp"
+#include "Boxes.hpp"
 
 namespace MR{
 
@@ -29,30 +30,41 @@ protected:
 };
 
 class Model : public virtual Resource {
+    friend class ModelManager;
 public:
     inline void AddLod(ModelLod* l) { lods.push_back(l); }
     inline void SetDistStep(const float & dist){ dist_step = dist; }
+    inline Box* GetAABBP() { return &_aabb; }
 
     ModelLod* GetLod(const float & dist);
     inline ModelLod* GetLodN(const unsigned short & i){ if(GetLodNum() == 0) return nullptr; return lods[i]; }
     inline unsigned short GetLodNum(){ return lods.size(); }
 
-    virtual bool Load();
-    virtual void UnLoad();
-
-    Model(ModelManager* manager, std::string name, std::string source);
+    Model(ResourceManager* manager, std::string name, std::string source);
     virtual ~Model();
 
 protected:
+    bool _CpuLoading() override;
+    bool _GpuLoading() override;
+
+    void _CpuUnLoading() override;
+    void _GpuUnLoading() override;
+
     /** from 0 dist to dist_step is 0 lod, from dist_step to 2dist_step is 1 lod, etc **/
     std::vector<ModelLod*> lods;
     float dist_step = 7.0f;
+    Box _aabb;
+
+    bool _async_loading = MR_ASYNC_LOADING_DEFAULT;
+    AsyncHandle _async_handle; //return value is 1 or 0 (true/false)
 };
 
 struct ModelFile {
 public:
     Mesh** meshes;
     unsigned short meshes_num;
+    glm::vec3 minPoint, maxPoint;
+
     ModelFile();
 
     class ImportSettings {

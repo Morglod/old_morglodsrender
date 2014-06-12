@@ -30,54 +30,56 @@ private:
 
 class Thread {
 public:
-    typedef void* (*ThreadEntryPtr)(void*);
+    virtual void* Run(void* arg) = 0;
 
-    bool Start(void* arg, const bool& joinable = true);
+    bool Start(void* arg);
     bool IsRunning();
 
     static void* Join(Thread* thread);
     static void Detach(Thread* thread);
     static void ExitThis(void* result);
-    static Thread Self();
+    static Thread* Self();
 
     bool operator==(const Thread& thread);
 
-    Thread(const Thread& t);
-    Thread(ThreadEntryPtr tentry);
-    ~Thread();
+    Thread();
+    virtual ~Thread();
+
 protected:
+    static void* threadFunc(void* th);
     Thread(void* handle);
+    Thread(const Thread& t);
+
     void* _handle;
-    ThreadEntryPtr _entry;
-    bool _joinable;
-
-    class ThreadArg {
-    public:
-        ThreadEntryPtr entry;
-        void* arg;
-        void* returned;
-        ThreadArg(ThreadEntryPtr e, void* a, void* r) : entry(e), arg(a), returned(r) {}
-    };
-
-    static void* ThreadFunction(void* threadArg);
+    void* _runArg;
 };
+
+class SelfThread : public Thread {
+public:
+    void* Run(void* arg) override { return 0; }
+    SelfThread(void* handle);
+};
+
 
 class AsyncHandle {
 public:
+    typedef void* (*MethodPtr)(void* arg);
+
     inline Thread* GetThread() { return _thread; }
     void* End();
     void* GetArg() { return _arg; }
-    bool NoErrors() { return _noErrors; }
+    bool NoErrors() { return _noErrors && _thread; }
 
+    AsyncHandle() {}
     AsyncHandle(Thread* thread, void* arg, const bool& noErrors);
     ~AsyncHandle();
 protected:
-    bool _noErrors;
-    Thread* _thread;
+    bool _noErrors = true;
+    Thread* _thread = 0;
     void* _arg;
 };
 
-AsyncHandle AsyncCall(Thread::ThreadEntryPtr entry, void* arg);
+AsyncHandle AsyncCall(AsyncHandle::MethodPtr entry, void* arg);
 
 }
 

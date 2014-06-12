@@ -49,7 +49,7 @@ public:
         window = new MR::RenderWindow(WindowName, WindowWidth, WindowHeight, hints, callbacks);
         sys = new MR::RenderSystem();
 
-        if(!sys->Init(window)){
+        if(!sys->Init(window, true)){
             if(ThrowExceptions()){
                 throw MR::Exception("Failed context initialization SimpleApp::Go. Check log");
             }
@@ -75,6 +75,15 @@ public:
         float delta = 0.00000001f;
 
         while(!window->ShouldClose()){
+            MR::TextureManager::Instance()->AsyncLoadGPU();
+            MR::TextureManager::Instance()->AsyncUnLoadGPU();
+
+            MR::ModelManager::Instance()->AsyncLoadGPU();
+            MR::ModelManager::Instance()->AsyncUnLoadGPU();
+
+            MR::ShaderManager::Instance()->AsyncLoadGPU();
+            MR::ShaderManager::Instance()->AsyncUnLoadGPU();
+
             Frame(delta);
 
             glfwPollEvents();

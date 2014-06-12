@@ -1,10 +1,12 @@
 #include "Entity.hpp"
+#include "Model.hpp"
 
 namespace MR {
 
 void Entity::SetModel(MR::Model* m) {
     if(_model!=m) {
         _model = m;
+        CalcBoundingBox();
         OnModelChanged(this, m);
     }
 }
@@ -16,13 +18,22 @@ void Entity::SetMaterial(MR::Material* m) {
     }
 }
 
-Entity::Entity() : _model(nullptr), _material(nullptr) {
+void Entity::CalcBoundingBox(){
+    if(_model) _bb.ReMake(_model->GetAABBP()->GetMin(), _model->GetAABBP()->GetMax(), _tranform.GetMat());
+    else _bb.ReMake(glm::vec3(0,0,0), glm::vec3(0,0,0), _tranform.GetMat());
 }
 
-Entity::Entity(MR::Model* m) : _model(m), _material(nullptr) {
+Entity::Entity() : _model(nullptr), _material(nullptr), _bb(glm::vec3(0,0,0), 1, glm::mat4(1.0f)) {
+    _tce = new TransformChangedEvent(this);
+}
+
+Entity::Entity(MR::Model* m) : _model(m), _material(nullptr), _bb(glm::vec3(0,0,0), 1, glm::mat4(1.0f)) {
+    _tce = new TransformChangedEvent(this);
+    CalcBoundingBox();
 }
 
 Entity::~Entity() {
+    delete _tce;
 }
 
 Entity* Entity::CreateEntity(MR::Model* model) {

@@ -11,6 +11,8 @@
 #include "RenderTarget.hpp"
 #include "Shader.hpp"
 #include "Log.hpp"
+#include "Light.hpp"
+#include "Scene.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
@@ -67,7 +69,7 @@ bool AnyRenderSystemAlive(){
 
 /** ---------------------------------------------------------- */
 
-bool RenderSystem::Init(IRenderWindow* window) {
+bool RenderSystem::Init(IRenderWindow* window, bool multithreaded) {
     if(window == nullptr) return false;
 
     if(!_init){
@@ -89,7 +91,7 @@ bool RenderSystem::Init(IRenderWindow* window) {
         _alive = true;
     }
 
-    if(!window->Init()) {
+    if(!window->Init(multithreaded)) {
         MR::Log::LogString("Window initialization failed", MR_LOG_LEVEL_ERROR);
         return false;
     }
@@ -158,7 +160,10 @@ void RenderSystem::UseCamera(Camera* cam){
 
 void RenderSystem::UseShader(IShader* shader){
     _shader = shader;
-    if(shader) _shader->Use(this);
+    if(shader) {
+        if(_cam) _cam->UpdateShader(_shader);
+        _shader->Use(this);
+    }
 }
 
 unsigned int RenderSystem::FreeTextureUnit(){
@@ -268,21 +273,15 @@ void RenderSystem::DrawGeometry(IGeometry* gb) {
     if(gb) gb->Draw(this);
 }
 
-void RenderSystem::DrawGeomWithMaterial(glm::mat4* model_mat, MR::IGeometry* g, MR::Material* mat) {
+void RenderSystem::DrawGeomWithMaterial(glm::mat4* model_mat, MR::IGeometry* g, MR::Material* mat, void* edp) {
     if(mat) {
         for(unsigned short i = 0; i < mat->GetPassesNum(); ++i) {
-            _cam->SetModelMatrix(model_mat);
-            mat->GetPass(i)->Use(this);
-            DrawGeometry(g);
-            mat->GetPass(i)->UnUse(this);
+            DrawGeomWithMaterialPass(model_mat, g, mat->GetPass(i), edp);
         }
     } else {
         if(_useDefaultMaterial && _defaultMaterial) {
             for(unsigned short i = 0; i < _defaultMaterial->GetPassesNum(); ++i) {
-                _cam->SetModelMatrix(model_mat);
-                _defaultMaterial->GetPass(i)->Use(this);
-                DrawGeometry(g);
-                _defaultMaterial->GetPass(i)->UnUse(this);
+                DrawGeomWithMaterialPass(model_mat, g, _defaultMaterial->GetPass(i), edp);
             }
         } else {
             _cam->SetModelMatrix(model_mat);
@@ -291,15 +290,82 @@ void RenderSystem::DrawGeomWithMaterial(glm::mat4* model_mat, MR::IGeometry* g, 
     }
 }
 
-void RenderSystem::DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::IGeometry* g, MR::MaterialPass* mat_pass) {
+void RenderSystem::DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::IGeometry* g, MR::MaterialPass* mat_pass, void* vedp) {
     _cam->SetModelMatrix(model_mat);
     if(mat_pass) mat_pass->Use(this);
+
+    MR::SceneManager::EntityDrawParams* edp = (MR::SceneManager::EntityDrawParams*)vedp;
+
+    if(_shader){
+        unsigned int sh_prog = _shader->GetGPUProgramId();
+        if(_shader->GetFeatures().light && edp->_llist){
+            int pointLightsNum = 0;
+            int dirLightsNum = 0;
+
+            for(size_t li = 0; li < edp->_llist->GetLightsNum(); ++li){
+                if(edp->_llist->GetLights()[li]->GetType() == MR::ILightSource::Type::Point){
+                    ++pointLightsNum;
+
+                    //POS
+                    glUniform3f(glGetUniformLocation(sh_prog, (std::string(MR_SHADER_POINT_LIGHTS)+"["+std::to_string((int)li)+"].pos").c_str()), edp->_llist->GetLights()[li]->GetPos().x, edp->_llist->GetLights()[li]->GetPos().y, edp->_llist->GetLights()[li]->GetPos().z);
+
+                    //EMISSION
+                    glUniform3f(glGetUniformLocation(sh_prog, (std::string(MR_SHADER_POINT_LIGHTS)+"["+std::to_string((int)li)+"].emission").c_str()), edp->_llist->GetLights()[li]->GetEmission().x, edp->_llist->GetLights()[li]->GetEmission().y, edp->_llist->GetLights()[li]->GetEmission().z);
+
+                    //AMBIENT
+                    glUniform3f(glGetUniformLocation(sh_prog, (std::string(MR_SHADER_POINT_LIGHTS)+"["+std::to_string((int)li)+"].ambient").c_str()), edp->_llist->GetLights()[li]->GetAmbient().x, edp->_llist->GetLights()[li]->GetAmbient().y, edp->_llist->GetLights()[li]->GetAmbient().z);
+
+                    //RADIUS
+                    glUniform1f(glGetUniformLocation(sh_prog, (std::string(MR_SHADER_POINT_LIGHTS)+"["+std::to_string((int)li)+"].radius").c_str()), edp->_llist->GetLights()[li]->GetRadius());
+
+                    //ATTENUATION
+                    glUniform1f(glGetUniformLocation(sh_prog, (std::string(MR_SHADER_POINT_LIGHTS)+"["+std::to_string((int)li)+"].attenuation").c_str()), edp->_llist->GetLights()[li]->GetAttenuation());
+
+                    //POWER
+                    glUniform1f(glGetUniformLocation(sh_prog, (std::string(MR_SHADER_POINT_LIGHTS)+"["+std::to_string((int)li)+"].power").c_str()), edp->_llist->GetLights()[li]->GetPower());
+                }
+            }
+
+            glUniform1i(glGetUniformLocation(sh_prog, MR_SHADER_POINT_LIGHTS_NUM), pointLightsNum);
+
+            size_t pointLightsLoop = 0;
+            for(size_t li = 0; li < edp->_llist->GetLightsNum(); ++li){
+                if(edp->_llist->GetLights()[li]->GetType() == MR::ILightSource::Type::Point) ++pointLightsLoop;
+                if(edp->_llist->GetLights()[li]->GetType() == MR::ILightSource::Type::Dir){
+                    ++dirLightsNum;
+
+                    size_t lindex = li - pointLightsLoop;
+
+                    //DIR
+                    glUniform3f(glGetUniformLocation(sh_prog, (std::string(MR_SHADER_DIR_LIGHTS)+"["+std::to_string((int)lindex)+"].dir").c_str()), edp->_llist->GetLights()[li]->GetDir().x, edp->_llist->GetLights()[li]->GetDir().y, edp->_llist->GetLights()[li]->GetDir().z);
+
+                    //EMISSION
+                    glUniform3f(glGetUniformLocation(sh_prog, (std::string(MR_SHADER_DIR_LIGHTS)+"["+std::to_string((int)lindex)+"].emission").c_str()), edp->_llist->GetLights()[li]->GetEmission().x, edp->_llist->GetLights()[li]->GetEmission().y, edp->_llist->GetLights()[li]->GetEmission().z);
+
+                    //AMBIENT
+                    glUniform3f(glGetUniformLocation(sh_prog, (std::string(MR_SHADER_DIR_LIGHTS)+"["+std::to_string((int)lindex)+"].ambient").c_str()), edp->_llist->GetLights()[li]->GetAmbient().x, edp->_llist->GetLights()[li]->GetAmbient().y, edp->_llist->GetLights()[li]->GetAmbient().z);
+                }
+            }
+
+            glUniform1i(glGetUniformLocation(sh_prog, MR_SHADER_DIR_LIGHTS_NUM), dirLightsNum);
+        }
+
+        if(_shader->GetFeatures().fog){
+            glUniform1f(glGetUniformLocation(sh_prog, MR_SHADER_FOG_MAX_DIST), *(edp->_fogMax));
+            glUniform1f(glGetUniformLocation(sh_prog, MR_SHADER_FOG_MIN_DIST), *(edp->_fogMin));
+            glUniform4f(glGetUniformLocation(sh_prog, MR_SHADER_FOG_COLOR), edp->_fogColor->x, edp->_fogColor->y, edp->_fogColor->z, edp->_fogColor->w);
+        }
+
+        _shader->Use(this);
+    }
+
     DrawGeometry(g);
     if(mat_pass) mat_pass->UnUse(this);
 }
 
-void RenderSystem::DrawEntity(MR::Entity* ent) {
+void RenderSystem::DrawEntity(MR::Entity* ent, void* edp) {
     if(!ent->GetModel()) return;
+
     float dist = MR::Transform::CalcDist( *_cam->GetPosition(), ent->GetTransformP()->GetPos() );
     ModelLod* lod = ent->GetModel()->GetLod( dist );
     if(!lod) return;
@@ -307,14 +373,14 @@ void RenderSystem::DrawEntity(MR::Entity* ent) {
         MR::Mesh* mesh = lod->GetMesh(i);
         if(mesh->GetMaterial() == nullptr) {
             for(unsigned short gi = 0; gi < mesh->GetGeomNum(); ++gi) {
-                if(ent->GetMaterial() == nullptr) DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeoms()[gi], nullptr);
-                else DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeoms()[gi], ent->GetMaterial());
+                if(ent->GetMaterial() == nullptr) DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeoms()[gi], nullptr, 0);
+                else DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeoms()[gi], ent->GetMaterial(), edp);
             }
         }
         else {
             for(unsigned short gi = 0; gi < mesh->GetGeomNum(); ++gi) {
-                if(ent->GetMaterial() == nullptr) DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeoms()[gi], mesh->GetMaterial());
-                else DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeoms()[gi], ent->GetMaterial());
+                if(ent->GetMaterial() == nullptr) DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeoms()[gi], mesh->GetMaterial(), edp);
+                else DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeoms()[gi], ent->GetMaterial(), edp);
             }
         }
     }

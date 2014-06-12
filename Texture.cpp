@@ -2,6 +2,7 @@
 #include "RenderSystem.hpp"
 #include "Camera.hpp"
 #include "RenderTarget.hpp"
+#include "GL/Context.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
@@ -14,7 +15,9 @@
 using namespace MR;
 
 unsigned int MR::LoadGLTexture(const std::string& file, const unsigned int & t, const GLTextureLoadFormat& format, const GLTextureLoadFlags& flags){
+    //MR::GL::GetCurrent()->Lock();
     unsigned int i = SOIL_load_OGL_texture(file.c_str(),(int)format, t,(unsigned int)flags);
+    //MR::GL::GetCurrent()->Lock();
     if(i == 0){
         std::string lastResult = std::string(SOIL_last_result());
         if(ThrowExceptions()){
@@ -28,7 +31,9 @@ unsigned int MR::LoadGLTexture(const std::string& file, const unsigned int & t, 
 
 unsigned int MR::LoadGLCubemap(const std::string& x_pos_file, const std::string& x_neg_file, const std::string& y_pos_file, const std::string& y_neg_file, const std::string& z_pos_file, const std::string& z_neg_file,
                                const unsigned int & t, const GLTextureLoadFormat& format, const GLTextureLoadFlags& flags){
+    //MR::GL::GetCurrent()->Lock();
     unsigned int i = SOIL_load_OGL_cubemap(x_pos_file.c_str(), x_neg_file.c_str(), y_pos_file.c_str(), y_neg_file.c_str(), z_pos_file.c_str(), z_neg_file.c_str(), (int)format, t,(unsigned int)flags);
+    //MR::GL::GetCurrent()->Lock();
     if(i == 0){
         std::string lastResult = std::string(SOIL_last_result());
         if(ThrowExceptions()){
@@ -41,7 +46,9 @@ unsigned int MR::LoadGLCubemap(const std::string& x_pos_file, const std::string&
 }
 
 unsigned int MR::LoadGLCubemap(const std::string& file, const char faceOrder[6], const unsigned int & t, const GLTextureLoadFormat& format, const GLTextureLoadFlags& flags){
+    //MR::GL::GetCurrent()->Lock();
     unsigned int i = SOIL_load_OGL_single_cubemap(file.c_str(), faceOrder, (int)format, t, (unsigned int)flags);
+    //MR::GL::GetCurrent()->Lock();
     if(i == 0){
         std::string lastResult = std::string(SOIL_last_result());
         if(ThrowExceptions()){
@@ -54,7 +61,9 @@ unsigned int MR::LoadGLCubemap(const std::string& file, const char faceOrder[6],
 }
 
 unsigned int MR::LoadGLHDR(const std::string& file, const int& rescale_to_max, const unsigned int & t, const GLTextureHDRFake& hdrFake, const GLTextureLoadFlags& flags){
+    //MR::GL::GetCurrent()->Lock();
     unsigned int i = SOIL_load_OGL_HDR_texture(file.c_str(), (int)hdrFake, rescale_to_max, t, (unsigned int)flags);
+    //MR::GL::GetCurrent()->Lock();
     if(i == 0){
         std::string lastResult = std::string(SOIL_last_result());
         if(ThrowExceptions()){
@@ -67,7 +76,9 @@ unsigned int MR::LoadGLHDR(const std::string& file, const int& rescale_to_max, c
 }
 
 unsigned int MR::LoadGLTexture(const unsigned char *const buffer, const unsigned int& buffer_length, const unsigned int & t, const GLTextureLoadFormat& format, const GLTextureLoadFlags& flags){
+    //MR::GL::GetCurrent()->Lock();
     unsigned int i = SOIL_load_OGL_texture_from_memory(buffer, buffer_length, (int)format, t,(unsigned int)flags);
+    //MR::GL::GetCurrent()->Lock();
     if(i == 0){
         std::string lastResult = std::string(SOIL_last_result());
         if(ThrowExceptions()){
@@ -87,12 +98,14 @@ unsigned int MR::LoadGLCubemap(const unsigned char *const x_pos_buffer, const un
                                const unsigned char *const z_neg_buffer, const unsigned int& z_neg_buffer_length,
                                const unsigned int & t,
                                const GLTextureLoadFormat& format, const GLTextureLoadFlags& flags){
+    //MR::GL::GetCurrent()->Lock();
     unsigned int i = SOIL_load_OGL_cubemap_from_memory(x_pos_buffer, x_pos_buffer_length,
                                                        x_neg_buffer, x_neg_buffer_length,
                                                        y_pos_buffer, y_pos_buffer_length,
                                                        y_neg_buffer, y_neg_buffer_length,
                                                        z_pos_buffer, z_pos_buffer_length,
                                                        z_neg_buffer, z_neg_buffer_length, (int)format, t,(unsigned int)flags);
+    //MR::GL::GetCurrent()->Lock();
     if(i == 0){
         std::string lastResult = std::string(SOIL_last_result());
         if(ThrowExceptions()){
@@ -105,7 +118,9 @@ unsigned int MR::LoadGLCubemap(const unsigned char *const x_pos_buffer, const un
 }
 
 unsigned int MR::LoadGLCubemap(const unsigned char *const buffer, const unsigned int& buffer_length, const char faceOrder[6], const unsigned int & t, const GLTextureLoadFormat& format, const GLTextureLoadFlags& flags){
+    //MR::GL::GetCurrent()->Lock();
     unsigned int i = SOIL_load_OGL_single_cubemap_from_memory(buffer, buffer_length, faceOrder, (int)format, t, (unsigned int)flags);
+    //MR::GL::GetCurrent()->Lock();
     if(i == 0){
         std::string lastResult = std::string(SOIL_last_result());
         if(ThrowExceptions()){
@@ -118,7 +133,9 @@ unsigned int MR::LoadGLCubemap(const unsigned char *const buffer, const unsigned
 }
 
 bool MR::SaveScreenshot(const std::string& file, const GLImageSaveType& image_type, const int& x, const int& y, const int& width, const int& height){
+    //MR::GL::GetCurrent()->Lock();
     bool state = SOIL_save_screenshot(file.c_str(), (int)image_type, x, y, width, height);
+    //MR::GL::GetCurrent()->Lock();
     if(state == false){
         std::string lastResult = std::string(SOIL_last_result());
         if(ThrowExceptions()){
@@ -130,8 +147,12 @@ bool MR::SaveScreenshot(const std::string& file, const GLImageSaveType& image_ty
     return state;
 }
 
+MR::Mutex __LOAD_IMAGE_MUTEX;
+
 unsigned char* MR::LoadImage(const std::string& file, int* width, int* height, GLTextureLoadFormat* format, const GLTextureLoadFormat& force_format){
+    __LOAD_IMAGE_MUTEX.Lock();
     unsigned char* ptr = SOIL_load_image(file.c_str(), width, height, (int*)format, (int)force_format);
+    __LOAD_IMAGE_MUTEX.UnLock();
     if(ptr == NULL){
         std::string lastResult = std::string(SOIL_last_result());
         if(ThrowExceptions()){
@@ -146,13 +167,17 @@ unsigned char* MR::LoadImage(const std::string& file, int* width, int* height, G
 /** CLASS IMPLEMENTION **/
 
 void MR::TextureSettings::SetLodBias(const float& v) {
+    //MR::GL::GetCurrent()->Lock();
     glSamplerParameterf(_sampler, GL_TEXTURE_LOD_BIAS, v);
+    //MR::GL::GetCurrent()->Lock();
     _lod_bias = v;
     OnLodBiasChanged(this, v);
 }
 
 void MR::TextureSettings::SetBorderColor(float* rgba) {
+    //MR::GL::GetCurrent()->Lock();
     glSamplerParameterfv(_sampler, GL_TEXTURE_BORDER_COLOR, rgba);
+    //MR::GL::GetCurrent()->Lock();
     _border_color[0] = rgba[0];
     _border_color[1] = rgba[1];
     _border_color[2] = rgba[2];
@@ -165,60 +190,80 @@ void MR::TextureSettings::SetBorderColor(const float& r, const float& g, const f
     _border_color[1] = g;
     _border_color[2] = b;
     _border_color[3] = a;
+    //MR::GL::GetCurrent()->Lock();
     glSamplerParameterfv(_sampler, GL_TEXTURE_BORDER_COLOR, _border_color);
+    //MR::GL::GetCurrent()->Lock();
     OnBorderColorChanged(this, _border_color);
 }
 
 void MR::TextureSettings::SetMagFilter(const MR::TextureSettings::MagFilter& v) {
+    //MR::GL::GetCurrent()->Lock();
     glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, (int)v);
+    //MR::GL::GetCurrent()->Lock();
     _mag_filter = v;
     OnMagFilterChanged(this, v);
 }
 
 void MR::TextureSettings::SetMinFilter(const MR::TextureSettings::MinFilter& v) {
+    //MR::GL::GetCurrent()->Lock();
     glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, (int)v);
+    //MR::GL::GetCurrent()->Lock();
     _min_filter = v;
     OnMinFilterChanged(this, v);
 }
 
 void MR::TextureSettings::SetMinLod(const int& v) {
+    //MR::GL::GetCurrent()->Lock();
     glSamplerParameteri(_sampler, GL_TEXTURE_MIN_LOD, v);
+    //MR::GL::GetCurrent()->Lock();
     _min_lod = v;
     OnMinLodChanged(this, v);
 }
 
 void MR::TextureSettings::SetMaxLod(const int& v) {
+    //MR::GL::GetCurrent()->Lock();
     glSamplerParameteri(_sampler, GL_TEXTURE_MAX_LOD, v);
+    //MR::GL::GetCurrent()->Lock();
     _max_lod = v;
     OnMaxLodChanged(this, v);
 }
 
 void MR::TextureSettings::SetWrapS(const Wrap& v) {
+    //MR::GL::GetCurrent()->Lock();
     glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, (int)v);
+    //MR::GL::GetCurrent()->Lock();
     _wrap_s = v;
     OnWrapSChanged(this, v);
 }
 
 void MR::TextureSettings::SetWrapR(const Wrap& v) {
+    //MR::GL::GetCurrent()->Lock();
     glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_R, (int)v);
+    //MR::GL::GetCurrent()->Lock();
     _wrap_r = v;
     OnWrapRChanged(this, v);
 }
 
 void MR::TextureSettings::SetWrapT(const Wrap& v) {
+    //MR::GL::GetCurrent()->Lock();
     glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, (int)v);
+    //MR::GL::GetCurrent()->Lock();
     _wrap_t = v;
     OnWrapTChanged(this, v);
 }
 
 void MR::TextureSettings::SetCompareMode(const CompareMode& v) {
+    //MR::GL::GetCurrent()->Lock();
     glSamplerParameteri(_sampler, GL_TEXTURE_COMPARE_MODE, (int)v);
+    //MR::GL::GetCurrent()->Lock();
     _compare_mode = v;
     OnCompareModeChanged(this, v);
 }
 
 void MR::TextureSettings::SetCompareFunc(const CompareFunc& v) {
+    //MR::GL::GetCurrent()->Lock();
     glSamplerParameterf(_sampler, GL_TEXTURE_COMPARE_FUNC, (int)v);
+    //MR::GL::GetCurrent()->Lock();
     _compare_func = v;
     OnCompareFuncChanged(this, v);
 }
@@ -252,6 +297,7 @@ MR::TextureSettings::TextureSettings() :
      _compare_mode((CompareMode)MR_DEFAULT_TEXTURE_SETTINGS_COMPARE_MODE),
      _compare_func((CompareFunc)MR_DEFAULT_TEXTURE_SETTINGS_COMPARE_FUNC) {
 
+    //MR::GL::GetCurrent()->Lock();
     glGenSamplers(1, &_sampler);
     glSamplerParameterf(_sampler, GL_TEXTURE_LOD_BIAS, _lod_bias);
     glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, (int)_mag_filter);
@@ -263,19 +309,27 @@ MR::TextureSettings::TextureSettings() :
     glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, (int)_wrap_t);
     glSamplerParameteri(_sampler, GL_TEXTURE_COMPARE_MODE, (int)_compare_mode);
     glSamplerParameterf(_sampler, GL_TEXTURE_COMPARE_FUNC, (int)_compare_func);
+    //MR::GL::GetCurrent()->Lock();
 }
 
 MR::TextureSettings::~TextureSettings() {
-    if(MR::AnyRenderSystemAlive()) glDeleteSamplers(1, &_sampler);
+    if(MR::AnyRenderSystemAlive()) {
+        //MR::GL::GetCurrent()->Lock();
+        glDeleteSamplers(1, &_sampler);
+        //MR::GL::GetCurrent()->Lock();
+    }
 }
 
 void MR::Texture::GetData(const int& mipMapLevel, const MR::Texture::Format& format, const MR::Texture::Type& type, void* dstBuffer) {
+    //MR::GL::GetCurrent()->Lock();
     glBindTexture(GL_TEXTURE_2D, gl_texture);
     glGetTexImage(GL_TEXTURE_2D, mipMapLevel, (int)format, (int)type, dstBuffer);
     glBindTexture(GL_TEXTURE_2D, 0);
+    //MR::GL::GetCurrent()->Lock();
 }
 
 void MR::Texture::SetData(const int& mipMapLevel, const InternalFormat& internalFormat, const int& width, const int& height, const Format& format, const Type& type, void* data){
+    //MR::GL::GetCurrent()->Lock();
     glBindTexture(GL_TEXTURE_2D, gl_texture);
     glTexImage2D(GL_TEXTURE_2D,
         mipMapLevel,
@@ -287,10 +341,12 @@ void MR::Texture::SetData(const int& mipMapLevel, const InternalFormat& internal
         (int)type,
         data);
     glBindTexture(GL_TEXTURE_2D, 0);
+    //MR::GL::GetCurrent()->Lock();
     OnDataChanged(this, mipMapLevel, internalFormat, width, height, format, type, data);
 }
 
 void MR::Texture::UpdateData(const int& mipMapLevel, const int& xOffset, const int& yOffset, const int& width, const int& height, const Format& format, const Type& type, void* data) {
+    //MR::GL::GetCurrent()->Lock();
     glBindTexture(GL_TEXTURE_2D, gl_texture);
     glTexSubImage2D(GL_TEXTURE_2D,
         mipMapLevel,
@@ -302,10 +358,12 @@ void MR::Texture::UpdateData(const int& mipMapLevel, const int& xOffset, const i
         (int)type,
         data);
     glBindTexture(GL_TEXTURE_2D, 0);
+    //MR::GL::GetCurrent()->Lock();
     OnDataUpdated(this, mipMapLevel, xOffset, yOffset, width, height, format, type, data);
 }
 
 void MR::Texture::ResetInfo() {
+    //MR::GL::GetCurrent()->Lock();
     glBindTexture(GL_TEXTURE_2D, gl_texture);
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, (int*)(&gl_width));
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, (int*)(&gl_height));
@@ -319,95 +377,25 @@ void MR::Texture::ResetInfo() {
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_COMPRESSED, (int*)(&gl_compressed));
     gl_mem_image_size = ((gl_red_bits_num+gl_green_bits_num+gl_blue_bits_num+gl_depth_bits_num+gl_alpha_bits_num)/8)*gl_width*gl_height;
     glBindTexture(GL_TEXTURE_2D, 0);
+    //MR::GL::GetCurrent()->Lock();
     OnInfoReset(this, NULL);
 }
 
-bool MR::Texture::Load(){
-    if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") loading", MR_LOG_LEVEL_INFO);
-    if(this->_source != "") {
-        if(_inTextureArray){
-            MR::GLTextureLoadFormat f;
-            unsigned char* bytes = MR::LoadImage(this->_source, (int*)&gl_width, (int*)&gl_height, &f, MR::GLTextureLoadFormat::Auto);
-            if((gl_width == 0)||(gl_height == 0)){
-                MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") loading failed. BAD SIZES", MR_LOG_LEVEL_ERROR);
-                this->_loaded = false;
-                return false;
-            }
-
-            int iform = 0;
-            int format = 0;
-
-            switch( (int)f ){
-            case (int)GLTextureLoadFormat::Luminous:
-                iform = GL_R8;
-                format = (int)Format::LUMINANCE;
-                break;
-            case (int)GLTextureLoadFormat::LuminousAplha:
-                iform = GL_RG8;
-                format = (int)Format::LUMINANCE_ALPHA;
-                break;
-            case (int)GLTextureLoadFormat::RGB:
-                iform = (int)InternalFormat::RGB8;
-                format = (int)Format::RGB;
-                break;
-            case (int)GLTextureLoadFormat::RGBA:
-                iform = (int)InternalFormat::RGBA8;
-                format = (int)Format::RGBA;
-                break;
-            default:
-                iform = (int)InternalFormat::RGB8;
-                format = (int)Format::RGB;
-                break;
-            }
-
-            _texArray = dynamic_cast<TextureManager*>(_resource_manager)->_StoreTexture(&_textureArrayIndex, bytes, (InternalFormat)iform, (Format)format, Type::UNSIGNED_BYTE, gl_width, gl_height);
-            this->_loaded = true;
-            gl_texture = 0;
-            return true;
-        } else {
-            this->gl_texture = MR::LoadGLTexture(this->_source);
-        }
-    }
-    else {
-        if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") load failed. Source is null", MR_LOG_LEVEL_ERROR);
-        this->_loaded = false;
-        return false;
-    }
-    if(this->gl_texture == 0){
-        MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") loading failed. GL_TEXTURE is null", MR_LOG_LEVEL_ERROR);
-        this->_loaded = false;
-        return false;
-    }
-
-    this->_loaded = true;
-
-    ResetInfo();
-
-    return true;
-}
-
-void MR::Texture::UnLoad(){
-    if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") unloading", MR_LOG_LEVEL_INFO);
-    if(_res_free_state) {
-        if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") -> ResFreeState is on, deleting data", MR_LOG_LEVEL_INFO);
-        if(MR::AnyRenderSystemAlive()) glDeleteTextures(1, &this->gl_texture);
-    } else{
-        if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") -> ResFreeState is off", MR_LOG_LEVEL_INFO);
-    }
-    this->gl_texture = 0;
-}
-
 void MR::Texture::CreateOpenGLTexture(GLuint* TexDst, const InternalFormat& internalFormat, const int& Width, const int& Height, const Format& format, const Type& type){
+    //MR::GL::GetCurrent()->Lock();
     glGenTextures(1, TexDst);
     glBindTexture(GL_TEXTURE_2D, *TexDst);
     glTexImage2D(GL_TEXTURE_2D, 0, (int)internalFormat, Width, Height, 0, (int)format, (int)type, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
+    //MR::GL::GetCurrent()->Lock();
 }
 
 void MR::Texture::CreateOpenGLTexture(const unsigned char *const data, const int& width, const int& height, const GLTextureLoadFormat& format, unsigned int * TexDst, const GLTextureLoadFlags& flags){
     unsigned int t = 0;
     if((*TexDst) != 0) t = *TexDst;
+    //MR::GL::GetCurrent()->Lock();
     *TexDst = SOIL_create_OGL_texture(data, width, height, (int)format, t, (unsigned int)flags);
+    //MR::GL::GetCurrent()->Lock();
     if((*TexDst) == 0){
         std::string lastResult = std::string(SOIL_last_result());
         if(ThrowExceptions()){
@@ -421,7 +409,9 @@ void MR::Texture::CreateOpenGLTexture(const unsigned char *const data, const int
 void MR::Texture::CreateOpenGLTexture(const unsigned char *const data, const char face_order[6], const int& width, const int& height, const GLTextureLoadFormat& format, unsigned int * TexDst, const GLTextureLoadFlags& flags){
     unsigned int t = 0;
     if((*TexDst) != 0) t = *TexDst;
+    //MR::GL::GetCurrent()->Lock();
     *TexDst = SOIL_create_OGL_single_cubemap(data, width, height, (int)format, face_order, t, (unsigned int)flags);
+    //MR::GL::GetCurrent()->Lock();
     if((*TexDst) == 0){
         std::string lastResult = std::string(SOIL_last_result());
         if(ThrowExceptions()){
@@ -441,6 +431,156 @@ MR::Texture::Texture(MR::ResourceManager* m, const std::string& name, const std:
 MR::Texture::~Texture(){
     if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") deleting", MR_LOG_LEVEL_INFO);
     UnLoad();
+}
+
+bool MR::Texture::_CpuLoading() {
+    if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") cpu loading", MR_LOG_LEVEL_INFO);
+    if(this->_source == "") {
+        if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") load failed. Source is null", MR_LOG_LEVEL_ERROR);
+        return false;
+    }
+
+    if(_inTextureArray) {
+        MR::GLTextureLoadFormat f;
+        _async_data = MR::LoadImage(this->_source, (int*)&gl_width, (int*)&gl_height, &f, MR::GLTextureLoadFormat::Auto);
+        if((gl_width == 0)||(gl_height == 0)) {
+            MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") loading failed. BAD SIZES", MR_LOG_LEVEL_ERROR);
+
+            return false;
+        }
+
+        _async_iform = 0;
+        _async_form = 0;
+
+        switch( (int)f ) {
+        case (int)GLTextureLoadFormat::Luminous:
+            _async_iform = GL_R8;
+            _async_form = (int)Format::LUMINANCE;
+            break;
+        case (int)GLTextureLoadFormat::LuminousAplha:
+            _async_iform = GL_RG8;
+            _async_form = (int)Format::LUMINANCE_ALPHA;
+            break;
+        case (int)GLTextureLoadFormat::RGB:
+            _async_iform = (int)InternalFormat::RGB8;
+            _async_form = (int)Format::RGB;
+            break;
+        case (int)GLTextureLoadFormat::RGBA:
+            _async_iform = (int)InternalFormat::RGBA8;
+            _async_form = (int)Format::RGBA;
+            break;
+        default:
+            _async_iform = (int)InternalFormat::RGB8;
+            _async_form = (int)Format::RGB;
+            break;
+        }
+    } else {
+        MR::GLTextureLoadFormat f;
+        _async_data = MR::LoadImage(this->_source, (int*)&gl_width, (int*)&gl_height, &f, MR::GLTextureLoadFormat::Auto);
+        if((gl_width == 0)||(gl_height == 0)) {
+            MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") loading failed. BAD SIZES", MR_LOG_LEVEL_ERROR);
+
+            return false;
+        }
+
+        _async_iform = 0;
+        _async_form = 0;
+        ITexture::CompressionMode cmode = dynamic_cast<TextureManager*>(this->_resource_manager)->GetCompressionMode();
+
+        switch( (int)f ) {
+        case (int)GLTextureLoadFormat::Luminous:
+            _async_iform = GL_R8;
+            _async_form = (int)Format::LUMINANCE;
+            if(cmode != ITexture::CompressionMode::NoCompression) _async_iform = GL_COMPRESSED_LUMINANCE;
+
+            break;
+        case (int)GLTextureLoadFormat::LuminousAplha:
+            _async_iform = GL_RG8;
+            _async_form = (int)Format::LUMINANCE_ALPHA;
+            if(cmode != ITexture::CompressionMode::NoCompression) _async_iform = GL_COMPRESSED_LUMINANCE_ALPHA;
+
+            break;
+        case (int)GLTextureLoadFormat::RGB:
+            _async_iform = (int)InternalFormat::RGB8;
+            _async_form = (int)Format::RGB;
+            if(cmode == ITexture::CompressionMode::Default) _async_iform = GL_COMPRESSED_RGB;
+            if(cmode == ITexture::CompressionMode::S3TC) _async_iform = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+            if(cmode == ITexture::CompressionMode::ETC2) _async_iform = GL_COMPRESSED_RGB8_ETC2;
+
+            break;
+        case (int)GLTextureLoadFormat::RGBA:
+            _async_iform = (int)InternalFormat::RGBA8;
+            _async_form = (int)Format::RGBA;
+            if(cmode == ITexture::CompressionMode::Default) _async_iform = GL_COMPRESSED_RGBA;
+            if(cmode == ITexture::CompressionMode::S3TC) _async_iform = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+            if(cmode == ITexture::CompressionMode::ETC2) _async_iform = GL_COMPRESSED_RGBA8_ETC2_EAC;
+
+            break;
+        default:
+            _async_iform = (int)InternalFormat::RGB8;
+            _async_form = (int)Format::RGB;
+            if(cmode == ITexture::CompressionMode::Default) _async_iform = GL_COMPRESSED_RGB;
+            if(cmode == ITexture::CompressionMode::S3TC) _async_iform = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+            if(cmode == ITexture::CompressionMode::ETC2) _async_iform = GL_COMPRESSED_RGB8_ETC2;
+
+            break;
+        }
+    }
+
+    RequestGPULoad();
+    return true;
+}
+
+bool MR::Texture::_GpuLoading() {
+    if(_async_cpu_loading_handle.NoErrors()) if(!_async_cpu_loading_handle.End()) return false;
+
+    if(_inTextureArray) {
+        //MR::GL::GetCurrent()->Lock();
+        _texArray = dynamic_cast<TextureManager*>(_resource_manager)->_StoreTexture(&_textureArrayIndex, _async_data, (InternalFormat)_async_iform, (Format)_async_form, Type::UNSIGNED_BYTE, gl_width, gl_height);
+        //MR::GL::GetCurrent()->Lock();
+
+        gl_texture = 0;
+        return true;
+    } else {
+        //MR::GL::GetCurrent()->Lock();
+        glGenTextures(1, &gl_texture);
+        glBindTexture(GL_TEXTURE_2D, gl_texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, _async_iform, gl_width, gl_height, 0, _async_form, (unsigned int) Type::UNSIGNED_BYTE, _async_data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        //MR::GL::GetCurrent()->Lock();
+
+        //_texArray = dynamic_cast<TextureManager*>(_resource_manager)->_StoreTexture(&_textureArrayIndex, _async_data, (InternalFormat)_async_iform, (Format)_async_form, Type::UNSIGNED_BYTE, gl_width, gl_height);
+
+        return true;
+    }
+
+    if(_async_data) delete [] _async_data;
+
+    ResetInfo();
+
+    return true;
+}
+
+void MR::Texture::_CpuUnLoading() {
+    if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") cpu unloading", MR_LOG_LEVEL_INFO);
+    RequestGPUUnLoad();
+}
+
+void MR::Texture::_GpuUnLoading() {
+    if(_async_cpu_unloading_handle.NoErrors()) _async_cpu_unloading_handle.End();
+
+    if(_res_free_state) {
+        if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") -> ResFreeState is on, deleting data", MR_LOG_LEVEL_INFO);
+        if(MR::AnyRenderSystemAlive()) {
+            //MR::GL::GetCurrent()->Lock();
+            glDeleteTextures(1, &this->gl_texture);
+            //MR::GL::GetCurrent()->Lock();
+        }
+    } else{
+        if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") -> ResFreeState is off", MR_LOG_LEVEL_INFO);
+    }
+    this->gl_texture = 0;
 }
 
 MR::Texture* MR::Texture::FromFile(MR::ResourceManager* m, const std::string& file, std::string name){
@@ -490,24 +630,32 @@ MR::CubeMap::~CubeMap(){
 }
 
 unsigned int MR::TextureArray::Add(void* newData){
+    //MR::GL::GetCurrent()->Lock();
     glBindTexture(GL_TEXTURE_2D_ARRAY, _gl_texture);
 
     glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, _storedTexNum, _width, _height, 1, (int)_format, (int)_type, newData);
     //glGenerateMipmap( GL_TEXTURE_2D_ARRAY );
     glBindTexture(GL_TEXTURE_2D_ARRAY,0);
+    //MR::GL::GetCurrent()->Lock();
+
     ++_storedTexNum;
     return (_storedTexNum-1);
 }
 
 void MR::TextureArray::Update(const unsigned int& textureIndex, void* newData){
-    glBindTexture(GL_TEXTURE_2D_ARRAY, _gl_texture);
+    //MR::GL::GetCurrent()->Lock();
 
+    glBindTexture(GL_TEXTURE_2D_ARRAY, _gl_texture);
     glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, textureIndex, _width, _height, 1, (int)_format, (int)_type, newData);
     //glGenerateMipmap( GL_TEXTURE_2D_ARRAY );
     glBindTexture(GL_TEXTURE_2D_ARRAY,0);
+
+    //MR::GL::GetCurrent()->Lock();
 }
 
 MR::TextureArray::TextureArray(const Texture::InternalFormat& iformat, const Texture::Format& format, const Texture::Type& type, const unsigned short& width, const unsigned short& height, const unsigned int& maxTextures) : _maxTextures(maxTextures), _gl_texture(0), _internal_format(iformat), _format(format), _type(type), _width(width), _height(height) {
+    //MR::GL::GetCurrent()->Lock();
+
     glGenTextures(1, &_gl_texture);
     glBindTexture(GL_TEXTURE_2D_ARRAY, _gl_texture);
 
@@ -524,10 +672,14 @@ MR::TextureArray::TextureArray(const Texture::InternalFormat& iformat, const Tex
     glTexStorage3D(GL_TEXTURE_2D_ARRAY, 10, (int)iformat, width, height, _maxTextures);
 
     glBindTexture(GL_TEXTURE_2D_ARRAY,0);
+
+    //MR::GL::GetCurrent()->Lock();
 }
 
 MR::TextureArray::~TextureArray(){
+    //MR::GL::GetCurrent()->Lock();
     glDeleteTextures(1, &_gl_texture);
+    //MR::GL::GetCurrent()->Lock();
 }
 
 bool MR::TextureArray::Support(const Texture::InternalFormat& iformat){
@@ -582,7 +734,7 @@ bool MR::TextureArray::Support(const Texture::InternalFormat& iformat){
 Resource* TextureManager::Create(const std::string& name, const std::string& source){
     if(this->_debugMessages) MR::Log::LogString("TextureManager "+name+" ("+source+") creating", MR_LOG_LEVEL_INFO);
 
-    Texture * t = new Texture(this, name, source);
+    Texture * t = new Texture(dynamic_cast<MR::ResourceManager*>(this), name, source);
     if(_useTexArrays) t->_inTextureArray = true;
     this->_resources.push_back(t);
     return t;
@@ -591,7 +743,7 @@ Resource* TextureManager::Create(const std::string& name, const std::string& sou
 Resource* TextureManager::Create(const std::string& name, const unsigned int & gl_texture){
     if(this->_debugMessages) MR::Log::LogString("TextureManager "+name+" (gl_texture) creating", MR_LOG_LEVEL_INFO);
 
-    Texture * t = new Texture(this, name, "");
+    Texture * t = new Texture(dynamic_cast<MR::ResourceManager*>(this), name, "");
     t->gl_texture = gl_texture;
     t->ResetInfo();
     t->_loaded = true;
@@ -614,7 +766,7 @@ TextureArray* TextureManager::_StoreTexture(unsigned int* texArrayIndex, void* d
 }
 
 TextureManager::TextureManager() : ResourceManager() {
-    _white = new MR::Texture(this, "White", "FromMem");
+    _white = new MR::Texture(dynamic_cast<MR::ResourceManager*>(this), "White", "FromMem");
     unsigned char pixel_white_data[4]{255,255,255,255};
     MR::Texture::CreateOpenGLTexture(&pixel_white_data[0], 1, 1, GLTextureLoadFormat::RGBA, &(dynamic_cast<MR::Texture*>(_white)->gl_texture), GLTextureLoadFlags::None);
     Add(dynamic_cast<Resource*>(_white));
@@ -623,4 +775,10 @@ TextureManager::TextureManager() : ResourceManager() {
 TextureManager::~TextureManager(){
     delete [] _tex_arrays.data();
     _tex_arrays.clear();
+}
+
+TextureManager* __INSTANCE_TEXTURE_MANAGER = 0;
+TextureManager* TextureManager::Instance(){
+    if(__INSTANCE_TEXTURE_MANAGER == 0) __INSTANCE_TEXTURE_MANAGER = new MR::TextureManager();
+    return __INSTANCE_TEXTURE_MANAGER;
 }

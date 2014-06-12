@@ -10,6 +10,8 @@
 #include <string.h>
 #include <bitset>
 
+#include <glm/glm.hpp>
+
 namespace MR {
 
 class Object {
@@ -153,6 +155,13 @@ union Byte {
     std::string ToString() {
         return std::to_string(bit8) + std::to_string(bit7) + std::to_string(bit6) + std::to_string(bit5) + std::to_string(bit4) + std::to_string(bit3) + std::to_string(bit2) + std::to_string(bit1);
     }
+};
+
+class ICollidable {
+public:
+    virtual bool TestPoint(const glm::vec3& point) = 0;
+    virtual bool TestAABB(const glm::vec3& min, const glm::vec3& size) = 0;
+    virtual bool TestSphere(const glm::vec3& point, const float& radius) = 0;
 };
 
 }

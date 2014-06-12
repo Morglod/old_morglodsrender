@@ -14,7 +14,7 @@ namespace MR {
 
 class IRenderSystem;
 
-class IRenderWindow : public GL::IContext {
+class IRenderWindow : public virtual GL::IContext {
 public:
     /** EVENTS **/
 
@@ -115,7 +115,7 @@ public:
     virtual bool IsVisible() = 0;
 };
 
-class RenderWindow : public IRenderWindow, public MR::Object {
+class RenderWindow : public virtual IRenderWindow, public MR::Object {
 public:
 
     /** EVENTS **/
@@ -129,7 +129,7 @@ public:
     //arg1 - nullptr
     MR::EventListener<RenderWindow*, void*> OnRefresh;
 
-    bool Init() override;
+    bool Init(bool multithreaded = false) override;
     void Destroy() override;
 
     void Close(const bool& safe = true) override;
@@ -168,6 +168,10 @@ public:
     bool ShouldClose();
     void SwapBuffers() override;
     void MakeCurrent() override;
+
+    void* _GetMultithreadContext() override {
+        return glfw_handle_multithread;
+    }
 
     bool ExtensionSupported(const char* ext) override;
     ProcFunc GetProcAddress(const char* procname) override;
@@ -225,13 +229,14 @@ public:
     };
 
     RenderWindow(const std::string& title, const int& width, const int& height);
-    RenderWindow(const std::string& title, const int& width, const int& height, const RenderWindowHints& hints, const RenderWindowCallbacks& callbacks = RenderWindowCallbacks(), GLFWwindow* parent_share_resources = NULL);
+    RenderWindow(const std::string& title, const int& width, const int& height, const RenderWindowHints& hints, const RenderWindowCallbacks& callbacks = RenderWindowCallbacks());
     ~RenderWindow();
 
     static RenderWindow* Create(const std::string& title, const int& width, const int& height) { return new RenderWindow(title, width, height); }
 
 protected:
     GLFWwindow* glfw_handle;
+    GLFWwindow* glfw_handle_multithread; //invivislbe window for second context, if initializated as multithreaded
     char* titlec;
 
     static void window_pos_callback(GLFWwindow* window, int x, int y);
@@ -250,7 +255,6 @@ protected:
 
     RenderWindowHints _creationHints;
     RenderWindowCallbacks _creationCallbacks;
-    GLFWwindow* _creationParent;
     int _creationWidth;
     int _creationHeight;
 

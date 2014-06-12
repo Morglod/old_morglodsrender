@@ -60,7 +60,7 @@ void RenderWindow::window_scroll_callback(GLFWwindow* window, double x_offset, d
 void RenderWindow::window_close_callback(GLFWwindow* window) {
     RenderWindow* p = (RenderWindow*)glfwGetWindowUserPointer(window);
     p->OnClose(p, nullptr);
-    p->Free();
+    p->Destroy();
 }
 
 void RenderWindow::window_focus_changed_callback(GLFWwindow* window, int state) {
@@ -83,8 +83,21 @@ void RenderWindow::framebuffer_size_callback(GLFWwindow* window, int w, int h) {
     p->OnFrameBufferSizeChanged(p, w, h);
 }
 
-bool RenderWindow::Init() {
+bool RenderWindow::Init(bool multithreaded) {
     if(_inited) return true;
+
+    if(multithreaded) {
+        glfw_handle_multithread = NULL;
+
+        glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+        glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
+        glfw_handle_multithread = glfwCreateWindow(1, 1, (std::string(titlec)+" Multithreaded").c_str(), NULL, NULL);
+        if(!glfw_handle_multithread) {
+            MR::Log::LogString("glfw multithred window creation failed", MR_LOG_LEVEL_ERROR);
+            glfwTerminate();
+            return false;
+        }
+    }
 
     glfwWindowHint(GLFW_ACCUM_ALPHA_BITS, _creationHints.accum_alpha_bits);
     glfwWindowHint(GLFW_ACCUM_BLUE_BITS, _creationHints.accum_blue_bits);
@@ -111,12 +124,12 @@ bool RenderWindow::Init() {
     glfwWindowHint(GLFW_STEREO, _creationHints.stereo);
     glfwWindowHint(GLFW_VISIBLE, _creationHints.visible);
 
-    glfw_handle = glfwCreateWindow(_creationWidth, _creationHeight, titlec, NULL, _creationParent);
+    glfw_handle = glfwCreateWindow(_creationWidth, _creationHeight, titlec, NULL, glfw_handle_multithread);
 
     if(glfw_handle) {
         MakeCurrent();
 
-        glfwSetWindowUserPointer(glfw_handle, this);
+        glfwSetWindowUserPointer(glfw_handle, dynamic_cast<RenderWindow*>(this));
 
         if(_creationCallbacks.cpos) glfwSetWindowPosCallback(glfw_handle, window_pos_callback);
         if(_creationCallbacks.csize) glfwSetWindowSizeCallback(glfw_handle, window_size_callback);
@@ -265,8 +278,8 @@ RenderWindow::RenderWindow(const std::string& title, const int& width, const int
     glfwSetErrorCallback(ErrorHandle);
 }
 
-RenderWindow::RenderWindow(const std::string& title, const int& width, const int& height, const RenderWindowHints& hints, const RenderWindowCallbacks& callbacks, GLFWwindow* parent_share_resources) :
-    glfw_handle(nullptr), titlec((char*)title.c_str()), _creationHints(hints), _creationCallbacks(callbacks), _creationParent(parent_share_resources), _creationWidth(width), _creationHeight(height), _inited(false) {
+RenderWindow::RenderWindow(const std::string& title, const int& width, const int& height, const RenderWindowHints& hints, const RenderWindowCallbacks& callbacks) :
+    glfw_handle(nullptr), titlec((char*)title.c_str()), _creationHints(hints), _creationCallbacks(callbacks), _creationWidth(width), _creationHeight(height), _inited(false) {
     glfwSetErrorCallback(ErrorHandle);
 }
 
