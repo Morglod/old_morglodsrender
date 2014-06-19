@@ -44,11 +44,8 @@ public:
     virtual ~Model();
 
 protected:
-    bool _CpuLoading() override;
-    bool _GpuLoading() override;
-
-    void _CpuUnLoading() override;
-    void _GpuUnLoading() override;
+    bool _Loading() override;
+    void _UnLoading() override;
 
     /** from 0 dist to dist_step is 0 lod, from dist_step to 2dist_step is 1 lod, etc **/
     std::vector<ModelLod*> lods;
@@ -86,10 +83,8 @@ public:
     ModelManager() : ResourceManager() {}
     virtual ~ModelManager() {}
 
-    static ModelManager* Instance() {
-        static ModelManager* m = new ModelManager();
-        return m;
-    }
+    static ModelManager* Instance();
+    static void DestroyInstance();
 };
 
 }

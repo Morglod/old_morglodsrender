@@ -15,7 +15,7 @@ LightsList LightsList::MakeList(MR::ICollidable* bound, ILightSource** listOfPtr
     std::vector<ILightSource*> l;
     if(bound){
         for(size_t i = 0; i < listSize; ++i){
-            if( bound->TestSphere(listOfPtrs[i]->GetPos(), listOfPtrs[i]->GetRadius()) || (listOfPtrs[i]->GetType() == MR::ILightSource::Type::Dir) ) l.push_back(listOfPtrs[i]);
+            /*if( bound->TestSphere(listOfPtrs[i]->GetPos(), listOfPtrs[i]->GetRadius()) || (listOfPtrs[i]->GetType() == MR::ILightSource::Type::Dir) )*/ l.push_back(listOfPtrs[i]);
         }
     }
     return LightsList(l);

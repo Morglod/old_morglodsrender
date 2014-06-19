@@ -32,7 +32,7 @@ MR::Mesh::Mesh(IGeometry** gb, unsigned int nm, Material* m) :
 MR::Mesh::~Mesh() {
     if(_res_free_state) {
         if(geoms) {
-            for(unsigned int i = 0; i < this->geoms_num; ++i) {
+            for(size_t i = 0; i < this->geoms_num; ++i) {
                 delete this->geoms[i];
             }
             free(geoms);

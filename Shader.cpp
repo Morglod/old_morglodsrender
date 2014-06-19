@@ -357,16 +357,8 @@ std::string MR::Shader::ToString() {
     return "Shader";
 }
 
-bool MR::Shader::_CpuLoading() {
-    RequestGPULoad();
-    return true;
-}
-void MR::Shader::_CpuUnLoading() {
-    RequestGPUUnLoad();
-}
-
-bool MR::Shader::_GpuLoading() {
-    if(_async_cpu_loading_handle.NoErrors()) if(!_async_cpu_loading_handle.End()) return false;
+bool MR::Shader::_Loading() {
+    //if(_async_loading_handle.NoErrors()) if(!_async_loading_handle.End()) return false;
 
     if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Shader "+this->_name+" ("+this->_source+") loading", MR_LOG_LEVEL_INFO);
     if(this->_source != "") {
@@ -434,8 +426,8 @@ bool MR::Shader::_GpuLoading() {
     return true;
 }
 
-void MR::Shader::_GpuUnLoading() {
-    if(_async_cpu_unloading_handle.NoErrors()) _async_cpu_unloading_handle.End();
+void MR::Shader::_UnLoading() {
+    //if(_async_unloading_handle.NoErrors()) _async_unloading_handle.End();
 
     if(_loaded) {
         if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Shader "+this->_name+" ("+this->_source+") unloading", MR_LOG_LEVEL_INFO);
@@ -446,28 +438,28 @@ void MR::Shader::_GpuUnLoading() {
 bool MR::Shader::Use(MR::IRenderSystem* context) {
     if(MR::MachineInfo::IsDirectStateAccessSupported()) {
         glUseProgram(_program);
-        for(auto it = _shaderUniforms.begin(); it != _shaderUniforms.end(); ++it) {
-            if((*it)->_value == nullptr) continue;
-            if((*it)->_type == ShaderUniform::Types::Int) glProgramUniform1iEXT(_program, (*it)->GetGPULocation(), ((int*)(*it)->_value)[0]);
-            if((*it)->_type == ShaderUniform::Types::Float) glProgramUniform1fEXT(_program, (*it)->GetGPULocation(), ((float*)(*it)->_value)[0]);
-            if((*it)->_type == ShaderUniform::Types::Vec2) glProgramUniform2fEXT(_program, (*it)->GetGPULocation(), ((float*)(*it)->_value)[0], ((float*)(*it)->_value)[1]);
-            if((*it)->_type == ShaderUniform::Types::Vec3) glProgramUniform3fEXT(_program, (*it)->GetGPULocation(), ((float*)(*it)->_value)[0], ((float*)(*it)->_value)[1], ((float*)(*it)->_value)[2]);
-            if((*it)->_type == ShaderUniform::Types::Vec4) glProgramUniform4fEXT(_program, (*it)->GetGPULocation(), ((float*)(*it)->_value)[0], ((float*)(*it)->_value)[1], ((float*)(*it)->_value)[2], ((float*)(*it)->_value)[3]);
-            if((*it)->_type == ShaderUniform::Types::Mat4) {
-                glProgramUniformMatrix4fvEXT(_program, (*it)->GetGPULocation(), 1, GL_FALSE, (float*)&(((glm::mat4*)(*it)->GetValue())[0][0]));
+        for(size_t i = 0; i < _shaderUniforms.size(); ++i) {
+            if((_shaderUniforms[i])->_value == nullptr) continue;
+            if((_shaderUniforms[i])->_type == ShaderUniform::Types::Int) glProgramUniform1iEXT(_program, (_shaderUniforms[i])->GetGPULocation(), ((int*)(_shaderUniforms[i])->_value)[0]);
+            if((_shaderUniforms[i])->_type == ShaderUniform::Types::Float) glProgramUniform1fEXT(_program, (_shaderUniforms[i])->GetGPULocation(), ((float*)(_shaderUniforms[i])->_value)[0]);
+            if((_shaderUniforms[i])->_type == ShaderUniform::Types::Vec2) glProgramUniform2fEXT(_program, (_shaderUniforms[i])->GetGPULocation(), ((float*)(_shaderUniforms[i])->_value)[0], ((float*)(_shaderUniforms[i])->_value)[1]);
+            if((_shaderUniforms[i])->_type == ShaderUniform::Types::Vec3) glProgramUniform3fEXT(_program, (_shaderUniforms[i])->GetGPULocation(), ((float*)(_shaderUniforms[i])->_value)[0], ((float*)(_shaderUniforms[i])->_value)[1], ((float*)(_shaderUniforms[i])->_value)[2]);
+            if((_shaderUniforms[i])->_type == ShaderUniform::Types::Vec4) glProgramUniform4fEXT(_program, (_shaderUniforms[i])->GetGPULocation(), ((float*)(_shaderUniforms[i])->_value)[0], ((float*)(_shaderUniforms[i])->_value)[1], ((float*)(_shaderUniforms[i])->_value)[2], ((float*)(_shaderUniforms[i])->_value)[3]);
+            if((_shaderUniforms[i])->_type == ShaderUniform::Types::Mat4) {
+                glProgramUniformMatrix4fvEXT(_program, (_shaderUniforms[i])->GetGPULocation(), 1, GL_FALSE, (float*)&(((glm::mat4*)(_shaderUniforms[i])->GetValue())[0][0]));
             }
         }
     } else {
         glUseProgram(_program);
-        for(auto it = _shaderUniforms.begin(); it != _shaderUniforms.end(); ++it) {
-            if((*it)->_value == nullptr) continue;
-            if((*it)->_type == ShaderUniform::Types::Int) glUniform1i((*it)->GetGPULocation(), ((int*)(*it)->_value)[0]);
-            if((*it)->_type == ShaderUniform::Types::Float) glUniform1f((*it)->GetGPULocation(), ((float*)(*it)->_value)[0]);
-            if((*it)->_type == ShaderUniform::Types::Vec2) glUniform2f((*it)->GetGPULocation(), ((float*)(*it)->_value)[0], ((float*)(*it)->_value)[1]);
-            if((*it)->_type == ShaderUniform::Types::Vec3) glUniform3f((*it)->GetGPULocation(), ((float*)(*it)->_value)[0], ((float*)(*it)->_value)[1], ((float*)(*it)->_value)[2]);
-            if((*it)->_type == ShaderUniform::Types::Vec4) glUniform4f((*it)->GetGPULocation(), ((float*)(*it)->_value)[0], ((float*)(*it)->_value)[1], ((float*)(*it)->_value)[2], ((float*)(*it)->_value)[3]);
-            if((*it)->_type == ShaderUniform::Types::Mat4) {
-                glUniformMatrix4fv((*it)->GetGPULocation(), 1, GL_FALSE, (float*)&(((glm::mat4*)(*it)->_value)[0][0]));
+        for(size_t i = 0; i < _shaderUniforms.size(); ++i) {
+            if((_shaderUniforms[i])->_value == nullptr) continue;
+            if((_shaderUniforms[i])->_type == ShaderUniform::Types::Int) glUniform1i((_shaderUniforms[i])->GetGPULocation(), ((int*)(_shaderUniforms[i])->_value)[0]);
+            if((_shaderUniforms[i])->_type == ShaderUniform::Types::Float) glUniform1f((_shaderUniforms[i])->GetGPULocation(), ((float*)(_shaderUniforms[i])->_value)[0]);
+            if((_shaderUniforms[i])->_type == ShaderUniform::Types::Vec2) glUniform2f((_shaderUniforms[i])->GetGPULocation(), ((float*)(_shaderUniforms[i])->_value)[0], ((float*)(_shaderUniforms[i])->_value)[1]);
+            if((_shaderUniforms[i])->_type == ShaderUniform::Types::Vec3) glUniform3f((_shaderUniforms[i])->GetGPULocation(), ((float*)(_shaderUniforms[i])->_value)[0], ((float*)(_shaderUniforms[i])->_value)[1], ((float*)(_shaderUniforms[i])->_value)[2]);
+            if((_shaderUniforms[i])->_type == ShaderUniform::Types::Vec4) glUniform4f((_shaderUniforms[i])->GetGPULocation(), ((float*)(_shaderUniforms[i])->_value)[0], ((float*)(_shaderUniforms[i])->_value)[1], ((float*)(_shaderUniforms[i])->_value)[2], ((float*)(_shaderUniforms[i])->_value)[3]);
+            if((_shaderUniforms[i])->_type == ShaderUniform::Types::Mat4) {
+                glUniformMatrix4fv((_shaderUniforms[i])->GetGPULocation(), 1, GL_FALSE, (float*)&(((glm::mat4*)(_shaderUniforms[i])->_value)[0][0]));
             }
         }
     }
@@ -527,15 +519,15 @@ void MR::Shader::DeleteUniformBlock(MR::IShaderUniformBlock* sub){
 }
 
 MR::IShaderUniform* MR::Shader::FindShaderUniform(const std::string& uniform_name){
-    for(std::vector<IShaderUniform*>::iterator it = _shaderUniforms.begin(); it != _shaderUniforms.end(); ++it){
-        if((*it)->GetName() == uniform_name) return (*it);
+    for(size_t i = 0; i < _shaderUniforms.size(); ++i){
+        if((_shaderUniforms[i])->GetName() == uniform_name) return (_shaderUniforms[i]);
     }
     return nullptr;
 }
 
 MR::IShaderUniformBlock* MR::Shader::FindShaderUniformBlock(const std::string& uniform_name){
-    for(std::vector<IShaderUniformBlock*>::iterator it = _shaderUniformBlocks.begin(); it != _shaderUniformBlocks.end(); ++it){
-        if((*it)->GetName() == uniform_name) return (*it);
+    for(size_t i = 0; i < _shaderUniformBlocks.size(); ++i){
+        if((_shaderUniformBlocks[i])->GetName() == uniform_name) return (_shaderUniformBlocks[i]);
     }
     return nullptr;
 }
@@ -598,9 +590,9 @@ bool MR::IShader::ShaderFeatures::operator==(const MR::IShader::ShaderFeatures& 
 }
 
 MR::IShader* MR::ShaderManager::RequestDefault(const MR::IShader::ShaderFeatures& req){
-    for(auto it = MR::ShaderManager::Instance()->_defaultShaders.begin(); it != MR::ShaderManager::Instance()->_defaultShaders.end(); ++it){
-        if(it->first == req) {
-            return it->second;
+    for(size_t _i = 0; _i < MR::ShaderManager::Instance()->_defaultShaders.size(); ++_i){
+        if(MR::ShaderManager::Instance()->_defaultShaders[_i].first == req) {
+            return MR::ShaderManager::Instance()->_defaultShaders[_i].second;
         }
     }
 
@@ -609,7 +601,7 @@ MR::IShader* MR::ShaderManager::RequestDefault(const MR::IShader::ShaderFeatures
         "#extension GL_ARB_separate_shader_objects : enable\n"
         "#pragma optimize(on)\n"
         "layout (location = 0) in vec3 InVertexPos;\n"
-        "layout (location = 1) in vec3 InVertexNormal;\n"
+        "smooth layout (location = 1) in vec3 InVertexNormal;\n"
         "layout (location = 2) in vec4 InVertexColor;\n"
         "layout (location = 3) in vec2 InVertexTexCoord;\n"
         "out vec4 "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME)+";\n"
@@ -712,11 +704,14 @@ MR::IShader* MR::ShaderManager::RequestDefault(const MR::IShader::ShaderFeatures
             "vec3 light(){\n"
             "   vec3 fragLight = vec3(0.0, 0.0, 0.0);\n"
             "   for(int i = 0; i < "+std::string(MR_SHADER_POINT_LIGHTS_NUM)+"; i++){\n"
+            "       vec3 surfN = normalize(vec4(InVertexNormal, 0.0) * "+std::string(MR_SHADER_MODEL_MAT4)+").xyz;\n"
+            "       float NdotL = dot(surfN, normalize("+std::string(MR_SHADER_POINT_LIGHTS)+"[i].pos - (vec4(InVertexPos, 1.0) * "+std::string(MR_SHADER_MODEL_MAT4)+").xyz));\n"
+            "       float diff = (NdotL * 0.5) + 0.5;\n"
             "       float Ld = distance("+std::string(MR_SHADER_POINT_LIGHTS)+"[i].pos, (vec4(InVertexPos, 1.0) * "+std::string(MR_SHADER_MODEL_MAT4)+").xyz);\n"
             "       float att = 1.0 / (1.0 + "+std::string(MR_SHADER_POINT_LIGHTS)+"[i].attenuation * pow(Ld, "+std::string(MR_SHADER_POINT_LIGHTS)+"[i].power));\n"
             "       float Lmult = ("+std::string(MR_SHADER_POINT_LIGHTS)+"[i].radius - Ld) / "+std::string(MR_SHADER_POINT_LIGHTS)+"[i].radius;\n"
             "       Lmult = max(0.0, Lmult);\n" //if(Lmult < 0) Lmult = 0.0;\n"
-            "       fragLight += (att * "+std::string(MR_SHADER_POINT_LIGHTS)+"[i].emission) * (Lmult * "+std::string(MR_SHADER_POINT_LIGHTS)+"[i].ambient);\n"
+            "       fragLight += diff * (att * "+std::string(MR_SHADER_POINT_LIGHTS)+"[i].emission) + (Lmult * "+std::string(MR_SHADER_POINT_LIGHTS)+"[i].ambient);\n"
             "   }\n"
             "   for(int di = 0; di < "+std::string(MR_SHADER_DIR_LIGHTS_NUM)+"; di++){\n"
             "       vec3 surfN = normalize(vec4(InVertexNormal, 0.0) * "+std::string(MR_SHADER_MODEL_MAT4)+").xyz;\n"
@@ -815,6 +810,17 @@ MR::Resource* MR::ShaderManager::Create(const std::string& name, const std::stri
     Shader * s = new Shader(this, name, source);
     this->_resources.push_back(s);
     return s;
+}
+
+MR::ShaderManager* __INSTANCE_SHADER_MANAGER = 0;
+MR::ShaderManager* MR::ShaderManager::Instance() {
+    if(__INSTANCE_SHADER_MANAGER == 0) __INSTANCE_SHADER_MANAGER = new MR::ShaderManager();
+    return __INSTANCE_SHADER_MANAGER;
+}
+
+void MR::ShaderManager::DestroyInstance() {
+    delete __INSTANCE_SHADER_MANAGER;
+    __INSTANCE_SHADER_MANAGER = 0;
 }
 
 bool MR::ShaderManager::BindDefaultShaderInOut(IShader* shader){

@@ -24,14 +24,14 @@ namespace MR{
         static void Remove(const LogStringPtr& ptr){ _callbacks.erase( std::find(_callbacks.begin(), _callbacks.end(), ptr) ); }
 
         static void LogString(const std::string & s, const int & level = MR_LOG_LEVEL_DEFAULT){
-            for(auto it = _callbacks.begin(); it != _callbacks.end(); it++){
-                (*it)(s, level);
+            for(size_t i = 0; i < _callbacks.size(); ++i){
+                _callbacks[i](s, level);
             }
         }
 
         static void LogException(MR::Exception & e, const int & level = MR_LOG_LEVEL_EXCEPTION){
-            for(auto it = _callbacks.begin(); it != _callbacks.end(); it++){
-                (*it)(e.what(), level);
+            for(size_t i = 0; i < _callbacks.size(); ++i){
+                _callbacks[i](e.what(), level);
             }
         }
 

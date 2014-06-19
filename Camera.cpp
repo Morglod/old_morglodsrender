@@ -9,8 +9,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 void MR::Camera::AttachToShader(IShader* shader) {
-    for(auto it = _attachedShaders.begin(); it != _attachedShaders.end(); ++it){
-        if(it->_shader == shader) return;
+    for(size_t i = 0; i < _attachedShaders.size(); ++i){
+        if(_attachedShaders[i]._shader == shader) return;
     }
 
     if(shader){

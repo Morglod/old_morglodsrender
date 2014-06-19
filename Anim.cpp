@@ -22,7 +22,7 @@ void AnimDesc<T>::SetAnimTime(const MR_ANIM_TIME_TYPE& v, const bool& scaleKeys)
     if(scaleKeys) {
         MR_ANIM_TIME_TYPE MaxTimeMult = v / _anim_time;
         _anim_time = v;
-        for(typename _typed_vector::iterator it = _keys.begin(); it != _keys.end(); ++it){ it->time *= MaxTimeMult; }
+        for(size_t i = 0; i < _keys.size(); ++i){ _keys[i].time *= MaxTimeMult; }
     } else {
         _anim_time = v;
     }

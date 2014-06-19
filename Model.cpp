@@ -28,7 +28,7 @@ ModelLod* Model::GetLod(const float & dist) {
     if(lods.size() == 0) return nullptr;
     if(lods.size() == 1) return lods[0];
 
-    for(unsigned short it = 0; it < lods.size(); ++it) {
+    for(size_t it = 0; it < lods.size(); ++it) {
         if( (dist_step*it) > dist ) {
             if(it == 0) return lods[0];
             else return lods[it-1];
@@ -37,12 +37,8 @@ ModelLod* Model::GetLod(const float & dist) {
     return lods[lods.size()-1];
 }
 
-void Model::_CpuUnLoading() {
-    RequestGPUUnLoad();
-}
-
-void Model::_GpuUnLoading() {
-    if(_async_cpu_unloading_handle.NoErrors()) _async_cpu_unloading_handle.End();
+void Model::_UnLoading() {
+    //if(_async_unloading_handle.NoErrors()) _async_unloading_handle.End();
 
     for(ModelLod* mlod : lods) {
         delete mlod;
@@ -50,13 +46,8 @@ void Model::_GpuUnLoading() {
     lods.clear();
 }
 
-bool Model::_CpuLoading() {
-    RequestGPULoad();
-    return true;
-}
-
-bool Model::_GpuLoading() {
-    if(_async_cpu_loading_handle.NoErrors()) if(!_async_cpu_loading_handle.End()) return false;
+bool Model::_Loading() {
+    //if(_async_loading_handle.NoErrors()) if(!_async_loading_handle.End()) return false;
 
     if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Model "+this->_name+" ("+this->_source+") loading", MR_LOG_LEVEL_INFO);
     if(this->_source == "") {
@@ -76,6 +67,7 @@ bool Model::_GpuLoading() {
     }
 
     _aabb.ReMake(mfl->minPoint, mfl->maxPoint);
+    MR::Log::LogString("Size " + std::to_string(_aabb.GetSize().x) + " " + std::to_string(_aabb.GetSize().y) + " " + std::to_string(_aabb.GetSize().z));
 
     return true;
 }
@@ -91,6 +83,17 @@ Resource* ModelManager::Create(const std::string& name, const std::string& sourc
     Model * m = new Model(dynamic_cast<MR::ResourceManager*>(this), name, source);
     this->_resources.push_back(m);
     return m;
+}
+
+ModelManager* __INSTANCE_MODEL_MANAGER = 0;
+ModelManager* ModelManager::Instance() {
+    if(__INSTANCE_MODEL_MANAGER == 0) __INSTANCE_MODEL_MANAGER = new MR::ModelManager();
+    return __INSTANCE_MODEL_MANAGER;
+}
+
+void ModelManager::DestroyInstance() {
+    delete __INSTANCE_MODEL_MANAGER;
+    __INSTANCE_MODEL_MANAGER = 0;
 }
 
 ModelFile::ModelFile() : meshes(nullptr), meshes_num(0) {}

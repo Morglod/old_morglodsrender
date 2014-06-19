@@ -132,7 +132,7 @@ protected:
 };
 
 template<typename ParentT, typename ChildrenT>
-class ForEachArray {
+class NodeArray {
 public:
     ParentT* parent;
     std::vector<ChildrenT*> children;
@@ -156,6 +156,30 @@ union Byte {
         return std::to_string(bit8) + std::to_string(bit7) + std::to_string(bit6) + std::to_string(bit5) + std::to_string(bit4) + std::to_string(bit3) + std::to_string(bit2) + std::to_string(bit1);
     }
 };
+
+inline void GetBits(const unsigned char& byte, bool* bits){
+    Byte b;
+    b.byte = byte;
+    bits[0] = b.bit1;
+    bits[1] = b.bit2;
+    bits[2] = b.bit3;
+    bits[3] = b.bit4;
+    bits[4] = b.bit5;
+    bits[5] = b.bit6;
+    bits[6] = b.bit7;
+    bits[7] = b.bit8;
+}
+
+inline void SetBits(unsigned char * byte, bool bits[8]){
+    *byte = (1 * bits[0]) +
+            (2 * bits[1]) +
+            (4 * bits[2]) +
+            (8 * bits[3]) +
+            (16 * bits[4]) +
+            (32 * bits[5]) +
+            (64 * bits[6]) +
+            (128 * bits[7]);
+}
 
 class ICollidable {
 public:

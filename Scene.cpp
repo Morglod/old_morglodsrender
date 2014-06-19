@@ -2,6 +2,7 @@
 #include "Camera.hpp"
 #include "RenderSystem.hpp"
 #include "Model.hpp"
+#include "Log.hpp"
 
 namespace MR {
 
@@ -125,10 +126,10 @@ void MR::SceneManager::Draw(IRenderSystem* rc){
     edparams._fogMax = &_fogMax;
     edparams._fogMin = &_fogMin;
 
-    for(auto it = _entities.begin(); it != _entities.end(); ++it){
-        LightsList ll = MakeLightsList(*it);
+    for(size_t i = 0; i < _entities.size(); ++i){
+        LightsList ll = MakeLightsList(_entities[i]);
         edparams._llist = &ll;
-        rc->DrawEntity(*it, &edparams);
+        rc->DrawEntity(_entities[i], &edparams);
     }
 }
 

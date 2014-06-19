@@ -72,10 +72,11 @@ void VertexFormatCustom::UnBind() {
 
 bool VertexFormatCustom::Equal(IVertexFormat* vf){
     if(Size() != vf->Size()) return false;
-    auto it2 = _Attributes()->begin();
-    for(auto it = _attribs.begin(); it != _attribs.end(); ++it){
-        if( !((*it)->Equal(*it2)) ) return false;
-        ++it2;
+    std::vector<IVertexAttribute*>* attrArray = _Attributes();
+    size_t i2 = 0;
+    for(size_t i = 0; i < _attribs.size(); ++i){
+        if( !(_attribs[i]->Equal(attrArray[0][i2])) ) return false;
+        ++i2;
     }
     return true;
 }

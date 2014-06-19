@@ -57,6 +57,9 @@
 		<Unit filename="Camera.cpp" />
 		<Unit filename="Camera.hpp" />
 		<Unit filename="Config.hpp" />
+		<Unit filename="ConfigClass.cpp" />
+		<Unit filename="ConfigClass.hpp" />
+		<Unit filename="EmptyPlugin.cpp" />
 		<Unit filename="Entity.cpp" />
 		<Unit filename="Entity.hpp" />
 		<Unit filename="Events.hpp" />
@@ -84,6 +87,8 @@
 		<Unit filename="Model.cpp" />
 		<Unit filename="Model.hpp" />
 		<Unit filename="MorglodsRender.hpp" />
+		<Unit filename="PluginSystem.cpp" />
+		<Unit filename="PluginSystem.hpp" />
 		<Unit filename="RenderSystem.cpp" />
 		<Unit filename="RenderSystem.hpp" />
 		<Unit filename="RenderTarget.cpp" />

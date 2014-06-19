@@ -38,8 +38,8 @@ typedef void (*OutOfMemPtr)();
 std::vector<OutOfMemPtr> outOfMemPtrs;
 
 void OutOfMemEvent(){
-    for(auto it = outOfMemPtrs.begin(); it != outOfMemPtrs.end(); ++it){
-        (*it)();
+    for(size_t i = 0; i < outOfMemPtrs.size(); ++i){
+        outOfMemPtrs[i]();
     }
 }
 
@@ -119,9 +119,9 @@ bool RenderSystem::Init(IRenderWindow* window, bool multithreaded) {
 }
 
 void RenderSystem::Shutdown() {
-    delete MR::ModelManager::Instance();
-    delete MR::ShaderManager::Instance();
-    delete MR::TextureManager::Instance();
+    MR::ModelManager::DestroyInstance();
+    MR::ShaderManager::DestroyInstance();
+    MR::TextureManager::DestroyInstance();
 
     MR::Log::LogString("RenderSystem shutdown", MR_LOG_LEVEL_INFO);
 
@@ -275,12 +275,12 @@ void RenderSystem::DrawGeometry(IGeometry* gb) {
 
 void RenderSystem::DrawGeomWithMaterial(glm::mat4* model_mat, MR::IGeometry* g, MR::Material* mat, void* edp) {
     if(mat) {
-        for(unsigned short i = 0; i < mat->GetPassesNum(); ++i) {
+        for(size_t i = 0; i < mat->GetPassesNum(); ++i) {
             DrawGeomWithMaterialPass(model_mat, g, mat->GetPass(i), edp);
         }
     } else {
         if(_useDefaultMaterial && _defaultMaterial) {
-            for(unsigned short i = 0; i < _defaultMaterial->GetPassesNum(); ++i) {
+            for(size_t i = 0; i < _defaultMaterial->GetPassesNum(); ++i) {
                 DrawGeomWithMaterialPass(model_mat, g, _defaultMaterial->GetPass(i), edp);
             }
         } else {
@@ -369,16 +369,16 @@ void RenderSystem::DrawEntity(MR::Entity* ent, void* edp) {
     float dist = MR::Transform::CalcDist( *_cam->GetPosition(), ent->GetTransformP()->GetPos() );
     ModelLod* lod = ent->GetModel()->GetLod( dist );
     if(!lod) return;
-    for(unsigned short i = 0; i < lod->GetMeshesNum(); ++i) {
+    for(size_t i = 0; i < lod->GetMeshesNum(); ++i) {
         MR::Mesh* mesh = lod->GetMesh(i);
         if(mesh->GetMaterial() == nullptr) {
-            for(unsigned short gi = 0; gi < mesh->GetGeomNum(); ++gi) {
+            for(size_t gi = 0; gi < mesh->GetGeomNum(); ++gi) {
                 if(ent->GetMaterial() == nullptr) DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeoms()[gi], nullptr, 0);
                 else DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeoms()[gi], ent->GetMaterial(), edp);
             }
         }
         else {
-            for(unsigned short gi = 0; gi < mesh->GetGeomNum(); ++gi) {
+            for(size_t gi = 0; gi < mesh->GetGeomNum(); ++gi) {
                 if(ent->GetMaterial() == nullptr) DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeoms()[gi], mesh->GetMaterial(), edp);
                 else DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeoms()[gi], ent->GetMaterial(), edp);
             }

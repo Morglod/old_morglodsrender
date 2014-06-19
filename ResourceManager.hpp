@@ -18,20 +18,16 @@ class ResourceManager;
 class ICPUtoGPULoading {
     friend class ResourceManager;
 public:
-    virtual void SetAsyncCpuState(const bool& state) { _async_loading = state; }
-    virtual bool GetAsyncCpuState() { return _async_loading; }
-protected:
+    virtual void SetAsyncState(const bool& state) { _async_loading = state; }
+    virtual bool GetAsyncState() { return _async_loading; }
 
     /** Calls by ResourceManager if AsyncState or by calling thread if not */
 
-    virtual bool _CpuLoading() { return false; }
-    virtual bool _GpuLoading() { return false; }
+    virtual bool _Loading() { return false; }
+    virtual void _UnLoading() { }
 
-    virtual void _CpuUnLoading() { }
-    virtual void _GpuUnLoading() { }
-
-    MR::AsyncHandle _async_cpu_loading_handle;
-    MR::AsyncHandle _async_cpu_unloading_handle;
+    MR::AsyncHandle _async_loading_handle;
+    MR::AsyncHandle _async_unloading_handle;
 
     bool _async_loading = MR_ASYNC_LOADING_DEFAULT;
 };
@@ -44,12 +40,6 @@ protected:
     std::string _source;
     ResourceManager* _resource_manager;
     bool _loaded; /** CHANGES BY RESOURCE MANAGER */
-
-    /** Call this from cpu load, when finished and ready to load resource to gpu */
-    void RequestGPULoad();
-
-    /** Call this from cpu unload, when finished and ready to load resource to gpu */
-    void RequestGPUUnLoad();
 
 public:
     /** sender - Resource object
@@ -94,7 +84,7 @@ public:
      */
     inline virtual bool ReLoad() {
         this->UnLoad();
-        _async_cpu_unloading_handle.End();
+        _async_unloading_handle.End();
         return this->Load();
     }
 
@@ -141,7 +131,10 @@ public:
     inline virtual bool GetDebugMessagesState() { return _debugMessages; }
 
     /** Adds created resource from manager */
-    inline virtual void Add(Resource* res) { this->_resources.push_back(res); }
+    inline virtual void Add(Resource* res) {
+        this->_resources.push_back(res);
+        res->_resource_manager = dynamic_cast<MR::ResourceManager*>(this);
+    }
 
     /** Removes created resource from manager */
     inline virtual void Remove(Resource* res) {
@@ -182,26 +175,20 @@ public:
 
     ResourceManager() : _debugMessages(MR_RESOURCE_MANAGER_DEBUG_MSG_DEFAULT) {}
 
-    inline virtual size_t GetAsyncGPULoadingResourcesNum() { return _async_gpu_need_to_load.size(); }
-    inline virtual size_t GetAsyncGPUUnLoadingResourcesNum() { return _async_gpu_need_to_load.size(); }
-
-    virtual void AsyncLoadGPU();
-    virtual void AsyncUnLoadGPU();
-
 protected:
-    void _AsyncGpuLoadPush(Resource* res);
-    void _AsyncGpuUnLoadPush(Resource* res);
-
-    static void* __MR_RESOURCE_ASYNC_CPU_LOAD(void* handle);
-    static void* __MR_RESOURCE_ASYNC_CPU_UNLOAD(void* handle);
-
     bool _debugMessages;
     std::vector<Resource*> _resources;
-    std::queue<Resource*> _async_gpu_need_to_load;
-    std::queue<Resource*> _async_gpu_need_to_unload;
-
-    bool _async_one_res_per_update = MR_ASYNC_ONE_RES_PER_UPDATE_LOADING_DEFAULT;
 };
+
+class AsyncResourceTask {
+public:
+    MR::Resource* res;
+    bool load; //if false, unload
+};
+
+void AddResourceTask(const AsyncResourceTask& task);
+void _MR_RequestGPUThread();
+
 }
 
 #endif

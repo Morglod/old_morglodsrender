@@ -1,5 +1,7 @@
 #include "ResourceManager.hpp"
 #include "Log.hpp"
+#include "GL/Context.hpp"
+#include <GLFW/glfw3.h>
 
 std::string MR::DirectoryFromFilePath(const std::string& file){
     std::string::size_type it_a = file.find_last_of("\\");
@@ -10,75 +12,66 @@ std::string MR::DirectoryFromFilePath(const std::string& file){
     return file.substr(0, std::max(it_a, it_b));
 }
 
-void* MR::ResourceManager::__MR_RESOURCE_ASYNC_CPU_LOAD(void* handle) {
-    MR::Resource* res = (MR::Resource*)handle;
-    return (void*)(int)(res->_CpuLoading());
+std::vector<MR::AsyncResourceTask> _res_async_tasks;
+
+void MR::AddResourceTask(const MR::AsyncResourceTask& task) {
+    _res_async_tasks.push_back(task);
 }
 
-void* MR::ResourceManager::__MR_RESOURCE_ASYNC_CPU_UNLOAD(void* handle) {
-    MR::Resource* res = (MR::Resource*)handle;
-    res->_CpuUnLoading();
-    return 0;
+bool _async_thread_running = false;
+
+void* __MR_RESOURCE_ASYNC_THREAD(void*) {
+    _async_thread_running = true;
+
+    glfwMakeContextCurrent((GLFWwindow*)MR::GL::GetCurrent()->_GetMultithreadContext());
+
+    size_t s = _res_async_tasks.size();
+    size_t cur = 0;
+
+    while(s > cur) {
+        MR::AsyncResourceTask art = _res_async_tasks[cur];
+        MR::Resource* res = art.res;
+
+        if(art.load) {
+            res->_Loading();
+        } else res->_UnLoading();
+
+        glFlush();
+
+        ++cur;
+        s = _res_async_tasks.size();
+    }
+    _res_async_tasks.clear();
+
+    glfwMakeContextCurrent(0);
+    _async_thread_running = false;
 }
 
-class __AsyncGPUArg {
-public:
-    MR::Resource* res;
-    void* glfw_multithreadedWindow;
-};
-
-/*
-void* MR::ResourceManager::__MR_RESOURCE_ASYNC_GPU_LOAD(void* handle) {
-    __AsyncGPUArg* arg = (__AsyncGPUArg*)handle;
-    return (void*)(int)(arg->res->_GpuLoading());
+void MR::_MR_RequestGPUThread() {
+    if(!_async_thread_running) {
+        _async_thread_running = true;
+        MR::AsyncCall(__MR_RESOURCE_ASYNC_THREAD, 0);
+    }
 }
-
-void* MR::ResourceManager::__MR_RESOURCE_ASYNC_GPU_UNLOAD(void* handle) {
-    __AsyncGPUArg* arg = (__AsyncGPUArg*)handle;
-    arg->res->_GpuUnLoading();
-    return 0;
-}*/
 
 bool MR::Resource::Load() {
-    if(GetAsyncCpuState()) {
-        _async_cpu_loading_handle = MR::AsyncCall(MR::ResourceManager::__MR_RESOURCE_ASYNC_CPU_LOAD, this);
+    if(GetAsyncState() && MR::GL::GetCurrent()->_GetMultithreadContext()) {
+        AddResourceTask( MR::AsyncResourceTask {this, true} );
+        _MR_RequestGPUThread();
         return true;
     } else {
-        return _CpuLoading();
+        return _Loading();
     }
 }
 
 void MR::Resource::UnLoad() {
-    if(GetAsyncCpuState()) {
-        _async_cpu_unloading_handle = MR::AsyncCall(MR::ResourceManager::__MR_RESOURCE_ASYNC_CPU_UNLOAD, this);
+    if(GetAsyncState() && MR::GL::GetCurrent()->_GetMultithreadContext()) {
+        AddResourceTask( MR::AsyncResourceTask {this, false} );
+        _MR_RequestGPUThread();
     } else {
-        _CpuUnLoading();
+        _UnLoading();
     }
     _loaded = false;
-}
-
-void MR::Resource::RequestGPULoad(){
-    if(GetAsyncCpuState()) {
-        GetManager()->_AsyncGpuLoadPush(this);
-    } else {
-        _GpuLoading();
-    }
-}
-
-void MR::Resource::RequestGPUUnLoad(){
-    if(GetAsyncCpuState()) {
-        GetManager()->_AsyncGpuUnLoadPush(this);
-    } else {
-        _GpuUnLoading();
-    }
-}
-
-void MR::ResourceManager::_AsyncGpuLoadPush(MR::Resource* res){
-    _async_gpu_need_to_load.push(res);
-}
-
-void MR::ResourceManager::_AsyncGpuUnLoadPush(MR::Resource* res){
-    _async_gpu_need_to_unload.push(res);
 }
 
 MR::Resource* MR::ResourceManager::CreateAndLoad(const std::string& name, const std::string& source){
@@ -88,22 +81,22 @@ MR::Resource* MR::ResourceManager::CreateAndLoad(const std::string& name, const 
 }
 
 MR::Resource* MR::ResourceManager::Get(const std::string& source) {
-    for(std::vector<Resource*>::iterator it = this->_resources.begin(); it != this->_resources.end(); ++it){
-        if( (*it)->GetSource() == source ) return (*it);
+    for(size_t i = 0; i < _resources.size(); ++i){
+        if( _resources[i]->GetSource() == source ) return _resources[i];
     }
     return nullptr;
 }
 
 MR::Resource* MR::ResourceManager::Find(const std::string& name) {
-    for(std::vector<Resource*>::iterator it = this->_resources.begin(); it != this->_resources.end(); ++it){
-        if( (*it)->GetName() == name ) return *it;
+    for(size_t i = 0; i < _resources.size(); ++i){
+        if( (_resources[i])->GetName() == name ) return _resources[i];
     }
     return nullptr;
 }
 
 MR::Resource* MR::ResourceManager::Need(const std::string& source){
-    for(std::vector<Resource*>::iterator it = this->_resources.begin(); it != this->_resources.end(); ++it){
-        if( (*it)->GetSource() == source ) return *it;
+    for(size_t i = 0; i < _resources.size(); ++i){
+        if( (_resources[i])->GetSource() == source ) return _resources[i];
     }
     return this->CreateAndLoad("AutoLoaded_"+source, source);
 }
@@ -123,29 +116,4 @@ void MR::ResourceManager::RemoveAll(){
         delete (*it);
     }
     this->_resources.clear();
-}
-
-void MR::ResourceManager::AsyncLoadGPU() {
-    while( !_async_gpu_need_to_load.empty() ) {
-        _async_gpu_need_to_load.front()->_loaded = false;
-        if( _async_gpu_need_to_load.front()->_async_cpu_loading_handle.End() != 0)
-            if(_async_gpu_need_to_load.front()->_GpuLoading()) {
-                _async_gpu_need_to_load.front()->_loaded = true;
-                _async_gpu_need_to_load.front()->OnLoad(_async_gpu_need_to_load.front());
-            }
-        _async_gpu_need_to_load.pop();
-
-        if(_async_one_res_per_update) return;
-    }
-}
-
-void MR::ResourceManager::AsyncUnLoadGPU() {
-    while( !_async_gpu_need_to_unload.empty() ) {
-        _async_gpu_need_to_unload.front()->_async_cpu_unloading_handle.End();
-        _async_gpu_need_to_unload.front()->_GpuUnLoading();
-        _async_gpu_need_to_unload.front()->OnUnLoad(_async_gpu_need_to_unload.front());
-        _async_gpu_need_to_unload.pop();
-
-        if(_async_one_res_per_update) return;
-    }
 }

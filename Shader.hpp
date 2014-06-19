@@ -327,11 +327,8 @@ namespace MR{
         */
     protected:
 
-        bool _CpuLoading() override;
-        bool _GpuLoading() override;
-
-        void _CpuUnLoading() override;
-        void _GpuUnLoading() override;
+        bool _Loading() override;
+        void _UnLoading() override;
 
         unsigned int _program; //OpenGL shader program
         std::vector<ISubShader*> _sub_shaders;
@@ -352,10 +349,8 @@ namespace MR{
         ShaderManager() : ResourceManager() {}
         virtual ~ShaderManager() {}
 
-        static ShaderManager* Instance(){
-            static ShaderManager* m = new ShaderManager();
-            return m;
-        }
+        static ShaderManager* Instance();
+        static void DestroyInstance();
     protected:
         std::vector<std::pair<MR::IShader::ShaderFeatures, IShader*>> _defaultShaders;
     };

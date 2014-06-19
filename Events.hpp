@@ -28,8 +28,8 @@ public:
 
     inline virtual void Call(void* sender, Args... args) const {
         if(_funcs.size() != 0){
-            for(auto it = _funcs.begin(); it != _funcs.end(); ++it) {
-                if(*it) (*it)(sender, args...);
+            for(size_t i = 0; i < _funcs.size(); ++i) {
+                if(_funcs[i]) _funcs[i](sender, args...);
             }
         }
     }

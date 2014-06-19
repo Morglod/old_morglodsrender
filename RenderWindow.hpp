@@ -236,7 +236,7 @@ public:
 
 protected:
     GLFWwindow* glfw_handle;
-    GLFWwindow* glfw_handle_multithread; //invivislbe window for second context, if initializated as multithreaded
+    GLFWwindow* glfw_handle_multithread = 0; //invivislbe window for second context, if initializated as multithreaded
     char* titlec;
 
     static void window_pos_callback(GLFWwindow* window, int x, int y);

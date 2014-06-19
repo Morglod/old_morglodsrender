@@ -439,10 +439,8 @@ namespace MR{
         unsigned int _textureArrayIndex = 0;
         ITextureArray* _texArray = nullptr;
 
-        bool _CpuLoading() override;
-        bool _GpuLoading() override;
-        void _CpuUnLoading() override;
-        void _GpuUnLoading() override;
+        bool _Loading() override;
+        void _UnLoading() override;
 
         unsigned char* _async_data = 0;
         int _async_iform = 0;
@@ -543,6 +541,7 @@ namespace MR{
         virtual ~TextureManager();
 
         static TextureManager* Instance();
+        static void DestroyInstance();
     protected:
         MR::ITexture* _white;
 

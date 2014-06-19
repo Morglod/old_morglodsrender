@@ -433,7 +433,9 @@ MR::Texture::~Texture(){
     UnLoad();
 }
 
-bool MR::Texture::_CpuLoading() {
+bool MR::Texture::_Loading() {
+    //if(_async_loading_handle.NoErrors()) if(!_async_loading_handle.End()) return false;
+
     if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") cpu loading", MR_LOG_LEVEL_INFO);
     if(this->_source == "") {
         if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") load failed. Source is null", MR_LOG_LEVEL_ERROR);
@@ -527,13 +529,6 @@ bool MR::Texture::_CpuLoading() {
         }
     }
 
-    RequestGPULoad();
-    return true;
-}
-
-bool MR::Texture::_GpuLoading() {
-    if(_async_cpu_loading_handle.NoErrors()) if(!_async_cpu_loading_handle.End()) return false;
-
     if(_inTextureArray) {
         //MR::GL::GetCurrent()->Lock();
         _texArray = dynamic_cast<TextureManager*>(_resource_manager)->_StoreTexture(&_textureArrayIndex, _async_data, (InternalFormat)_async_iform, (Format)_async_form, Type::UNSIGNED_BYTE, gl_width, gl_height);
@@ -562,13 +557,8 @@ bool MR::Texture::_GpuLoading() {
     return true;
 }
 
-void MR::Texture::_CpuUnLoading() {
-    if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") cpu unloading", MR_LOG_LEVEL_INFO);
-    RequestGPUUnLoad();
-}
-
-void MR::Texture::_GpuUnLoading() {
-    if(_async_cpu_unloading_handle.NoErrors()) _async_cpu_unloading_handle.End();
+void MR::Texture::_UnLoading() {
+    //if(_async_unloading_handle.NoErrors()) _async_unloading_handle.End();
 
     if(_res_free_state) {
         if(this->_resource_manager->GetDebugMessagesState()) MR::Log::LogString("Texture "+this->_name+" ("+this->_source+") -> ResFreeState is on, deleting data", MR_LOG_LEVEL_INFO);
@@ -752,10 +742,10 @@ Resource* TextureManager::Create(const std::string& name, const unsigned int & g
 }
 
 TextureArray* TextureManager::_StoreTexture(unsigned int* texArrayIndex, void* data, const Texture::InternalFormat& iformat, const Texture::Format& format, const Texture::Type& type, const unsigned short& width, const unsigned short& height){
-    for(auto it = _tex_arrays.begin(); it != _tex_arrays.end(); ++it){
-        if( (*it)->CanStore(iformat, format, type, width, height) ){
-            *texArrayIndex = (*it)->Add(data);
-            return (*it);
+    for(size_t i = 0; i < _tex_arrays.size(); ++i){
+        if( (_tex_arrays[i])->CanStore(iformat, format, type, width, height) ){
+            *texArrayIndex = (_tex_arrays[i])->Add(data);
+            return (_tex_arrays[i]);
         }
     }
 
@@ -781,4 +771,9 @@ TextureManager* __INSTANCE_TEXTURE_MANAGER = 0;
 TextureManager* TextureManager::Instance(){
     if(__INSTANCE_TEXTURE_MANAGER == 0) __INSTANCE_TEXTURE_MANAGER = new MR::TextureManager();
     return __INSTANCE_TEXTURE_MANAGER;
+}
+
+void TextureManager::DestroyInstance() {
+    delete __INSTANCE_TEXTURE_MANAGER;
+    __INSTANCE_TEXTURE_MANAGER = 0;
 }
