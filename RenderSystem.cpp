@@ -14,6 +14,9 @@
 #include "Light.hpp"
 #include "Scene.hpp"
 
+#include <windef.h>
+#include <wingdi.h>
+
 #ifndef __glew_h__
 #   include <GL\glew.h>
 #endif
@@ -69,6 +72,9 @@ bool AnyRenderSystemAlive(){
 
 /** ---------------------------------------------------------- */
 
+PFNGLBUFFERSTORAGEPROC __glewBufferStorage;
+PFNGLNAMEDBUFFERSTORAGEEXTPROC __glewNamedBufferStorageEXT;
+
 bool RenderSystem::Init(IRenderWindow* window, bool multithreaded) {
     if(window == nullptr) return false;
 
@@ -102,6 +108,8 @@ bool RenderSystem::Init(IRenderWindow* window, bool multithreaded) {
             MR::Log::LogString("glew initialization failed", MR_LOG_LEVEL_ERROR);
             throw std::exception();
         }
+        __glewBufferStorage = (PFNGLBUFFERSTORAGEPROC)wglGetProcAddress("glBufferStorage");
+        __glewNamedBufferStorageEXT = (PFNGLNAMEDBUFFERSTORAGEEXTPROC)wglGetProcAddress("glNamedBufferStorageEXT");
     }
 
     if(MR::MachineInfo::gl_version() == MR::MachineInfo::GLVersion::VNotSupported) {

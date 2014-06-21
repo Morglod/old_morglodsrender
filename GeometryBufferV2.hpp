@@ -172,7 +172,7 @@ protected:
     size_t _size;
 };
 
-class IIndexFormat {
+class IIndexFormat : public Comparable<IIndexFormat*> {
     friend class GeometryBuffer;
 public:
     virtual size_t Size() = 0; //one index size in bytes
@@ -189,6 +189,7 @@ public:
     inline IVertexDataType* GetDataType() override { return _dataType; }
     bool Bind() override;
     void UnBind() override;
+    bool Equal(IIndexFormat* ifo) override;
 
     IndexFormatCustom(IVertexDataType* dataType);
     ~IndexFormatCustom();
@@ -215,52 +216,81 @@ public:
         ReadWrite = 0x88BA
     };
 
+    enum StorageBits {
+        DynamicBit = 0x0100,
+        ReadBit = 0x0001,
+        WriteBit = 0x0002,
+        PersistentBit = 0x00000040,
+        CoherentBit = 0x00000080,
+        ClientStorageBit = 0x0200
+    };
+
     virtual bool Buffer(void* data, const unsigned int& size, const unsigned int& usage, const unsigned int& accessFlag = ReadOnly) = 0;
+    virtual bool Buffer(void* data, const unsigned int& size, const unsigned int& offset) = 0;
+    virtual bool BufferAutoLocate(void* data, const unsigned int& size, unsigned int * offset) = 0;
+    virtual bool GetBuffered(void* data, const unsigned int& offset, const unsigned int& size) = 0;
+    virtual bool Storage(void* initData, const unsigned int& size, const unsigned int& storageBits) = 0;
+    virtual bool Storage(const unsigned int& size, const unsigned int& storageBits) = 0;
     virtual void Release() = 0;
+
+    virtual size_t GetAllocatedSize() = 0;
+    virtual size_t GetUsedSize() = 0;
+    virtual size_t GetFreeSize() = 0;
+    virtual unsigned int GetNextFreeOffset() = 0;
+
+    virtual bool _CopyTo(const unsigned int& dstHandle, const unsigned int& srcOffset, const unsigned int& dstOffset, const unsigned int& size) = 0;
 };
 
-class VertexBuffer : public Object, public IBuffer, public GL::IGLObject {
+class GPUBuffer : public Object, public IBuffer, public GL::IGLObject {
     friend class GeometryBuffer;
 public:
     bool Buffer(void* data, const unsigned int& size, const unsigned int& usage, const unsigned int& accessFlag) override;
+    bool Buffer(void* data, const unsigned int& size, const unsigned int& offset) override;
+    bool BufferAutoLocate(void* data, const unsigned int& size, unsigned int * offset) override;
+    bool GetBuffered(void* data, const unsigned int& offset, const unsigned int& size) override;
+    bool Storage(void* initData, const unsigned int& size, const unsigned int& storageBits) override;
+    inline bool Storage(const unsigned int& size, const unsigned int& storageBits) override { return this->Storage(0, size, storageBits); }
     void Release() override;
+    bool _CopyTo(const unsigned int& dstHandle, const unsigned int& srcOffset, const unsigned int& dstOffset, const unsigned int& size) override;
+
+    inline size_t GetAllocatedSize() override { return _allocated_size; }
+    inline size_t GetUsedSize() override { return _used_size; }
+    inline size_t GetFreeSize() override { return _free_size; }
+    inline unsigned int GetNextFreeOffset() override { return _next_free_offset; }
+
     inline void SetNum(const unsigned int & num) { _num = num; }
     inline unsigned int GetNum() { return _num; }
 
     bool IsAvailable() override { return (_handle != 0); }
 
+    GPUBuffer(GL::IContext* ctx, const unsigned int& target);
+    virtual ~GPUBuffer();
+protected:
+    uint64_t _resident_ptr;
+    int _buffer_size;
+    unsigned int _usage;
+    unsigned int _accessFlag;
+    unsigned int _handle;
+    unsigned int _num;
+
+    unsigned int _target; //gl target / buffer type (vertex, index, etc)
+
+    size_t _allocated_size;
+    size_t _used_size;
+    size_t _free_size;
+    unsigned int _next_free_offset;
+};
+
+class VertexBuffer : public GPUBuffer {
+public:
     VertexBuffer(GL::IContext* ctx);
     virtual ~VertexBuffer();
-
-protected:
-    uint64_t _resident_ptr;
-    int _buffer_size;
-    unsigned int _usage;
-    unsigned int _accessFlag;
-    unsigned int _handle;
-    unsigned int _num;
 };
 
-class IndexBuffer : public Object, public IBuffer, public GL::IGLObject {
-    friend class GeometryBuffer;
+class IndexBuffer : public GPUBuffer {
 public:
-    bool Buffer(void* data, const unsigned int& size, const unsigned int& usage, const unsigned int& accessFlag) override;
-    inline void SetNum(const unsigned int & num) { _num = num; }
-    inline unsigned int GetNum() { return _num; }
-    void Release() override;
-
-    bool IsAvailable() override { return (_handle != 0); }
-
     IndexBuffer(GL::IContext* ctx);
     virtual ~IndexBuffer();
-
-protected:
-    uint64_t _resident_ptr;
-    int _buffer_size;
-    unsigned int _usage;
-    unsigned int _accessFlag;
-    unsigned int _handle;
-    unsigned int _num;
 };
 
 class IGeometryBuffer {
@@ -277,13 +307,13 @@ public:
         Draw_QuadStrip = 8
     };
 
-    virtual bool SetVertexBuffer(VertexBuffer* buf) = 0;
-    virtual VertexBuffer* GetVertexBuffer() = 0;
+    virtual bool SetVertexBuffer(GPUBuffer* buf) = 0;
+    virtual GPUBuffer* GetVertexBuffer() = 0;
 
-    virtual bool SetIndexBuffer(IndexBuffer* buf) = 0;
-    virtual IndexBuffer* GetIndexBuffer() = 0;
+    virtual bool SetIndexBuffer(GPUBuffer* buf) = 0;
+    virtual GPUBuffer* GetIndexBuffer() = 0;
 
-    virtual void Draw(IRenderSystem* rc, const unsigned int& start, const unsigned int& end, const int& count) = 0;
+    virtual void Draw(IRenderSystem* rc, const unsigned int& istart, const unsigned int& vstart, const int& icount, const int& vcount) = 0;
     virtual void SetFormat(IVertexFormat* f, IIndexFormat* fi) = 0;
     virtual ~IGeometryBuffer() {}
 };
@@ -292,11 +322,11 @@ class GeometryBuffer : public Object, public IGeometryBuffer, public GL::IGLObje
     friend class VertexBuffer;
     friend class IndexBuffer;
 public:
-    bool SetVertexBuffer(VertexBuffer* buf) override;
-    inline VertexBuffer* GetVertexBuffer() override { return _vb; }
-    bool SetIndexBuffer(IndexBuffer* buf) override;
-    inline IndexBuffer* GetIndexBuffer() override { return _ib; }
-    void Draw(IRenderSystem* rc, const unsigned int& start, const unsigned int& end, const int& count) override;
+    bool SetVertexBuffer(GPUBuffer* buf) override;
+    inline GPUBuffer* GetVertexBuffer() override { return _vb; }
+    bool SetIndexBuffer(GPUBuffer* buf) override;
+    inline GPUBuffer* GetIndexBuffer() override { return _ib; }
+    void Draw(IRenderSystem* rc, const unsigned int& istart, const unsigned int& vstart, const int& icount, const int& vcount) override;
     inline void SetFormat(IVertexFormat* f, IIndexFormat* fi) override { _format = f; _iformat = fi; }
 
     bool IsAvailable() override { return true; }
@@ -304,11 +334,11 @@ public:
 
     static GeometryBuffer* Plane(GL::IContext* ctx, const glm::vec3& scale, const glm::vec3 pos, const unsigned int& usage, const unsigned int& drawm);
 
-    GeometryBuffer(GL::IContext* ctx, VertexBuffer* vb, IndexBuffer* ib, IVertexFormat* f, IIndexFormat* fi, const unsigned int& drawMode);
+    GeometryBuffer(GL::IContext* ctx, GPUBuffer* vb, GPUBuffer* ib, IVertexFormat* f, IIndexFormat* fi, const unsigned int& drawMode);
     virtual ~GeometryBuffer();
 protected:
-    VertexBuffer* _vb;
-    IndexBuffer* _ib;
+    GPUBuffer* _vb;
+    GPUBuffer* _ib;
     IVertexFormat* _format;
     IIndexFormat* _iformat;
     unsigned int _vao;
@@ -318,9 +348,10 @@ protected:
 class IGeometry {
 public:
     virtual void SetGeometryBuffer(IGeometryBuffer* buffer) = 0;
-    virtual void SetStart(const unsigned int& i) = 0;
-    virtual void SetEnd(const unsigned int& i) = 0;
-    virtual void SetCount(const int& i) = 0;
+    virtual void SetIStart(const unsigned int& i) = 0;
+    virtual void SetVStart(const unsigned int& v) = 0;
+    virtual void SetICount(const int& i) = 0;
+    virtual void SetVCount(const int& i) = 0;
     virtual void Draw(IRenderSystem* rc) = 0;
     virtual ~IGeometry() {}
 };
@@ -328,18 +359,54 @@ public:
 class Geometry : public IGeometry, public Object {
 public:
     void SetGeometryBuffer(IGeometryBuffer* buffer) override;
-    void SetStart(const unsigned int& i) override;
-    void SetEnd(const unsigned int& i) override;
-    void SetCount(const int& i) override;
+    void SetIStart(const unsigned int& i) override;
+    void SetVStart(const unsigned int& v) override;
+    void SetICount(const int& i) override;
+    void SetVCount(const int& i) override;
     void Draw(IRenderSystem* rc) override;
 
-    Geometry(IGeometryBuffer* buffer, const unsigned int& istart, const unsigned int& iend, const int& icount);
+    Geometry(IGeometryBuffer* buffer, const unsigned int& index_start, const unsigned int& vertex_start, const int& ind_count, const int& vert_count);
     virtual ~Geometry();
 
 protected:
     IGeometryBuffer* _buffer;
-    unsigned int _start, _end;
-    int _count;
+    unsigned int _istart, _vstart;
+    int _icount, _vcount;
+};
+
+class GeometryManager {
+public:
+    GeometryBuffer * PlaceGeometry(  IVertexFormat* vfo, IIndexFormat* ifo,
+                                void* vert_data, const size_t& vert_data_size,
+                                void* ind_data, const size_t& ind_data_size,
+                                const unsigned int& usage, const unsigned int& accessFlag, const unsigned int& drawMode,
+                                unsigned int * vertex_buf_offset_in_bytes, unsigned int * index_buf_offset_in_bytes);
+
+    ~GeometryManager();
+
+    static GeometryManager* Instance();
+    static void DestroyInstance();
+
+protected:
+
+    size_t _max_buffer_size = 209715200; //200mb
+    bool _new_buffer_per_data = true;
+
+    class FormatBuffers {
+    public:
+        //if one of v_format or i_format not null, so buffers is vertex or index
+        IVertexFormat* v_format = 0;
+        IIndexFormat* i_format = 0;
+        unsigned int _usage = 0;
+        unsigned int _accessFlag = 0;
+        std::vector<GPUBuffer*> gl_buffers;
+    };
+
+    std::vector<FormatBuffers*> _buffers;
+
+    //if vfo not null, request vertexbuffer
+    //if ifo not null, request indexbuffer
+    GPUBuffer* _RequestBuffer(IVertexFormat* vfo, IIndexFormat* ifo, const size_t& data_size, const unsigned int& usage, const unsigned int& accessFlag);
 };
 
 }

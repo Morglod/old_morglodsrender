@@ -140,6 +140,10 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
         std::vector<unsigned int> combine_inddata;
 
         std::vector<IGeometryBuffer*> buffers;
+        std::vector<unsigned int> vbuffer_offsets;
+        std::vector<unsigned int> ibuffer_offsets;
+        std::vector<unsigned int> num_verts;
+        std::vector<unsigned int> num_inds;
         MeshContainer(Material* m) : mat(m), buffers() {}
     };
 
@@ -405,6 +409,7 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
         //If it's first mesh
         if(i == 0) {
             MinPoint = glm::vec3(vbuffer[0], vbuffer[1], vbuffer[2]);
+            MaxPoint = glm::vec3(vbuffer[0], vbuffer[1], vbuffer[2]);
         }
 
         //Walk over all positions and find min/max
@@ -412,6 +417,7 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
             if(vbuffer[ipm] < MinPoint.x) MinPoint.x = vbuffer[ipm];
             if(vbuffer[ipm+1] < MinPoint.y) MinPoint.y = vbuffer[ipm+1];
             if(vbuffer[ipm+2] < MinPoint.z) MinPoint.z = vbuffer[ipm+2];
+
             if(vbuffer[ipm] > MaxPoint.x) MaxPoint.x = vbuffer[ipm];
             if(vbuffer[ipm+1] > MaxPoint.y) MaxPoint.y = vbuffer[ipm+1];
             if(vbuffer[ipm+2] > MaxPoint.z) MaxPoint.z = vbuffer[ipm+2];
@@ -420,23 +426,37 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
         //MR::VertexDeclaration* vDecl = new MR::VertexDeclaration(&vdtypes[0], declarations, VertexDeclaration::DataType::Float);
         //MR::IndexDeclaration* iDecl = new MR::IndexDeclaration(IndexDeclaration::DataType::UInt);
 
-        VertexBuffer* gl_v_buffer = new VertexBuffer(GL::GetCurrent());
+        /*VertexBuffer* gl_v_buffer = new VertexBuffer(GL::GetCurrent());
         gl_v_buffer->Buffer(&vbuffer[0], vbufferSize, IBuffer::Static+IBuffer::Draw, IBuffer::ReadOnly);
         gl_v_buffer->SetNum(numVerts);
-
+*/
         IndexFormatCustom* gl_i_format = nullptr;
-        IndexBuffer* gl_i_buffer = nullptr;
+/*        IndexBuffer* gl_i_buffer = nullptr;*/
 
         if(isettings.indecies) {
             gl_i_format = new IndexFormatCustom(VertexDataTypeUInt::Instance());
-
+/*
             gl_i_buffer = new IndexBuffer(GL::GetCurrent());
             gl_i_buffer->Buffer(&ibuffer[0], ibufferSize, IBuffer::Static+IBuffer::Draw, IBuffer::ReadOnly);
-            gl_i_buffer->SetNum(indsNum);
+            gl_i_buffer->SetNum(indsNum);*/
         }
 
-        MR::GeometryBuffer* new_gb = new GeometryBuffer(GL::GetCurrent(), gl_v_buffer, gl_i_buffer, vformat, gl_i_format, GL_TRIANGLES);
-        for_meshes[materialId-1].buffers.push_back(new_gb);
+        unsigned int vbuf_off_bytes = 0, ibuf_off_bytes = 0;
+        MR::GeometryBuffer* new_gb = MR::GeometryManager::Instance()->PlaceGeometry(vformat, gl_i_format, &vbuffer[0], vbufferSize, &ibuffer[0], ibufferSize, IBuffer::Static+IBuffer::Draw, IBuffer::ReadOnly, GL_TRIANGLES, &vbuf_off_bytes, &ibuf_off_bytes);//new GeometryBuffer(GL::GetCurrent(), gl_v_buffer, gl_i_buffer, vformat, gl_i_format, GL_TRIANGLES);
+        if(new_gb != 0){
+            vbuf_off_bytes = vbuf_off_bytes / vformat->Size();
+
+            if(gl_i_format) {
+                ibuf_off_bytes = ibuf_off_bytes / gl_i_format->Size();
+            }
+
+            for_meshes[materialId-1].buffers.push_back(new_gb);
+            for_meshes[materialId-1].vbuffer_offsets.push_back(vbuf_off_bytes);
+            for_meshes[materialId-1].ibuffer_offsets.push_back(ibuf_off_bytes);
+
+            for_meshes[materialId-1].num_verts.push_back(numVerts);
+            for_meshes[materialId-1].num_inds.push_back(indsNum);
+        }
 
         delete meshName;
         delete vbuffer;
@@ -453,13 +473,16 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
     for(size_t mi = 0; mi < for_meshes.size(); ++mi){
         MR::IGeometry** mesh_geometry = new MR::IGeometry*[for_meshes[mi].buffers.size()];
         for(size_t gmi = 0; gmi < for_meshes[mi].buffers.size(); ++gmi){
-            unsigned int iend = 0;
+            unsigned int ibegin = 0, vbegin = 0;
+            unsigned int icount = 0, vcount = 0;
             if(for_meshes[mi].buffers[gmi]->GetIndexBuffer()){
-                iend = for_meshes[mi].buffers[gmi]->GetIndexBuffer()->GetNum();
+                icount = for_meshes[mi].num_inds[gmi];
+                ibegin = for_meshes[mi].ibuffer_offsets[gmi];
             } else if(for_meshes[mi].buffers[gmi]->GetVertexBuffer()){
-                iend = for_meshes[mi].buffers[gmi]->GetVertexBuffer()->GetNum();
+                vcount = for_meshes[mi].num_verts[gmi];
+                vbegin = for_meshes[mi].vbuffer_offsets[gmi];
             }
-            mesh_geometry[gmi] = new MR::Geometry(for_meshes[mi].buffers[gmi], 0, iend, (int)iend);
+            mesh_geometry[gmi] = new MR::Geometry(for_meshes[mi].buffers[gmi], ibegin, vbegin, icount, vcount);
         }
         meshes[mi] = new MR::Mesh(mesh_geometry, for_meshes[mi].buffers.size(), for_meshes[mi].mat);
     }
