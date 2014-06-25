@@ -1,38 +1,40 @@
 #include "Material.hpp"
 #include "RenderSystem.hpp"
 #include "Texture.hpp"
-#include "Shader.hpp"
+#include "Shaders/ShaderInterfaces.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
 #endif
 
-void MR::MaterialPass::Use(IRenderSystem* rs){
-    if( (_flag.always) || (_parent->GetManager()->ActivedFlag() == _flag.flag) ){
+bool MR::MaterialPass::Use(IRenderSystem* rs){
+    if( (_flag.always) || (_parent->GetManager()->GetActivedFlag() == _flag.flag) ){
         if(_ambient)    rs->BindTexture(_ambient, _ambientUnit);
         if(_diffuse)    rs->BindTexture(_diffuse, _diffuseUnit);
         if(_opacity)    rs->BindTexture(_opacity, _opacityUnit);
-        rs->UseShader(_shader);
+        rs->UseShaderProgram(_shader);
 
         if(_twoSided)   glDisable(GL_CULL_FACE);
         else            glEnable(GL_CULL_FACE);
-    }
+
+        return true;
+    } else return false;
 }
 
 void MR::MaterialPass::UnUse(IRenderSystem* rs){
     if(_ambient) rs->UnBindTexture(_ambientUnit);
     if(_diffuse) rs->UnBindTexture(_diffuseUnit);
     if(_opacity) rs->UnBindTexture(_opacityUnit);
-    rs->UseShader(nullptr);
+    rs->UseShaderProgram(nullptr);
 }
 
-void MR::MaterialPass::SetShader(IShader* sh) {
+void MR::MaterialPass::SetShader(IShaderProgram* sh) {
     _shader = sh;
     if(sh != nullptr) {
-        _ambient_sampler = _shader->CreateUniform(MR_SHADER_AMBIENT_TEX, IShaderUniform::Types::Int, &_ambientUnit);
-        _diffuse_sampler = _shader->CreateUniform(MR_SHADER_DIFFUSE_TEX, IShaderUniform::Types::Int, &_diffuseUnit);
-        _opacity_sampler = _shader->CreateUniform(MR_SHADER_OPACITY_TEX, IShaderUniform::Types::Int, &_opacityUnit);
-        _uniform_color = _shader->CreateUniform(MR_SHADER_COLOR_V4, IShaderUniform::Types::Vec4, _color);
+        _ambient_sampler = _shader->CreateUniform(MR_SHADER_AMBIENT_TEX, IShaderUniform::SUT_Int, &_ambientUnit);
+        _diffuse_sampler = _shader->CreateUniform(MR_SHADER_DIFFUSE_TEX, IShaderUniform::SUT_Int, &_diffuseUnit);
+        _opacity_sampler = _shader->CreateUniform(MR_SHADER_OPACITY_TEX, IShaderUniform::SUT_Int, &_opacityUnit);
+        _uniform_color = _shader->CreateUniform(MR_SHADER_COLOR_V4, IShaderUniform::SUT_Vec4, _color);
 
         /*_emissive_sampler =          _shader->CreateUniform(MR_SHADER_EMISSIVE_TEX, &_emissiveStage);
         _environment_sampler =       _shader->CreateUniform(MR_SHADER_ENVIRONMENT_TEX, &_environmentStage);
@@ -58,6 +60,54 @@ MR::MaterialPass::MaterialPass(Material* mat) :
 }
 
 MR::MaterialPass::~MaterialPass(){
+}
+
+void MR::Material::SetShader(IShaderProgram* sh) {
+    for(size_t i = 0; i < materialPasses.size(); ++i){
+        materialPasses[i]->SetShader(sh);
+    }
+}
+
+void MR::Material::SetAmbientTexture(ITexture* t) {
+    for(size_t i = 0; i < materialPasses.size(); ++i){
+        materialPasses[i]->SetAmbientTexture(t);
+    }
+}
+
+void MR::Material::SetAmbientTextureUnit(const unsigned int& s) {
+    for(size_t i = 0; i < materialPasses.size(); ++i){
+        materialPasses[i]->SetAmbientTextureUnit(s);
+    }
+}
+
+void MR::Material::SetDiffuseTexture(ITexture* t) {
+    for(size_t i = 0; i < materialPasses.size(); ++i){
+        materialPasses[i]->SetDiffuseTexture(t);
+    }
+}
+
+void MR::Material::SetDiffuseTextureUnit(const unsigned int& s) {
+    for(size_t i = 0; i < materialPasses.size(); ++i){
+        materialPasses[i]->SetDiffuseTextureUnit(s);
+    }
+}
+
+void MR::Material::SetOpacityTexture(ITexture* t) {
+    for(size_t i = 0; i < materialPasses.size(); ++i){
+        materialPasses[i]->SetOpacityTexture(t);
+    }
+}
+
+void MR::Material::SetOpacityTextureUnit(const unsigned int& s) {
+    for(size_t i = 0; i < materialPasses.size(); ++i){
+        materialPasses[i]->SetOpacityTextureUnit(s);
+    }
+}
+
+void MR::Material::SetTwoSided(const bool& ts) {
+    for(size_t i = 0; i < materialPasses.size(); ++i){
+        materialPasses[i]->SetTwoSided(ts);
+    }
 }
 
 MR::Material::Material(MaterialManager* mgr, const std::string& Name) :

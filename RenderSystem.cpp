@@ -9,8 +9,9 @@
 #include "Entity.hpp"
 #include "Model.hpp"
 #include "RenderTarget.hpp"
-#include "Shader.hpp"
-#include "Log.hpp"
+#include "Shaders/ShaderInterfaces.hpp"
+#include "Shaders/ShaderResource.hpp"
+#include "Utils/Log.hpp"
 #include "Light.hpp"
 #include "Scene.hpp"
 
@@ -128,7 +129,7 @@ bool RenderSystem::Init(IRenderWindow* window, bool multithreaded) {
 
 void RenderSystem::Shutdown() {
     MR::ModelManager::DestroyInstance();
-    MR::ShaderManager::DestroyInstance();
+    //MR::ShaderManager::DestroyInstance();
     MR::TextureManager::DestroyInstance();
 
     MR::Log::LogString("RenderSystem shutdown", MR_LOG_LEVEL_INFO);
@@ -166,11 +167,14 @@ void RenderSystem::UseCamera(Camera* cam){
     }
 }
 
-void RenderSystem::UseShader(IShader* shader){
+void RenderSystem::UseShaderProgram(IShaderProgram* shader){
     _shader = shader;
     if(shader) {
         if(_cam) _cam->UpdateShader(_shader);
-        _shader->Use(this);
+        glUseProgram(shader->GetGPUHandle());
+        //_shader->Use(this);
+    } else {
+        glUseProgram(0);
     }
 }
 
@@ -284,12 +288,18 @@ void RenderSystem::DrawGeometry(IGeometry* gb) {
 void RenderSystem::DrawGeomWithMaterial(glm::mat4* model_mat, MR::IGeometry* g, MR::Material* mat, void* edp) {
     if(mat) {
         for(size_t i = 0; i < mat->GetPassesNum(); ++i) {
+            if(!(mat->GetPass(i))) continue;
+            if(!(mat->GetPass(i)->Use(this))) continue;
             DrawGeomWithMaterialPass(model_mat, g, mat->GetPass(i), edp);
+            mat->GetPass(i)->UnUse(this);
         }
     } else {
         if(_useDefaultMaterial && _defaultMaterial) {
             for(size_t i = 0; i < _defaultMaterial->GetPassesNum(); ++i) {
+                if(!(_defaultMaterial->GetPass(i))) continue;
+                if(!(_defaultMaterial->GetPass(i)->Use(this))) continue;
                 DrawGeomWithMaterialPass(model_mat, g, _defaultMaterial->GetPass(i), edp);
+                _defaultMaterial->GetPass(i)->UnUse(this);
             }
         } else {
             _cam->SetModelMatrix(model_mat);
@@ -300,12 +310,11 @@ void RenderSystem::DrawGeomWithMaterial(glm::mat4* model_mat, MR::IGeometry* g, 
 
 void RenderSystem::DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::IGeometry* g, MR::MaterialPass* mat_pass, void* vedp) {
     _cam->SetModelMatrix(model_mat);
-    if(mat_pass) mat_pass->Use(this);
 
     MR::SceneManager::EntityDrawParams* edp = (MR::SceneManager::EntityDrawParams*)vedp;
 
     if(_shader){
-        unsigned int sh_prog = _shader->GetGPUProgramId();
+        unsigned int sh_prog = _shader->GetGPUHandle();
         if(_shader->GetFeatures().light && edp->_llist){
             int pointLightsNum = 0;
             int dirLightsNum = 0;
@@ -364,11 +373,10 @@ void RenderSystem::DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::IGeometry*
             glUniform4f(glGetUniformLocation(sh_prog, MR_SHADER_FOG_COLOR), edp->_fogColor->x, edp->_fogColor->y, edp->_fogColor->z, edp->_fogColor->w);
         }
 
-        _shader->Use(this);
+        this->UseShaderProgram(_shader);//_shader->Use(this);
     }
 
     DrawGeometry(g);
-    if(mat_pass) mat_pass->UnUse(this);
 }
 
 void RenderSystem::DrawEntity(MR::Entity* ent, void* edp) {

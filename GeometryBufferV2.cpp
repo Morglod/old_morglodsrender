@@ -1,7 +1,7 @@
 #include "GeometryBufferV2.hpp"
 #include "MachineInfo.hpp"
 #include "RenderSystem.hpp"
-#include "Log.hpp"
+#include "Utils/Log.hpp"
 
 #include "GL/Context.hpp"
 

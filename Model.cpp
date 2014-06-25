@@ -1,9 +1,10 @@
 #include "Model.hpp"
-#include "Log.hpp"
+#include "Utils/Log.hpp"
 #include "GeometryBufferV2.hpp"
 #include "Material.hpp"
 #include "Texture.hpp"
-#include "Shader.hpp"
+#include "Shaders/ShaderInterfaces.hpp"
+#include "Shaders/ShaderBuilder.hpp"
 #include "GL/Context.hpp"
 
 #ifndef __glew_h__
@@ -249,11 +250,12 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
         }
 
         MR::Material* matPtr = new MR::Material(MR::MaterialManager::Instance(), materialName);
-        MR::MaterialPass* matPassPtr = new MR::MaterialPass(matPtr);
-        matPtr->AddPass(matPassPtr);
+        MR::MaterialPass* matPassPtr = matPtr->CreatePass();
+        MR::MaterialPass* matPassPtr_rtt = matPtr->CreatePass();
+        *(matPassPtr_rtt->GetFlagPtr()) = MaterialFlag::ToTexture();
         for_meshes.push_back(MeshContainer(matPtr));
 
-        MR::IShader::ShaderFeatures shaderRequest;
+        MR::IShaderProgram::Features shaderRequest;
 
         for(auto it = textures.begin(); it != textures.end(); ++it){
             MR::Texture* tex = nullptr;
@@ -299,22 +301,25 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
 
                 switch(it->type){
                 case 1: //ambient
-                    matPassPtr->SetAmbientTexture(tex);
+                    matPtr->SetAmbientTexture(tex);
                     shaderRequest.ambient = true;
                     break;
                 case 2: //diffuse
-                    matPassPtr->SetDiffuseTexture(tex);
+                    matPtr->SetDiffuseTexture(tex);
                     shaderRequest.diffuse = true;
                     break;
                 case 9: //opacity
-                    matPassPtr->SetOpacityTexture(tex);
+                    matPtr->SetOpacityTexture(tex);
                     shaderRequest.opacity = true;
                     break;
                 }
             }
         }
 
-        matPassPtr->SetShader( MR::ShaderManager::RequestDefault(shaderRequest) );
+        matPassPtr->SetShader( MR::ShaderBuilder::Need(shaderRequest) );
+        shaderRequest.toRenderTarget = true;
+        shaderRequest.defferedRendering = true;
+        matPassPtr_rtt->SetShader( MR::ShaderBuilder::Need(shaderRequest) );
     }
 
     glm::vec3 MinPoint, MaxPoint;

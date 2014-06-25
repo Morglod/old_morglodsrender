@@ -5,8 +5,6 @@
 #ifndef _MR_EVENTS_H_
 #define _MR_EVENTS_H_
 
-#include "Types.hpp"
-
 #include <vector>
 #include <algorithm>
 

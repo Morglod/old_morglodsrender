@@ -34,6 +34,11 @@ public:
     virtual bool Equal(T) = 0;
 };
 
+class HandleObject {
+public:
+    virtual void Release() = 0;
+};
+
 template<typename flag_t>
 class IFlags {
 public:

@@ -5,7 +5,8 @@
 
 #include "RenderSystem.hpp"
 #include "RenderWindow.hpp"
-#include "Exception.hpp"
+#include "Utils/Exception.hpp"
+#include "Pipeline.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
@@ -56,13 +57,23 @@ public:
             return false;
         }
 
-        camera = new MR::Camera( MR::Transform::WorldBackwardVector(), glm::vec3(0,0,0), 90.0f, 0.1f, 1000.0f, aspect);
+        camera = new MR::Camera( MR::Transform::WorldBackwardVector(), glm::vec3(0,0,0), 90.0f, 0.1f, 500.0f, aspect);
         camera->SetAutoRecalc(true); //Matrixes will recalc automaticly, when pos/rot/etc of camera changed
         camera->SetCameraMode(MR::Camera::CameraMode::Direction);
         sys->UseCamera(camera); //set this camera as default
 
         scene.AddCamera(camera);
         scene.SetMainCamera(camera);
+
+        pipeline = /*new MR::DefferedRenderingPipeline();//*/new MR::ForwardRenderingPipeline();
+        if(!pipeline->Setup(sys, MR::GL::GetCurrent(), window)) {
+            if(ThrowExceptions()){
+                throw MR::Exception("Failed RenderingPipeline::Setup.");
+            }
+            return false;
+        }
+
+        pipeline->SetScene(&scene);
 
         if(!Setup()) {
             if(ThrowExceptions()){
@@ -86,7 +97,10 @@ public:
         }
 
         Free();
+        pipeline->Shutdown();
+
         delete camera;
+        delete pipeline;
         delete sys;
         delete window;
 
@@ -115,6 +129,8 @@ protected:
 
     MR::Camera* camera;
     MR::SceneManager scene;
+
+    MR::IRenderingPipeline* pipeline;
 };
 
 }

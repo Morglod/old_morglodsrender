@@ -16,7 +16,7 @@ class IRenderWindow;
 class IVertexFormat;
 class IIndexFormat;
 class IGeometry;
-class IShader;
+class IShaderProgram;
 
 class Camera;
 class Entity;
@@ -50,8 +50,8 @@ public:
     virtual void UseCamera(Camera* cam) = 0;
     virtual Camera* GetCamera() = 0;
 
-    virtual void UseShader(IShader* shader) = 0;
-    virtual IShader* GetShader() = 0;
+    virtual void UseShaderProgram(IShaderProgram* shader) = 0;
+    virtual IShaderProgram* GetShaderProgram() = 0;
 
     virtual unsigned int FreeTextureUnit() = 0;
     virtual unsigned int GetTexture(const unsigned int& unit) = 0;
@@ -111,8 +111,8 @@ public:
     void UseCamera(Camera* cam) override;
     inline Camera* GetCamera() override { return _cam; }
 
-    void UseShader(IShader* shader) override;
-    inline IShader* GetShader() override { return _shader; }
+    void UseShaderProgram(IShaderProgram* shader) override;
+    inline IShaderProgram* GetShaderProgram() override { return _shader; }
 
     unsigned int FreeTextureUnit() override;
     inline unsigned int GetTexture(const unsigned int& unit) override {
@@ -168,7 +168,7 @@ protected:
     IVertexFormat* _vformat;
     IIndexFormat* _iformat;
     Camera* _cam;
-    IShader* _shader;
+    IShaderProgram* _shader;
     bool _useDefaultMaterial;
     Material* _defaultMaterial;
     RenderTarget* _renderTarget;

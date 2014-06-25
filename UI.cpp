@@ -1,13 +1,16 @@
 #include "UI.hpp"
 
 #include "GeometryBufferV2.hpp"
-#include "Shader.hpp"
+#include "Shaders/ShaderInterfaces.hpp"
 #include "RenderSystem.hpp"
 #include "RenderWindow.hpp"
-#include "Log.hpp"
+#include "Utils/Log.hpp"
 
 #include <GL/glew.h>
 #include <glm/gtx/transform.hpp>
+
+#include "Shaders/ShaderCompiler.hpp"
+#include "Shaders/ShaderObjects.hpp"
 
 const char* code_ui_vert =
     "#version 330\n"
@@ -123,8 +126,9 @@ void UIElement::Frame(IRenderSystem* rc, const float& delta){
         if(_manager){
             *(_manager->_color) = _color;
             *(_manager->_modelMatrix) = *_model_mat;
+            *(_manager->_tex_unit) = tex_unit;
 
-            _manager->_shader->Use(rc);
+            rc->UseShaderProgram(_manager->_shader);
             _manager->_quad_geom->Draw(rc);
         }
 
@@ -138,7 +142,7 @@ void UIElement::_CalcMatrix(){
     *_model_mat = t * s;
 }
 
-UIElement::UIElement(UIManager* m, const Rect& r) : Object(), _rect(r), _visible(true), _color(0.0f,0.0f,0.0f,1.0f), _model_mat(new glm::mat4(1.0f)), _manager(m), _hover(true), _hover_state(false), _click(true), _mouse_down { false, false, false} {
+UIElement::UIElement(UIManager* m, const Rect& r) : _rect(r), _visible(true), _color(0.0f,0.0f,0.0f,1.0f), _model_mat(new glm::mat4(1.0f)), _manager(m), _hover(true), _hover_state(false), _click(true), _mouse_down { false, false, false} {
     _CalcMatrix();
 }
 
@@ -161,13 +165,27 @@ _color(new glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), _tex_unit(new int(0)), _shader(0)
     _quad_geom_buffer = MR::GeometryBuffer::Plane(GL::GetCurrent(), glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(0.5f, -0.5f, 0.0f), MR::IBuffer::Static+MR::IBuffer::Draw, MR::IGeometryBuffer::Draw_Quads);
     _quad_geom = new MR::Geometry(_quad_geom_buffer, 0, 0, 4, 4);
 
-    _shader = new MR::Shader(MR::ShaderManager::Instance(), "UIDefaultShader", "FromMem");
-    _shader->AttachSubShader(new MR::SubShader(code_ui_vert, MR::ISubShader::Type::Vertex));
-    _shader->AttachSubShader(new MR::SubShader(code_ui_frag_color_only, MR::ISubShader::Type::Fragment));
-    _shader->Link();
-    _shader->CreateUniform("modelMatrix", _modelMatrix);
-    _shader->CreateUniform("ENGINE_COLOR", _color);
-    _shader->CreateUniform("ENGINE_ALBEDO", _tex_unit);
+    MR::ShaderCompiler compiler;
+    _shader = MR::ShaderProgram::Create();//new MR::ShaderProgram(MR::ShaderManager::Instance(), "UIDefaultShader", "FromMem");
+    MR::IShader* vert, * frag;
+    vert = MR::Shader::Create(IShader::ST_Vertex);
+    frag = MR::Shader::Create(IShader::ST_Fragment);
+
+    compiler.Compile(code_ui_vert, IShaderCompiler::ST_Vertex, vert->GetGPUHandle());
+    compiler.Compile(code_ui_frag_color_only, IShaderCompiler::ST_Fragment, frag->GetGPUHandle());
+
+    vert->Attach(_shader);
+    frag->Attach(_shader);
+
+    //_shader->AttachSubShader(new MR::SubShader(code_ui_vert, MR::ISubShader::Type::Vertex));
+    //_shader->AttachSubShader(new MR::SubShader(code_ui_frag_color_only, MR::ISubShader::Type::Fragment));
+
+    compiler.Link(StaticArray<unsigned int>(), _shader->GetGPUHandle());
+
+    //_shader->Link();
+    _shader->CreateUniform("modelMatrix", MR::IShaderUniform::SUT_Mat4, _modelMatrix);
+    _shader->CreateUniform("ENGINE_COLOR", MR::IShaderUniform::SUT_Vec4, _color);
+    _shader->CreateUniform("ENGINE_ALBEDO", MR::IShaderUniform::SUT_Int, _tex_unit);
 }
 
 UIManager::~UIManager(){

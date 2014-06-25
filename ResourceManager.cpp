@@ -1,5 +1,5 @@
 #include "ResourceManager.hpp"
-#include "Log.hpp"
+#include "Utils/Log.hpp"
 #include "GL/Context.hpp"
 #include <GLFW/glfw3.h>
 
@@ -45,6 +45,8 @@ void* __MR_RESOURCE_ASYNC_THREAD(void*) {
 
     glfwMakeContextCurrent(0);
     _async_thread_running = false;
+
+    return (void*)1;
 }
 
 void MR::_MR_RequestGPUThread() {

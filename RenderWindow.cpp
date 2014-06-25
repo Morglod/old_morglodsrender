@@ -1,5 +1,5 @@
 #include "RenderWindow.hpp"
-#include "Log.hpp"
+#include "Utils/Log.hpp"
 #include "MachineInfo.hpp"
 #include "RenderSystem.hpp"
 

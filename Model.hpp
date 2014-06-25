@@ -5,7 +5,7 @@
 
 #include "Mesh.hpp"
 #include "ResourceManager.hpp"
-#include "Events.hpp"
+#include "Utils/Events.hpp"
 #include "Boxes.hpp"
 
 namespace MR{

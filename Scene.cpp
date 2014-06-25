@@ -2,7 +2,7 @@
 #include "Camera.hpp"
 #include "RenderSystem.hpp"
 #include "Model.hpp"
-#include "Log.hpp"
+#include "Utils/Log.hpp"
 
 namespace MR {
 

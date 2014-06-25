@@ -4,11 +4,11 @@
 #define _MR_VIEWPORT_H_
 
 #include "Types.hpp"
-#include "Events.hpp"
+#include "Utils/Events.hpp"
 
 #include <glm/glm.hpp>
 
-namespace MR{
+namespace MR {
 
 class IViewport {
 public:

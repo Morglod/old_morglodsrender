@@ -3,7 +3,7 @@
 #ifndef _MR_UI_H_
 #define _MR_UI_H_
 
-#include "Events.hpp"
+#include "Utils/Events.hpp"
 
 #ifndef glm_glm
 #   include <glm/glm.hpp>
@@ -14,7 +14,7 @@
 
 namespace MR {
 
-class Shader;
+class IShaderProgram;
 class IShaderUniform;
 
 class IRenderSystem;
@@ -59,6 +59,9 @@ public:
     virtual void SetColor(const glm::vec4& rgba) = 0;
     virtual glm::vec4 GetColor() = 0;
 
+    virtual void SetTextureUnit(const int& unit) = 0;
+    virtual int GetTextureUnit() = 0;
+
     virtual void SetHoverState(const bool& state) = 0;
     virtual bool GetHoverState() = 0;
 
@@ -70,7 +73,7 @@ public:
     virtual ~IUIElement() {}
 };
 
-class UIElement : public Object, public IUIElement {
+class UIElement : public IUIElement {
     friend class UIManager;
 public:
     void SetRect(const Rect& r) override;
@@ -78,6 +81,9 @@ public:
 
     void SetColor(const glm::vec4& rgba) override;
     inline glm::vec4 GetColor() override { return _color; }
+
+    void SetTextureUnit(const int& unit) override { tex_unit = unit; }
+    inline int GetTextureUnit() override { return tex_unit; }
 
     void SetHoverState(const bool& state) override { _hover = state; }
     bool GetHoverState() override { return _hover; }
@@ -96,6 +102,7 @@ protected:
     bool _visible;
     glm::vec4 _color;
     glm::mat4* _model_mat;
+    int tex_unit;
     UIManager* _manager;
 
     bool _hover, _hover_state;
@@ -128,7 +135,7 @@ protected:
     glm::mat4* _modelMatrix;
     glm::vec4* _color;
     int* _tex_unit;
-    MR::Shader* _shader;
+    MR::IShaderProgram* _shader;
 };
 
 }

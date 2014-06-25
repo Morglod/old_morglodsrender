@@ -16,7 +16,7 @@ namespace MR {
 
 class RenderContext;
 
-class IShader;
+class IShaderProgram;
 class IShaderUniform;
 
 class ITexture;
@@ -36,19 +36,20 @@ public:
 
     inline static MaterialFlag Default(){return MaterialFlag(false, 0);} //default rendering state
     inline static MaterialFlag ShadowMap(){return MaterialFlag(false, 1);} //drawing to shadow map
+    inline static MaterialFlag ToTexture(){return MaterialFlag(false, 2);} //drawing to render target
 };
 
 class MaterialPass {
 public:
-    virtual void Use(IRenderSystem* rs);
+    virtual bool Use(IRenderSystem* rs); //returns false, if can't use
     virtual void UnUse(IRenderSystem* rs);
 
     inline MaterialFlag GetFlag();
     inline MaterialFlag* GetFlagPtr();
 
     inline Material* GetMaterial();
-    inline IShader* GetShader();
-    virtual void SetShader(IShader* sh);
+    inline IShaderProgram* GetShader();
+    virtual void SetShader(IShaderProgram* sh);
 
     inline ITexture* GetAmbientTexture() { return _ambient; }
     inline unsigned int GetAmbientTextureUnit() { return _ambientUnit; }
@@ -75,7 +76,7 @@ public:
     ~MaterialPass();
 protected:
     Material* _parent;
-    IShader* _shader;
+    IShaderProgram* _shader;
 
     bool _twoSided;
 
@@ -105,16 +106,31 @@ public:
     inline MaterialManager* GetManager() { return manager; }
     inline std::vector<MaterialPass*>::size_type GetPassesNum() { return materialPasses.size(); }
 
-    inline void AddPass(MaterialPass* p){ materialPasses.push_back(p); }
+    inline virtual void AddPass(MaterialPass* p){ materialPasses.push_back(p); }
 
-    inline MaterialPass* CreatePass(){
+    inline virtual MaterialPass* CreatePass(){
         MaterialPass* p = new MaterialPass(this);
         materialPasses.push_back(p);
         return p;
     }
 
-    Material(MaterialManager* mgr, const std::string& Name);
+    /** SETS TO ALL PASSES **/
+    virtual void SetShader(IShaderProgram* sh);
 
+    virtual void SetAmbientTexture(ITexture* t);
+    virtual void SetAmbientTextureUnit(const unsigned int& s);
+
+    virtual void SetDiffuseTexture(ITexture* t);
+    virtual void SetDiffuseTextureUnit(const unsigned int& s);
+
+    virtual void SetOpacityTexture(ITexture* t);
+    virtual void SetOpacityTextureUnit(const unsigned int& s);
+
+    virtual void SetTwoSided(const bool& ts);
+    /** **/
+
+    Material(MaterialManager* mgr, const std::string& Name);
+    virtual ~Material() {}
 protected:
     std::string name;
     std::vector<MaterialPass*> materialPasses;
@@ -123,7 +139,7 @@ protected:
 
 class MaterialManager {
 public:
-    inline unsigned char ActivedFlag();
+    inline unsigned char GetActivedFlag();
     inline void ActiveFlag(const unsigned char & f);
 
     static MaterialManager* Instance() {
@@ -149,7 +165,7 @@ MR::Material* MR::MaterialPass::GetMaterial() {
     return _parent;
 }
 
-MR::IShader* MR::MaterialPass::GetShader() {
+MR::IShaderProgram* MR::MaterialPass::GetShader() {
     return _shader;
 }
 
@@ -161,7 +177,7 @@ void MR::MaterialPass::SetTwoSided(const bool& ts) {
     _twoSided = ts;
 }
 
-unsigned char MR::MaterialManager::ActivedFlag() {
+unsigned char MR::MaterialManager::GetActivedFlag() {
     return _flag;
 }
 

@@ -4,7 +4,7 @@
 #define _MR_SCENE_H_
 
 #include "Config.hpp"
-#include "Events.hpp"
+#include "Utils/Events.hpp"
 #include "Entity.hpp"
 #include "Light.hpp"
 
@@ -27,11 +27,11 @@ public:
     };
 
     /** CAMERAS **/
-    MR::EventListener<SceneManager*, Camera*> OnMainCameraChanged;
-    MR::EventListener<SceneManager*, Camera*> OnCameraCreated;
-    MR::EventListener<SceneManager*, Camera*> OnCameraDeletting; //before deleted
-    MR::EventListener<SceneManager*, Camera*> OnCameraAdded;
-    MR::EventListener<SceneManager*, Camera*> OnCameraRemoving; //before removed
+    EventListener<SceneManager*, Camera*> OnMainCameraChanged;
+    EventListener<SceneManager*, Camera*> OnCameraCreated;
+    EventListener<SceneManager*, Camera*> OnCameraDeletting; //before deleted
+    EventListener<SceneManager*, Camera*> OnCameraAdded;
+    EventListener<SceneManager*, Camera*> OnCameraRemoving; //before removed
 
     virtual void AddCamera(Camera* cam);
     virtual void RemoveCamera(Camera* cam);
@@ -42,14 +42,14 @@ public:
     virtual Entity** CullEntities(Camera* cam);
 
     /** ENTITIES **/
-    MR::EventListener<SceneManager*, Entity*> OnEntityAdded;
-    MR::EventListener<SceneManager*, Entity*> OnEntityRemoving; //before removed
-    MR::EventListener<SceneManager*, Entity*> OnEntityCreated;
-    MR::EventListener<SceneManager*, Entity*> OnEntityDeletting; //before deleted
+    EventListener<SceneManager*, Entity*> OnEntityAdded;
+    EventListener<SceneManager*, Entity*> OnEntityRemoving; //before removed
+    EventListener<SceneManager*, Entity*> OnEntityCreated;
+    EventListener<SceneManager*, Entity*> OnEntityDeletting; //before deleted
 
     virtual void AddEntity(Entity* ent);
     virtual void RemoveEntity(Entity* ent);
-    virtual Entity* CreateEntity(MR::Model* model);
+    virtual Entity* CreateEntity(Model* model);
     virtual Entity* CreateEntity(const std::string& modelSrc);
     virtual void DeleteEntity(Entity* ent);
 
@@ -57,6 +57,7 @@ public:
     virtual void AddLight(ILightSource* l);
     virtual void RemoveLight(ILightSource* l);
     virtual MR::LightsList MakeLightsList(Entity* ent);
+    inline virtual std::vector<ILightSource*>* GetLightsListPtr() { return &_lights; }
 
     /** FOG **/
     virtual void SetFog(const float& minDist, const float& maxDist, const glm::vec4& color);

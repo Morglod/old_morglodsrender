@@ -5,7 +5,7 @@
 
 #include "Config.hpp"
 #include "Types.hpp"
-#include "Shader.hpp"
+#include "Shaders/ShaderInterfaces.hpp"
 #include "Boxes.hpp"
 
 #ifndef glm_glm
@@ -101,7 +101,7 @@ public:
         listOfPtrs - array of pointers to lights
         listSize - num of elements in listOfPtrs
     **/
-    static LightsList MakeList(MR::ICollidable* bound, ILightSource** listOfPtrs, const size_t& listSize);
+    static LightsList MakeList(ICollidable* bound, ILightSource** listOfPtrs, const size_t& listSize);
 private:
     LightsList(const std::vector<ILightSource*>& l);
 protected:

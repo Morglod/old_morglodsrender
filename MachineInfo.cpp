@@ -1,5 +1,5 @@
 #include "MachineInfo.hpp"
-#include "Log.hpp"
+#include "Utils/Log.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
@@ -184,48 +184,49 @@ bool MR::MachineInfo::IsDirectStateAccessSupported(){
     return true;
 }
 
-bool MR::MachineInfo::CatchError(std::string& errorOutput, unsigned int * glCode){
+bool MR::MachineInfo::CatchError(std::string* errorOutput, int * glCode){
     GLenum er = glGetError();
     if(glCode) *glCode = er;
 
-    switch(er){
-    case GL_INVALID_ENUM:
-        errorOutput = "Invalid enumiration";
-        return true;
-        break;
-    case GL_INVALID_FRAMEBUFFER_OPERATION:
-        errorOutput = "Invalid framebuffer operation";
-        return true;
-        break;
-    case GL_INVALID_INDEX:
-        errorOutput = "Invalid index";
-        return true;
-        break;
-    case GL_INVALID_OPERATION:
-        errorOutput = "Invalid operation";
-        return true;
-        break;
-    case GL_INVALID_VALUE:
-        errorOutput = "Invalid value";
-        return true;
-        break;
-    case GL_OUT_OF_MEMORY:
-        MR::Log::LogString("Out of memory", MR_LOG_LEVEL_ERROR);
-        errorOutput = "Out of memory";
-        return true;
-        break;
-    case GL_STACK_UNDERFLOW:
-        errorOutput = "Stack underflow";
-        return true;
-        break;
-    case GL_STACK_OVERFLOW:
-        errorOutput = "Stack overflow";
-        return true;
-        break;
-    default:
-        return false;
-        break;
+    if(errorOutput) {
+        switch(er){
+        case GL_INVALID_ENUM:
+            *errorOutput = "Invalid enumiration";
+            return true;
+            break;
+        case GL_INVALID_FRAMEBUFFER_OPERATION:
+            *errorOutput = "Invalid framebuffer operation";
+            return true;
+            break;
+        case GL_INVALID_INDEX:
+            *errorOutput = "Invalid index";
+            return true;
+            break;
+        case GL_INVALID_OPERATION:
+            *errorOutput = "Invalid operation";
+            return true;
+            break;
+        case GL_INVALID_VALUE:
+            *errorOutput = "Invalid value";
+            return true;
+            break;
+        case GL_OUT_OF_MEMORY:
+            MR::Log::LogString("Out of memory", MR_LOG_LEVEL_ERROR);
+            *errorOutput = "Out of memory";
+            return true;
+            break;
+        case GL_STACK_UNDERFLOW:
+            *errorOutput = "Stack underflow";
+            return true;
+            break;
+        case GL_STACK_OVERFLOW:
+            *errorOutput = "Stack overflow";
+            return true;
+            break;
+        }
     }
+
+    return false;
 }
 
 void MR::MachineInfo::ClearError(){

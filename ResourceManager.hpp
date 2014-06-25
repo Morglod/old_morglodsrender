@@ -4,7 +4,7 @@
 #define _MR_RESOURCE_MANAGER_H_
 
 #include "Config.hpp"
-#include "Events.hpp"
+#include "Utils/Events.hpp"
 #include "Threads.hpp"
 
 #include <queue>

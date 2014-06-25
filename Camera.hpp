@@ -3,7 +3,7 @@
 #ifndef _MR_CAMERA_H_
 #define _MR_CAMERA_H_
 
-#include "Events.hpp"
+#include "Utils/Events.hpp"
 #include "Transformation.hpp"
 #include "Types.hpp"
 
@@ -14,7 +14,7 @@
 
 namespace MR {
 
-class IShader;
+class IShaderProgram;
 class IShaderUniform;
 class RenderTarget;
 
@@ -38,8 +38,8 @@ public:
     MR::EventListener<ICamera*, RenderTarget*> OnRenderTargetChanged;
     MR::EventListener<ICamera*, glm::mat4*> OnMVPRecalc;
 
-    virtual void AttachToShader(IShader* shader) = 0;
-    virtual void UpdateShader(IShader* shader) = 0;
+    virtual void AttachToShader(IShaderProgram* shader) = 0;
+    virtual void UpdateShader(IShaderProgram* shader) = 0;
 
     virtual void SetAutoRecalc(const bool& state) = 0;
     virtual bool IsAutoRecalc() = 0;
@@ -100,8 +100,8 @@ public:
 
 class Camera : public MR::Object, public ICamera {
 public:
-    void AttachToShader(IShader* shader) override;
-    void UpdateShader(IShader* shader) override;
+    void AttachToShader(IShaderProgram* shader) override;
+    void UpdateShader(IShaderProgram* shader) override;
 
     inline bool IsAutoRecalc() override;
 
@@ -189,7 +189,7 @@ protected:
 
     class AttachedShader {
     public:
-        IShader* _shader = nullptr;
+        IShaderProgram* _shader = nullptr;
         IShaderUniform* _viewUniform = nullptr;
         IShaderUniform* _projUniform = nullptr;
         IShaderUniform* _modelUniform = nullptr;

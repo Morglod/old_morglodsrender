@@ -5,9 +5,9 @@
 
 #include "Config.hpp"
 #include "ResourceManager.hpp"
-#include "Log.hpp"
+#include "Utils/Log.hpp"
 #include "Types.hpp"
-#include "Events.hpp"
+#include "Utils/Events.hpp"
 
 #ifndef glm_glm
 #   include <glm/glm.hpp>
