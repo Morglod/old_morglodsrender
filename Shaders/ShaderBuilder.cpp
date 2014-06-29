@@ -3,6 +3,7 @@
 #include "ShaderObjects.hpp"
 #include "../Config.hpp"
 #include "../Utils/Log.hpp"
+#include "../Utils/Containers.hpp"
 
 char * __SHADER_BUILDER__textFileRead(const char *fn, int * count = nullptr) {
     FILE *fp;
@@ -34,48 +35,61 @@ char * __SHADER_BUILDER__textFileRead(const char *fn, int * count = nullptr) {
 
 std::vector<std::pair<MR::IShaderProgram::Features, MR::IShaderProgram*>> _SHADER_BUILDER__defaultShaders;
 
+class __ShaderBuilderCacheKey {
+public:
+    MR::IShaderProgram::Features f;
+    MR::IShader::Type t;
+
+    bool operator == (__ShaderBuilderCacheKey & key){
+        return (key.f == f && key.t == t);
+    }
+
+    __ShaderBuilderCacheKey() {}
+    __ShaderBuilderCacheKey(const MR::IShaderProgram::Features& req, const MR::IShader::Type& type) : f(req), t(type) {}
+};
+
+MR::PriorityCache<__ShaderBuilderCacheKey, std::string> __SHADER_BUILDER_generated_code(MR_SHADER_BUILDER_CODE_CACHE_SIZE);
+
 namespace MR {
 
-IShaderProgram* ShaderBuilder::Need(const MR::IShaderProgram::Features& req){
-    for(size_t _i = 0; _i < _SHADER_BUILDER__defaultShaders.size(); ++_i){
-        if(_SHADER_BUILDER__defaultShaders[_i].first == req) {
-            return _SHADER_BUILDER__defaultShaders[_i].second;
-        }
+std::string ShaderBuilder::GenerateCode(const MR::IShaderProgram::Features& req, const MR::IShader::Type& type) {
+    std::string code = "";
+    if(__SHADER_BUILDER_generated_code.Get( __ShaderBuilderCacheKey(req, type), code )){
+        return code;
     }
 
-    std::string fragCode =
+    if(type == MR::IShader::ST_Vertex) {
+        code =
         "#version 330\n"
         "#extension GL_ARB_separate_shader_objects : enable\n"
-        "#pragma optimize(on)\n"
-        "layout (location = 0) in vec4 InVertexPos;\n"
-        "smooth layout (location = 1) in vec3 InVertexNormal;\n"
-        "layout (location = 2) in vec4 InVertexColor;\n"
-        "layout (location = 3) in vec2 InVertexTexCoord;\n"
-        "out vec4 "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME)+";\n";
-    if(req.toRenderTarget) {    fragCode +=
-        "out vec4 "+std::string(MR_SHADER_DEFAULT_DEPTH_TEX_COORD_DATA_NAME)+";\n"
-        "out vec4 "+std::string(MR_SHADER_DEFAULT_NORMAL_DATA_NAME)+";\n"
-        "out vec4 "+std::string(MR_SHADER_DEFAULT_POS_DATA_NAME)+";\n";
-    }
-    fragCode +=
-        "uniform vec3 "+std::string(MR_SHADER_CAM_POS)+";\n"
-        "uniform vec3 "+std::string(MR_SHADER_CAM_DIR)+";\n";
+        /*"#pragma optimize(on)\n"*/;
 
-    std::string vertCode =
-        "#version 330\n"
-        "#extension GL_ARB_separate_shader_objects : enable\n"
-        "#pragma optimize(on)\n"
+        ///Inputs
+        code +=
         "layout (location = 0) in vec3 "+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+";\n"
         "layout (location = 1) in vec3 "+std::string(MR_SHADER_VERTEX_NORMAL_ATTRIB_NAME)+";\n"
         "layout (location = 2) in vec4 "+std::string(MR_SHADER_VERTEX_COLOR_ATTRIB_NAME)+";\n"
-        "layout (location = 3) in vec2 "+std::string(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_NAME)+";\n"
+        "layout (location = 3) in vec2 "+std::string(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_NAME)+";\n";
+        if(!req.toScreen){
+            code +=
+            "uniform mat4 "+std::string(MR_SHADER_MVP_MAT4)+";\n"
+            "uniform mat4 "+std::string(MR_SHADER_MODEL_MAT4)+";\n"
+            "uniform mat4 "+std::string(MR_SHADER_VIEW_MAT4)+";\n"
+            "uniform mat4 "+std::string(MR_SHADER_PROJ_MAT4)+";\n";
+        }
+
+        ///Outputs
+        code +=
         "layout (location = 0) out vec4 OutVertexPos;\n"
         "layout (location = 1) out vec3 OutVertexNormal;\n"
         "layout (location = 2) out vec4 OutVertexColor;\n"
         "layout (location = 3) out vec2 OutVertexTexCoord;\n";
 
-    if(req.toScreen){
-        vertCode +=
+        ///Functions
+
+        ///Main
+        if(req.toScreen){
+            code +=
             "void main() {"
             "	OutVertexPos = vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
             "	OutVertexNormal = "+std::string(MR_SHADER_VERTEX_NORMAL_ATTRIB_NAME)+";\n"
@@ -83,12 +97,8 @@ IShaderProgram* ShaderBuilder::Need(const MR::IShaderProgram::Features& req){
             "	OutVertexTexCoord = "+std::string(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_NAME)+";\n"
             "	gl_Position = vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
             "}";
-    } else {
-        vertCode +=
-            "uniform mat4 "+std::string(MR_SHADER_MVP_MAT4)+";\n"
-            "uniform mat4 "+std::string(MR_SHADER_MODEL_MAT4)+";\n"
-            "uniform mat4 "+std::string(MR_SHADER_VIEW_MAT4)+";\n"
-            "uniform mat4 "+std::string(MR_SHADER_PROJ_MAT4)+";\n"
+        } else {
+            code +=
             "void main() {\n"
             "	vec4 vert = "+std::string(MR_SHADER_MVP_MAT4)+" * vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
             "	OutVertexPos = vert;\n"
@@ -97,64 +107,53 @@ IShaderProgram* ShaderBuilder::Need(const MR::IShaderProgram::Features& req){
             "	OutVertexTexCoord = "+std::string(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_NAME)+";\n"
             "	gl_Position = vert;\n"
             "}";
-    }
+        }
+    } else if(type == MR::IShader::ST_Fragment) {
+        code =
+        "#version 330\n"
+        "#extension GL_ARB_separate_shader_objects : enable\n"
+        /*"#pragma optimize(on)\n"*/;
 
-    fragCode +=
-            "uniform mat4 "+std::string(MR_SHADER_MVP_MAT4)+";\n"
-            "uniform mat4 "+std::string(MR_SHADER_MODEL_MAT4)+";\n"
-            "uniform mat4 "+std::string(MR_SHADER_VIEW_MAT4)+";\n"
-            "uniform mat4 "+std::string(MR_SHADER_PROJ_MAT4)+";\n";
+        ///Inputs
+        code +=
+        "layout (location = 0) in vec4 InVertexPos;\n"
+        "smooth layout (location = 1) in vec3 InVertexNormal;\n"
+        "layout (location = 2) in vec4 InVertexColor;\n"
+        "layout (location = 3) in vec2 InVertexTexCoord;\n"
+        "uniform vec3 "+std::string(MR_SHADER_CAM_POS)+";\n"
+        "uniform vec3 "+std::string(MR_SHADER_CAM_DIR)+";\n"
+        "uniform mat4 "+std::string(MR_SHADER_MVP_MAT4)+";\n"
+        "uniform mat4 "+std::string(MR_SHADER_MODEL_MAT4)+";\n"
+        "uniform mat4 "+std::string(MR_SHADER_VIEW_MAT4)+";\n"
+        "uniform mat4 "+std::string(MR_SHADER_PROJ_MAT4)+";\n";
 
-    if(req.toScreen && req.defferedRendering) {
-    fragCode +=
-        "uniform sampler2D "+std::string(MR_SHADER_UNIFORM_GBUFFER_ALBEDO)+";\n"
-        "uniform sampler2D "+std::string(MR_SHADER_UNIFORM_GBUFFER_DEPT_TEX_COORD)+";\n"
-        "uniform sampler2D "+std::string(MR_SHADER_UNIFORM_GBUFFER_NORMAL)+";\n"
-        "uniform sampler2D "+std::string(MR_SHADER_UNIFORM_GBUFFER_POS)+";\n"
-        "vec4 GetVertexPos() { return texture("+std::string(MR_SHADER_UNIFORM_GBUFFER_POS)+", InVertexTexCoord); }\n"
-        "vec3 GetVertexNormal() { return texture("+std::string(MR_SHADER_UNIFORM_GBUFFER_NORMAL)+", InVertexTexCoord).xyz - vec3(1.0, 1.0, 1.0); }\n"
-        "vec4 GetVertexColor() { return InVertexColor; }\n"
-        "vec2 GetVertexTexCoord() { return texture("+std::string(MR_SHADER_UNIFORM_GBUFFER_DEPT_TEX_COORD)+", InVertexTexCoord).yz; }\n";
-    } else {
-    fragCode +=
-        "vec4 GetVertexPos() { return InVertexPos; }\n"
-        "vec3 GetVertexNormal() { return InVertexNormal; }\n"
-        "vec4 GetVertexColor() { return InVertexColor; }\n"
-        "vec2 GetVertexTexCoord() { return InVertexTexCoord; }\n";
-    }
+        if(req.toScreen && req.defferedRendering) {
+            code +=
+            "uniform sampler2D "+std::string(MR_SHADER_UNIFORM_GBUFFER_1)+";\n"
+            "uniform sampler2D "+std::string(MR_SHADER_UNIFORM_GBUFFER_2)+";\n"
+            "uniform sampler2D "+std::string(MR_SHADER_UNIFORM_GBUFFER_3)+";\n";
+        }
 
-    fragCode +=
-        "vec3 PackVertexNormal() { return normalize(vec4(InVertexNormal, 0.0) * "+ std::string(MR_SHADER_MODEL_MAT4) +").xyz + vec3(1.0,1.0,1.0); }";
-
-    //FRAG
-
-    //UNIFORMS
-    if(req.ambient){
-        fragCode +=
+        if(req.ambient){ code +=
             "uniform sampler2D "+std::string(MR_SHADER_AMBIENT_TEX)+";\n";
-    }
-    if(req.diffuse){
-        fragCode +=
+        }
+        if(req.diffuse){ code +=
             "uniform sampler2D "+std::string(MR_SHADER_DIFFUSE_TEX)+";\n";
-    }
-    if(req.opacity){
-        fragCode +=
+        }
+        if(req.opacity){ code +=
             "uniform sampler2D "+std::string(MR_SHADER_OPACITY_TEX)+";\n";
-    }
-    if(req.colorFilter){
-        fragCode +=
+        }
+        if(req.colorFilter){ code +=
             "uniform vec4 "+std::string(MR_SHADER_COLOR_V4)+";\n";
-    }
-    if(req.fog){
-        fragCode +=
+        }
+        if(req.fog){ code +=
             "uniform float "+std::string(MR_SHADER_FOG_MAX_DIST)+";\n"
             "uniform float "+std::string(MR_SHADER_FOG_MIN_DIST)+";\n"
             "uniform vec4 "+std::string(MR_SHADER_FOG_COLOR)+";\n";
-    }
+        }
 
-    //MAKE LIGHT
-    if( req.light && ((req.toScreen && req.defferedRendering) || !(req.toRenderTarget && req.defferedRendering) )){
-        fragCode +=
+        if(req.light){
+            code +=
             "\n"
             "struct PointLight {\n"
             "   vec3 pos;\n"
@@ -176,11 +175,47 @@ IShaderProgram* ShaderBuilder::Need(const MR::IShaderProgram::Features& req){
             "\n"
             "uniform int "+std::string(MR_SHADER_DIR_LIGHTS_NUM)+";\n"
             "uniform DirLight "+std::string(MR_SHADER_DIR_LIGHTS)+"["+std::to_string(MR_SHADER_MAX_DIR_LIGHTS)+"];\n"
-            "\n"
+            "\n";
+        }
+
+        ///Outputs
+        code +=
+        "out vec4 "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+";\n";
+
+        if(req.toRenderTarget) {
+            code +=
+            "out vec4 "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_2)+";\n"
+            "out vec4 "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_3)+";\n";
+        }
+
+        ///Functions
+        if(req.toScreen && req.defferedRendering) {
+            code +=
+            //Initializated in main()
+            "vec4 "+std::string(MR_SHADER_UNIFORM_GBUFFER_1)+"_value;" //scene color + light model
+            "vec4 "+std::string(MR_SHADER_UNIFORM_GBUFFER_2)+"_value;" //normal + nothing
+            "vec4 "+std::string(MR_SHADER_UNIFORM_GBUFFER_3)+"_value;" //pos + depth
+            "vec4 GetVertexPos() { return vec4("+std::string(MR_SHADER_UNIFORM_GBUFFER_3)+"_value.xyz, 1.0); }\n"
+            "vec3 GetVertexNormal() { return "+std::string(MR_SHADER_UNIFORM_GBUFFER_2)+"_value.xyz; }\n"
+            "vec4 GetVertexColor() { return InVertexColor; }\n"
+            "vec2 GetVertexTexCoord() { return InVertexTexCoord; }\n";
+        } else {
+            code +=
+            "vec4 GetVertexPos() { return InVertexPos; }\n"
+            "vec3 GetVertexNormal() { return InVertexNormal; }\n"
+            "vec4 GetVertexColor() { return InVertexColor; }\n"
+            "vec2 GetVertexTexCoord() { return InVertexTexCoord; }\n";
+        }
+
+        code +=
+        "vec3 PackVertexNormal() { return normalize(vec4(InVertexNormal, 0.0) * "+ std::string(MR_SHADER_MODEL_MAT4) +").xyz + vec3(1.0,1.0,1.0); }";
+
+        if(req.light) {
+            code +=
             "vec3 light(){\n"
             "   vec3 fragLight = vec3(0.0, 0.0, 0.0);\n"
             "   for(int i = 0; i < "+std::string(MR_SHADER_POINT_LIGHTS_NUM)+"; i++){\n"
-            "       vec3 light_pos_mvp = (vec4("+std::string(MR_SHADER_POINT_LIGHTS)+"[i].pos, 1.0) * "+std::string(MR_SHADER_MVP_MAT4)+").xyz;\n"
+            "       vec3 light_pos_mvp = (vec4("+std::string(MR_SHADER_POINT_LIGHTS)+"[i].pos, 1.0) * "+std::string(MR_SHADER_MODEL_MAT4)+").xyz;\n"
             "       vec3 surfN = GetVertexNormal();\n"
             "       float NdotL = dot(surfN, normalize(light_pos_mvp - GetVertexPos().xyz));\n"
             "       float diff = (NdotL * 0.5) + 0.5;\n"
@@ -198,90 +233,113 @@ IShaderProgram* ShaderBuilder::Need(const MR::IShaderProgram::Features& req){
             "   }\n"
             "   return fragLight;\n"
             "}\n";
-    }
+        }
 
-    /*if(req.fog){
-        fragCode +=
+        /*if(req.fog){
+            code +=
             "vec3 fog(){\n"
             "   float fogFactor = gl_FragCoord.z - "+std::string(MR_SHADER_FOG_MIN_DIST)+";\n"
             //"   float fogFactor = ( "+std::string(MR_SHADER_FOG_MAX_DIST)+" - dist ) / ( "+std::string(MR_SHADER_FOG_MAX_DIST)+" - "+std::string(MR_SHADER_FOG_MIN_DIST)+" );\n"
             "   fogFactor = clamp(fogFactor, 0.0, 1.0);\n"
             "   return vec3(fogFactor, fogFactor, fogFactor); //(fogFactor * "+std::string(MR_SHADER_FOG_COLOR)+".xyz * "+std::string(MR_SHADER_FOG_COLOR)+".w);\n"
             "}\n";
-    }*/
-
-    //MAKE FRAG MAIN
-
-    fragCode +=
-        "\n"
-        "void main(){\n";
-
-    if(req.opacity && req.opacityDiscardOnAlpha){
-        if(req.opacityDiscardValue == 1.0f){
-            fragCode += "   discard;\n";
-        } else {
-            fragCode +=
-                "   if( texture("+std::string(MR_SHADER_OPACITY_TEX)+", GetVertexTexCoord()).x < "+std::to_string(req.opacityDiscardValue)+" ) {\n"
-                "       discard;\n"
-                "   }\n";
-        }
-    }
-
-    if(req.toScreen && req.defferedRendering){
-        fragCode += "   vec4 albedo = texture("+std::string(MR_SHADER_UNIFORM_GBUFFER_ALBEDO)+", GetVertexTexCoord());\n";
-        fragCode += "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME)+" = vec4((albedo.xyz * (-(albedo.w - 1)))";
-        if(req.light) fragCode += " + (albedo.w * light()) ";
-        fragCode += ", 1.0);\n";
-    }
-    else {
-        fragCode += "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME)+" = ";
-
-        bool bVoidFrag = true;
-        bool bAnyColor = false;
-        if(req.ambient){
-            fragCode +=
-                " vec4(texture("+std::string(MR_SHADER_AMBIENT_TEX)+", GetVertexTexCoord()).xyz, 0.0) ";
-            bAnyColor = true; bVoidFrag = false;
-        }
-        if(req.diffuse){
-            if(bAnyColor) fragCode += " + ";
-            fragCode +=
-                "vec4((texture("+std::string(MR_SHADER_DIFFUSE_TEX)+", GetVertexTexCoord()) ";
-            if(req.light && !req.toScreen && !(req.toRenderTarget && req.defferedRendering)){
-                fragCode += "* vec4(light(), 1.0)";
-            }
-            fragCode += ").xyz, 1.0)";
-            bAnyColor = true; bVoidFrag = false;
-        }
-
-        if(req.colorFilter){
-            if(bAnyColor) fragCode += " * ";
-            fragCode +=
-                std::string(MR_SHADER_COLOR_V4)+" ";
-            bVoidFrag = false;
-        }
-
-        /*if(req.fog){
-            if(bAnyColor) fragCode += " + ";
-            fragCode += " vec4(fog(), 0.0) ";
-            bVoidFrag = false;
         }*/
 
-        if(bVoidFrag) fragCode += " vec4(1.0, 0.0, 0.0, 1.0)";
-        fragCode += ";\n";
+        ///Main
+        code +=
+        "\n"
+        "void main() {\n";
 
-        if(req.toRenderTarget) {
-            fragCode += "   vec4 DEPTHnearColor = vec4(1.0, 1.0, 1.0, 1.0);\n"
-                        "   vec4 DEPTHfarColor = vec4(0.0, 0.0, 0.0, 1.0);\n"
-                        "   float DEPTHnear = 0.0;\n"
-                        "   float DEPTHfar = 500.0;\n"
-                        "   " + std::string(MR_SHADER_DEFAULT_DEPTH_TEX_COORD_DATA_NAME) + " = vec4(mix(DEPTHnearColor, DEPTHfarColor, smoothstep(DEPTHnear, DEPTHfar, gl_FragCoord.z / gl_FragCoord.w)).x, GetVertexTexCoord().x, GetVertexTexCoord().y, 1.0);\n"
-                        "   " + std::string(MR_SHADER_DEFAULT_NORMAL_DATA_NAME) + " = vec4(PackVertexNormal(), 1.0);\n"
-                        "   " + std::string(MR_SHADER_DEFAULT_POS_DATA_NAME) + " = GetVertexPos();\n";
+        bool noDiscardBreak = true;
+        if(req.opacity && req.opacityDiscardOnAlpha){
+            if(req.opacityDiscardValue == 1.0f){
+                code += "   discard;\n";
+                noDiscardBreak = false;
+            } else {
+                code +=
+                    "   if( texture("+std::string(MR_SHADER_OPACITY_TEX)+", GetVertexTexCoord()).x < "+std::to_string(req.opacityDiscardValue)+" ) {\n"
+                    "       discard;\n"
+                    "   }\n";
+            }
+        }
+
+        if(noDiscardBreak) {
+            if(req.toScreen && req.defferedRendering) {
+                code +=
+                "   "+std::string(MR_SHADER_UNIFORM_GBUFFER_1)+"_value = texture("+std::string(MR_SHADER_UNIFORM_GBUFFER_1)+", InVertexTexCoord);\n"
+                "   "+std::string(MR_SHADER_UNIFORM_GBUFFER_2)+"_value = texture("+std::string(MR_SHADER_UNIFORM_GBUFFER_2)+", InVertexTexCoord);\n"
+                "   "+std::string(MR_SHADER_UNIFORM_GBUFFER_3)+"_value = texture("+std::string(MR_SHADER_UNIFORM_GBUFFER_3)+", InVertexTexCoord);\n"
+                "   "+std::string(MR_SHADER_UNIFORM_GBUFFER_2)+"_value.xyz -= vec3(1.0, 1.0, 1.0);\n";
+                code += "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+" = vec4("+std::string(MR_SHADER_UNIFORM_GBUFFER_1)+"_value.xyz, 1.0);\n";
+                if(req.light) code +=
+                "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+" *= vec4(light(), 1.0);\n";
+            }
+            else {
+                code += "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+" = ";
+
+                bool bVoidFrag = true;
+                bool bAnyColor = false;
+                if(req.ambient){
+                    code +=
+                        " vec4(texture("+std::string(MR_SHADER_AMBIENT_TEX)+", GetVertexTexCoord()).xyz, 1.0) ";
+                    bAnyColor = true; bVoidFrag = false;
+                }
+                if(req.diffuse){
+                    if(bAnyColor) code += " + ";
+                    code +=
+                        "vec4((texture("+std::string(MR_SHADER_DIFFUSE_TEX)+", GetVertexTexCoord()) ";
+                    if(req.light && !req.toScreen){
+                        code += "* vec4(light(), 1.0)";
+                    }
+                    code += ").xyz, 1.0)";
+
+                    bAnyColor = true; bVoidFrag = false;
+                }
+
+                if(req.colorFilter){
+                    if(bAnyColor) code += " * ";
+                    code +=
+                        std::string(MR_SHADER_COLOR_V4)+" ";
+                    bVoidFrag = false;
+                }
+
+                /*if(req.fog){
+                    if(bAnyColor) code += " + ";
+                    code += " vec4(fog(), 0.0) ";
+                    bVoidFrag = false;
+                }*/
+
+                if(bVoidFrag) code += " vec4(1.0, 0.0, 0.0, 1.0)";
+                code += ";\n";
+
+                if(req.toRenderTarget) {
+                    code += //"   vec4 DEPTHnearColor = vec4(1.0, 1.0, 1.0, 1.0);\n"
+                                //"   vec4 DEPTHfarColor = vec4(0.0, 0.0, 0.0, 1.0);\n"
+                                //"   float DEPTHnear = 0.0;\n"
+                                //"   float DEPTHfar = 500.0;\n"
+                                "   " + std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_2) + " = vec4(PackVertexNormal(), 1.0);\n"
+                                "   " + std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_3) + " = GetVertexPos();\n";
+                }
+            }
+        }
+
+        code +=
+        "}\n"; //end main
+    }
+
+    __SHADER_BUILDER_generated_code.Store( __ShaderBuilderCacheKey(req, type), code );
+
+    return code;
+}
+
+IShaderProgram* ShaderBuilder::Need(const MR::IShaderProgram::Features& req){
+    for(size_t _i = 0; _i < _SHADER_BUILDER__defaultShaders.size(); ++_i){
+        if(_SHADER_BUILDER__defaultShaders[_i].first == req) {
+            return _SHADER_BUILDER__defaultShaders[_i].second;
         }
     }
 
-    fragCode += "\n}";
+    std::string vertCode = GenerateCode(req, MR::IShader::ST_Vertex), fragCode = GenerateCode(req, MR::IShader::ST_Fragment);
 
     MR::ShaderCompiler compiler;
 

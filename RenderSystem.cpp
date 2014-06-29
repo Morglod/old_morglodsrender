@@ -170,8 +170,38 @@ void RenderSystem::UseCamera(Camera* cam){
 void RenderSystem::UseShaderProgram(IShaderProgram* shader){
     _shader = shader;
     if(shader) {
-        if(_cam) _cam->UpdateShader(_shader);
-        glUseProgram(shader->GetGPUHandle());
+        unsigned int _program = shader->GetGPUHandle();
+        glUseProgram(_program);
+
+        //Update camera uniforms
+        if(_cam) _cam->UpdateShader(shader);
+
+        //Update created uniforms
+        MR::IShaderUniform** u_ptr = 0;
+        size_t u_num = shader->GetShaderUniformsPtr(&u_ptr);
+
+        if(MR::MachineInfo::IsDirectStateAccessSupported()) {
+            for(size_t ui = 0; ui < u_num; ++ui) {
+                if(u_ptr[ui]->GetPtr() == nullptr) continue;
+                if(u_ptr[ui]->GetType() == IShaderUniform::SUT_Int) { glProgramUniform1iEXT(_program, u_ptr[ui]->GetGPULocation(), ((int*) u_ptr[ui]->GetPtr())[0]); continue; }
+                if(u_ptr[ui]->GetType() == IShaderUniform::SUT_Float) { glProgramUniform1fEXT(_program, u_ptr[ui]->GetGPULocation(), ((float*) u_ptr[ui]->GetPtr())[0]); continue; }
+                if(u_ptr[ui]->GetType() == IShaderUniform::SUT_Vec2) { glProgramUniform2fEXT(_program, u_ptr[ui]->GetGPULocation(), ((float*) u_ptr[ui]->GetPtr())[0], ((float*) u_ptr[ui]->GetPtr())[1]); continue; }
+                if(u_ptr[ui]->GetType() == IShaderUniform::SUT_Vec3) { glProgramUniform3fEXT(_program, u_ptr[ui]->GetGPULocation(), ((float*) u_ptr[ui]->GetPtr())[0], ((float*) u_ptr[ui]->GetPtr())[1], ((float*) u_ptr[ui]->GetPtr())[2]); continue; }
+                if(u_ptr[ui]->GetType() == IShaderUniform::SUT_Vec4) { glProgramUniform4fEXT(_program, u_ptr[ui]->GetGPULocation(), ((float*) u_ptr[ui]->GetPtr())[0], ((float*) u_ptr[ui]->GetPtr())[1], ((float*) u_ptr[ui]->GetPtr())[2], ((float*) u_ptr[ui]->GetPtr())[3]); continue; }
+                if(u_ptr[ui]->GetType() == IShaderUniform::SUT_Mat4) { glProgramUniformMatrix4fvEXT(_program, u_ptr[ui]->GetGPULocation(), 1, GL_FALSE, (float*)&(((glm::mat4*) u_ptr[ui]->GetPtr())[0][0])); continue; }
+            }
+        } else {
+            for(size_t ui = 0; ui < u_num; ++ui) {
+                if(u_ptr[ui]->GetPtr() == nullptr) continue;
+                if(u_ptr[ui]->GetType() == IShaderUniform::SUT_Int) { glUniform1i(u_ptr[ui]->GetGPULocation(), ((int*) u_ptr[ui]->GetPtr())[0]); continue; }
+                if(u_ptr[ui]->GetType() == IShaderUniform::SUT_Float) { glUniform1f(u_ptr[ui]->GetGPULocation(), ((float*) u_ptr[ui]->GetPtr())[0]); continue; }
+                if(u_ptr[ui]->GetType() == IShaderUniform::SUT_Vec2) { glUniform2f(u_ptr[ui]->GetGPULocation(), ((float*) u_ptr[ui]->GetPtr())[0], ((float*) u_ptr[ui]->GetPtr())[1]); continue; }
+                if(u_ptr[ui]->GetType() == IShaderUniform::SUT_Vec3) { glUniform3f(u_ptr[ui]->GetGPULocation(), ((float*) u_ptr[ui]->GetPtr())[0], ((float*) u_ptr[ui]->GetPtr())[1], ((float*) u_ptr[ui]->GetPtr())[2]); continue; }
+                if(u_ptr[ui]->GetType() == IShaderUniform::SUT_Vec4) { glUniform4f(u_ptr[ui]->GetGPULocation(), ((float*) u_ptr[ui]->GetPtr())[0], ((float*) u_ptr[ui]->GetPtr())[1], ((float*) u_ptr[ui]->GetPtr())[2], ((float*) u_ptr[ui]->GetPtr())[3]); continue; }
+                if(u_ptr[ui]->GetType() == IShaderUniform::SUT_Mat4) { glUniformMatrix4fv(u_ptr[ui]->GetGPULocation(), 1, GL_FALSE, (float*)&(((glm::mat4*) u_ptr[ui]->GetPtr())[0][0])); continue; }
+            }
+        }
+
         //_shader->Use(this);
     } else {
         glUseProgram(0);
@@ -308,6 +338,7 @@ void RenderSystem::DrawGeomWithMaterial(glm::mat4* model_mat, MR::IGeometry* g, 
     }
 }
 
+/** MATERIAL PASS -> Use should be called before **/
 void RenderSystem::DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::IGeometry* g, MR::MaterialPass* mat_pass, void* vedp) {
     _cam->SetModelMatrix(model_mat);
 
@@ -373,7 +404,7 @@ void RenderSystem::DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::IGeometry*
             glUniform4f(glGetUniformLocation(sh_prog, MR_SHADER_FOG_COLOR), edp->_fogColor->x, edp->_fogColor->y, edp->_fogColor->z, edp->_fogColor->w);
         }
 
-        this->UseShaderProgram(_shader);//_shader->Use(this);
+        //this->UseShaderProgram(_shader);//_shader->Use(this);
     }
 
     DrawGeometry(g);

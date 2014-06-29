@@ -110,6 +110,8 @@ public:
     virtual void SetUniform(const std::string& name, const glm::vec4& value) = 0;
     virtual void SetUniform(const std::string& name, const glm::mat4& value) = 0;
 
+    virtual size_t GetShaderUniformsPtr(IShaderUniform*** list_ptr) = 0; //out as (IShaderUniform** ptr) &ptr
+
     virtual void DeleteUniform(IShaderUniform* su) = 0;
     virtual IShaderUniform* FindShaderUniform(const std::string& name) = 0;
 

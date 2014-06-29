@@ -55,6 +55,7 @@ public:
 
     void DeleteUniform(IShaderUniform* su) override;
     IShaderUniform* FindShaderUniform(const std::string& name) override;
+    size_t GetShaderUniformsPtr(IShaderUniform*** list_ptr) override;
 
     inline const unsigned int& GetGPUHandle() override { return _program; }
     const MR::IShaderProgram::Features& GetFeatures() override { return _features; }

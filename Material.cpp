@@ -9,10 +9,11 @@
 
 bool MR::MaterialPass::Use(IRenderSystem* rs){
     if( (_flag.always) || (_parent->GetManager()->GetActivedFlag() == _flag.flag) ){
+        rs->UseShaderProgram(_shader);
+
         if(_ambient)    rs->BindTexture(_ambient, _ambientUnit);
         if(_diffuse)    rs->BindTexture(_diffuse, _diffuseUnit);
         if(_opacity)    rs->BindTexture(_opacity, _opacityUnit);
-        rs->UseShaderProgram(_shader);
 
         if(_twoSided)   glDisable(GL_CULL_FACE);
         else            glEnable(GL_CULL_FACE);

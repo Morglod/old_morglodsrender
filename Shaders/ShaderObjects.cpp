@@ -91,7 +91,7 @@ void Shader::Release() {
 
 Shader::Shader
 (const unsigned int& gpu_handle, const IShader::Type& type)
-: _gpu_handle(gpu_handle), _type(type), _connected() {
+: _type(type), _gpu_handle(gpu_handle), _connected() {
 }
 
 Shader::~Shader() {
@@ -130,7 +130,6 @@ Shader* Shader::Create(const IShader::Type& type) {
 bool ShaderProgram::BindDefaultShaderInOut() {
     AssertExec(!_program, MR::Log::LogString("Error in ShaderProgram::BindDefaultShaderInOut : _program == 0.", MR_LOG_LEVEL_ERROR); return false)
 
-    int gl_er = 0;
     MR::MachineInfo::ClearError();
 
     bool status = true;
@@ -164,23 +163,21 @@ bool ShaderProgram::BindDefaultShaderInOut() {
         status = false;
     }
 
-    glBindFragDataLocation(_program, MR_SHADER_DEFAULT_FRAG_DATA_LOCATION, MR_SHADER_DEFAULT_FRAG_DATA_NAME);
+    glBindFragDataLocation(_program, MR_SHADER_DEFAULT_FRAG_DATA_LOCATION_1, MR_SHADER_DEFAULT_FRAG_DATA_NAME_1);
 
     if(MR::MachineInfo::CatchError(&errorStr, NULL)){
         MR::Log::LogString("Error while binding shader's frag data output \""+errorStr+"\"", MR_LOG_LEVEL_ERROR);
         status = false;
     }
 
-    glBindFragDataLocation(_program, MR_SHADER_DEFAULT_DEPTH_TEX_COORD_DATA_LOCATION, MR_SHADER_DEFAULT_DEPTH_TEX_COORD_DATA_NAME);
-    glBindFragDataLocation(_program, MR_SHADER_DEFAULT_NORMAL_DATA_LOCATION, MR_SHADER_DEFAULT_NORMAL_DATA_NAME);
-    glBindFragDataLocation(_program, MR_SHADER_DEFAULT_POS_DATA_LOCATION, MR_SHADER_DEFAULT_POS_DATA_NAME);
+    glBindFragDataLocation(_program, MR_SHADER_DEFAULT_FRAG_DATA_LOCATION_2, MR_SHADER_DEFAULT_FRAG_DATA_NAME_2);
+    glBindFragDataLocation(_program, MR_SHADER_DEFAULT_FRAG_DATA_LOCATION_3, MR_SHADER_DEFAULT_FRAG_DATA_NAME_3);
 
     return status;
 }
 
 ShaderProgram* ShaderProgram::Create() {
     //for gl error handling
-    int gl_er = 0;
     MR::MachineInfo::ClearError();
 
     unsigned int gpu_h = glCreateProgram();
@@ -196,41 +193,48 @@ ShaderProgram* ShaderProgram::Create() {
 IShaderUniform* ShaderProgram::CreateUniform(const std::string& name, const MR::IShaderUniform::Type& type, void* value) {
     ShaderUniform* su = new ShaderUniform(name, type, value, dynamic_cast<IShaderProgram*>(this));
     _shaderUniforms.push_back(su);
+    return su;
 }
 
 void ShaderProgram::SetUniform(const std::string& name, const int& value) {
     if(_program) {
-        glUniform1i(glGetUniformLocation(_program, name.c_str()), value);
+        if(MR::MachineInfo::IsDirectStateAccessSupported()) glProgramUniform1i(_program, glGetUniformLocation(_program, name.c_str()), value);
+        else glUniform1i(glGetUniformLocation(_program, name.c_str()), value);
     }
 }
 
 void ShaderProgram::SetUniform(const std::string& name, const float& value) {
     if(_program) {
-        glUniform1f(glGetUniformLocation(_program, name.c_str()), value);
+        if(MR::MachineInfo::IsDirectStateAccessSupported()) glProgramUniform1f(_program, glGetUniformLocation(_program, name.c_str()), value);
+        else glUniform1f(glGetUniformLocation(_program, name.c_str()), value);
     }
 }
 
 void ShaderProgram::SetUniform(const std::string& name, const glm::vec2& value) {
     if(_program) {
-        glUniform2fv(glGetUniformLocation(_program, name.c_str()), 2, &value.x);
+        if(MR::MachineInfo::IsDirectStateAccessSupported()) glProgramUniform2fv(_program, glGetUniformLocation(_program, name.c_str()), 2, &value.x);
+        else glUniform2fv(glGetUniformLocation(_program, name.c_str()), 2, &value.x);
     }
 }
 
 void ShaderProgram::SetUniform(const std::string& name, const glm::vec3& value) {
     if(_program) {
-        glUniform3fv(glGetUniformLocation(_program, name.c_str()), 3, &value.x);
+        if(MR::MachineInfo::IsDirectStateAccessSupported()) glProgramUniform3fv(_program, glGetUniformLocation(_program, name.c_str()), 3, &value.x);
+        else glUniform3fv(glGetUniformLocation(_program, name.c_str()), 3, &value.x);
     }
 }
 
 void ShaderProgram::SetUniform(const std::string& name, const glm::vec4& value) {
     if(_program) {
-        glUniform4fv(glGetUniformLocation(_program, name.c_str()), 4, &value.x);
+        if(MR::MachineInfo::IsDirectStateAccessSupported()) glProgramUniform4fv(_program, glGetUniformLocation(_program, name.c_str()), 4, &value.x);
+        else glUniform4fv(glGetUniformLocation(_program, name.c_str()), 4, &value.x);
     }
 }
 
 void ShaderProgram::SetUniform(const std::string& name, const glm::mat4& value) {
     if(_program) {
-        glUniformMatrix4fv(glGetUniformLocation(_program, name.c_str()), 1,  GL_FALSE, &value[0][0]);
+        if(MR::MachineInfo::IsDirectStateAccessSupported()) glProgramUniformMatrix4fv(_program, glGetUniformLocation(_program, name.c_str()), 1,  GL_FALSE, &value[0][0]);
+        else glUniformMatrix4fv(glGetUniformLocation(_program, name.c_str()), 1,  GL_FALSE, &value[0][0]);
     }
 }
 
@@ -246,6 +250,12 @@ IShaderUniform* ShaderProgram::FindShaderUniform(const std::string& name) {
         if(_shaderUniforms[i]->GetName() == name) return _shaderUniforms[i];
     }
     return nullptr;
+}
+
+size_t ShaderProgram::GetShaderUniformsPtr(IShaderUniform*** list_ptr) {
+    if(!list_ptr) return 0;
+    *list_ptr = &_shaderUniforms[0];
+    return _shaderUniforms.size();
 }
 
 void ShaderProgram::Release() {

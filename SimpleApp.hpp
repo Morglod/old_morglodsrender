@@ -65,7 +65,7 @@ public:
         scene.AddCamera(camera);
         scene.SetMainCamera(camera);
 
-        pipeline = /*new MR::DefferedRenderingPipeline();//*/new MR::ForwardRenderingPipeline();
+        pipeline = new MR::DefferedRenderingPipeline();//new MR::ForwardRenderingPipeline();
         if(!pipeline->Setup(sys, MR::GL::GetCurrent(), window)) {
             if(ThrowExceptions()){
                 throw MR::Exception("Failed RenderingPipeline::Setup.");

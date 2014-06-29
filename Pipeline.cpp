@@ -63,11 +63,10 @@ bool DefferedRenderingPipeline::Setup(IRenderSystem* rs, GL::IContext* ctx, IRen
     int win_w, win_h;
     rw->GetSize(&win_w, &win_h);
 
-    _gbuffer = new RenderTarget("DefferedRenderingPipeline_GBuffer", 4, win_w, win_h);
-    _gbuffer->CreateTargetTexture(0, MR::ITexture::InternalFormat::RGBA, MR::ITexture::Format::RGB, MR::ITexture::Type::FLOAT);
-    _gbuffer->CreateTargetTexture(1, MR::ITexture::InternalFormat::RGBA, MR::ITexture::Format::RGB, MR::ITexture::Type::FLOAT);
-    _gbuffer->CreateTargetTexture(2, MR::ITexture::InternalFormat::RGBA, MR::ITexture::Format::RGB, MR::ITexture::Type::FLOAT);
-    _gbuffer->CreateTargetTexture(3, MR::ITexture::InternalFormat::RGBA, MR::ITexture::Format::RGB, MR::ITexture::Type::FLOAT);
+    _gbuffer = new RenderTarget("DefferedRenderingPipeline_GBuffer", 3, win_w, win_h);
+    _gbuffer->CreateTargetTexture(0, MR::ITexture::InternalFormat::RGB10_A2, MR::ITexture::Format::RGBA, MR::ITexture::Type::FLOAT); // scene color + nothing
+    _gbuffer->CreateTargetTexture(1, MR::ITexture::InternalFormat::RGB10_A2, MR::ITexture::Format::RGBA, MR::ITexture::Type::FLOAT); // world normal + light model
+    _gbuffer->CreateTargetTexture(2, MR::ITexture::InternalFormat::RGBA16, MR::ITexture::Format::RGBA, MR::ITexture::Type::FLOAT); // world pos + depth
 
     _plane_buf = __pipeline__createScreenQuad(_ctx);
     _plane = new MR::Geometry(_plane_buf, 0, 0, 4, 4);
@@ -77,11 +76,6 @@ bool DefferedRenderingPipeline::Setup(IRenderSystem* rs, GL::IContext* ctx, IRen
     shaderRequest.toScreen = true;
     shaderRequest.defferedRendering = true;
     _rtt_shader = MR::ShaderBuilder::Need(shaderRequest);
-
-    /*_rtt_shader->CreateUniform("GBUFFER_ALBEDO", MR::IShaderUniform::Types::Int, new int(0));
-    _rtt_shader->CreateUniform("GBUFFER_DEPT_TEX_COORD", MR::IShaderUniform::Types::Int, new int(1));
-    _rtt_shader->CreateUniform("GBUFFER_NORMAL", MR::IShaderUniform::Types::Int, new int(2));
-    _rtt_shader->CreateUniform("GBUFFER_POS", MR::IShaderUniform::Types::Int, new int(3));*/
 
     return true;
 }
@@ -99,14 +93,13 @@ bool DefferedRenderingPipeline::Frame(const float& delta) {
     _rs->BindTexture(GL_TEXTURE_2D, _gbuffer->GetTargetTexture(0), 0);
     _rs->BindTexture(GL_TEXTURE_2D, _gbuffer->GetTargetTexture(1), 1);
     _rs->BindTexture(GL_TEXTURE_2D, _gbuffer->GetTargetTexture(2), 2);
-    _rs->BindTexture(GL_TEXTURE_2D, _gbuffer->GetTargetTexture(3), 3);
+    _rs->BindTexture(GL_TEXTURE_2D, _gbuffer->GetTargetTexture(0), 10);
 
     MR::MaterialManager::Instance()->ActiveFlag(0);
     _rs->UseShaderProgram(_rtt_shader);
-    glProgramUniform1i(_rtt_shader->GetGPUHandle(), glGetUniformLocation(_rtt_shader->GetGPUHandle(), MR_SHADER_UNIFORM_GBUFFER_ALBEDO), 0);
-    glProgramUniform1i(_rtt_shader->GetGPUHandle(), glGetUniformLocation(_rtt_shader->GetGPUHandle(), MR_SHADER_UNIFORM_GBUFFER_DEPT_TEX_COORD), 1);
-    glProgramUniform1i(_rtt_shader->GetGPUHandle(), glGetUniformLocation(_rtt_shader->GetGPUHandle(), MR_SHADER_UNIFORM_GBUFFER_NORMAL), 2);
-    glProgramUniform1i(_rtt_shader->GetGPUHandle(), glGetUniformLocation(_rtt_shader->GetGPUHandle(), MR_SHADER_UNIFORM_GBUFFER_POS), 3);
+    glProgramUniform1i(_rtt_shader->GetGPUHandle(), glGetUniformLocation(_rtt_shader->GetGPUHandle(), MR_SHADER_UNIFORM_GBUFFER_1), 0);
+    glProgramUniform1i(_rtt_shader->GetGPUHandle(), glGetUniformLocation(_rtt_shader->GetGPUHandle(), MR_SHADER_UNIFORM_GBUFFER_2), 1);
+    glProgramUniform1i(_rtt_shader->GetGPUHandle(), glGetUniformLocation(_rtt_shader->GetGPUHandle(), MR_SHADER_UNIFORM_GBUFFER_3), 2);
 
     {
         unsigned int pointLightsNum = 0, dirLightsNum = 0;
@@ -165,7 +158,7 @@ bool DefferedRenderingPipeline::Frame(const float& delta) {
     _rs->UnBindTexture(0);
     _rs->UnBindTexture(1);
     _rs->UnBindTexture(2);
-    _rs->UnBindTexture(3);
+    _rs->UnBindTexture(10);
 
     glEnable(GL_CULL_FACE);
 
