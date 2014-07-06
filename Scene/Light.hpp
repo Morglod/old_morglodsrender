@@ -3,10 +3,10 @@
 #ifndef _MR_LIGHT_H_
 #define _MR_LIGHT_H_
 
-#include "Config.hpp"
-#include "Types.hpp"
-#include "Shaders/ShaderInterfaces.hpp"
-#include "Boxes.hpp"
+#include "../Config.hpp"
+#include "../Types.hpp"
+#include "../Shaders/ShaderInterfaces.hpp"
+#include "../Boxes.hpp"
 
 #ifndef glm_glm
 #   include <glm/glm.hpp>
@@ -49,7 +49,7 @@ public:
     virtual LightManager* GetManager() = 0;
 };
 
-class LightSource : public Object, public ILightSource {
+class LightSource : public IObject, public ILightSource {
 public:
     inline glm::vec3 GetPos() override { return _pos; }
     inline glm::vec3 GetEmission() override { return _em; }
@@ -77,7 +77,7 @@ public:
 
     virtual ~LightSource();
 private:
-    LightSource() : Object() {}
+    LightSource() : IObject() {}
 
 protected:
     LightManager* _manager;

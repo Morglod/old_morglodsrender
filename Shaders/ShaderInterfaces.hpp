@@ -38,6 +38,17 @@ public:
     virtual ~IShaderUniform() {}
 };
 
+struct ShaderUniformInfo {
+public:
+    IShaderProgram* program;
+    std::string name;
+    int uniform_size;
+    unsigned int uniform_gl_type;
+
+    ShaderUniformInfo() {}
+    ShaderUniformInfo(IShaderProgram* p, const std::string& n, const int& s, const unsigned int & t);
+};
+
 /**
     For shader compilation, use ShaderCompiler
 **/
@@ -111,6 +122,7 @@ public:
     virtual void SetUniform(const std::string& name, const glm::mat4& value) = 0;
 
     virtual size_t GetShaderUniformsPtr(IShaderUniform*** list_ptr) = 0; //out as (IShaderUniform** ptr) &ptr
+    virtual StaticArray<ShaderUniformInfo> GetCompiledUniforms() = 0; //returns used in shaders uniforms. don't forget to free this array manually
 
     virtual void DeleteUniform(IShaderUniform* su) = 0;
     virtual IShaderUniform* FindShaderUniform(const std::string& name) = 0;

@@ -58,7 +58,45 @@ std::string ShaderBuilder::GenerateCode(const MR::IShaderProgram::Features& req,
         return code;
     }
 
-    if(type == MR::IShader::ST_Vertex) {
+    /*if(type == MR::IShader::ST_Geometry){
+        code =
+        "#version 150 core\n"
+        "#extension GL_ARB_separate_shader_objects : enable\n"
+        "layout (triangles) in;\n"
+        "layout (triangle_strip,  max_vertices=3) out;\n"
+        ///Inputs
+        "layout (location = 0) in vec3 "+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+"[3];\n"
+        "layout (location = 1) in vec3 "+std::string(MR_SHADER_VERTEX_NORMAL_ATTRIB_NAME)+"[3];\n"
+        "layout (location = 2) in vec4 "+std::string(MR_SHADER_VERTEX_COLOR_ATTRIB_NAME)+"[3];\n"
+        "layout (location = 3) in vec2 "+std::string(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_NAME)+"[3];\n"
+        ///Outputs
+        "layout (location = 0) out vec4 gsOutVertexPos;\n"
+        "layout (location = 1) out vec3 gsOutVertexNormal;\n"
+        "layout (location = 2) out vec4 gsOutVertexColor;\n"
+        "layout (location = 3) out vec2 gsOutVertexTexCoord;\n";
+        "void main() {\n"
+        "   gl_Position = gl_in[0].gl_Position;\n"
+        "   gsOutVertexPos = gl_in[0].gl_Position;\n"
+        "   gsOutVertexNormal = "+std::string(MR_SHADER_VERTEX_NORMAL_ATTRIB_NAME)+"[0];\n"
+        "   gsOutVertexColor = "+std::string(MR_SHADER_VERTEX_COLOR_ATTRIB_NAME)+"[0];\n"
+        "   gsOutVertexTexCoord = "+std::string(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_NAME)+"[0];\n"
+        "   EmitVertex();\n"
+        "   gl_Position = gl_in[1].gl_Position;\n"
+         "   gsOutVertexPos = gl_in[1].gl_Position;\n"
+        "   gsOutVertexNormal = "+std::string(MR_SHADER_VERTEX_NORMAL_ATTRIB_NAME)+"[1];\n"
+        "   gsOutVertexColor = "+std::string(MR_SHADER_VERTEX_COLOR_ATTRIB_NAME)+"[1];\n"
+        "   gsOutVertexTexCoord = "+std::string(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_NAME)+"[1];\n"
+        "   EmitVertex();\n"
+        "   gl_Position = gl_in[2].gl_Position;\n"
+         "   gsOutVertexPos = gl_in[2].gl_Position;\n"
+        "   gsOutVertexNormal = "+std::string(MR_SHADER_VERTEX_NORMAL_ATTRIB_NAME)+"[2];\n"
+        "   gsOutVertexColor = "+std::string(MR_SHADER_VERTEX_COLOR_ATTRIB_NAME)+"[2];\n"
+        "   gsOutVertexTexCoord = "+std::string(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_NAME)+"[2];\n"
+        "   EmitVertex();\n"
+        "   EndPrimitive();\n"
+        "}\n";
+    }
+    else*/ if(type == MR::IShader::ST_Vertex) {
         code =
         "#version 330\n"
         "#extension GL_ARB_separate_shader_objects : enable\n"
@@ -70,6 +108,7 @@ std::string ShaderBuilder::GenerateCode(const MR::IShaderProgram::Features& req,
         "layout (location = 1) in vec3 "+std::string(MR_SHADER_VERTEX_NORMAL_ATTRIB_NAME)+";\n"
         "layout (location = 2) in vec4 "+std::string(MR_SHADER_VERTEX_COLOR_ATTRIB_NAME)+";\n"
         "layout (location = 3) in vec2 "+std::string(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_NAME)+";\n";
+
         if(!req.toScreen){
             code +=
             "uniform mat4 "+std::string(MR_SHADER_MVP_MAT4)+";\n"
@@ -215,7 +254,7 @@ std::string ShaderBuilder::GenerateCode(const MR::IShaderProgram::Features& req,
             "vec3 light(){\n"
             "   vec3 fragLight = vec3(0.0, 0.0, 0.0);\n"
             "   for(int i = 0; i < "+std::string(MR_SHADER_POINT_LIGHTS_NUM)+"; i++){\n"
-            "       vec3 light_pos_mvp = (vec4("+std::string(MR_SHADER_POINT_LIGHTS)+"[i].pos, 1.0) * "+std::string(MR_SHADER_MODEL_MAT4)+").xyz;\n"
+            "       vec3 light_pos_mvp = (vec4("+std::string(MR_SHADER_POINT_LIGHTS)+"[i].pos, 1.0) * "+std::string(MR_SHADER_MVP_MAT4)+").xyz;\n"
             "       vec3 surfN = GetVertexNormal();\n"
             "       float NdotL = dot(surfN, normalize(light_pos_mvp - GetVertexPos().xyz));\n"
             "       float diff = (NdotL * 0.5) + 0.5;\n"
@@ -339,13 +378,14 @@ IShaderProgram* ShaderBuilder::Need(const MR::IShaderProgram::Features& req){
         }
     }
 
-    std::string vertCode = GenerateCode(req, MR::IShader::ST_Vertex), fragCode = GenerateCode(req, MR::IShader::ST_Fragment);
+    std::string vertCode = GenerateCode(req, MR::IShader::ST_Vertex), fragCode = GenerateCode(req, MR::IShader::ST_Fragment)/*, geomCode = GenerateCode(req, MR::IShader::ST_Geometry)*/;
 
     MR::ShaderCompiler compiler;
 
     ShaderProgram* shader = MR::ShaderProgram::Create(); //dynamic_cast<MR::Shader*>(MR::ShaderManager::Instance()->Create("Auto", "FromSubs"));
     Shader* vertSub = MR::Shader::Create(IShader::ST_Vertex);//new MR::Shader(vertCode, ISubShader::Type::Vertex);
     Shader* fragSub = MR::Shader::Create(IShader::ST_Fragment);//new MR::Shader(fragCode, ISubShader::Type::Fragment);
+    //Shader* geomSub = MR::Shader::Create(IShader::ST_Geometry);
 
     if(!compiler.Compile(vertCode, IShaderCompiler::ST_Vertex, vertSub->GetGPUHandle()).Good()) {
         MR::Log::LogString("Failed vertex shader compilation");
@@ -355,8 +395,12 @@ IShaderProgram* ShaderBuilder::Need(const MR::IShaderProgram::Features& req){
         MR::Log::LogString("Failed fragment shader compilation");
         return nullptr;
     }
+    /*if(!compiler.Compile(geomCode, IShaderCompiler::ST_Geometry, geomSub->GetGPUHandle()).Good()) {
+        MR::Log::LogString("Failed geometry shader compilation");
+        return nullptr;
+    }*/
 
-    if( !vertSub->Attach(shader) || !fragSub->Attach(shader) ) {
+    if( !vertSub->Attach(shader) || !fragSub->Attach(shader) /*|| !geomSub->Attach(shader)*/ ) {
         MR::Log::LogString("Failed attaching");
         return nullptr;
     }

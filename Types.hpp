@@ -14,12 +14,11 @@
 
 namespace MR {
 
-class Object {
+class IObject {
 public:
-    virtual std::string ToString();
-
-    Object();
-    virtual ~Object();
+    virtual std::string ToString() { return "IObject class"; }
+    IObject() {}
+    virtual ~IObject() {}
 };
 
 template<typename T>
@@ -53,7 +52,7 @@ public:
 };
 
 template<typename flag_t>
-class Flags : public Object, public IFlags<flag_t> {
+class Flags : public IObject, public IFlags<flag_t> {
 public:
     void Add(const flag_t& f) override;
     void Remove(const flag_t& f) override;
@@ -71,7 +70,7 @@ public:
 protected:
     std::vector<flag_t> _flags;
 };
-
+/*
 class IArray {
 public:
     virtual void* TopPtr() = 0; //first element
@@ -142,6 +141,10 @@ public:
     ParentT* parent;
     std::vector<ChildrenT*> children;
 };
+*/
+/**
+    Easy work with bits in byte but slow
+**/
 
 union Byte {
     unsigned char byte;
@@ -185,6 +188,8 @@ inline void SetBits(unsigned char * byte, bool bits[8]){
             (64 * bits[6]) +
             (128 * bits[7]);
 }
+
+/** **/
 
 class ICollidable {
 public:

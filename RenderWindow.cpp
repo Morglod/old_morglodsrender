@@ -1,5 +1,6 @@
 #include "RenderWindow.hpp"
 #include "Utils/Log.hpp"
+#include "Utils/ConfigClass.hpp"
 #include "MachineInfo.hpp"
 #include "RenderSystem.hpp"
 
@@ -329,6 +330,66 @@ RenderWindow::RenderWindowHints::RenderWindowHints() :
     opengl_forward_compat(GL_FALSE),
     opengl_debug_context(GL_FALSE),
     opengl_profile(GLFW_OPENGL_ANY_PROFILE) {
+}
+
+void RenderWindow::RenderWindowHints::Configure(MR::Config* cfg) {
+	if(!cfg) return;
+
+    cfg->GetTo("display.srgb_capable", srgb_capable);
+    cfg->GetTo("display.stereo", stereo);
+    cfg->GetTo("display.samples", samples);
+    cfg->GetTo("window.visible", visible);
+    cfg->GetTo("window.refresh_rate", refresh_rate);
+    cfg->GetTo("window.resizable", resizable);
+    cfg->GetTo("window.decorated", decorated);
+    cfg->GetTo("context.debug", opengl_debug_context);
+    cfg->GetTo("context.forward_compat", opengl_forward_compat);
+    cfg->GetTo("context.profile", opengl_profile);
+    cfg->GetTo("context.robustness", context_robustness);
+    cfg->GetTo("context.version_major", context_version_major);
+    cfg->GetTo("context.version_minor", context_version_minor);
+    cfg->GetTo("context.client_api", client_api);
+    cfg->GetTo("buffers.red_bits", red_bits);
+    cfg->GetTo("buffers.green_bits", green_bits);
+    cfg->GetTo("buffers.blue_bits", blue_bits);
+    cfg->GetTo("buffers.alpha_bits", alpha_bits);
+    cfg->GetTo("buffers.depth_bits", depth_bits);
+    cfg->GetTo("buffers.stencil_bits", stencil_bits);
+    cfg->GetTo("buffers.aux_buffers", aux_buffers);
+    cfg->GetTo("buffers.accum_red_bits", accum_red_bits);
+    cfg->GetTo("buffers.accum_green_bits", accum_green_bits);
+    cfg->GetTo("buffers.accum_blue_bits", accum_blue_bits);
+    cfg->GetTo("buffers.accum_alpha_bits", accum_alpha_bits);
+}
+
+void RenderWindow::RenderWindowHints::SaveConfig(Config* cfg) {
+	if(!cfg) return;
+
+    cfg->Set("display.srgb_capable", std::to_string(srgb_capable));
+    cfg->Set("display.stereo", std::to_string(stereo));
+    cfg->Set("display.samples", std::to_string(samples));
+    cfg->Set("window.visible", std::to_string(visible));
+    cfg->Set("window.refresh_rate", std::to_string(refresh_rate));
+    cfg->Set("window.resizable", std::to_string(resizable));
+    cfg->Set("window.decorated", std::to_string(decorated));
+    cfg->Set("context.debug", std::to_string(opengl_debug_context));
+    cfg->Set("context.forward_compat", std::to_string(opengl_forward_compat));
+    cfg->Set("context.profile", std::to_string(opengl_profile));
+    cfg->Set("context.robustness", std::to_string(context_robustness));
+    cfg->Set("context.version_major", std::to_string(context_version_major));
+    cfg->Set("context.version_minor", std::to_string(context_version_minor));
+    cfg->Set("context.client_api", std::to_string(client_api));
+    cfg->Set("buffers.red_bits", std::to_string(red_bits));
+    cfg->Set("buffers.green_bits", std::to_string(green_bits));
+    cfg->Set("buffers.blue_bits", std::to_string(blue_bits));
+    cfg->Set("buffers.alpha_bits", std::to_string(alpha_bits));
+    cfg->Set("buffers.depth_bits", std::to_string(depth_bits));
+    cfg->Set("buffers.stencil_bits", std::to_string(stencil_bits));
+    cfg->Set("buffers.aux_buffers", std::to_string(aux_buffers));
+    cfg->Set("buffers.accum_red_bits", std::to_string(accum_red_bits));
+    cfg->Set("buffers.accum_green_bits", std::to_string(accum_green_bits));
+    cfg->Set("buffers.accum_blue_bits", std::to_string(accum_blue_bits));
+    cfg->Set("buffers.accum_alpha_bits", std::to_string(accum_alpha_bits));
 }
 
 }

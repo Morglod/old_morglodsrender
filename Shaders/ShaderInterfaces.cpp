@@ -2,6 +2,9 @@
 
 namespace MR {
 
+ShaderUniformInfo::ShaderUniformInfo(IShaderProgram* p, const std::string& n, const int& s, const unsigned int & t)
+: program(p), name(n), uniform_size(s), uniform_gl_type(t) {}
+
 bool MR::IShaderProgram::Features::operator==(const MR::IShaderProgram::Features& dsr1) const {
     return (
                (dsr1.colorFilter == colorFilter) &&

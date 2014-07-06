@@ -1,5 +1,5 @@
 #include "Entity.hpp"
-#include "Model.hpp"
+#include "../Model.hpp"
 
 namespace MR {
 
@@ -40,10 +40,10 @@ Entity* Entity::CreateEntity(MR::Model* model) {
     return new Entity(model);
 }
 
-Entity* Entity::Copy() {
+IEntity* Entity::Copy() {
     Entity* nent = new Entity(GetModel());
     nent->_tranform = _tranform;
-    return nent;
+    return dynamic_cast<MR::IEntity*>(nent);
 }
 /*
 InstancedEntity::InstancedEntity(MR::Model* m, Transform** tr, unsigned int inum, StoragePolicy sp = StoragePolicy::SP_STATIC) :

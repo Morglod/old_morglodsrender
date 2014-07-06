@@ -12,8 +12,10 @@ namespace MR {
 bool ShaderUniform::Map(IShaderProgram* program) {
     AssertExec(!program, MR::Log::LogString("Error in ShaderUniform::Map : program == nullptr.", MR_LOG_LEVEL_ERROR))
 
-    MR::MachineInfo::ClearError();
+#ifdef MR_CHECK_SMALL_GL_ERRORS
     int gl_er = 0;
+    MR::MachineInfo::ClearError();
+#endif
 
     _gpu_location = glGetUniformLocation(program->GetGPUHandle(), _name.c_str());
 

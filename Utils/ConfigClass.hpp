@@ -17,6 +17,14 @@ public:
     inline std::map<std::string, std::string> & GetMap() { return _map; }
     inline std::string& Get(const std::string& key) { return _map[key]; }
     inline void GetS(const std::string& key, std::stringstream * ss) { (*ss) << _map[key]; }
+
+    template<typename t>
+    inline void GetTo(const std::string& key, t & a) {
+        std::stringstream ss;
+        ss << _map[key];
+        ss >> a;
+    }
+
     inline void Set(const std::string& key, const std::string& value) { _map[key] = value; }
     inline bool Exists(const std::string& key) { return _map.count(key); }
 

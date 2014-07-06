@@ -2,6 +2,7 @@
 #include "RenderSystem.hpp"
 #include "Texture.hpp"
 #include "Shaders/ShaderInterfaces.hpp"
+#include "Utils/Singleton.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
@@ -113,4 +114,12 @@ void MR::Material::SetTwoSided(const bool& ts) {
 
 MR::Material::Material(MaterialManager* mgr, const std::string& Name) :
     name(Name), manager(mgr) {
+}
+
+namespace MR {
+SingletonVar(MaterialManager, new MaterialManager());
+
+MR::MaterialManager* MaterialManager::Instance() {
+    return SingletonVarName(MaterialManager).Get();
+}
 }

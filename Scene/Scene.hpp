@@ -3,8 +3,8 @@
 #ifndef _MR_SCENE_H_
 #define _MR_SCENE_H_
 
-#include "Config.hpp"
-#include "Utils/Events.hpp"
+#include "../Config.hpp"
+#include "../Utils/Events.hpp"
 #include "Entity.hpp"
 #include "Light.hpp"
 

@@ -1,9 +1,13 @@
+/** HEADER ONLY **/
+
 #pragma once
 
 #ifndef _MR_DEBUG_H_
 #define _MR_DEBUG_H_
 
+#ifndef _MR_ASSERTION_FUNC(x)
 #define _MR_ASSERTION_FUNC(x) std::cout << "Assertion failed (" << x << ") in \"" __FILE__  << "\" at " << __LINE__ << " line" << std::endl;
+#endif
 
 #define Assert(_what ) \
     if(_what) { \

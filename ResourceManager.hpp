@@ -94,6 +94,8 @@ public:
         return _loaded;
     }
 
+    inline void __set_loaded(const bool& state) { _loaded = state; }
+
     /** Gets resource manager of this resource
      */
     inline virtual ResourceManager* GetManager() {

@@ -54,25 +54,21 @@
 		<Unit filename="Anim.hpp" />
 		<Unit filename="Boxes.cpp" />
 		<Unit filename="Boxes.hpp" />
-		<Unit filename="Camera.cpp" />
-		<Unit filename="Camera.hpp" />
+		<Unit filename="Buffers/GeometryBufferV2.cpp" />
+		<Unit filename="Buffers/GeometryBufferV2.hpp" />
+		<Unit filename="Buffers/GeometryFormats.cpp" />
+		<Unit filename="Buffers/GeometryFormats.hpp" />
 		<Unit filename="Config.hpp" />
 		<Unit filename="ConfigClass.cpp" />
 		<Unit filename="ConfigClass.hpp" />
 		<Unit filename="EmptyPlugin.cpp" />
-		<Unit filename="Entity.cpp" />
-		<Unit filename="Entity.hpp" />
 		<Unit filename="GL/Context.cpp" />
 		<Unit filename="GL/Context.hpp" />
 		<Unit filename="GL/GLObject.cpp" />
 		<Unit filename="GL/GLObject.hpp" />
-		<Unit filename="GeometryBufferV2.cpp" />
-		<Unit filename="GeometryBufferV2.hpp" />
 		<Unit filename="Importer.cpp" />
 		<Unit filename="Importer.hpp" />
 		<Unit filename="InstancedGeometry.hpp" />
-		<Unit filename="Light.cpp" />
-		<Unit filename="Light.hpp" />
 		<Unit filename="MachineInfo.cpp" />
 		<Unit filename="MachineInfo.hpp" />
 		<Unit filename="Material.cpp" />
@@ -94,8 +90,17 @@
 		<Unit filename="RenderWindow.hpp" />
 		<Unit filename="ResourceManager.cpp" />
 		<Unit filename="ResourceManager.hpp" />
-		<Unit filename="Scene.cpp" />
-		<Unit filename="Scene.hpp" />
+		<Unit filename="Scene/Camera.cpp" />
+		<Unit filename="Scene/Camera.hpp" />
+		<Unit filename="Scene/Entity.cpp" />
+		<Unit filename="Scene/Entity.hpp" />
+		<Unit filename="Scene/Light.cpp" />
+		<Unit filename="Scene/Light.hpp" />
+		<Unit filename="Scene/Scene.cpp" />
+		<Unit filename="Scene/Scene.hpp" />
+		<Unit filename="Scene/SceneInterfaces.hpp" />
+		<Unit filename="Scene/Transformation.cpp" />
+		<Unit filename="Scene/Transformation.hpp" />
 		<Unit filename="Shaders/ShaderBuilder.cpp" />
 		<Unit filename="Shaders/ShaderBuilder.hpp" />
 		<Unit filename="Shaders/ShaderCompiler.cpp" />
@@ -112,8 +117,6 @@
 		<Unit filename="Texture.hpp" />
 		<Unit filename="Threads.cpp" />
 		<Unit filename="Threads.hpp" />
-		<Unit filename="Transformation.cpp" />
-		<Unit filename="Transformation.hpp" />
 		<Unit filename="Types.cpp" />
 		<Unit filename="Types.hpp" />
 		<Unit filename="UI.cpp" />
@@ -123,11 +126,16 @@
 		<Unit filename="Utils/Events.hpp" />
 		<Unit filename="Utils/Exception.cpp" />
 		<Unit filename="Utils/Exception.hpp" />
+		<Unit filename="Utils/FilesIO.cpp" />
+		<Unit filename="Utils/FilesIO.hpp" />
 		<Unit filename="Utils/Log.cpp" />
 		<Unit filename="Utils/Log.hpp" />
+		<Unit filename="Utils/Singleton.hpp" />
 		<Unit filename="Utils/Time.hpp" />
 		<Unit filename="Viewport.cpp" />
 		<Unit filename="Viewport.hpp" />
+		<Unit filename="Voxels/SVO.cpp" />
+		<Unit filename="Voxels/SVO.hpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />

@@ -195,7 +195,7 @@ namespace MR{
         virtual ~ITextureSettings() {}
     };
 
-    class TextureSettings : public Object, public ITextureSettings {
+    class TextureSettings : public IObject, public ITextureSettings {
     public:
         ITextureSettings* Copy() override;
 
@@ -379,7 +379,7 @@ namespace MR{
         virtual ~ITexture() {}
     };
 
-    class Texture : public Object, public virtual ITexture, public virtual Resource {
+    class Texture : public IObject, public virtual ITexture, public virtual Resource {
     public:
         inline ITextureSettings* GetSettings() override { return _settings; } //May be nullptr
         inline unsigned short GetWidth() override { return gl_width; }
@@ -489,7 +489,7 @@ namespace MR{
         virtual bool CanStore(const ITexture::InternalFormat& iformat, const ITexture::Format& format, const ITexture::Type& type, const unsigned short& width, const unsigned short& height) = 0;
     };
 
-    class TextureArray : public Object, public ITextureArray {
+    class TextureArray : public IObject, public ITextureArray {
         friend class Texture;
         friend class TextureManager;
     public:

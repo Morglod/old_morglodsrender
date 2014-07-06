@@ -92,7 +92,7 @@ bool AnyRenderSystemAlive();
 /** -- **/
 
 /* BASE RENDER SYSTEM IMPLEMENTION */
-class RenderSystem : public MR::IRenderSystem, public MR::Object {
+class RenderSystem : public MR::IRenderSystem, public MR::IObject {
 public:
     inline std::string ToString() override { return "RenderSystem(base)"; }
 

@@ -56,6 +56,7 @@ public:
     void DeleteUniform(IShaderUniform* su) override;
     IShaderUniform* FindShaderUniform(const std::string& name) override;
     size_t GetShaderUniformsPtr(IShaderUniform*** list_ptr) override;
+    StaticArray<ShaderUniformInfo> GetCompiledUniforms() override;
 
     inline const unsigned int& GetGPUHandle() override { return _program; }
     const MR::IShaderProgram::Features& GetFeatures() override { return _features; }
@@ -66,9 +67,6 @@ public:
     virtual ~ShaderProgram();
 
     static ShaderProgram* Create();
-
-    /* USE RC->UseShader Instead of this */
-    //bool Use(IRenderSystem* context) override;
 
 protected:
     unsigned int _program; //OpenGL shader program

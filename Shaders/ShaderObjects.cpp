@@ -17,8 +17,10 @@ bool Shader::Attach(IShaderProgram* program) {
     AssertExec(!program, MR::Log::LogString("Error in Shader::Attach : program == nullptr.", MR_LOG_LEVEL_ERROR))
 
     //for gl error handling
+#ifdef MR_CHECK_SMALL_GL_ERRORS
     int gl_er = 0;
     MR::MachineInfo::ClearError();
+#endif
 
     glAttachShader(program->GetGPUHandle(), _gpu_handle);
 
@@ -48,8 +50,10 @@ void Shader::Detach(IShaderProgram* program) {
     AssertExec(!program, MR::Log::LogString("Error in Shader::Detach : program == nullptr.", MR_LOG_LEVEL_ERROR))
 
     //for gl error handling
+#ifdef MR_CHECK_SMALL_GL_ERRORS
     int gl_er = 0;
     MR::MachineInfo::ClearError();
+#endif
 
     glDetachShader(program->GetGPUHandle(), _gpu_handle);
 
@@ -256,6 +260,25 @@ size_t ShaderProgram::GetShaderUniformsPtr(IShaderUniform*** list_ptr) {
     if(!list_ptr) return 0;
     *list_ptr = &_shaderUniforms[0];
     return _shaderUniforms.size();
+}
+
+StaticArray<ShaderUniformInfo> ShaderProgram::GetCompiledUniforms() {
+    int act_uniforms = 0;
+    glGetProgramiv(_program, GL_ACTIVE_UNIFORMS, &act_uniforms);
+    if(act_uniforms == 0) return StaticArray<ShaderUniformInfo>();
+
+    ShaderUniformInfo* uni = new ShaderUniformInfo[act_uniforms];
+
+    for(int iu = 0; iu < act_uniforms; ++iu){
+        char namebuffer[1024];
+        int real_buf_size = 0;
+        int unif_size = 0;
+        unsigned int uni_type = 0;
+        glGetActiveUniform(_program, iu, 1024, &real_buf_size, &unif_size, &uni_type, &namebuffer[0]);
+        uni[iu] = ShaderUniformInfo(dynamic_cast<IShaderProgram*>(this), std::string(namebuffer), unif_size, uni_type);
+    }
+
+    return StaticArray<ShaderUniformInfo>(&uni[0], act_uniforms, false);
 }
 
 void ShaderProgram::Release() {

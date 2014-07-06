@@ -12,6 +12,7 @@ class GLFWgammaramp;
 
 namespace MR {
 
+class Config;
 class IRenderSystem;
 
 class IRenderWindow : public virtual GL::IContext {
@@ -115,7 +116,7 @@ public:
     virtual bool IsVisible() = 0;
 };
 
-class RenderWindow : public virtual IRenderWindow, public MR::Object {
+class RenderWindow : public virtual IRenderWindow, public MR::IObject {
 public:
 
     /** EVENTS **/
@@ -197,7 +198,7 @@ public:
         RenderWindowCallbacks();
     };
 
-    struct RenderWindowHints {
+    class RenderWindowHints {
     public:
         int resizable, //GL_FALSE
         visible, //GL_TRUE
@@ -224,6 +225,9 @@ public:
         opengl_forward_compat, //GL_FALSE
         opengl_debug_context, //GL_FALSE
         opengl_profile; //GLFW_OPENGL_ANY_PROFILE
+
+        void Configure(MR::Config* cfg);
+        void SaveConfig(MR::Config* cfg);
 
         RenderWindowHints();
     };

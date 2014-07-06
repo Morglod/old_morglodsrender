@@ -142,10 +142,7 @@ public:
     inline unsigned char GetActivedFlag();
     inline void ActiveFlag(const unsigned char & f);
 
-    static MaterialManager* Instance() {
-        static MaterialManager* m = new MaterialManager();
-        return m;
-    }
+    static MaterialManager* Instance();
 
 protected:
     unsigned char _flag; //actived flag

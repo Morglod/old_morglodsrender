@@ -204,7 +204,7 @@ ShaderCompilationOutput ShaderCompiler::Link(StaticArray<unsigned int> gpu_handl
     }
 #endif
 
-    /** TODO DEBUG **/
+    /** DEBUG
     int act_uniforms = 0;
     glGetProgramiv(gpu_program_handle, GL_ACTIVE_UNIFORMS, &act_uniforms);
 
@@ -216,7 +216,7 @@ ShaderCompilationOutput ShaderCompiler::Link(StaticArray<unsigned int> gpu_handl
         glGetActiveUniform(gpu_program_handle, iu, 1024, &real_buf_size, &unif_size, &uni_type, &namebuffer[0]);
 
         MR::Log::LogString("Program("+std::to_string(gpu_program_handle)+") Uniform \""+std::string(namebuffer)+"\" sizeof("+std::to_string(unif_size)+") typeof("+std::to_string(uni_type)+")", MR_LOG_LEVEL_WARNING);
-    }
+    }**/
 
     return ShaderCompilationOutput(
                                 new ShaderCompilationMessage[1]{ ShaderCompilationMessage( ShaderCompilationMessage::MT_Info, 0, 0, logString ) },

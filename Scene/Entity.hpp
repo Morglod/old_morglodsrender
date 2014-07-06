@@ -3,11 +3,12 @@
 #ifndef _MR_ENTITY_H_
 #define _MR_ENTITY_H_
 
-#include "Config.hpp"
+#include "../Config.hpp"
 #include "Transformation.hpp"
-#include "Utils/Events.hpp"
-#include "Types.hpp"
-#include "Boxes.hpp"
+#include "../Utils/Events.hpp"
+#include "../Types.hpp"
+#include "../Boxes.hpp"
+#include "SceneInterfaces.hpp"
 
 #include <string>
 
@@ -18,7 +19,7 @@ class Material;
 
 /** Unique for each rendering object
 */
-class Entity : public Copyable<Entity*> {
+class Entity : public IEntity {
 public:
     class TransformChangedEvent : MR::EventHandle<MR::Transform*, const glm::mat4&> {
     public:
@@ -31,21 +32,21 @@ public:
         Entity* _ent;
     };
 
-    MR::EventListener<Entity*, MR::Model*> OnModelChanged; //new model
-    MR::EventListener<Entity*, MR::Material*> OnMaterialChanged; //new material
+    MR::EventListener<Entity*, MR::Model*> OnModelChanged;
+    MR::EventListener<Entity*, MR::Material*> OnMaterialChanged;
 
     inline MR::Model* GetModel() { return _model; }
     inline MR::Material* GetMaterial(){ return _material; }
-    inline std::string GetName() { return _name; }
-    inline MR::Transform* GetTransformP() { return &_tranform; }
+    inline std::string GetName() override { return _name; }
+    inline MR::Transform* GetTransformPtr() override { return &_tranform; }
 
-    inline MR::BoundingBox* GetBBP() { return &_bb; }
+    inline MR::BoundingBox* GetBBPtr() override { return &_bb; }
     virtual void CalcBoundingBox();
 
     virtual void SetModel(MR::Model* m);
     virtual void SetMaterial(MR::Material* m);
 
-    Entity* Copy();
+    IEntity* Copy() override;
 
     Entity();
     Entity(MR::Model* m);

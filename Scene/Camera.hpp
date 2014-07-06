@@ -3,9 +3,9 @@
 #ifndef _MR_CAMERA_H_
 #define _MR_CAMERA_H_
 
-#include "Utils/Events.hpp"
+#include "../Utils/Events.hpp"
 #include "Transformation.hpp"
-#include "Types.hpp"
+#include "../Types.hpp"
 
 #ifndef glm_glm
 #   include <glm/glm.hpp>
@@ -98,7 +98,7 @@ public:
     virtual ~ICamera() {}
 };
 
-class Camera : public MR::Object, public ICamera {
+class Camera : public MR::IObject, public ICamera {
 public:
     void AttachToShader(IShaderProgram* shader) override;
     void UpdateShader(IShaderProgram* shader) override;

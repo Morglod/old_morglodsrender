@@ -1,11 +1,11 @@
 #include "Pipeline.hpp"
-#include "Scene.hpp"
+#include "Scene/Scene.hpp"
 #include "RenderWindow.hpp"
 #include "RenderTarget.hpp"
 #include "Texture.hpp"
 #include "RenderSystem.hpp"
 #include "Material.hpp"
-#include "GeometryBufferV2.hpp"
+#include "Buffers/GeometryBufferV2.hpp"
 
 #include "Shaders/ShaderBuilder.hpp"
 

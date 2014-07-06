@@ -3,17 +3,17 @@
 #include "Viewport.hpp"
 #include "MachineInfo.hpp"
 #include "Texture.hpp"
-#include "GeometryBufferV2.hpp"
-#include "Camera.hpp"
+#include "Buffers/GeometryBufferV2.hpp"
+#include "Scene/Camera.hpp"
 #include "Material.hpp"
-#include "Entity.hpp"
+#include "Scene/Entity.hpp"
 #include "Model.hpp"
 #include "RenderTarget.hpp"
 #include "Shaders/ShaderInterfaces.hpp"
 #include "Shaders/ShaderResource.hpp"
 #include "Utils/Log.hpp"
-#include "Light.hpp"
-#include "Scene.hpp"
+#include "Scene/Light.hpp"
+#include "Scene/Scene.hpp"
 
 #include <windef.h>
 #include <wingdi.h>
@@ -412,28 +412,30 @@ void RenderSystem::DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::IGeometry*
 
 void RenderSystem::DrawEntity(MR::Entity* ent, void* edp) {
     if(!ent->GetModel()) return;
+    if(!ent->GetModel()->IsLoaded()) return;
 
-    float dist = MR::Transform::CalcDist( *_cam->GetPosition(), ent->GetTransformP()->GetPos() );
+    float dist = MR::Transform::CalcDist( *_cam->GetPosition(), ent->GetTransformPtr()->GetPos() );
+
     ModelLod* lod = ent->GetModel()->GetLod( dist );
     if(!lod) return;
     for(size_t i = 0; i < lod->GetMeshesNum(); ++i) {
         MR::Mesh* mesh = lod->GetMesh(i);
         if(mesh->GetMaterial() == nullptr) {
             for(size_t gi = 0; gi < mesh->GetGeomNum(); ++gi) {
-                if(ent->GetMaterial() == nullptr) DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeoms()[gi], nullptr, 0);
-                else DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeoms()[gi], ent->GetMaterial(), edp);
+                if(ent->GetMaterial() == nullptr) DrawGeomWithMaterial(ent->GetTransformPtr()->GetMatP(), mesh->GetGeoms()[gi], nullptr, 0);
+                else DrawGeomWithMaterial(ent->GetTransformPtr()->GetMatP(), mesh->GetGeoms()[gi], ent->GetMaterial(), edp);
             }
         }
         else {
             for(size_t gi = 0; gi < mesh->GetGeomNum(); ++gi) {
-                if(ent->GetMaterial() == nullptr) DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeoms()[gi], mesh->GetMaterial(), edp);
-                else DrawGeomWithMaterial(ent->GetTransformP()->GetMatP(), mesh->GetGeoms()[gi], ent->GetMaterial(), edp);
+                if(ent->GetMaterial() == nullptr) DrawGeomWithMaterial(ent->GetTransformPtr()->GetMatP(), mesh->GetGeoms()[gi], mesh->GetMaterial(), edp);
+                else DrawGeomWithMaterial(ent->GetTransformPtr()->GetMatP(), mesh->GetGeoms()[gi], ent->GetMaterial(), edp);
             }
         }
     }
 }
 
-RenderSystem::RenderSystem() : MR::Object(), _init(false), _alive(false), _glew(false), _glfw(false),
+RenderSystem::RenderSystem() : MR::IObject(), _init(false), _alive(false), _glew(false), _glfw(false),
     _viewport(nullptr), _nextFreeUnit(0), _vformat(nullptr), _iformat(nullptr), _cam(nullptr), _shader(nullptr), _useDefaultMaterial(true), _defaultMaterial(nullptr), _renderTarget(nullptr), _poly_mode((IRenderSystem::PolygonMode)GL_FILL), _window(nullptr) {
 
     RegisterRenderSystem(this);

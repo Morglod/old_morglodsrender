@@ -47,6 +47,8 @@ namespace MR{
         int total_memory_kb();
         int current_memory_kb();
 
+        void PrintInfo();
+
         /** FEATURES **/
         bool FeatureNV_GPUPTR(); //direct access to gpu's addresses (for vertex buffers)
 

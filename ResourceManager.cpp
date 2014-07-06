@@ -33,8 +33,11 @@ void* __MR_RESOURCE_ASYNC_THREAD(void*) {
         MR::Resource* res = art.res;
 
         if(art.load) {
-            res->_Loading();
-        } else res->_UnLoading();
+            res->__set_loaded(res->_Loading());
+        } else {
+            res->_UnLoading();
+            res->__set_loaded(false);
+        }
 
         glFlush();
 
@@ -62,7 +65,8 @@ bool MR::Resource::Load() {
         _MR_RequestGPUThread();
         return true;
     } else {
-        return _Loading();
+        __set_loaded(_Loading());
+        return _loaded;
     }
 }
 

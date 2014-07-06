@@ -174,14 +174,28 @@ int MR::MachineInfo::current_memory_kb() {
     return cur_avail_mem_kb;
 }
 
+void MR::MachineInfo::PrintInfo() {
+    MR::Log::LogString(
+            std::string("Machine info:") +
+            std::string("\nVersion: ") + MR::MachineInfo::gl_version_string() +
+            std::string("\nGLSL: ") + MR::MachineInfo::gl_version_glsl() +
+            std::string("\nOpenGL: ") + std::to_string(MR::MachineInfo::gl_version_major()) + std::string(" ") + std::to_string(MR::MachineInfo::gl_version_minor()) +
+            std::string("\nGPU: ") + MR::MachineInfo::gpu_name() + std::string(" from ") + MR::MachineInfo::gpu_vendor_string() +
+            std::string("\nMem Total(kb): ") + std::to_string(MR::MachineInfo::total_memory_kb()) + std::string(" Current(kb): ") + std::to_string(MR::MachineInfo::current_memory_kb()) + "\n\n"
+        , MR_LOG_LEVEL_INFO);
+
+        MR::Log::LogString("\nNvidia VBUM: " + std::to_string(MR::MachineInfo::FeatureNV_GPUPTR()));
+        MR::Log::LogString("Direct state access: " + std::to_string(MR::MachineInfo::IsDirectStateAccessSupported()));
+}
+
 bool MR::MachineInfo::FeatureNV_GPUPTR(){
     static bool support = (gpu_vendor() == MR::MachineInfo::GPUVendor::Nvidia) && (__glewGetBufferParameterui64vNV);
-    return false;
+    return support;
 }
 
 bool MR::MachineInfo::IsDirectStateAccessSupported(){
     static bool state = (__glewNamedBufferDataEXT);
-    return true;
+    return state;
 }
 
 bool MR::MachineInfo::CatchError(std::string* errorOutput, int * glCode){

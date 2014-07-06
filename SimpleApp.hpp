@@ -17,7 +17,10 @@
 #endif
 
 #include <iostream>
+#include <fstream>
 #include <windows.h>
+
+std::ofstream __simple_app__log_file("log.txt");
 
 namespace MR {
 
@@ -27,18 +30,24 @@ public:
         switch(level) {
         case MR_LOG_LEVEL_ERROR:
             std::cout << "Error: ";
+            __simple_app__log_file << "Error: ";
             break;
         case MR_LOG_LEVEL_EXCEPTION:
             std::cout << "Exception: ";
+            __simple_app__log_file << "Exception: ";
             break;
         case MR_LOG_LEVEL_INFO:
             std::cout << "Info: ";
+            __simple_app__log_file << "Info: ";
             break;
         case MR_LOG_LEVEL_WARNING:
             std::cout << "Warning: ";
+            __simple_app__log_file << "Warning: ";
             break;
         }
         std::cout << s << std::endl;
+        __simple_app__log_file << s << std::endl;
+        __simple_app__log_file.flush();
     }
 
     virtual bool Go( const std::string& WindowName = "MorglodsRender", const unsigned short& WindowWidth = 800, const unsigned short& WindowHeight = 600, const RenderWindow::RenderWindowHints& hints = RenderWindow::RenderWindowHints(), const RenderWindow::RenderWindowCallbacks& callbacks = RenderWindow::RenderWindowCallbacks() ){
@@ -50,7 +59,7 @@ public:
         window = new MR::RenderWindow(WindowName, WindowWidth, WindowHeight, hints, callbacks);
         sys = new MR::RenderSystem();
 
-        if(!sys->Init(window, false)){
+        if(!sys->Init(window, MR_ASYNC_LOADING_DEFAULT)){
             if(ThrowExceptions()){
                 throw MR::Exception("Failed context initialization SimpleApp::Go. Check log");
             }
@@ -65,7 +74,7 @@ public:
         scene.AddCamera(camera);
         scene.SetMainCamera(camera);
 
-        pipeline = new MR::DefferedRenderingPipeline();//new MR::ForwardRenderingPipeline();
+        pipeline = /*new MR::DefferedRenderingPipeline();//*/new MR::ForwardRenderingPipeline();
         if(!pipeline->Setup(sys, MR::GL::GetCurrent(), window)) {
             if(ThrowExceptions()){
                 throw MR::Exception("Failed RenderingPipeline::Setup.");

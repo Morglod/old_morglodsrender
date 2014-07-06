@@ -1,11 +1,12 @@
 #include "Model.hpp"
 #include "Utils/Log.hpp"
-#include "GeometryBufferV2.hpp"
+#include "Buffers/GeometryBufferV2.hpp"
 #include "Material.hpp"
 #include "Texture.hpp"
 #include "Shaders/ShaderInterfaces.hpp"
 #include "Shaders/ShaderBuilder.hpp"
 #include "GL/Context.hpp"
+#include "Utils/Singleton.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
@@ -86,15 +87,14 @@ Resource* ModelManager::Create(const std::string& name, const std::string& sourc
     return m;
 }
 
-ModelManager* __INSTANCE_MODEL_MANAGER = 0;
+SingletonVar(ModelManager, new ModelManager());
+
 ModelManager* ModelManager::Instance() {
-    if(__INSTANCE_MODEL_MANAGER == 0) __INSTANCE_MODEL_MANAGER = new MR::ModelManager();
-    return __INSTANCE_MODEL_MANAGER;
+    return SingletonVarName(ModelManager).Get();
 }
 
 void ModelManager::DestroyInstance() {
-    delete __INSTANCE_MODEL_MANAGER;
-    __INSTANCE_MODEL_MANAGER = 0;
+    SingletonVarName(ModelManager).Destroy();
 }
 
 ModelFile::ModelFile() : meshes(nullptr), meshes_num(0) {}
@@ -394,19 +394,19 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
         unsigned int * ibuffer = new unsigned int[indsNum];
         ffile.read( reinterpret_cast<char*>(ibuffer), ibufferSize);
 
-        VertexFormatCustom* vformat = new VertexFormatCustom();
-        if(posDecl) {
-            vformat->AddVertexAttribute(new VertexAttributeCustom(3, VertexDataTypeFloat::Instance(), IVertexAttribute::ShaderIndex_Position));
-        }
-        if(texCoordDecl) {
-            vformat->AddVertexAttribute(new VertexAttributeCustom(2, VertexDataTypeFloat::Instance(), IVertexAttribute::ShaderIndex_TexCoord));
-        }
-        if(normalDecl) {
-            vformat->AddVertexAttribute(new VertexAttributeCustom(3, VertexDataTypeFloat::Instance(), IVertexAttribute::ShaderIndex_Normal));
-        }
-        if(vertexColorDecl) {
-            vformat->AddVertexAttribute(new VertexAttributeCustom(4, VertexDataTypeFloat::Instance(), IVertexAttribute::ShaderIndex_Color));
-        }
+        size_t attribs_num = 0;
+        if(posDecl) ++attribs_num;
+        if(texCoordDecl) ++attribs_num;
+        if(normalDecl) ++attribs_num;
+        if(vertexColorDecl) ++attribs_num;
+
+        VertexFormatCustomFixed* vformat = new VertexFormatCustomFixed();
+        vformat->SetAttributesNum(attribs_num);
+
+        if(posDecl) vformat->AddVertexAttribute(new VertexAttributeCustom(3, VertexDataTypeFloat::Instance(), IVertexAttribute::ShaderIndex_Position));
+        if(texCoordDecl) vformat->AddVertexAttribute(new VertexAttributeCustom(2, VertexDataTypeFloat::Instance(), IVertexAttribute::ShaderIndex_TexCoord));
+        if(normalDecl) vformat->AddVertexAttribute(new VertexAttributeCustom(3, VertexDataTypeFloat::Instance(), IVertexAttribute::ShaderIndex_Normal));
+        if(vertexColorDecl) vformat->AddVertexAttribute(new VertexAttributeCustom(4, VertexDataTypeFloat::Instance(), IVertexAttribute::ShaderIndex_Color));
 
         if(log) MR::Log::LogString("Decls " + std::to_string(declarations ), MR_LOG_LEVEL_INFO);
 

@@ -1,8 +1,9 @@
 #include "Texture.hpp"
 #include "RenderSystem.hpp"
-#include "Camera.hpp"
+#include "Scene/Camera.hpp"
 #include "RenderTarget.hpp"
 #include "GL/Context.hpp"
+#include "Utils/Singleton.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
@@ -767,13 +768,12 @@ TextureManager::~TextureManager(){
     _tex_arrays.clear();
 }
 
-TextureManager* __INSTANCE_TEXTURE_MANAGER = 0;
+SingletonVar(TextureManager, new TextureManager());
+
 TextureManager* TextureManager::Instance(){
-    if(__INSTANCE_TEXTURE_MANAGER == 0) __INSTANCE_TEXTURE_MANAGER = new MR::TextureManager();
-    return __INSTANCE_TEXTURE_MANAGER;
+    return SingletonVarName(TextureManager).Get();
 }
 
 void TextureManager::DestroyInstance() {
-    delete __INSTANCE_TEXTURE_MANAGER;
-    __INSTANCE_TEXTURE_MANAGER = 0;
+    SingletonVarName(TextureManager).Destroy();
 }

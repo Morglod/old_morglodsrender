@@ -1,8 +1,8 @@
 #include "Scene.hpp"
 #include "Camera.hpp"
-#include "RenderSystem.hpp"
-#include "Model.hpp"
-#include "Utils/Log.hpp"
+#include "../RenderSystem.hpp"
+#include "../Model.hpp"
+#include "../Utils/Log.hpp"
 
 namespace MR {
 
@@ -105,7 +105,7 @@ void MR::SceneManager::RemoveLight(ILightSource* ls){
 }
 
 LightsList MR::SceneManager::MakeLightsList(Entity* ent){
-    return LightsList::MakeList(ent->GetBBP(), _lights.data(), _lights.size());
+    return LightsList::MakeList(ent->GetBBPtr(), _lights.data(), _lights.size());
 }
 
 void MR::SceneManager::SetFog(const float& minDist, const float& maxDist, const glm::vec4& color){

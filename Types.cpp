@@ -3,16 +3,6 @@
 
 namespace MR {
 
-std::string Object::ToString(){
-    return "Base";
-}
-
-Object::Object(){
-}
-
-Object::~Object(){
-}
-
 template<typename flag_t>
 void Flags<flag_t>::Add(const flag_t& f){
     _flags.push_back(f);
@@ -50,11 +40,11 @@ void Flags<flag_t>::operator -= (const flag_t& t){
 
 template<typename flag_t>
 std::string Flags<flag_t>::ToString(){
-    return "Flags";
+    return "Flags : IFlags class";
 }
 
 template<typename flag_t>
-Flags<flag_t>::Flags() : Object(), _flags() {
+Flags<flag_t>::Flags() : IObject(), _flags() {
 }
 
 template<typename flag_t>
