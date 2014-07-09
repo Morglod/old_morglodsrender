@@ -112,6 +112,7 @@ bool VertexFormatCustomFixed::Bind() {
     else {
         for(size_t i = 0; i < _attribsNum; ++i) {
             glVertexAttribPointer(_attribs[i]->ShaderIndex(), (int)_attribs[i]->ElementsNum(), _attribs[i]->DataType()->GPUDataType(), GL_FALSE, this->Size(), (void*)_pointers[i]);
+            //glVertexAttribPointer(_attribs[i]->ShaderIndex(), (int)_attribs[i]->ElementsNum(), _attribs[i]->DataType()->GPUDataType(), GL_FALSE, 0, (void*)_pointers[i]);
             glEnableVertexAttribArray(_attribs[i]->ShaderIndex());
         }
     }

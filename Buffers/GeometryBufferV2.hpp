@@ -208,6 +208,7 @@ public:
                                 const unsigned int& usage, const unsigned int& accessFlag, const unsigned int& drawMode,
                                 unsigned int * vertex_buf_offset_in_bytes, unsigned int * index_buf_offset_in_bytes);
 
+    GeometryManager();
     ~GeometryManager();
 
     static GeometryManager* Instance();
@@ -215,8 +216,8 @@ public:
 
 protected:
 
-    size_t _max_buffer_size = 209715200; //200mb
-    bool _new_buffer_per_data = true;
+    size_t _max_buffer_size;
+    bool _new_buffer_per_data;
 
     class FormatBuffers {
     public:
@@ -232,7 +233,7 @@ protected:
 
     //if vfo not null, request vertexbuffer
     //if ifo not null, request indexbuffer
-    GPUBuffer* _RequestBuffer(void* data, IVertexFormat* vfo, IIndexFormat* ifo, const size_t& data_size, const unsigned int& usage, const unsigned int& accessFlag);
+    GPUBuffer* _RequestBuffer(void* data, IVertexFormat* vfo, IIndexFormat* ifo, const size_t& data_size, const unsigned int& usage, const unsigned int& accessFlag, bool * savedToBuffer);
 };
 
 }

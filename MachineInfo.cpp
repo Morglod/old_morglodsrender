@@ -190,7 +190,7 @@ void MR::MachineInfo::PrintInfo() {
 
 bool MR::MachineInfo::FeatureNV_GPUPTR(){
     static bool support = (gpu_vendor() == MR::MachineInfo::GPUVendor::Nvidia) && (__glewGetBufferParameterui64vNV);
-    return support;
+    return false;//support;
 }
 
 bool MR::MachineInfo::IsDirectStateAccessSupported(){

@@ -100,7 +100,14 @@ std::string ShaderBuilder::GenerateCode(const MR::IShaderProgram::Features& req,
         code =
         "#version 330\n"
         "#extension GL_ARB_separate_shader_objects : enable\n"
-        /*"#pragma optimize(on)\n"*/;
+        "#pragma optimize (on)\n"
+        "#pragma optionNV(fastmath on)\n"
+        "#pragma optionNV(fastprecision on)\n"
+        "#pragma optionNV(ifcvt none)\n"
+        "#pragma optionNV(inline all)\n"
+        "#pragma optionNV(strict on)\n"
+        "#pragma optionNV(unroll all)\n"
+        "precision mediump float;\n";
 
         ///Inputs
         code +=
@@ -139,19 +146,26 @@ std::string ShaderBuilder::GenerateCode(const MR::IShaderProgram::Features& req,
         } else {
             code +=
             "void main() {\n"
-            "	vec4 vert = "+std::string(MR_SHADER_MVP_MAT4)+" * vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
-            "	OutVertexPos = vert;\n"
+            //"	vec4 vert = "+std::string(MR_SHADER_MVP_MAT4)+" * vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
+            "	OutVertexPos = vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
             "	OutVertexNormal = "+std::string(MR_SHADER_VERTEX_NORMAL_ATTRIB_NAME)+";\n"
             "	OutVertexColor = "+std::string(MR_SHADER_VERTEX_COLOR_ATTRIB_NAME)+";\n"
             "	OutVertexTexCoord = "+std::string(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_NAME)+";\n"
-            "	gl_Position = vert;\n"
+            "	gl_Position = "+std::string(MR_SHADER_MVP_MAT4)+" * vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
             "}";
         }
     } else if(type == MR::IShader::ST_Fragment) {
         code =
         "#version 330\n"
         "#extension GL_ARB_separate_shader_objects : enable\n"
-        /*"#pragma optimize(on)\n"*/;
+        "#pragma optimize (on)\n"
+        "#pragma optionNV(fastmath on)\n"
+        "#pragma optionNV(fastprecision on)\n"
+        "#pragma optionNV(ifcvt none)\n"
+        "#pragma optionNV(inline all)\n"
+        "#pragma optionNV(strict on)\n"
+        "#pragma optionNV(unroll all)\n"
+        "precision mediump float;\n";
 
         ///Inputs
         code +=
@@ -254,15 +268,17 @@ std::string ShaderBuilder::GenerateCode(const MR::IShaderProgram::Features& req,
             "vec3 light(){\n"
             "   vec3 fragLight = vec3(0.0, 0.0, 0.0);\n"
             "   for(int i = 0; i < "+std::string(MR_SHADER_POINT_LIGHTS_NUM)+"; i++){\n"
-            "       vec3 light_pos_mvp = (vec4("+std::string(MR_SHADER_POINT_LIGHTS)+"[i].pos, 1.0) * "+std::string(MR_SHADER_MVP_MAT4)+").xyz;\n"
+            "       vec3 light_pos_mvp = "+std::string(MR_SHADER_POINT_LIGHTS)+"[i].pos;\n"
             "       vec3 surfN = GetVertexNormal();\n"
-            "       float NdotL = dot(surfN, normalize(light_pos_mvp - GetVertexPos().xyz));\n"
+            "       float NdotL = dot(surfN, normalize(light_pos_mvp - ("+std::string(MR_SHADER_MODEL_MAT4)+" * GetVertexPos()).xyz));\n"
             "       float diff = (NdotL * 0.5) + 0.5;\n"
-            "       float Ld = distance(light_pos_mvp, GetVertexPos().xyz);\n"
+            "       float Ld = distance(light_pos_mvp, ("+std::string(MR_SHADER_MODEL_MAT4)+" * GetVertexPos()).xyz);\n"
+            //"       float Ld = distance("+std::string(MR_SHADER_POINT_LIGHTS)+"[i].pos, ("+std::string(MR_SHADER_MODEL_MAT4)+" * GetVertexPos()).xyz);\n"
             "       float att = 1.0 / (1.0 + "+std::string(MR_SHADER_POINT_LIGHTS)+"[i].attenuation * pow(Ld, "+std::string(MR_SHADER_POINT_LIGHTS)+"[i].power));\n"
             "       float Lmult = ("+std::string(MR_SHADER_POINT_LIGHTS)+"[i].radius - Ld) / "+std::string(MR_SHADER_POINT_LIGHTS)+"[i].radius;\n"
             "       Lmult = max(0.0, Lmult);\n" //if(Lmult < 0) Lmult = 0.0;\n"
             "       fragLight += diff * (att * "+std::string(MR_SHADER_POINT_LIGHTS)+"[i].emission) + (Lmult * "+std::string(MR_SHADER_POINT_LIGHTS)+"[i].ambient);\n"
+            //"       fragLight += (att * "+std::string(MR_SHADER_POINT_LIGHTS)+"[i].emission) + (Lmult * "+std::string(MR_SHADER_POINT_LIGHTS)+"[i].ambient);\n"
             "   }\n"
             "   for(int di = 0; di < "+std::string(MR_SHADER_DIR_LIGHTS_NUM)+"; di++){\n"
             "       vec3 surfN = GetVertexNormal();\n"

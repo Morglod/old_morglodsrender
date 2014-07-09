@@ -478,8 +478,7 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
     for(size_t mi = 0; mi < for_meshes.size(); ++mi){
         MR::IGeometry** mesh_geometry = new MR::IGeometry*[for_meshes[mi].buffers.size()];
         for(size_t gmi = 0; gmi < for_meshes[mi].buffers.size(); ++gmi){
-            unsigned int ibegin = 0, vbegin = 0;
-            unsigned int icount = 0, vcount = 0;
+            unsigned int ibegin = 0, vbegin = 0, icount = 0, vcount = 0;
             if(for_meshes[mi].buffers[gmi]->GetIndexBuffer()){
                 icount = for_meshes[mi].num_inds[gmi];
                 ibegin = for_meshes[mi].ibuffer_offsets[gmi];

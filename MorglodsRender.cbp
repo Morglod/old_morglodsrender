@@ -59,8 +59,6 @@
 		<Unit filename="Buffers/GeometryFormats.cpp" />
 		<Unit filename="Buffers/GeometryFormats.hpp" />
 		<Unit filename="Config.hpp" />
-		<Unit filename="ConfigClass.cpp" />
-		<Unit filename="ConfigClass.hpp" />
 		<Unit filename="EmptyPlugin.cpp" />
 		<Unit filename="GL/Context.cpp" />
 		<Unit filename="GL/Context.hpp" />
@@ -121,6 +119,8 @@
 		<Unit filename="Types.hpp" />
 		<Unit filename="UI.cpp" />
 		<Unit filename="UI.hpp" />
+		<Unit filename="Utils/ConfigClass.cpp" />
+		<Unit filename="Utils/ConfigClass.hpp" />
 		<Unit filename="Utils/Containers.cpp" />
 		<Unit filename="Utils/Containers.hpp" />
 		<Unit filename="Utils/Events.hpp" />

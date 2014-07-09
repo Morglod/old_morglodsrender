@@ -371,6 +371,9 @@ void RenderSystem::DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::IGeometry*
 
                     //POWER
                     glUniform1f(glGetUniformLocation(sh_prog, (std::string(MR_SHADER_POINT_LIGHTS)+"["+std::to_string((int)li)+"].power").c_str()), edp->_llist->GetLights()[li]->GetPower());
+
+                    //WORKING
+                    //glUniform1i(glGetUniformLocation(sh_prog, (std::string(MR_SHADER_POINT_LIGHTS)+"["+std::to_string((int)li)+"].working").c_str()), 1);
                 }
             }
 
@@ -392,6 +395,9 @@ void RenderSystem::DrawGeomWithMaterialPass(glm::mat4* model_mat, MR::IGeometry*
 
                     //AMBIENT
                     glUniform3f(glGetUniformLocation(sh_prog, (std::string(MR_SHADER_DIR_LIGHTS)+"["+std::to_string((int)lindex)+"].ambient").c_str()), edp->_llist->GetLights()[li]->GetAmbient().x, edp->_llist->GetLights()[li]->GetAmbient().y, edp->_llist->GetLights()[li]->GetAmbient().z);
+
+                    //WORKING
+                    //glUniform1i(glGetUniformLocation(sh_prog, (std::string(MR_SHADER_DIR_LIGHTS)+"["+std::to_string((int)lindex)+"].working").c_str()), 1);
                 }
             }
 

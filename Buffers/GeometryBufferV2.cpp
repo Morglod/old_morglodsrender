@@ -98,9 +98,9 @@ bool GPUBuffer::BufferAutoLocate(void* data, const unsigned int& size, unsigned 
 
     *offset = _next_free_offset;
 
-    _next_free_offset += size+1;
-    _free_size -= size-1;
-    _used_size += size-1;
+    _next_free_offset += size;
+    _free_size -= size;
+    _used_size += size;
 
     if(MR::MachineInfo::FeatureNV_GPUPTR()){
         if(MR::MachineInfo::IsDirectStateAccessSupported()){
@@ -377,21 +377,26 @@ void GeometryBuffer::Draw(IRenderSystem* rc, const unsigned int& istart, const u
     else {
         glBindVertexArray(_vao);
         if(_ib != nullptr) {
-            /*if(MR::MachineInfo::Feature_DrawIndirect()) {
-                glDrawElementsIndirect(_draw_mode, _iformat->GetDataType()->GPUDataType(), (void*)16);
-            } else {*/
-                glDrawRangeElements(_draw_mode,
+            //if(MR::MachineInfo::Feature_DrawIndirect()) {
+            //    glDrawElementsIndirect(_draw_mode, _iformat->GetDataType()->GPUDataType(), (void*)16);
+            //} else {
+                /*glDrawRangeElements(_draw_mode,
                                     vstart,
                                     vstart+vcount,
                                     icount,
                                     _iformat->GetDataType()->GPUDataType(),
-                                    (void*)(_iformat->Size() * istart));
+                                    (void*)(_iformat->Size() * istart));*/
+                glDrawElementsBaseVertex(_draw_mode,
+                                         icount,
+                                         _iformat->GetDataType()->GPUDataType(),
+                                         /*(void*)(_iformat->Size() * istart)*/0,
+                                         vstart);
             //}
         }
         else {
-            /*if(MR::MachineInfo::Feature_DrawIndirect()) {
-                glDrawArraysIndirect(_draw_mode, 0);
-            } else {*/
+            //if(MR::MachineInfo::Feature_DrawIndirect()) {
+            //    glDrawArraysIndirect(_draw_mode, 0);
+            //} else {
                 glDrawArrays(_draw_mode, vstart, vcount);
             //}
         }
@@ -475,8 +480,8 @@ Geometry::~Geometry(){
 
 //GEOMETRY MANAGER
 
-GPUBuffer* GeometryManager::_RequestBuffer(void* data, IVertexFormat* vfo, IIndexFormat* ifo, const size_t& data_size, const unsigned int& usage, const unsigned int& accessFlag) {
-    if(!_new_buffer_per_data) {
+GPUBuffer* GeometryManager::_RequestBuffer(void* data, IVertexFormat* vfo, IIndexFormat* ifo, const size_t& data_size, const unsigned int& usage, const unsigned int& accessFlag, bool * savedToBuffer) {
+    if(!_new_buffer_per_data) { ///TODO set to (!_new_buffer_per_data)
     for(size_t i = 0; i < _buffers.size(); ++i) {
         if(
             (((vfo != 0) && (_buffers[i]->v_format != 0) && (_buffers[i]->v_format->Equal(vfo))) ||
@@ -485,7 +490,10 @@ GPUBuffer* GeometryManager::_RequestBuffer(void* data, IVertexFormat* vfo, IInde
             (_buffers[i]->_accessFlag == accessFlag)) {
 
             for(size_t i2 = 0; i2 < _buffers[i]->gl_buffers.size(); ++i2) {
-                if(_buffers[i]->gl_buffers[i2]->GetFreeSize() > data_size) return (_buffers[i]->gl_buffers[i2]);
+                if(_buffers[i]->gl_buffers[i2]->GetFreeSize() > data_size) {
+                    *savedToBuffer = false;
+                    return (_buffers[i]->gl_buffers[i2]);
+                }
             }
         }
     }}
@@ -503,10 +511,21 @@ GPUBuffer* GeometryManager::_RequestBuffer(void* data, IVertexFormat* vfo, IInde
     buff->_usage = usage;
     buff->_accessFlag = accessFlag;
     buff->gl_buffers.push_back(new GPUBuffer(MR::GL::GetCurrent(), target));
-    if(!_new_buffer_per_data) { if(! (buff->gl_buffers[buff->gl_buffers.size()-1]->Storage(data, _max_buffer_size, 0) ) ) return 0; }
-    else if(! (buff->gl_buffers[buff->gl_buffers.size()-1]->Storage(data, data_size, 0) ) ) return 0;
+
+    if(!_new_buffer_per_data) {
+        if(! (buff->gl_buffers[buff->gl_buffers.size()-1]->Storage(0, _max_buffer_size, 0) ) ) {
+            return 0;
+        }
+    }
+    else if(! (buff->gl_buffers[buff->gl_buffers.size()-1]->Storage(data, data_size, 0) ) ) {
+        *savedToBuffer = false;
+        return 0;
+    }
+
     _buffers.push_back(buff);
 
+    if(_new_buffer_per_data) *savedToBuffer = true;
+    else  *savedToBuffer = false;
     return ((_buffers[_buffers.size()-1])->gl_buffers[(_buffers[_buffers.size()-1])->gl_buffers.size()-1]);
 }
 
@@ -516,16 +535,17 @@ GeometryBuffer * GeometryManager::PlaceGeometry(  IVertexFormat* vfo, IIndexForm
                                 const unsigned int& usage, const unsigned int& accessFlag, const unsigned int& drawMode,
                                 unsigned int * vertex_buf_offset_in_bytes, unsigned int * index_buf_offset_in_bytes) {
     unsigned int vind = 0, iind = 0;
+    bool saved = false;
 
-    GPUBuffer* vbuf = _RequestBuffer(vert_data, vfo, 0, vert_data_size, usage, accessFlag);
+    GPUBuffer* vbuf = _RequestBuffer(vert_data, vfo, 0, vert_data_size, usage, accessFlag, &saved);
     if(vbuf == 0) return 0;
-    //vbuf->BufferAutoLocate(vert_data, vert_data_size, &vind);
+    if(!saved) vbuf->BufferAutoLocate(vert_data, vert_data_size, &vind);
 
     GPUBuffer* ibuf = 0;
     if(ind_data_size != 0){
-        ibuf = _RequestBuffer(ind_data, 0, ifo, ind_data_size, usage, accessFlag);
+        ibuf = _RequestBuffer(ind_data, 0, ifo, ind_data_size, usage, accessFlag, &saved);
         if(ibuf == 0) return 0;
-        //ibuf->BufferAutoLocate(ind_data, ind_data_size, &iind);
+        if(!saved) ibuf->BufferAutoLocate(ind_data, ind_data_size, &iind);
     }
 
     if(vertex_buf_offset_in_bytes) *vertex_buf_offset_in_bytes = vind;
@@ -533,6 +553,9 @@ GeometryBuffer * GeometryManager::PlaceGeometry(  IVertexFormat* vfo, IIndexForm
 
     GeometryBuffer * gb = new GeometryBuffer(GL::GetCurrent(), vbuf, ibuf, vfo, ifo, drawMode);
     return gb;
+}
+
+GeometryManager::GeometryManager() : _max_buffer_size(800), _new_buffer_per_data(false) {
 }
 
 GeometryManager::~GeometryManager() {
