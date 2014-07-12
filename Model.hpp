@@ -3,8 +3,8 @@
 #ifndef _MR_MODEL_H_
 #define _MR_MODEL_H_
 
-#include "Mesh.hpp"
-#include "ResourceManager.hpp"
+#include "Geometry/Mesh.hpp"
+#include "Resources/ResourceManager.hpp"
 #include "Utils/Events.hpp"
 #include "Boxes.hpp"
 

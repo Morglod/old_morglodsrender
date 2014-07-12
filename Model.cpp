@@ -1,6 +1,6 @@
 #include "Model.hpp"
 #include "Utils/Log.hpp"
-#include "Buffers/GeometryBufferV2.hpp"
+#include "Geometry/GeometryBufferV2.hpp"
 #include "Material.hpp"
 #include "Texture.hpp"
 #include "Shaders/ShaderInterfaces.hpp"
@@ -403,10 +403,10 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
         VertexFormatCustomFixed* vformat = new VertexFormatCustomFixed();
         vformat->SetAttributesNum(attribs_num);
 
-        if(posDecl) vformat->AddVertexAttribute(new VertexAttributeCustom(3, VertexDataTypeFloat::Instance(), IVertexAttribute::ShaderIndex_Position));
-        if(texCoordDecl) vformat->AddVertexAttribute(new VertexAttributeCustom(2, VertexDataTypeFloat::Instance(), IVertexAttribute::ShaderIndex_TexCoord));
-        if(normalDecl) vformat->AddVertexAttribute(new VertexAttributeCustom(3, VertexDataTypeFloat::Instance(), IVertexAttribute::ShaderIndex_Normal));
-        if(vertexColorDecl) vformat->AddVertexAttribute(new VertexAttributeCustom(4, VertexDataTypeFloat::Instance(), IVertexAttribute::ShaderIndex_Color));
+        if(posDecl) vformat->AddVertexAttribute(new VertexAttributeCustom(3, VertexDataTypeFloat::Instance(), IVertexAttribute::SI_Position));
+        if(texCoordDecl) vformat->AddVertexAttribute(new VertexAttributeCustom(2, VertexDataTypeFloat::Instance(), IVertexAttribute::SI_TexCoord));
+        if(normalDecl) vformat->AddVertexAttribute(new VertexAttributeCustom(3, VertexDataTypeFloat::Instance(), IVertexAttribute::SI_Normal));
+        if(vertexColorDecl) vformat->AddVertexAttribute(new VertexAttributeCustom(4, VertexDataTypeFloat::Instance(), IVertexAttribute::SI_Color));
 
         if(log) MR::Log::LogString("Decls " + std::to_string(declarations ), MR_LOG_LEVEL_INFO);
 

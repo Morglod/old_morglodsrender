@@ -54,6 +54,8 @@ namespace MR{
 
         /** EXTENSIONS **/
         bool IsDirectStateAccessSupported();
+        bool IsVertexAttribBindingSupported();
+        int GetGeometryStreamsNum();
 
         /** GL INFO **/
         bool CatchError(std::string* errorOutput, int* glCode); //return true on error and print error's description in string; errorOutput and glCode can be NULL

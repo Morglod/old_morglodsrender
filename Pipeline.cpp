@@ -5,7 +5,7 @@
 #include "Texture.hpp"
 #include "RenderSystem.hpp"
 #include "Material.hpp"
-#include "Buffers/GeometryBufferV2.hpp"
+#include "Geometry/GeometryBufferV2.hpp"
 
 #include "Shaders/ShaderBuilder.hpp"
 

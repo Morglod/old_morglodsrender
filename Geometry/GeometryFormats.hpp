@@ -5,6 +5,7 @@
 
 #include "../Types.hpp"
 #include "../Config.hpp"
+#include "GeometryInterfaces.hpp"
 
 #ifndef glm_glm
 #   include <glm/glm.hpp>
@@ -21,12 +22,6 @@ class GeometryBuffer;
 
 class VertexFormatCustom;
 class VertexFormatCustomFixed;
-
-class IVertexDataType : public Comparable<IVertexDataType*> {
-public:
-    virtual unsigned char Size() = 0; //one element of this data type size in bytes
-    virtual unsigned int GPUDataType() = 0; //returns opengl data type
-};
 
 class VertexDataTypeInt : public IVertexDataType {
 public:
@@ -87,32 +82,17 @@ protected:
     unsigned char _size;
 };
 
-class IVertexAttribute : public Comparable<IVertexAttribute*> {
-public:
-    enum ShaderIndex {
-        ShaderIndex_Position = MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION,
-        ShaderIndex_Normal = MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION,
-        ShaderIndex_Color = MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION,
-        ShaderIndex_TexCoord = MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION
-    };
-
-    virtual uint64_t Size() = 0; //one attrib size in bytes
-    virtual unsigned char ElementsNum() = 0; //num of elements used in attribute
-    virtual IVertexDataType* DataType() = 0; //returns it's data type
-    virtual unsigned int ShaderIndex() = 0;
-};
-
 class VertexAttributePos3F : public IVertexAttribute {
 public:
     inline uint64_t Size() override {return ((uint64_t)VertexDataTypeFloat::Instance()->Size()) * ((uint64_t)3);}
     inline unsigned char ElementsNum() override { return 3; }
     inline IVertexDataType* DataType() override { return VertexDataTypeFloat::Instance();}
-    inline unsigned int ShaderIndex() override { return IVertexAttribute::ShaderIndex_Position; }
+    inline unsigned int ShaderIndex() override { return IVertexAttribute::SI_Position; }
 
     inline bool Equal(IVertexAttribute* va) override {
         if((((uint64_t)VertexDataTypeFloat::Instance()->Size()) * ((uint64_t)3)) != va->Size()) return false;
         if(3 != va->ElementsNum()) return false;
-        if(IVertexAttribute::ShaderIndex_Position != va->ShaderIndex()) return false;
+        if(IVertexAttribute::SI_Position != va->ShaderIndex()) return false;
 
         return VertexDataTypeFloat::Instance()->Equal(va->DataType());
     }
@@ -139,20 +119,6 @@ protected:
     IVertexDataType* _data_type;
     uint64_t _size;
     unsigned int _shaderIndex;
-};
-
-class IVertexFormat : public Comparable<IVertexFormat*> {
-    friend class GeometryBuffer;
-    friend class VertexFormatCustom;
-    friend class VertexFormatCustomFixed;
-public:
-    virtual size_t Size() = 0; //one vertex size in bytes
-    virtual void AddVertexAttribute(IVertexAttribute* a) = 0;
-    virtual bool Bind() = 0;
-    virtual void UnBind() = 0;
-protected:
-    virtual size_t _Attributes(IVertexAttribute*** dst) = 0;
-    virtual size_t _Offsets(uint64_t** dst) = 0; //offsets of each attributes from starting point of vertex in bytes
 };
 
 class VertexFormatCustom : public IVertexFormat {
@@ -200,16 +166,6 @@ protected:
     size_t _size;
     size_t _nextIndex;
     size_t _attribsNum;
-};
-
-class IIndexFormat : public Comparable<IIndexFormat*> {
-    friend class GeometryBuffer;
-public:
-    virtual size_t Size() = 0; //one index size in bytes
-    virtual void SetDataType(IVertexDataType* dataType) = 0;
-    virtual IVertexDataType* GetDataType() = 0;
-    virtual bool Bind() = 0;
-    virtual void UnBind() = 0;
 };
 
 class IndexFormatCustom : public IIndexFormat {

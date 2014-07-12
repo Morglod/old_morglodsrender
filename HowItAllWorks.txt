@@ -1,0 +1,11 @@
+IRenderSystem Ц »нтерфейс дл€ работы с binding'ом gl объектов, инициализацией и менеджментом элементов на низком уровне.
+
+IRenderWindow Ц работа с OpenGL контесктом и окном. »нициализируетс€ IrenderSystem.
+
+IPipeline Ц предоставл€ет доступ приложени€ к окну, контексту, служит Ђпрослойкойї между приложением и RenderSystem.
+
+IRenderingPipeline Ц IPipeline + работа со сценой
+
+ForwardRenderingPipeline - forward rendering
+DefferedRenderingPipeline - рендер в gbuffer и композитинг
+

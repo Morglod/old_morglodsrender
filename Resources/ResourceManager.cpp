@@ -1,6 +1,6 @@
 #include "ResourceManager.hpp"
-#include "Utils/Log.hpp"
-#include "GL/Context.hpp"
+#include "../Utils/Log.hpp"
+#include "../GL/Context.hpp"
 #include <GLFW/glfw3.h>
 
 std::string MR::DirectoryFromFilePath(const std::string& file){

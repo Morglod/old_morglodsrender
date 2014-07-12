@@ -1,6 +1,6 @@
 #include "UI.hpp"
 
-#include "Buffers/GeometryBufferV2.hpp"
+#include "Geometry/GeometryBufferV2.hpp"
 #include "Shaders/ShaderInterfaces.hpp"
 #include "RenderSystem.hpp"
 #include "RenderWindow.hpp"

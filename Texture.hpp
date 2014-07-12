@@ -4,7 +4,7 @@
 #define _MR_TEXTURE_H_
 
 #include "Config.hpp"
-#include "ResourceManager.hpp"
+#include "Resources/ResourceManager.hpp"
 #include "Utils/Log.hpp"
 #include "Types.hpp"
 #include "Utils/Events.hpp"

@@ -1,5 +1,6 @@
 #include "MachineInfo.hpp"
 #include "Utils/Log.hpp"
+#include "GL/Context.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
@@ -190,12 +191,25 @@ void MR::MachineInfo::PrintInfo() {
 
 bool MR::MachineInfo::FeatureNV_GPUPTR(){
     static bool support = (gpu_vendor() == MR::MachineInfo::GPUVendor::Nvidia) && (__glewGetBufferParameterui64vNV);
-    return false;//support;
+    return support;
 }
 
 bool MR::MachineInfo::IsDirectStateAccessSupported(){
     static bool state = (__glewNamedBufferDataEXT);
     return state;
+}
+
+bool MR::MachineInfo::IsVertexAttribBindingSupported() {
+    static bool state = MR::GL::GetCurrent()->ExtensionSupported("ARB_vertex_attrib_binding");
+    return state;
+}
+
+int MR::MachineInfo::GetGeometryStreamsNum() {
+    static int num = -10;
+    if(num == -10) {
+        glGetIntegerv(GL_MAX_VERTEX_ATTRIB_BINDINGS, &num);
+    }
+    return num;
 }
 
 bool MR::MachineInfo::CatchError(std::string* errorOutput, int * glCode){

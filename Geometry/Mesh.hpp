@@ -3,7 +3,7 @@
 #ifndef _MR_MESH_H_
 #define _MR_MESH_H_
 
-#include "ResourceManager.hpp"
+#include "../Resources/ResourceManager.hpp"
 
 namespace MR {
 class IGeometry;

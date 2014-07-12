@@ -3,7 +3,7 @@
 #include "Viewport.hpp"
 #include "MachineInfo.hpp"
 #include "Texture.hpp"
-#include "Buffers/GeometryBufferV2.hpp"
+#include "Geometry/GeometryBufferV2.hpp"
 #include "Scene/Camera.hpp"
 #include "Material.hpp"
 #include "Scene/Entity.hpp"

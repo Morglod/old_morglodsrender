@@ -1,9 +1,64 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Release" />
-	<File name="Model.hpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Material.hpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="118" topLine="0" />
+			<Cursor1 position="4325" topLine="131" />
+		</Cursor>
+	</File>
+	<File name="Viewport.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="273" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Config.hpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="480" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Resources\ResourceManager.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="155" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Shaders\ShaderObjects.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="9576" topLine="236" />
+		</Cursor>
+	</File>
+	<File name="Viewport.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="395" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Shaders\ShaderBuilder.cpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="12607" topLine="243" />
+		</Cursor>
+	</File>
+	<File name="Anim.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="691" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Shaders\ShaderObjects.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2319" topLine="48" />
+		</Cursor>
+	</File>
+	<File name="Voxels\SVO.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="43" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Shaders\ShaderBuilder.hpp" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="176" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="GL\GLObject.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="797" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="Shaders\ShaderResource.hpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -11,9 +66,9 @@
 			<Cursor1 position="602" topLine="1" />
 		</Cursor>
 	</File>
-	<File name="Shaders\ShaderCompiler.hpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Model.cpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="2777" topLine="58" />
+			<Cursor1 position="16753" topLine="386" />
 		</Cursor>
 	</File>
 	<File name="Voxels\SVO.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -21,9 +76,14 @@
 			<Cursor1 position="441" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="MorglodsRender.hpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Shaders\ShaderCompiler.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="561" topLine="6" />
+			<Cursor1 position="9649" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Geometry\GeometryFormats.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2907" topLine="70" />
 		</Cursor>
 	</File>
 	<File name="Shaders\ShaderUniforms.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -31,54 +91,14 @@
 			<Cursor1 position="466" topLine="15" />
 		</Cursor>
 	</File>
-	<File name="GL\Context.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Model.hpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="278" topLine="0" />
+			<Cursor1 position="192" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="Shaders\ShaderInterfaces.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Shaders\ShaderCompiler.hpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="928" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="Pipeline.cpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2748" topLine="60" />
-		</Cursor>
-	</File>
-	<File name="Shaders\ShaderUniforms.hpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="729" topLine="9" />
-		</Cursor>
-	</File>
-	<File name="GL\GLObject.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="713" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="Pipeline.hpp" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="233" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="SimpleApp.hpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1730" topLine="40" />
-		</Cursor>
-	</File>
-	<File name="Boxes.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="224" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="PluginSystem.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="281" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="Texture.cpp" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="30734" topLine="722" />
+			<Cursor1 position="2777" topLine="58" />
 		</Cursor>
 	</File>
 	<File name="Anim.hpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -86,24 +106,54 @@
 			<Cursor1 position="480" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="PluginSystem.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Shaders\ShaderUniforms.hpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="150" topLine="0" />
+			<Cursor1 position="729" topLine="9" />
+		</Cursor>
+	</File>
+	<File name="MorglodsRender.hpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="895" topLine="5" />
+		</Cursor>
+	</File>
+	<File name="Shaders\ShaderInterfaces.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="928" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="SimpleApp.hpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1730" topLine="40" />
+		</Cursor>
+	</File>
+	<File name="Pipeline.cpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="203" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Shaders\ShaderInterfaces.hpp" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2080" topLine="69" />
+		</Cursor>
+	</File>
+	<File name="Texture.cpp" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="30734" topLine="722" />
+		</Cursor>
+	</File>
+	<File name="Pipeline.hpp" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1597" topLine="47" />
 		</Cursor>
 	</File>
 	<File name="Texture.hpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="24309" topLine="520" />
+			<Cursor1 position="180" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="GL\Context.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="PluginSystem.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="291" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="RenderSystem.cpp" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="16612" topLine="402" />
+			<Cursor1 position="281" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="Threads.cpp" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -111,9 +161,14 @@
 			<Cursor1 position="2616" topLine="93" />
 		</Cursor>
 	</File>
-	<File name="RenderSystem.hpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="PluginSystem.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="3101" topLine="76" />
+			<Cursor1 position="150" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Geometry\GeometryStreams.cpp" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="273" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="Threads.hpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -121,14 +176,9 @@
 			<Cursor1 position="1326" topLine="49" />
 		</Cursor>
 	</File>
-	<File name="EmptyPlugin.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="RenderSystem.cpp" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="103" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="RenderTarget.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="3571" topLine="54" />
+			<Cursor1 position="122" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="Types.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -136,14 +186,19 @@
 			<Cursor1 position="1073" topLine="17" />
 		</Cursor>
 	</File>
-	<File name="Buffers\GeometryBufferV2.cpp" open="1" top="1" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="RenderSystem.hpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="14647" topLine="369" />
+			<Cursor1 position="5711" topLine="74" />
 		</Cursor>
 	</File>
-	<File name="RenderTarget.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Geometry\GeometryStreams.hpp" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="454" topLine="28" />
+			<Cursor1 position="744" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Geometry\Mesh.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="579" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="Types.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -151,19 +206,29 @@
 			<Cursor1 position="4665" topLine="179" />
 		</Cursor>
 	</File>
-	<File name="RenderWindow.cpp" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="RenderTarget.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="298" topLine="0" />
+			<Cursor1 position="3571" topLine="54" />
+		</Cursor>
+	</File>
+	<File name="Geometry\GeometryInterfaces.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2466" topLine="61" />
+		</Cursor>
+	</File>
+	<File name="Geometry\Mesh.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="105" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="UI.cpp" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="6880" topLine="161" />
+			<Cursor1 position="33" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="RenderWindow.hpp" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="RenderTarget.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="3247" topLine="99" />
+			<Cursor1 position="454" topLine="28" />
 		</Cursor>
 	</File>
 	<File name="UI.hpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -171,29 +236,34 @@
 			<Cursor1 position="4070" topLine="109" />
 		</Cursor>
 	</File>
-	<File name="ResourceManager.cpp" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="RenderWindow.cpp" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1992" topLine="48" />
+			<Cursor1 position="298" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="ResourceManager.hpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="RenderWindow.hpp" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="2670" topLine="83" />
+			<Cursor1 position="3247" topLine="99" />
 		</Cursor>
 	</File>
-	<File name="Scene\Camera.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Resources\Importer.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="3278" topLine="82" />
+			<Cursor1 position="38" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Resources\ResourceManager.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="73" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="Utils\Containers.hpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="616" topLine="0" />
+			<Cursor1 position="144" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="Scene\Entity.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="GL\GLObject.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1167" topLine="23" />
+			<Cursor1 position="713" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="Utils\Events.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -201,19 +271,44 @@
 			<Cursor1 position="134" topLine="0" />
 		</Cursor>
 	</File>
+	<File name="Scene\Camera.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3278" topLine="82" />
+		</Cursor>
+	</File>
+	<File name="GL\Context.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="278" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Scene\Entity.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1167" topLine="23" />
+		</Cursor>
+	</File>
+	<File name="Boxes.hpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="671" topLine="6" />
+		</Cursor>
+	</File>
 	<File name="Scene\Entity.hpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="901" topLine="19" />
 		</Cursor>
 	</File>
-	<File name="Importer.cpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Utils\FilesIO.cpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="41" topLine="0" />
+			<Cursor1 position="928" topLine="38" />
 		</Cursor>
 	</File>
-	<File name="Importer.hpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Geometry\GeometryBufferV2.hpp" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="3523" topLine="135" />
+			<Cursor1 position="619" topLine="17" />
+		</Cursor>
+	</File>
+	<File name="Utils\FilesIO.hpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="498" topLine="6" />
 		</Cursor>
 	</File>
 	<File name="Scene\Light.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -221,9 +316,9 @@
 			<Cursor1 position="2632" topLine="61" />
 		</Cursor>
 	</File>
-	<File name="Utils\FilesIO.cpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Boxes.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="928" topLine="38" />
+			<Cursor1 position="224" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="InstancedGeometry.hpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -236,19 +331,29 @@
 			<Cursor1 position="3417" topLine="88" />
 		</Cursor>
 	</File>
-	<File name="Utils\FilesIO.hpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="EmptyPlugin.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="498" topLine="6" />
+			<Cursor1 position="103" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="MachineInfo.cpp" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="MachineInfo.cpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="6513" topLine="167" />
+			<Cursor1 position="6902" topLine="180" />
+		</Cursor>
+	</File>
+	<File name="GL\Context.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="291" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="MachineInfo.hpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1157" topLine="29" />
+			<Cursor1 position="1406" topLine="29" />
+		</Cursor>
+	</File>
+	<File name="Utils\Singleton.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="567" topLine="8" />
 		</Cursor>
 	</File>
 	<File name="Scene\SceneInterfaces.hpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -256,104 +361,14 @@
 			<Cursor1 position="440" topLine="0" />
 		</Cursor>
 	</File>
+	<File name="Geometry\GeometryBufferV2.cpp" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="931" topLine="0" />
+		</Cursor>
+	</File>
 	<File name="Material.cpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="4208" topLine="89" />
-		</Cursor>
-	</File>
-	<File name="Config.hpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="480" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="Utils\Singleton.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="444" topLine="13" />
-		</Cursor>
-	</File>
-	<File name="Material.hpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="4325" topLine="131" />
-		</Cursor>
-	</File>
-	<File name="GL\GLObject.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="797" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="Mesh.cpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="284" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="Shaders\ShaderInterfaces.hpp" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2080" topLine="69" />
-		</Cursor>
-	</File>
-	<File name="Buffers\GeometryBufferV2.hpp" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="7724" topLine="200" />
-		</Cursor>
-	</File>
-	<File name="Shaders\ShaderBuilder.cpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="12607" topLine="243" />
-		</Cursor>
-	</File>
-	<File name="Viewport.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="273" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="Mesh.hpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1013" topLine="5" />
-		</Cursor>
-	</File>
-	<File name="Shaders\ShaderObjects.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="9576" topLine="236" />
-		</Cursor>
-	</File>
-	<File name="Anim.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="691" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="Shaders\ShaderBuilder.hpp" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="176" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="Viewport.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="395" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="Model.cpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="18940" topLine="466" />
-		</Cursor>
-	</File>
-	<File name="Shaders\ShaderObjects.hpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2319" topLine="48" />
-		</Cursor>
-	</File>
-	<File name="Boxes.hpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="671" topLine="6" />
-		</Cursor>
-	</File>
-	<File name="Shaders\ShaderCompiler.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="9649" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="Voxels\SVO.cpp" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="43" topLine="0" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>

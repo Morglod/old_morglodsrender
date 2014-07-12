@@ -3,9 +3,9 @@
 #ifndef _MR_RESOURCE_MANAGER_H_
 #define _MR_RESOURCE_MANAGER_H_
 
-#include "Config.hpp"
-#include "Utils/Events.hpp"
-#include "Threads.hpp"
+#include "../Config.hpp"
+#include "../Utils/Events.hpp"
+#include "../Threads.hpp"
 
 #include <queue>
 
