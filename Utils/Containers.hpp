@@ -3,7 +3,9 @@
 #ifndef _MR_CONTAINERS_H_
 #define _MR_CONTAINERS_H_
 
+#include "Threads.hpp"
 #include <stddef.h>
+#include <queue>
 
 namespace MR {
 
@@ -14,11 +16,47 @@ public:
     inline size_t GetNum() { return _el_num; }
     inline T& At(const size_t& i) { return _ar[i]; }
     inline T* AtPtr(const size_t& i) { return &_ar[i]; }
+    inline void DeleteFlag(const bool& d) { _delete = d; }
 
     StaticArray() : _ar(0), _el_num(0), _delete(false) {}
     StaticArray(T* ar, const size_t& num) : _ar(ar), _el_num(num), _delete(false) {}
     StaticArray(T* ar, const size_t& num, const bool& del) : _ar(ar), _el_num(num), _delete(del) {}
-    ~StaticArray() { if(_delete && (_ar)) delete [] _ar; }
+    ~StaticArray() {
+        if(_delete && _ar) {
+            delete [] _ar;
+            _ar = 0;
+        }
+    }
+
+    StaticArray(StaticArray<T> const& a) : _ar(new T [a._el_num]), _el_num(a._el_num), _delete(a._delete) {
+        for(size_t i = 0; i < _el_num; ++i){
+            _ar[i] = a._ar[i];
+        }
+    }
+
+    inline MR::StaticArray<T>& operator = (MR::StaticArray<T> const& ar) {
+        if(this == &ar) {
+            return *this;
+        }
+        _ar = new T [ar._el_num];
+        _delete = ar._delete;
+        _el_num = ar._el_num;
+        for(size_t i = 0; i < _el_num; ++i){
+            _ar[i] = ar._ar[i];
+        }
+        return *this;
+    }
+
+    inline MR::StaticArray<T>& operator = (MR::StaticArray<T> & ar) {
+        if(this == &ar) {
+            return *this;
+        }
+        _ar = ar._ar;
+        _delete = ar._delete;
+        _el_num = ar._el_num;
+        ar._delete = false;
+        return *this;
+    }
 protected:
     T* _ar = 0;
     size_t _el_num = 0;
@@ -103,6 +141,132 @@ public:
     ~PriorityCache() {}
 protected:
     StaticArray<PriorityCache<KeyT, ValueT>::CacheElement> _queue;
+};
+
+template< typename elementT >
+class ThreadSafeQueue {
+public:
+    void Push(const elementT& e) {
+        _mutex.Lock();
+        _q.push(e);
+        _mutex.UnLock();
+    }
+
+    bool Pop(elementT& e) {
+        _mutex.Lock();
+        if(_q.empty()) return false;
+        e = _q.front();
+        _q.pop();
+        _mutex.UnLock();
+        return true;
+    }
+
+    bool GetFront(elementT& e) {
+        _mutex.Lock();
+        if(_q.empty()) return false;
+        e = _q.front();
+        _q.pop();
+        _mutex.UnLock();
+        return true;
+    }
+
+    bool IsEmpty() {
+        _mutex.Lock();
+        bool b = _q.empty();
+        _mutex.UnLock();
+        return b;
+    }
+
+    size_t GetSize() {
+        _mutex.Lock();
+        size_t n = _q.size();
+        _mutex.UnLock();
+        return n;
+    }
+
+    ThreadSafeQueue() : _mutex(), _q() {}
+
+    ThreadSafeQueue(const ThreadSafeQueue& c) {
+        c._mutex.Lock();
+        _q = c._q;
+        c._mutex.UnLock();
+    }
+
+    virtual ~ThreadSafeQueue() {
+        _mutex.Lock();
+        while(!_q.empty()) { _q.pop(); }
+        _mutex.UnLock();
+    }
+protected:
+    MR::Mutex _mutex;
+    std::queue<elementT> _q;
+};
+
+template<typename keyT, typename valueT, valueT defaultValue>
+class Dictionary {
+public:
+    const valueT DefaultValue = defaultValue;
+
+    inline valueT& operator [] (const keyT& key) {
+        for(size_t i = 0; i < _keys.size(); ++i){
+            if(_keys[i] == key) return _values[i];
+        }
+        _keys.push_back(key);
+        _values.push_back(defaultValue);
+        return _values[_values.size()-1];
+    }
+
+    inline size_t GetNum() {
+        return _keys.size();
+    }
+
+    inline bool ContainKey(const keyT& key) {
+        for(size_t i = 0; i < _keys.size(); ++i){
+            if(_keys[i] == key) return true;
+        }
+        return false;
+    }
+
+    inline void Remove(const keyT& key) {
+        for(size_t i = 0; i < _keys.size(); ++i){
+            if(_keys[i] == key) {
+                _keys.erase(_keys.begin()+i);
+                _values.erase(_values.begin()+i);
+            }
+        }
+    }
+
+    inline void Add(const keyT& key, const valueT& value) {
+        _keys.push_back(key);
+        _values.push_back(value);
+    }
+
+    inline void Clear() {
+        _keys.clear();
+        _values.clear();
+    }
+
+    inline keyT* GetKeysPtr() {
+        return &_keys[0];
+    }
+
+    inline valueT* GetValuesPtr() {
+        return &_values[0];
+    }
+
+    inline keyT& KeyAt(const size_t& i) {
+        return _keys[i];
+    }
+
+    inline valueT& ValueAt(const size_t& i) {
+        return _values[i];
+    }
+
+    Dictionary() {}
+    ~Dictionary() {}
+protected:
+    std::vector<keyT> _keys;
+    std::vector<valueT> _values;
 };
 
 }

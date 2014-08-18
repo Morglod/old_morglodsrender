@@ -1,20 +1,20 @@
 #include "Material.hpp"
-#include "RenderSystem.hpp"
-#include "Texture.hpp"
 #include "Shaders/ShaderInterfaces.hpp"
 #include "Utils/Singleton.hpp"
+#include "RenderManager.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
 #endif
 
-bool MR::MaterialPass::Use(IRenderSystem* rs){
+bool MR::MaterialPass::Use(){
     if( (_flag.always) || (_parent->GetManager()->GetActivedFlag() == _flag.flag) ){
-        rs->UseShaderProgram(_shader);
+        MR::RenderManager * rm = MR::RenderManager::GetInstance();
+        rm->UseShaderProgram(_shader);
 
-        if(_ambient)    rs->BindTexture(_ambient, _ambientUnit);
-        if(_diffuse)    rs->BindTexture(_diffuse, _diffuseUnit);
-        if(_opacity)    rs->BindTexture(_opacity, _opacityUnit);
+        if(_ambient)    rm->BindTexture(_ambient, _ambientUnit);
+        if(_diffuse)    rm->BindTexture(_diffuse, _diffuseUnit);
+        if(_opacity)    rm->BindTexture(_opacity, _opacityUnit);
 
         if(_twoSided)   glDisable(GL_CULL_FACE);
         else            glEnable(GL_CULL_FACE);
@@ -23,11 +23,12 @@ bool MR::MaterialPass::Use(IRenderSystem* rs){
     } else return false;
 }
 
-void MR::MaterialPass::UnUse(IRenderSystem* rs){
-    if(_ambient) rs->UnBindTexture(_ambientUnit);
-    if(_diffuse) rs->UnBindTexture(_diffuseUnit);
-    if(_opacity) rs->UnBindTexture(_opacityUnit);
-    rs->UseShaderProgram(nullptr);
+void MR::MaterialPass::UnUse(){
+    MR::RenderManager * rm = MR::RenderManager::GetInstance();
+    if(_ambient) rm->UnBindTexture(_ambientUnit);
+    if(_diffuse) rm->UnBindTexture(_diffuseUnit);
+    if(_opacity) rm->UnBindTexture(_opacityUnit);
+    rm->UseShaderProgram(nullptr);
 }
 
 void MR::MaterialPass::SetShader(IShaderProgram* sh) {
@@ -114,12 +115,4 @@ void MR::Material::SetTwoSided(const bool& ts) {
 
 MR::Material::Material(MaterialManager* mgr, const std::string& Name) :
     name(Name), manager(mgr) {
-}
-
-namespace MR {
-SingletonVar(MaterialManager, new MaterialManager());
-
-MR::MaterialManager* MaterialManager::Instance() {
-    return SingletonVarName(MaterialManager).Get();
-}
 }

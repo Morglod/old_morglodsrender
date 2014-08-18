@@ -22,7 +22,8 @@ public:
     void Detach(IShaderProgram* program) override;
     StaticArray<IShaderProgram*> GetConnectedPrograms() override;
 
-    void Release() override;
+    //ObjectHandle
+    void Destroy() override;
 
     Shader(const unsigned int& gpu_handle, const IShader::Type& type);
     virtual ~Shader();
@@ -58,10 +59,16 @@ public:
     size_t GetShaderUniformsPtr(IShaderUniform*** list_ptr) override;
     StaticArray<ShaderUniformInfo> GetCompiledUniforms() override;
 
-    inline const unsigned int& GetGPUHandle() override { return _program; }
-    const MR::IShaderProgram::Features& GetFeatures() override { return _features; }
+    inline unsigned int GetGPUHandle() override { return _program; }
+    inline MR::IShaderProgram::Features GetFeatures() override { return _features; }
 
-    void Release() override;
+    void UpdateUniforms() override;
+
+    //Usable
+    bool Use() override;
+
+    //ObjectHandle
+    void Destroy() override;
 
     ShaderProgram(const unsigned int& gpu_program, const MR::IShaderProgram::Features& features);
     virtual ~ShaderProgram();

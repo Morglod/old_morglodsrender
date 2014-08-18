@@ -1,46 +1,22 @@
 #include "Mesh.hpp"
 #include "../Utils/Log.hpp"
-#include "../Geometry/GeometryBufferV2.hpp"
-#include "../Material.hpp"
+#include "../Materials/MaterialInterfaces.hpp"
+#include "GeometryInterfaces.hpp"
+#include "../Utils/Debug.hpp"
 
-void MR::Mesh::SetResourceFreeState(const bool& state) {
-    if(_res_free_state != state) {
-        _res_free_state = state;
-        OnResourceFreeStateChanged(this, state);
+void MR::Mesh::Draw() {
+    auto passes = _mat->GetAllPasses();
+    for(size_t im = 0; im < passes.GetNum(); ++im) {
+        passes.At(im)->Use();
+        for(size_t i = 0; i < _geom.GetNum(); ++i){
+            _geom.GetRaw()[i]->Draw();
+        }
     }
 }
 
-void MR::Mesh::SetMaterial(Material* m) {
-    if(material != m) {
-        material = m;
-        OnMaterialChanged(this, m);
-    }
-}
-
-void MR::Mesh::SetGeoms(IGeometry** gb, const unsigned int & n) {
-    if( (geoms != gb) || (geoms_num != n) ) {
-        geoms = gb;
-        geoms_num = n;
-        OnGeometryChanged(this, gb, n);
-    }
-}
-
-MR::Mesh::Mesh(IGeometry** gb, unsigned int nm, Material* m) :
-    geoms(gb), geoms_num(nm), material(m), _res_free_state(true) {
+MR::Mesh::Mesh(const StaticArray<IGeometry*>& geom, IMaterial* mat)
+ : _geom(geom), _mat(mat) {
 }
 
 MR::Mesh::~Mesh() {
-    if(_res_free_state) {
-        if(geoms) {
-            for(size_t i = 0; i < this->geoms_num; ++i) {
-                delete this->geoms[i];
-            }
-            free(geoms);
-            geoms = nullptr;
-        }
-        if(material) {
-            delete material;
-            material = nullptr;
-        }
-    }
 }

@@ -1,7 +1,3 @@
-IRenderSystem – Интерфейс для работы с binding'ом gl объектов, инициализацией и менеджментом элементов на низком уровне.
-
-IRenderWindow – работа с OpenGL контесктом и окном. Инициализируется IrenderSystem.
-
 IPipeline – предоставляет доступ приложения к окну, контексту, служит «прослойкой» между приложением и RenderSystem.
 
 IRenderingPipeline – IPipeline + работа со сценой
@@ -9,3 +5,11 @@ IRenderingPipeline – IPipeline + работа со сценой
 ForwardRenderingPipeline - forward rendering
 DefferedRenderingPipeline - рендер в gbuffer и композитинг
 
+Каждый класс GL объекта, имеет минимальное кол-во связей.
+Вся работа происходит внутри него.
+
+Каждый модуль (класс) самодостаточный с минимальным кол-вом связей
+
+-BAD-
+RenderManager связывает все элементы вместе.
+Работа с объектами должна осуществляться через него.

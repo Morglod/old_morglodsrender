@@ -1,5 +1,4 @@
 #include "RenderSystem.hpp"
-#include "RenderWindow.hpp"
 #include "Viewport.hpp"
 #include "MachineInfo.hpp"
 #include "Texture.hpp"
@@ -14,16 +13,13 @@
 #include "Utils/Log.hpp"
 #include "Scene/Light.hpp"
 #include "Scene/Scene.hpp"
+#include "Context.hpp"
 
 #include <windef.h>
 #include <wingdi.h>
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
-#endif
-
-#ifndef _glfw3_h_
-#   include <GLFW\glfw3.h>
 #endif
 
 #ifndef _GLIBCXX_VECTOR
@@ -76,31 +72,11 @@ bool AnyRenderSystemAlive(){
 PFNGLBUFFERSTORAGEPROC __glewBufferStorage;
 PFNGLNAMEDBUFFERSTORAGEEXTPROC __glewNamedBufferStorageEXT;
 
-bool RenderSystem::Init(IRenderWindow* window, bool multithreaded) {
-    if(window == nullptr) return false;
+bool RenderSystem::Init(IContext* ctx) {
+    if(ctx == nullptr) return false;
 
     if(!_init){
         outOfMemPtrs.push_back(std::set_new_handler(OutOfMemEvent));
-    }
-
-    if(!_alive){
-        MR::Log::LogString("RenderSystem initialization", MR_LOG_LEVEL_INFO);
-        if(!_glfw){
-            if(!glfwInit()) {
-                MR::Log::LogString("glfw initialization failed", MR_LOG_LEVEL_ERROR);
-                _glfw = false;
-                return false;
-            } else {
-                MR::Log::LogString("glfw ok", MR_LOG_LEVEL_INFO);
-                _glfw = true;
-            }
-        }
-        _alive = true;
-    }
-
-    if(!window->Init(multithreaded)) {
-        MR::Log::LogString("Window initialization failed", MR_LOG_LEVEL_ERROR);
-        return false;
     }
 
     if(!_glew){
@@ -108,6 +84,7 @@ bool RenderSystem::Init(IRenderWindow* window, bool multithreaded) {
         if(result != GLEW_OK) {
             MR::Log::LogString("glew initialization failed", MR_LOG_LEVEL_ERROR);
             throw std::exception();
+            return false;
         }
         __glewBufferStorage = (PFNGLBUFFERSTORAGEPROC)wglGetProcAddress("glBufferStorage");
         __glewNamedBufferStorageEXT = (PFNGLNAMEDBUFFERSTORAGEEXTPROC)wglGetProcAddress("glNamedBufferStorageEXT");
@@ -122,7 +99,7 @@ bool RenderSystem::Init(IRenderWindow* window, bool multithreaded) {
         _init = true;
     }
 
-    _window = window;
+    _ctx = ctx;
 
     return true;
 }
@@ -136,7 +113,6 @@ void RenderSystem::Shutdown() {
 
     _alive = false;
 
-    glfwTerminate();
     RenderSystemShutdowned(this);
 }
 
@@ -442,7 +418,7 @@ void RenderSystem::DrawEntity(MR::Entity* ent, void* edp) {
 }
 
 RenderSystem::RenderSystem() : MR::IObject(), _init(false), _alive(false), _glew(false), _glfw(false),
-    _viewport(nullptr), _nextFreeUnit(0), _vformat(nullptr), _iformat(nullptr), _cam(nullptr), _shader(nullptr), _useDefaultMaterial(true), _defaultMaterial(nullptr), _renderTarget(nullptr), _poly_mode((IRenderSystem::PolygonMode)GL_FILL), _window(nullptr) {
+    _viewport(nullptr), _nextFreeUnit(0), _vformat(nullptr), _iformat(nullptr), _cam(nullptr), _shader(nullptr), _useDefaultMaterial(true), _defaultMaterial(nullptr), _renderTarget(nullptr), _poly_mode((IRenderSystem::PolygonMode)GL_FILL), _ctx(nullptr) {
 
     RegisterRenderSystem(this);
 }

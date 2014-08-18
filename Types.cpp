@@ -44,7 +44,7 @@ std::string Flags<flag_t>::ToString(){
 }
 
 template<typename flag_t>
-Flags<flag_t>::Flags() : IObject(), _flags() {
+Flags<flag_t>::Flags() : _flags() {
 }
 
 template<typename flag_t>

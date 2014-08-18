@@ -4,6 +4,7 @@
 #define _MR_MATERIAL_H_
 
 #include "Config.hpp"
+#include "Utils/Singleton.hpp"
 
 #ifndef glm_glm
 #   include <glm/glm.hpp>
@@ -41,8 +42,8 @@ public:
 
 class MaterialPass {
 public:
-    virtual bool Use(IRenderSystem* rs); //returns false, if can't use
-    virtual void UnUse(IRenderSystem* rs);
+    virtual bool Use();
+    virtual void UnUse();
 
     inline MaterialFlag GetFlag();
     inline MaterialFlag* GetFlagPtr();
@@ -137,13 +138,10 @@ protected:
     MaterialManager* manager;
 };
 
-class MaterialManager {
+class MaterialManager : public Singleton<MaterialManager> {
 public:
     inline unsigned char GetActivedFlag();
     inline void ActiveFlag(const unsigned char & f);
-
-    static MaterialManager* Instance();
-
 protected:
     unsigned char _flag; //actived flag
 };

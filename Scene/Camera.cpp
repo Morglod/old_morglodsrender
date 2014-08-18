@@ -1,6 +1,7 @@
 #include "Camera.hpp"
 #include "../RenderTarget.hpp"
 #include "../Shaders/ShaderInterfaces.hpp"
+#include "../Config.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>

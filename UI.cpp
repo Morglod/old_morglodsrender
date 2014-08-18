@@ -3,8 +3,8 @@
 #include "Geometry/GeometryBufferV2.hpp"
 #include "Shaders/ShaderInterfaces.hpp"
 #include "RenderSystem.hpp"
-#include "RenderWindow.hpp"
 #include "Utils/Log.hpp"
+#include "Context.hpp"
 
 #include <GL/glew.h>
 #include <glm/gtx/transform.hpp>
@@ -79,16 +79,16 @@ void UIElement::Frame(IRenderSystem* rc, const float& delta){
     if(_visible){
         if(_hover){
             int ww, wh;
-            rc->GetWindow()->GetSize(&ww, &wh);
+            rc->GetContext()->GetSizes(&ww, &wh);
 
             double mousex, mousey;
-            rc->GetWindow()->GetMousePos(&mousex, &mousey);
+            rc->GetContext()->GetMousePos(&mousex, &mousey);
             glm::vec2 mp(mousex / (ww/100.0f), mousey / (wh/100.0f));
 
             if(GetRect().TestPoint(glm::vec2(mp))) {
                 if(!_hover_state) OnMouseHoverStateChanged.Call(this, mp, true);
                 if(_click){
-                    if(rc->GetWindow()->GetMouseButtonDown(0)) {
+                    if(rc->GetContext()->GetMouseButtonDown(0)) {
                         if(!_mouse_down[0])
                             OnMouseHoverDownStateChanged.Call(this, mp, 0, true);
                         _mouse_down[0] = true;
@@ -97,7 +97,7 @@ void UIElement::Frame(IRenderSystem* rc, const float& delta){
                         _mouse_down[0] = false;
                     }
 
-                    if(rc->GetWindow()->GetMouseButtonDown(1)) {
+                    if(rc->GetContext()->GetMouseButtonDown(1)) {
                         if(!_mouse_down[1])
                             OnMouseHoverDownStateChanged.Call(this, mp, 1, true);
                         _mouse_down[1] = true;
@@ -106,7 +106,7 @@ void UIElement::Frame(IRenderSystem* rc, const float& delta){
                         _mouse_down[1] = false;
                     }
 
-                    if(rc->GetWindow()->GetMouseButtonDown(2)) {
+                    if(rc->GetContext()->GetMouseButtonDown(2)) {
                         if(!_mouse_down[2])
                             OnMouseHoverDownStateChanged.Call(this, mp, 2, true);
                         _mouse_down[2] = true;

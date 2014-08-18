@@ -22,8 +22,13 @@ public:
         SUT_Vec3 = 2, //glm::vec3 float[3]
         SUT_Vec4 = 3, //glm::vec4 float[4]
         SUT_Mat4 = 4, //glm::mat4 float[4][4]
-        SUT_Int = 5 //int or sampler2D etc; uniform1i
+        SUT_Int = 5, //int
+        SUT_Sampler1D, //int
+        SUT_Sampler2D, //int
+        SUT_Sampler3D  //int
     };
+
+    static std::string TypeToString(const IShaderUniform::Type& t);
 
     MR::EventListener<IShaderUniform*, void*> OnNewValuePtr;
     MR::EventListener<IShaderUniform*, IShaderProgram*, const int&> OnMapped; //as args (shader program, new uniform location)
@@ -53,7 +58,7 @@ public:
     For shader compilation, use ShaderCompiler
 **/
 
-class IShader : public HandleObject {
+class IShader : public ObjectHandle {
 public:
     enum Type {
         ST_Vertex = 0x8B31,
@@ -76,7 +81,7 @@ public:
     virtual ~IShader() {}
 };
 
-class IShaderProgram : public HandleObject {
+class IShaderProgram : public ObjectHandle, public Usable {
 public:
     class Features {
     public:
@@ -127,8 +132,10 @@ public:
     virtual void DeleteUniform(IShaderUniform* su) = 0;
     virtual IShaderUniform* FindShaderUniform(const std::string& name) = 0;
 
-    virtual const unsigned int& GetGPUHandle() = 0;
-    virtual const Features& GetFeatures() = 0;
+    virtual unsigned int GetGPUHandle() = 0;
+    virtual Features GetFeatures() = 0;
+
+    virtual void UpdateUniforms() = 0;
 
     virtual ~IShaderProgram() {}
 };

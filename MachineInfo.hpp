@@ -9,6 +9,8 @@
 #define MINIMAL_GL_VERSION_MINOR 2
 
 namespace MR{
+class IContext;
+
     namespace MachineInfo{
 
         /** GPU INFO **/
@@ -44,17 +46,20 @@ namespace MR{
         std::string gpu_name();
         std::string gl_extensions_list();
         std::string gl_version_glsl();
-        int total_memory_kb();
-        int current_memory_kb();
+        unsigned int total_memory_kb();
+        unsigned int current_memory_kb();
 
         void PrintInfo();
 
         /** FEATURES **/
-        bool FeatureNV_GPUPTR(); //direct access to gpu's addresses (for vertex buffers)
+        const bool FeatureNV_GPUPTR(); //direct access to gpu's addresses (for vertex buffers)
+        const bool Feature_DrawIndirect();
+        const bool Feautre_DrawIndirect_UseGPUBuffer();
 
         /** EXTENSIONS **/
-        bool IsDirectStateAccessSupported();
-        bool IsVertexAttribBindingSupported();
+        const bool IsDirectStateAccessSupported();
+        const bool IsVertexAttribBindingSupported(IContext* ctx);
+        const bool IsTextureStorageSupported();
         int GetGeometryStreamsNum();
 
         /** GL INFO **/
@@ -62,6 +67,9 @@ namespace MR{
         void ClearError(); //set error status to no_error
         int MaxTextureSize();
         int MaxTextureUnits();
+
+        std::string glsl_version_directive();
+        bool gl_core_profile();
     }
 }
 

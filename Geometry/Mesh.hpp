@@ -3,45 +3,25 @@
 #ifndef _MR_MESH_H_
 #define _MR_MESH_H_
 
-#include "../Resources/ResourceManager.hpp"
+#include "MeshInterfaces.hpp"
 
 namespace MR {
-class IGeometry;
-class Material;
-class Transform;
 
-class Mesh {
+class Mesh : public IMesh {
 public:
-    MR::EventListener<Mesh*, Material*> OnMaterialChanged;
-    MR::EventListener<Mesh*, IGeometry**, unsigned int> OnGeometryChanged;
-    MR::EventListener<Mesh*, const bool&> OnResourceFreeStateChanged;
+    void SetGeometry(StaticArray<IGeometry*> & geom) override { _geom = geom; OnGeometryChanged(this, geom); }
+    inline StaticArray<IGeometry*> GetGeometry() override { return _geom; }
 
-    /** If true, resource data will be destroyed after unloading/deleting resource
-    *  For example geometry buffers after unloading/deleting Mesh resource
-    *  True by default
-    */
-    virtual void SetResourceFreeState(const bool& state);
+    void SetMaterial(IMaterial* m) override { _mat = m; OnMaterialChanged(this, m); }
+    inline IMaterial* GetMaterial() override { return _mat; }
 
-    void SetMaterial(Material* m);
-    void SetGeoms(IGeometry** gb, const unsigned int & n);
+    void Draw() override;
 
-    inline IGeometry** GetGeoms(){ return geoms; }
-    inline unsigned int GetGeomNum(){ return geoms_num; }
-
-    inline Material* GetMaterial(){ return material; }
-
-    /*  gb - array of pointers to Geometry
-    */
-    Mesh(IGeometry** gb, unsigned int nm, Material* m);
+    Mesh(const StaticArray<IGeometry*>& geom, IMaterial* mat);
     virtual ~Mesh();
-
 protected:
-    IGeometry** geoms = nullptr; //array of pointers to Geometry
-    unsigned int geoms_num;
-
-    Material* material = nullptr;
-
-    bool _res_free_state;
+    StaticArray<IGeometry*> _geom;
+    IMaterial* _mat;
 };
 
 }

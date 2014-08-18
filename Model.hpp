@@ -7,6 +7,7 @@
 #include "Resources/ResourceManager.hpp"
 #include "Utils/Events.hpp"
 #include "Boxes.hpp"
+#include "Utils/Singleton.hpp"
 
 namespace MR{
 
@@ -75,16 +76,13 @@ public:
     static ModelFile* ImportModelFile(std::string file, bool log, const ImportSettings& settings = ImportSettings());
 };
 
-class ModelManager : public virtual ResourceManager {
+class ModelManager : public virtual ResourceManager, public Singleton<ModelManager> {
 public:
     virtual Resource* Create(const std::string& name, const std::string& source);
     inline Model* NeedModel(const std::string& source) { return dynamic_cast<Model*>(Need(source)); }
 
     ModelManager() : ResourceManager() {}
     virtual ~ModelManager() {}
-
-    static ModelManager* Instance();
-    static void DestroyInstance();
 };
 
 }

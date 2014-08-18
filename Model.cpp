@@ -1,12 +1,12 @@
 #include "Model.hpp"
 #include "Utils/Log.hpp"
 #include "Geometry/GeometryBufferV2.hpp"
-#include "Material.hpp"
-#include "Texture.hpp"
+#include "Materials/Material.hpp"
 #include "Shaders/ShaderInterfaces.hpp"
 #include "Shaders/ShaderBuilder.hpp"
-#include "GL/Context.hpp"
 #include "Utils/Singleton.hpp"
+#include "Textures/TextureResource.hpp"
+#include "Textures/TextureSettings.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
@@ -85,16 +85,6 @@ Resource* ModelManager::Create(const std::string& name, const std::string& sourc
     Model * m = new Model(dynamic_cast<MR::ResourceManager*>(this), name, source);
     this->_resources.push_back(m);
     return m;
-}
-
-SingletonVar(ModelManager, new ModelManager());
-
-ModelManager* ModelManager::Instance() {
-    return SingletonVarName(ModelManager).Get();
-}
-
-void ModelManager::DestroyInstance() {
-    SingletonVarName(ModelManager).Destroy();
 }
 
 ModelFile::ModelFile() : meshes(nullptr), meshes_num(0) {}
@@ -249,21 +239,20 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
             textures.push_back(TextureContainer(textureFile, texType, wrapModeU, wrapModeV));
         }
 
-        MR::Material* matPtr = new MR::Material(MR::MaterialManager::Instance(), materialName);
-        MR::MaterialPass* matPassPtr = matPtr->CreatePass();
-        MR::MaterialPass* matPassPtr_rtt = matPtr->CreatePass();
-        *(matPassPtr_rtt->GetFlagPtr()) = MaterialFlag::ToTexture();
+        MR::Material* matPtr = new MR::Material();
+        MR::IMaterialPass* matPassPtr = matPtr->CreatePass(MR::MaterialFlag::Default());
+        MR::IMaterialPass* matPassPtr_rtt = matPtr->CreatePass(MR::MaterialFlag::ToTexture());
         for_meshes.push_back(MeshContainer(matPtr));
 
         MR::IShaderProgram::Features shaderRequest;
 
         for(auto it = textures.begin(); it != textures.end(); ++it){
-            MR::Texture* tex = nullptr;
+            MR::TextureResource* tex = nullptr;
             if( (it->type != 1) && (it->type != 2) && (it->type != 9) ) continue;
             if(!isettings.ambientTextures && (it->type == 1)) continue;
             if(it->file != "") {
 
-                tex = dynamic_cast<MR::Texture*>(MR::TextureManager::Instance()->Need( MR::DirectoryFromFilePath(file) + "/" + it->file ));
+                tex = MR::TextureManager::GetInstance()->NeedTexture( MR::DirectoryFromFilePath(file) + "/" + it->file );
                 GLint wmT = GL_CLAMP_TO_EDGE, wmS = GL_CLAMP_TO_EDGE;
                 switch(it->wrapModeU) {
                 case 1: //clamp
@@ -301,25 +290,31 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
 
                 switch(it->type){
                 case 1: //ambient
-                    matPtr->SetAmbientTexture(tex);
+                    matPtr->SetTexture(MR::MaterialFlag::Default(), MR::IMaterialPass::TT_Emission, tex);
+                    matPtr->SetTexture(MR::MaterialFlag::ToTexture(), MR::IMaterialPass::TT_Emission, tex);
                     shaderRequest.ambient = true;
                     break;
                 case 2: //diffuse
-                    matPtr->SetDiffuseTexture(tex);
+                    matPtr->SetTexture(MR::MaterialFlag::Default(), MR::IMaterialPass::TT_Albedo, tex);
+                    matPtr->SetTexture(MR::MaterialFlag::ToTexture(), MR::IMaterialPass::TT_Albedo, tex);
                     shaderRequest.diffuse = true;
                     break;
                 case 9: //opacity
-                    matPtr->SetOpacityTexture(tex);
+                    matPtr->SetTexture(MR::MaterialFlag::Default(), MR::IMaterialPass::TT_OpacityMask, tex);
+                    matPtr->SetTexture(MR::MaterialFlag::ToTexture(), MR::IMaterialPass::TT_OpacityMask, tex);
                     shaderRequest.opacity = true;
                     break;
                 }
             }
         }
 
-        matPassPtr->SetShader( MR::ShaderBuilder::Need(shaderRequest) );
+        MR::ShaderBuilder::Params params;
+        params.features = shaderRequest;
+
+        matPassPtr->SetShaderProgram( MR::ShaderBuilder::Need(params) );
         shaderRequest.toRenderTarget = true;
         shaderRequest.defferedRendering = true;
-        matPassPtr_rtt->SetShader( MR::ShaderBuilder::Need(shaderRequest) );
+        matPassPtr_rtt->SetShaderProgram( MR::ShaderBuilder::Need(params) );
     }
 
     glm::vec3 MinPoint, MaxPoint;
@@ -403,10 +398,10 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
         VertexFormatCustomFixed* vformat = new VertexFormatCustomFixed();
         vformat->SetAttributesNum(attribs_num);
 
-        if(posDecl) vformat->AddVertexAttribute(new VertexAttributeCustom(3, VertexDataTypeFloat::Instance(), IVertexAttribute::SI_Position));
-        if(texCoordDecl) vformat->AddVertexAttribute(new VertexAttributeCustom(2, VertexDataTypeFloat::Instance(), IVertexAttribute::SI_TexCoord));
-        if(normalDecl) vformat->AddVertexAttribute(new VertexAttributeCustom(3, VertexDataTypeFloat::Instance(), IVertexAttribute::SI_Normal));
-        if(vertexColorDecl) vformat->AddVertexAttribute(new VertexAttributeCustom(4, VertexDataTypeFloat::Instance(), IVertexAttribute::SI_Color));
+        if(posDecl) vformat->AddVertexAttribute(new VertexAttributeCustom(3, VertexDataTypeFloat::GetInstance(), IVertexAttribute::SI_Position));
+        if(texCoordDecl) vformat->AddVertexAttribute(new VertexAttributeCustom(2, VertexDataTypeFloat::GetInstance(), IVertexAttribute::SI_TexCoord));
+        if(normalDecl) vformat->AddVertexAttribute(new VertexAttributeCustom(3, VertexDataTypeFloat::GetInstance(), IVertexAttribute::SI_Normal));
+        if(vertexColorDecl) vformat->AddVertexAttribute(new VertexAttributeCustom(4, VertexDataTypeFloat::GetInstance(), IVertexAttribute::SI_Color));
 
         if(log) MR::Log::LogString("Decls " + std::to_string(declarations ), MR_LOG_LEVEL_INFO);
 
@@ -439,7 +434,7 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
 /*        IndexBuffer* gl_i_buffer = nullptr;*/
 
         if(isettings.indecies) {
-            gl_i_format = new IndexFormatCustom(VertexDataTypeUInt::Instance());
+            gl_i_format = new IndexFormatCustom(VertexDataTypeUInt::GetInstance());
 /*
             gl_i_buffer = new IndexBuffer(GL::GetCurrent());
             gl_i_buffer->Buffer(&ibuffer[0], ibufferSize, IBuffer::Static+IBuffer::Draw, IBuffer::ReadOnly);
@@ -447,7 +442,7 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
         }
 
         unsigned int vbuf_off_bytes = 0, ibuf_off_bytes = 0;
-        MR::GeometryBuffer* new_gb = MR::GeometryManager::Instance()->PlaceGeometry(vformat, gl_i_format, &vbuffer[0], vbufferSize, &ibuffer[0], ibufferSize, IBuffer::Static+IBuffer::Draw, IBuffer::ReadOnly, GL_TRIANGLES, &vbuf_off_bytes, &ibuf_off_bytes);//new GeometryBuffer(GL::GetCurrent(), gl_v_buffer, gl_i_buffer, vformat, gl_i_format, GL_TRIANGLES);
+        MR::GeometryBuffer* new_gb = MR::GeometryManager::GetInstance()->PlaceGeometry(vformat, gl_i_format, &vbuffer[0], vbufferSize, &ibuffer[0], ibufferSize, IBuffer::Static+IBuffer::Draw, IBuffer::ReadOnly, GL_TRIANGLES, &vbuf_off_bytes, &ibuf_off_bytes);//new GeometryBuffer(GL::GetCurrent(), gl_v_buffer, gl_i_buffer, vformat, gl_i_format, GL_TRIANGLES);
         if(new_gb != 0){
             vbuf_off_bytes = vbuf_off_bytes / vformat->Size();
 
@@ -486,9 +481,9 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
                 vcount = for_meshes[mi].num_verts[gmi];
                 vbegin = for_meshes[mi].vbuffer_offsets[gmi];
             }
-            mesh_geometry[gmi] = new MR::Geometry(for_meshes[mi].buffers[gmi], ibegin, vbegin, icount, vcount);
+            mesh_geometry[gmi] = new MR::Geometry(for_meshes[mi].buffers[gmi], (ibegin != 0 || icount != 0) ? MR::GeometryDrawParams::DrawElements(ibegin, icount) : MR::GeometryDrawParams::DrawArrays(vbegin, vcount));
         }
-        meshes[mi] = new MR::Mesh(mesh_geometry, for_meshes[mi].buffers.size(), for_meshes[mi].mat);
+        meshes[mi] = new MR::Mesh(StaticArray<IGeometry*>(mesh_geometry, for_meshes[mi].buffers.size(), true), for_meshes[mi].mat);
     }
 
     mfile->minPoint = MinPoint;

@@ -3,6 +3,9 @@
 #ifndef _MR_TYPES_H_
 #define _MR_TYPES_H_
 
+#include "Utils/Containers.hpp"
+#include "Utils/Events.hpp"
+
 #include <vector>
 #include <algorithm>
 #include <memory>
@@ -12,14 +15,28 @@
 
 #include <glm/glm.hpp>
 
+namespace std {
+    inline std::string to_string(const glm::vec2& v) {
+        return std::to_string(v.x) + ", " + std::to_string(v.y);
+    }
+
+    inline std::string to_string(const glm::vec3& v) {
+        return std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z);
+    }
+
+    inline std::string to_string(const glm::vec4& v) {
+        return std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ", " + std::to_string(v.w);
+    }
+}
+
 namespace MR {
 
-class IObject {
+/*class IObject {
 public:
     virtual std::string ToString() { return "IObject class"; }
     IObject() {}
     virtual ~IObject() {}
-};
+};*/
 
 template<typename T>
 class Copyable {
@@ -31,11 +48,36 @@ template<typename T>
 class Comparable {
 public:
     virtual bool Equal(T) = 0;
+    virtual ~Comparable() {}
 };
 
-class HandleObject {
+class ObjectHandle {
 public:
-    virtual void Release() = 0;
+    MR::EventListener<ObjectHandle*> OnDestroy;
+
+    virtual void Destroy() = 0;
+};
+
+class Usable {
+public:
+    virtual bool Use() = 0;
+    virtual ~Usable() {}
+};
+
+/// Convert smth to binary format
+template<typename t>
+class SerializableBytes {
+public:
+    static StaticArray<unsigned char> ToBytes(t*);
+    static t* FromBytes(const StaticArray<unsigned char>&);
+};
+
+/// Convert smth to text format
+template<typename t>
+class SerializableString {
+public:
+    static std::string ToString(t*);
+    static t* FromString(const std::string&);
 };
 
 template<typename flag_t>
@@ -52,7 +94,7 @@ public:
 };
 
 template<typename flag_t>
-class Flags : public IObject, public IFlags<flag_t> {
+class Flags : public IFlags<flag_t> {
 public:
     void Add(const flag_t& f) override;
     void Remove(const flag_t& f) override;
@@ -188,6 +230,11 @@ inline void SetBits(unsigned char * byte, bool bits[8]){
             (64 * bits[6]) +
             (128 * bits[7]);
 }
+
+template< typename BaseType, size_t bits >
+union TypeBits {
+    BaseType data : bits;
+};
 
 /** **/
 

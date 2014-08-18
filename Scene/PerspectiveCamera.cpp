@@ -1,0 +1,172 @@
+#include "PerspectiveCamera.hpp"
+#include <glm/gtc/matrix_transform.hpp>
+
+#include "../Utils/Log.hpp"
+
+//#define MR_DEBUG_LOG_CAMERA
+
+#ifdef MR_DEBUG_LOG_CAMERA
+#define __MR_DEBUG_LOG(x) MR::Log::LogString(std::string("In PerspectiveCamera ") + x);
+#else
+#define __MR_DEBUG_LOG(x)
+#endif
+
+#define MR_DEBUG_LOG_CAM(x) __MR_DEBUG_LOG(x);
+#define glmV3_ToString(_x_) ("(" + std::to_string(_x_.x) + ", " + std::to_string(_x_.y) + ", " + std::to_string(_x_.z) + ")")
+
+namespace MR {
+
+void PerspectiveCamera::MoveForward(const float& v) {
+    if(v == 0.0f) return;
+    _pos += GetForwardDirection() * v;
+
+    if(GetAutoRecalc()) Calc();
+
+    OnPositionChanged(this, _pos);
+
+    MR_DEBUG_LOG_CAM("MoveForward by " + std::to_string(v))
+}
+
+void PerspectiveCamera::MoveLeft(const float& v)  {
+    if(v == 0.0f) return;
+    _pos += GetLeftDirection() * v;
+
+    if(GetAutoRecalc()) Calc();
+
+    OnPositionChanged(this, _pos);
+
+    MR_DEBUG_LOG_CAM("MoveLeft by " + std::to_string(v))
+}
+
+void PerspectiveCamera::MoveUp(const float& v)  {
+    if(v == 0.0f) return;
+    _pos += GetUpDirection() * v;
+
+    if(GetAutoRecalc()) Calc();
+
+    OnPositionChanged(this, _pos);
+
+    MR_DEBUG_LOG_CAM("MoveUp by " + std::to_string(v))
+}
+
+void PerspectiveCamera::Move(const glm::vec3& v)  {
+    if(v == glm::vec3(0.0f,0.0f,0.0f)) return;
+    SetPosition(GetPosition()+v);
+
+    MR_DEBUG_LOG_CAM("Move by " + glmV3_ToString(v))
+}
+
+void PerspectiveCamera::Roll(const float& v)  {
+    if(v == 0) return;
+    _rot.x += v;
+    _CalcDirectionsFromRot();
+
+    if(GetAutoRecalc()) Calc();
+
+    MR_DEBUG_LOG_CAM("Roll for " + std::to_string(v))
+}
+
+void PerspectiveCamera::Yaw(const float& v)  {
+    if(v == 0) return;
+    _rot.y += v;
+    _CalcDirectionsFromRot();
+
+    if(GetAutoRecalc()) Calc();
+
+    MR_DEBUG_LOG_CAM("Yaw for " + std::to_string(v))
+}
+
+void PerspectiveCamera::Pitch(const float& v)  {
+    if(v == 0) return;
+    _rot.z += v;
+    _CalcDirectionsFromRot();
+
+    if(GetAutoRecalc()) Calc();
+
+    MR_DEBUG_LOG_CAM("Pitch for " + std::to_string(v))
+}
+
+void PerspectiveCamera::SetModelMatrixPtr(glm::mat4* m)  {
+    _mat_model_ptr = m;
+    if(GetAutoRecalc()) Calc();
+
+    MR_DEBUG_LOG_CAM("New ModelMatrix ptr")
+}
+
+void PerspectiveCamera::SetPosition(const glm::vec3& p)  {
+    _pos = p;
+
+    if(GetAutoRecalc()) Calc();
+    OnPositionChanged(this, p);
+
+    MR_DEBUG_LOG_CAM("New position" + glmV3_ToString(_pos))
+}
+
+void PerspectiveCamera::SetRotation(const glm::vec3& p)  {
+    _rot = p;
+    _CalcDirectionsFromRot();
+
+    if(GetAutoRecalc()){
+        Calc();
+    }
+
+    OnRotationChanged(this, _rot);
+    OnDirectionsChanged(this);
+
+    MR_DEBUG_LOG_CAM("New rotation" + glmV3_ToString(_rot))
+}
+
+void PerspectiveCamera::CalcViewMatrix()  {
+    _mat_view = glm::lookAt(this->GetPosition(), this->GetTarget(), this->GetUp());
+    OnMatUpdated_View(this, this->GetViewMatrixPtr());
+
+    MR_DEBUG_LOG_CAM("View matrix calculated")
+}
+
+void PerspectiveCamera::CalcProjectionMatrix()  {
+    _mat_proj = glm::perspective(this->GetFovY(), this->GetAspectRatio(), this->GetNearZ(), this->GetFarZ());
+    OnMatUpdated_Projection(this, this->GetProjectMatrixPtr());
+
+    MR_DEBUG_LOG_CAM("Projection matrix calculated")
+}
+
+void PerspectiveCamera::CalcMVP()  {
+    _mat_mvp = _mat_proj * _mat_view * ((_mat_model_ptr != nullptr) ? (*_mat_model_ptr) : glm::mat4(1.0f));
+    OnMatUpdated_MVP(this, this->GetMVPPtr());
+
+    MR_DEBUG_LOG_CAM("MVP matrix calculated")
+}
+
+void PerspectiveCamera::Calc()  {
+    CalcViewMatrix();
+    CalcProjectionMatrix();
+    CalcMVP();
+}
+
+void PerspectiveCamera::_CalcDirectionsFromRot() {
+    _dir_forward = MR::Transform::NormalizedDirection(_rot.x, _rot.y, _rot.z);
+    _dir_up = MR::Transform::NormalizedDirection(_rot.x, _rot.y+90.0f, _rot.z);
+    _dir_left = MR::Transform::NormalizedDirection(_rot.x+90.0f, 0.0f, _rot.z);
+    OnDirectionsChanged(this);
+}
+
+PerspectiveCamera::PerspectiveCamera() {
+}
+
+PerspectiveCamera::PerspectiveCamera(const glm::vec3& pos, const glm::vec3& rotation, const float& fovY, const float& aspectR, const float& nearZ, const float& farZ)
+ : _auto_recalc(false), _dir_forward(0,0,0), _dir_left(0,0,0), _dir_up(0,0,0), _pos(0,0,0), _rot(0,0,0), _fovy(0.0f), _near_z(0.0f), _far_z(0.0f), _aspectr(0.0f), _mat_view(1.0f), _mat_proj(1.0f), _mat_mvp(1.0f), _mat_model_ptr(nullptr)
+{
+    _pos = pos;
+    SetRotation(rotation);
+    SetFovY(fovY);
+    SetAspectRatio(aspectR);
+    SetNearZ(nearZ);
+    SetFarZ(farZ);
+    Calc();
+    _auto_recalc = true;
+}
+
+PerspectiveCamera::~PerspectiveCamera() {
+}
+
+}

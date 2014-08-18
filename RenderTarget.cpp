@@ -1,9 +1,10 @@
 #include "RenderTarget.hpp"
-#include "Texture.hpp"
+#include "Textures/TextureObjects.hpp"
+#include "Utils/Log.hpp"
+#include "Config.hpp"
+#include "RenderManager.hpp"
 
-#ifndef __glew_h__
-#   include <GL\glew.h>
-#endif
+#include <GL/glew.h>
 
 namespace MR {
 
@@ -14,14 +15,20 @@ void RenderTarget::SetName(const std::string& n) {
     }
 }
 
-void RenderTarget::CreateTargetTexture(const unsigned char & i, const MR::Texture::InternalFormat & iFormat, const MR::Texture::Format & Format, const MR::Texture::Type & Type){
+void RenderTarget::CreateTargetTexture(const unsigned char & i, const MR::ITexture::InternalFormat & iFormat, const MR::ITexture::Format & Format, const MR::ITexture::Type & Type){
     glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffer);
 
-    MR::Texture::CreateOpenGLTexture(&_targetTextures[i], (Texture::InternalFormat)iFormat, _width, _height, (Texture::Format)Format, (Texture::Type)Type);
-    glBindTexture(GL_TEXTURE_2D, _targetTextures[i]);
+    MR::Texture::CreateGLTexture(&_targetTextures[i], (ITexture::InternalFormat)iFormat, _width, _height, (ITexture::Format)Format, (ITexture::Type)Type);
+
+    MR::RenderManager* rm = MR::RenderManager::GetInstance();
+
+    MR::RenderManager::TextureSlot unbindedTexture;
+    rm->UnBindTexture(0, &unbindedTexture);
+
+    rm->SetTexture(GL_TEXTURE_2D, _targetTextures[i], 0);//glBindTexture(GL_TEXTURE_2D, _targetTextures[i]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    rm->SetTexture(&unbindedTexture);//glBindTexture(GL_TEXTURE_2D, 0);
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, _targetTextures[i], 0);
 
@@ -30,8 +37,13 @@ void RenderTarget::CreateTargetTexture(const unsigned char & i, const MR::Textur
 
 void RenderTarget::CreateCubeMapTargetTexture(const unsigned char & i, const MR::Texture::InternalFormat & iFormat, const MR::Texture::Format & Format, const MR::Texture::Type & Type){
     glGenTextures(1, &_targetTextures[i]);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, _targetTextures[i]);
 
+    MR::RenderManager* rm = MR::RenderManager::GetInstance();
+
+    MR::RenderManager::TextureSlot unbindedTexture;
+    rm->UnBindTexture(0, &unbindedTexture);
+
+    rm->SetTexture(GL_TEXTURE_CUBE_MAP, _targetTextures[i], 0);//glBindTexture(GL_TEXTURE_CUBE_MAP, _targetTextures[i]);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -44,7 +56,7 @@ void RenderTarget::CreateCubeMapTargetTexture(const unsigned char & i, const MR:
             _width, _height, 0, (unsigned int)Format, (unsigned int)Type, &testData[0]);
     }
 
-    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    rm->SetTexture(&unbindedTexture);//glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
     glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffer);
     for(int face = 0; face < 6; face++) {
@@ -66,11 +78,16 @@ RenderTarget::RenderTarget(const std::string& n, const unsigned char & targetTex
     _targetTextures = new GLuint[targetTexturesNum+1];
 
     //------CREATE DEPTH TEXTURE--
-    MR::Texture::CreateOpenGLTexture(&_targetTextures[targetTexturesNum], (Texture::InternalFormat)GL_DEPTH_COMPONENT32, _width, _height, (Texture::Format)GL_DEPTH_COMPONENT, (Texture::Type)GL_FLOAT);
-    glBindTexture(GL_TEXTURE_2D, _targetTextures[targetTexturesNum]);
+    MR::RenderManager* rm = MR::RenderManager::GetInstance();
+
+    MR::RenderManager::TextureSlot unbindedTexture;
+    rm->UnBindTexture(0, &unbindedTexture);
+
+    MR::Texture::CreateGLTexture(&_targetTextures[targetTexturesNum], (Texture::InternalFormat)GL_DEPTH_COMPONENT32, _width, _height, (Texture::Format)GL_DEPTH_COMPONENT, (Texture::Type)GL_FLOAT);
+    rm->SetTexture(GL_TEXTURE_2D, _targetTextures[targetTexturesNum], 0);//glBindTexture(GL_TEXTURE_2D, _targetTextures[targetTexturesNum]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    rm->SetTexture(&unbindedTexture);//glBindTexture(GL_TEXTURE_2D, 0);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _targetTextures[targetTexturesNum], 0);
     //----------------------------
 

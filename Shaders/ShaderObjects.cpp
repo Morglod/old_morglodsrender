@@ -2,7 +2,7 @@
 #include "../MachineInfo.hpp"
 #include "../Utils/Debug.hpp"
 #include "../Utils/Log.hpp"
-
+#include "ShaderConfig.hpp"
 #include "ShaderUniforms.hpp"
 
 #ifndef __glew_h__
@@ -82,7 +82,7 @@ StaticArray<IShaderProgram*> Shader::GetConnectedPrograms() {
     else return StaticArray<IShaderProgram*>();
 }
 
-void Shader::Release() {
+void Shader::Destroy() {
     if(_gpu_handle != 0) {
         while(_connected.size() != 0) {
             Detach(_connected[0]);
@@ -99,7 +99,6 @@ Shader::Shader
 }
 
 Shader::~Shader() {
-    Release();
 }
 
 Shader* Shader::Create(const IShader::Type& type) {
@@ -281,10 +280,73 @@ StaticArray<ShaderUniformInfo> ShaderProgram::GetCompiledUniforms() {
     return StaticArray<ShaderUniformInfo>(&uni[0], act_uniforms, false);
 }
 
-void ShaderProgram::Release() {
+void ShaderProgram::Destroy() {
     if(_program != 0) {
         glDeleteProgram(_program);
         _program = 0;
+    }
+}
+
+bool ShaderProgram::Use() {
+    if(_program == 0) return false;
+    glUseProgram(_program);
+    UpdateUniforms();
+    return true;
+}
+
+void ShaderProgram::UpdateUniforms() {
+    for(size_t i = 0; i < _shaderUniforms.size(); ++i){
+        if(_shaderUniforms[i]->GetPtr()) {
+            if(MR::MachineInfo::IsDirectStateAccessSupported()) {
+                switch(_shaderUniforms[i]->GetType()){
+                case IShaderUniform::Type::SUT_Float:
+                    glProgramUniform1f(_program, _shaderUniforms[i]->GetGPULocation(), *((float*)_shaderUniforms[i]->GetPtr()));
+                    break;
+                case IShaderUniform::Type::SUT_Sampler1D:
+                case IShaderUniform::Type::SUT_Sampler2D:
+                case IShaderUniform::Type::SUT_Sampler3D:
+                case IShaderUniform::Type::SUT_Int:
+                    glProgramUniform1i(_program, _shaderUniforms[i]->GetGPULocation(), *((int*)_shaderUniforms[i]->GetPtr()));
+                    break;
+                case IShaderUniform::Type::SUT_Mat4:
+                    glProgramUniformMatrix4fv(_program, _shaderUniforms[i]->GetGPULocation(), 1, false, ((float*)_shaderUniforms[i]->GetPtr()));
+                    break;
+                case IShaderUniform::Type::SUT_Vec2:
+                    glProgramUniform2fv(_program, _shaderUniforms[i]->GetGPULocation(), 1, ((float*)_shaderUniforms[i]->GetPtr()));
+                    break;
+                case IShaderUniform::Type::SUT_Vec3:
+                    glProgramUniform3fv(_program, _shaderUniforms[i]->GetGPULocation(), 1, ((float*)_shaderUniforms[i]->GetPtr()));
+                    break;
+                case IShaderUniform::Type::SUT_Vec4:
+                    glProgramUniform4fv(_program, _shaderUniforms[i]->GetGPULocation(), 1, ((float*)_shaderUniforms[i]->GetPtr()));
+                    break;
+                }
+            } else {
+                switch(_shaderUniforms[i]->GetType()){
+                case IShaderUniform::Type::SUT_Float:
+                    glUniform1f(_shaderUniforms[i]->GetGPULocation(), *((float*)_shaderUniforms[i]->GetPtr()));
+                    break;
+                case IShaderUniform::Type::SUT_Sampler1D:
+                case IShaderUniform::Type::SUT_Sampler2D:
+                case IShaderUniform::Type::SUT_Sampler3D:
+                case IShaderUniform::Type::SUT_Int:
+                    glUniform1i(_shaderUniforms[i]->GetGPULocation(), *((int*)_shaderUniforms[i]->GetPtr()));
+                break;
+                case IShaderUniform::Type::SUT_Mat4:
+                    glUniformMatrix4fv(_shaderUniforms[i]->GetGPULocation(), 1, false, ((float*)_shaderUniforms[i]->GetPtr()));
+                    break;
+                case IShaderUniform::Type::SUT_Vec2:
+                    glUniform2fv(_shaderUniforms[i]->GetGPULocation(), 1, ((float*)_shaderUniforms[i]->GetPtr()));
+                    break;
+                case IShaderUniform::Type::SUT_Vec3:
+                    glUniform3fv(_shaderUniforms[i]->GetGPULocation(), 1, ((float*)_shaderUniforms[i]->GetPtr()));
+                    break;
+                case IShaderUniform::Type::SUT_Vec4:
+                    glUniform4fv(_shaderUniforms[i]->GetGPULocation(), 1, ((float*)_shaderUniforms[i]->GetPtr()));
+                    break;
+                }
+            }
+        }
     }
 }
 
@@ -294,7 +356,6 @@ ShaderProgram::ShaderProgram
 }
 
 ShaderProgram::~ShaderProgram() {
-    Release();
 }
 
 }

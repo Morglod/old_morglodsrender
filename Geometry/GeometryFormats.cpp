@@ -1,7 +1,6 @@
 #include "GeometryFormats.hpp"
 
 #include "../Utils/Log.hpp"
-#include "../Utils/Singleton.hpp"
 #include "../MachineInfo.hpp"
 
 #ifndef __glew_h__
@@ -10,22 +9,6 @@
 #endif
 
 namespace MR {
-
-SingletonVar(VertexDataTypeInt, new VertexDataTypeInt());
-SingletonVar(VertexDataTypeUInt, new VertexDataTypeUInt());
-SingletonVar(VertexDataTypeFloat, new VertexDataTypeFloat());
-
-IVertexDataType* VertexDataTypeInt::Instance(){
-    return SingletonVarName(VertexDataTypeInt).Get();
-}
-
-IVertexDataType* VertexDataTypeUInt::Instance(){
-    return SingletonVarName(VertexDataTypeUInt).Get();
-}
-
-IVertexDataType* VertexDataTypeFloat::Instance(){
-    return SingletonVarName(VertexDataTypeFloat).Get();
-}
 
 VertexDataTypeCustom::VertexDataTypeCustom(const unsigned int& gpu_type, const unsigned char& size) :
     _gpu_type(gpu_type), _size(size) {}
@@ -77,12 +60,11 @@ void VertexFormatCustom::UnBind() {
 bool VertexFormatCustom::Equal(IVertexFormat* vf){
     if(Size() != vf->Size()) return false;
 
-    IVertexAttribute** attrArray = 0;
-    size_t anum = vf->_Attributes(&attrArray);
+    StaticArray<IVertexAttribute*> attrArray = vf->_Attributes();
 
     size_t i2 = 0;
-    for(size_t i = 0; i < anum; ++i){
-        if( !(_attribs[i]->Equal(attrArray[i2])) ) return false;
+    for(size_t i = 0; i < attrArray.GetNum(); ++i){
+        if( !(_attribs[i]->Equal(attrArray.At(i2))) ) return false;
         ++i2;
     }
     return true;
@@ -97,23 +79,23 @@ VertexFormatCustom::~VertexFormatCustom(){
 void VertexFormatCustomFixed::SetVertexAttribute(IVertexAttribute* a, const size_t& index) {
     if(index == _attribsNum) return;
     _attribs[index] = a;
-    this->RecalcSize();
+    this->_RecalcSize();
 }
 
 bool VertexFormatCustomFixed::Bind() {
     if(MR::MachineInfo::FeatureNV_GPUPTR()){
         for(size_t i = 0; i < _attribsNum; ++i) {
-            glVertexAttribFormatNV(_attribs[i]->ShaderIndex(), (int)_attribs[i]->ElementsNum(), _attribs[i]->DataType()->GPUDataType(), GL_FALSE, this->Size());
             glEnableVertexAttribArray(_attribs[i]->ShaderIndex());
+            glVertexAttribFormatNV(_attribs[i]->ShaderIndex(), (int)_attribs[i]->ElementsNum(), _attribs[i]->DataType()->GPUDataType(), GL_FALSE, this->Size());
         }
 
         glEnableClientState(GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
     }
     else {
         for(size_t i = 0; i < _attribsNum; ++i) {
+            glEnableVertexAttribArray(_attribs[i]->ShaderIndex());
             glVertexAttribPointer(_attribs[i]->ShaderIndex(), (int)_attribs[i]->ElementsNum(), _attribs[i]->DataType()->GPUDataType(), GL_FALSE, this->Size(), (void*)_pointers[i]);
             //glVertexAttribPointer(_attribs[i]->ShaderIndex(), (int)_attribs[i]->ElementsNum(), _attribs[i]->DataType()->GPUDataType(), GL_FALSE, 0, (void*)_pointers[i]);
-            glEnableVertexAttribArray(_attribs[i]->ShaderIndex());
         }
     }
 
@@ -137,12 +119,11 @@ void VertexFormatCustomFixed::UnBind() {
 bool VertexFormatCustomFixed::Equal(IVertexFormat* vf) {
     if(_size != vf->Size()) return false;
 
-    IVertexAttribute** attrArray = 0;
-    size_t anum = vf->_Attributes(&attrArray);
+    StaticArray<IVertexAttribute*> attrArray = vf->_Attributes();
 
     size_t i2 = 0;
-    for(size_t i = 0; i < anum; ++i){
-        if( !(_attribs[i]->Equal(attrArray[i2])) ) return false;
+    for(size_t i = 0; i < attrArray.GetNum(); ++i){
+        if( !(_attribs[i]->Equal(attrArray.At(i2))) ) return false;
         ++i2;
     }
     return true;
@@ -159,7 +140,7 @@ void VertexFormatCustomFixed::SetAttributesNum(const size_t& num) {
     _attribsNum = num;
 }
 
-void VertexFormatCustomFixed::RecalcSize() {
+void VertexFormatCustomFixed::_RecalcSize() {
     _size = 0;
     for(size_t i = 0; i < _nextIndex+1; ++i) {
         _pointers[i] = (uint64_t)_size;

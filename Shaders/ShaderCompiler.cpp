@@ -104,8 +104,8 @@ ShaderCompilationOutput ShaderCompiler::Compile(const std::string& code, const M
 #endif
 
     return ShaderCompilationOutput(
-                                new ShaderCompilationMessage[1]{ ShaderCompilationMessage( ShaderCompilationMessage::MT_Info, 0, 0, logString ) },
-                                1,
+                                (logString != "") ? new ShaderCompilationMessage[1]{ ShaderCompilationMessage( ShaderCompilationMessage::MT_Info, 0, 0, logString ) } : nullptr,
+                                (logString != "") ? 1 : 0,
                                 (bool)compile_status
                                 );
 }
@@ -219,8 +219,8 @@ ShaderCompilationOutput ShaderCompiler::Link(StaticArray<unsigned int> gpu_handl
     }**/
 
     return ShaderCompilationOutput(
-                                new ShaderCompilationMessage[1]{ ShaderCompilationMessage( ShaderCompilationMessage::MT_Info, 0, 0, logString ) },
-                                1,
+                                (logString != "") ? new ShaderCompilationMessage[1]{ ShaderCompilationMessage( ShaderCompilationMessage::MT_Info, 0, 0, logString ) } : nullptr,
+                                (logString != "") ? 1 : 0,
                                 (bool)link_status
                                 );
 }

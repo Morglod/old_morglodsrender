@@ -22,16 +22,17 @@ public:
     inline const std::string& GetText() { return _text; }
     inline const unsigned int& GetLine() { return _line; }
 
+    ShaderCompilationMessage() {}
     ShaderCompilationMessage(const MessageType& type,
                              const int& code,
                              const unsigned int& line,
                              const std::string& text);
 
 protected:
-    MessageType _type;
-    int _code;
-    unsigned int _line;
-    std::string _text;
+    MessageType _type = MT_Info;
+    int _code = 0;
+    unsigned int _line = 0;
+    std::string _text = "";
 };
 
 class ShaderCompilationOutput {

@@ -5,11 +5,13 @@
 
 #include "../Config.hpp"
 #include "../Utils/Events.hpp"
-#include "../Threads.hpp"
+#include "../Utils/Threads.hpp"
 
 #include <queue>
 
 namespace MR {
+
+class IContext;
 
 std::string DirectoryFromFilePath(const std::string& file);
 
@@ -134,12 +136,14 @@ public:
 
     /** Adds created resource from manager */
     inline virtual void Add(Resource* res) {
+        if(!res) return;
         this->_resources.push_back(res);
         res->_resource_manager = dynamic_cast<MR::ResourceManager*>(this);
     }
 
     /** Removes created resource from manager */
     inline virtual void Remove(Resource* res) {
+        if(!res) return;
         std::vector<Resource*>::iterator it = std::find(this->_resources.begin(), this->_resources.end(), res);
         if(it != this->_resources.end()) {
             delete (*it);
@@ -175,11 +179,16 @@ public:
     /** Removes all resources */
     virtual void RemoveAll();
 
+
+    virtual MR::IContext* GetContext() { return _ctx; }
+    virtual void SetContext(MR::IContext* ctx) { _ctx = ctx; }
+
     ResourceManager() : _debugMessages(MR_RESOURCE_MANAGER_DEBUG_MSG_DEFAULT) {}
 
 protected:
     bool _debugMessages;
     std::vector<Resource*> _resources;
+    MR::IContext* _ctx;
 };
 
 class AsyncResourceTask {
@@ -189,7 +198,7 @@ public:
 };
 
 void AddResourceTask(const AsyncResourceTask& task);
-void _MR_RequestGPUThread();
+void _MR_RequestGPUThread(MR::IContext* ctx);
 
 }
 

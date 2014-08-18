@@ -5,7 +5,7 @@
 
 #include "../Types.hpp"
 #include "../Utils/Containers.hpp"
-#include "../Config.hpp"
+#include "../Shaders/ShaderConfig.hpp"
 
 namespace MR {
 
@@ -41,8 +41,19 @@ public:
     virtual bool Bind() = 0;
     virtual void UnBind() = 0;
 
-    virtual size_t _Attributes(IVertexAttribute*** dst) = 0;
-    virtual size_t _Offsets(uint64_t** dst) = 0; //offsets of each attributes from starting point of vertex in bytes
+    virtual StaticArray<IVertexAttribute*> _Attributes() = 0;
+    virtual StaticArray<uint64_t> _Offsets() = 0; //offsets of each attributes from starting point of vertex in bytes
+};
+
+class IInstancedDataFormat : public Comparable<IInstancedDataFormat*> {
+public:
+    virtual size_t Size() = 0; //one instance data size in byte
+    virtual void AddAttribute(IVertexAttribute* a) = 0;
+    virtual bool Bind() = 0;
+    virtual void UnBind() = 0;
+
+    virtual StaticArray<IVertexAttribute*> _Attributes() = 0;
+    virtual StaticArray<uint64_t> _Offsets() = 0;
 };
 
 class IIndexFormat : public Comparable<IIndexFormat*> {
@@ -52,6 +63,26 @@ public:
     virtual IVertexDataType* GetDataType() = 0;
     virtual bool Bind() = 0;
     virtual void UnBind() = 0;
+};
+
+//It's only storage for data, that will be buffered. After buffering it may be deleted
+class IVertexData {
+public:
+    virtual unsigned int GetDrawMode() = 0;
+    virtual size_t GetSize() = 0; //size of all data for vertexes
+    virtual void* GetData() = 0; //may be nullptr if data is deleted
+    virtual IVertexFormat* GetFormat() = 0;
+    virtual ~IVertexData() {}
+};
+
+//It's only storage for data, that will be buffered. After buffering it may be deleted
+class IIndexData {
+public:
+    virtual unsigned int GetDrawMode() = 0;
+    virtual size_t GetSize() = 0; //size of all data for indecies
+    virtual void* GetData() = 0; //may be nullptr if data is deleted
+    virtual IIndexFormat* GetFormat() = 0;
+    virtual ~IIndexData() {}
 };
 
 class IBuffer {
@@ -97,6 +128,8 @@ public:
     virtual unsigned int GetNextFreeOffset() = 0;
 
     virtual bool _CopyTo(const unsigned int& dstHandle, const unsigned int& srcOffset, const unsigned int& dstOffset, const unsigned int& size) = 0;
+
+    virtual unsigned int GetGPUHandle() = 0;
 };
 
 class IGeometryBuffer {
@@ -119,21 +152,85 @@ public:
     virtual bool SetIndexBuffer(GPUBuffer* buf) = 0;
     virtual GPUBuffer* GetIndexBuffer() = 0;
 
-    virtual void Draw(IRenderSystem* rc, const unsigned int& istart, const unsigned int& vstart, const int& icount, const int& vcount) = 0;
+    virtual void Release() = 0;
+
+    virtual void SetDrawMode(const unsigned int& dm) = 0;
+    virtual unsigned int GetDrawMode() = 0;
+
     virtual void SetFormat(IVertexFormat* f, IIndexFormat* fi) = 0;
+    virtual IVertexFormat* GetVertexFormat() = 0;
+    virtual IIndexFormat* GetIndexFormat() = 0;
+
+    virtual unsigned int GetVAO() = 0; //if zero, don't use vao
+
     virtual ~IGeometryBuffer() {}
 };
 
+class IGeometryDrawParams {
+public:
+    typedef struct {
+        unsigned int count;
+        unsigned int instanceCount;
+        unsigned int first;
+        unsigned int baseInstance;
+    } DrawArraysIndirectCmd;
+
+    typedef struct {
+        unsigned int count;
+        unsigned int primCount;
+        unsigned int firstIndex;
+        unsigned int baseVertex;
+        unsigned int baseInstance;
+    } DrawElementsIndirectCmd;
+
+    virtual void SetIndexStart(const unsigned int& i) = 0;
+    virtual void SetVertexStart(const unsigned int& v) = 0;
+    virtual void SetIndexCount(const unsigned int& i) = 0;
+    virtual void SetVertexCount(const unsigned int& i) = 0;
+
+    virtual unsigned int GetIndexStart() = 0;
+    virtual unsigned int GetVertexStart() = 0;
+    virtual unsigned int GetIndexCount() = 0;
+    virtual unsigned int GetVertexCount() = 0;
+
+    virtual void* GetIndirectPtr() = 0;
+
+    virtual void SetUseIndexBuffer(const bool& state) = 0;
+    virtual bool GetUseIndexBuffer() = 0;
+
+    //Eg for indirect buffer binding
+    virtual void BeginDraw() = 0;
+    virtual void EndDraw() = 0;
+
+    virtual ~IGeometryDrawParams() {}
+};
+
+typedef std::shared_ptr<IGeometryDrawParams> IGeometryDrawParamsPtr;
+
 class IGeometry {
 public:
+    virtual IGeometryBuffer* GetGeometryBuffer() = 0;
     virtual void SetGeometryBuffer(IGeometryBuffer* buffer) = 0;
-    virtual void SetIStart(const unsigned int& i) = 0;
-    virtual void SetVStart(const unsigned int& v) = 0;
-    virtual void SetICount(const int& i) = 0;
-    virtual void SetVCount(const int& i) = 0;
-    virtual void Draw(IRenderSystem* rc) = 0;
+
+    virtual IGeometryDrawParamsPtr GetDrawParams() = 0;
+    virtual void SetDrawParams(IGeometryDrawParamsPtr params) = 0;
+
+    virtual void Draw() = 0;
     virtual ~IGeometry() {}
 };
+
+/*
+class IInstancedGeometry : public IGeometry {
+public:
+    virtual GPUBuffer* GetInstancedBuffer() = 0;
+    virtual void SetInstancedBuffer(GPUBuffer* buf) = 0;
+
+    virtual IInstancedDataFormat* GetInstancedDataFormat() = 0;
+    virtual void SetInstancedDataFormat(IInstancedDataFormat* format) = 0;
+
+    virtual ~IInstancedGeometry() {}
+};
+*/
 
 class IGeometryStream {
 public:

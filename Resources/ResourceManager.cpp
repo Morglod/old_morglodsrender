@@ -1,7 +1,8 @@
 #include "ResourceManager.hpp"
 #include "../Utils/Log.hpp"
-#include "../GL/Context.hpp"
-#include <GLFW/glfw3.h>
+#include "../Context.hpp"
+
+#include <GL/glew.h>
 
 std::string MR::DirectoryFromFilePath(const std::string& file){
     std::string::size_type it_a = file.find_last_of("\\");
@@ -20,10 +21,10 @@ void MR::AddResourceTask(const MR::AsyncResourceTask& task) {
 
 bool _async_thread_running = false;
 
-void* __MR_RESOURCE_ASYNC_THREAD(void*) {
+void* __MR_RESOURCE_ASYNC_THREAD(void* icontext) {
     _async_thread_running = true;
 
-    glfwMakeContextCurrent((GLFWwindow*)MR::GL::GetCurrent()->_GetMultithreadContext());
+    ((MR::IContext*)icontext)->MakeMultithreadCurrent();
 
     size_t s = _res_async_tasks.size();
     size_t cur = 0;
@@ -46,23 +47,23 @@ void* __MR_RESOURCE_ASYNC_THREAD(void*) {
     }
     _res_async_tasks.clear();
 
-    glfwMakeContextCurrent(0);
+    ((MR::IContext*)icontext)->MakeNullCurrent();
     _async_thread_running = false;
 
     return (void*)1;
 }
 
-void MR::_MR_RequestGPUThread() {
+void MR::_MR_RequestGPUThread(MR::IContext* ctx) {
     if(!_async_thread_running) {
         _async_thread_running = true;
-        MR::AsyncCall(__MR_RESOURCE_ASYNC_THREAD, 0);
+        MR::AsyncCall(__MR_RESOURCE_ASYNC_THREAD, ctx);
     }
 }
 
 bool MR::Resource::Load() {
-    if(GetAsyncState() && MR::GL::GetCurrent()->_GetMultithreadContext()) {
+    if(GetAsyncState() && _resource_manager->GetContext()->IsMultithread()) {
         AddResourceTask( MR::AsyncResourceTask {this, true} );
-        _MR_RequestGPUThread();
+        _MR_RequestGPUThread(_resource_manager->GetContext());
         return true;
     } else {
         __set_loaded(_Loading());
@@ -71,9 +72,9 @@ bool MR::Resource::Load() {
 }
 
 void MR::Resource::UnLoad() {
-    if(GetAsyncState() && MR::GL::GetCurrent()->_GetMultithreadContext()) {
+    if(GetAsyncState() && _resource_manager->GetContext()->IsMultithread()) {
         AddResourceTask( MR::AsyncResourceTask {this, false} );
-        _MR_RequestGPUThread();
+        _MR_RequestGPUThread(_resource_manager->GetContext());
     } else {
         _UnLoading();
     }

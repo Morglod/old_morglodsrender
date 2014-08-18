@@ -14,38 +14,29 @@
 
 namespace MR {
 
-template< typename oclass >
-class ISingletonObject {
+template< typename type >
+class Singleton {
 public:
-    oclass * instance;
-    virtual oclass * Get() = 0;
-    virtual void Destroy() { if(instance != 0) { delete instance; instance = 0; } }
-    virtual ~ISingletonObject() { Destroy(); }
+    virtual ~Singleton() {}
+
+    static type* GetInstance() {
+        if(_singleton_instance == nullptr) _singleton_instance = new type();
+        return _singleton_instance;
+    }
+
+    static void DestroyInstance() {
+        if(_singleton_instance != nullptr) {
+            delete _singleton_instance;
+            _singleton_instance = nullptr;
+        }
+    }
+private:
+    static type * _singleton_instance;
 };
+
+template< typename type >
+type* Singleton<type>::_singleton_instance = nullptr;
+
 }
-
-#define __MR_CONCAT2(x,y) x##y
-#define __MR_CONCAT(x,y) __MR_CONCAT2(x, y)
-
-#define SingletonName(ObjectType) __MR_CONCAT(AutoSingleton_, ObjectType)
-
-#define MakeSingleton(ObjectType, CreateNewObjectCode) \
-class SingletonName(ObjectType) : public ISingletonObject<ObjectType> { \
-public: \
-    ObjectType * Get() override { \
-        if(instance == 0) instance = CreateNewObjectCode; \
-        return instance; \
-    } \
-    virtual ~SingletonName(ObjectType)() {} \
-};
-
-#define SingletonVarI(ObjectType, CreateNewObjectCode, x) \
-MakeSingleton(ObjectType, CreateNewObjectCode) \
-SingletonName(ObjectType) __MR_CONCAT(__MR_CONCAT(__SINGLETON__, SingletonName(ObjectType)), x)
-
-#define SingletonVar(ObjectType, CreateNewObjectCode) SingletonVarI(ObjectType, CreateNewObjectCode, 0)
-
-#define SingletonVarNameI(ObjectType, x) __MR_CONCAT(__MR_CONCAT(__SINGLETON__, SingletonName(ObjectType)), x)
-#define SingletonVarName(ObjectType) SingletonVarNameI(ObjectType, 0)
 
 #endif // _MR_SINGLETON_H_

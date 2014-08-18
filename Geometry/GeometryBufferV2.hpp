@@ -6,8 +6,6 @@
 #include "../Types.hpp"
 #include "../Config.hpp"
 
-#include "../GL/GLObject.hpp"
-
 #ifndef glm_glm
 #   include <glm/glm.hpp>
 #   include <glm/gtc/matrix_transform.hpp>
@@ -24,8 +22,7 @@ class IRenderSystem;
 class Geometry;
 class GeometryBuffer;
 
-class GPUBuffer : public IObject, public IBuffer, public GL::IGLObject {
-    friend class GeometryBuffer;
+class GPUBuffer : public IBuffer {
 public:
     void BindToStream(IGeometryStream* stream, const unsigned int& offset) override;
 
@@ -45,9 +42,11 @@ public:
     inline void SetNum(const unsigned int & num) { _num = num; }
     inline unsigned int GetNum() { return _num; }
 
-    bool IsAvailable() override { return (_handle != 0); }
+    unsigned int GetGPUHandle() override { return _handle; }
+    inline uint64_t _GetResidentPtr() { return _resident_ptr; }
+    inline int _GetBufferSize() { return _buffer_size; }
 
-    GPUBuffer(GL::IContext* ctx, const unsigned int& target);
+    GPUBuffer(const unsigned int& target);
     virtual ~GPUBuffer();
 protected:
     uint64_t _resident_ptr;
@@ -65,35 +64,26 @@ protected:
     unsigned int _next_free_offset;
 };
 
-class VertexBuffer : public GPUBuffer {
-public:
-    VertexBuffer(GL::IContext* ctx);
-    virtual ~VertexBuffer();
-};
-
-class IndexBuffer : public GPUBuffer {
-public:
-    IndexBuffer(GL::IContext* ctx);
-    virtual ~IndexBuffer();
-};
-
-class GeometryBuffer : public IObject, public IGeometryBuffer, public GL::IGLObject {
-    friend class VertexBuffer;
-    friend class IndexBuffer;
+class GeometryBuffer : public IGeometryBuffer {
 public:
     bool SetVertexBuffer(GPUBuffer* buf) override;
     inline GPUBuffer* GetVertexBuffer() override { return _vb; }
+
     bool SetIndexBuffer(GPUBuffer* buf) override;
     inline GPUBuffer* GetIndexBuffer() override { return _ib; }
-    void Draw(IRenderSystem* rc, const unsigned int& istart, const unsigned int& vstart, const int& icount, const int& vcount) override;
-    inline void SetFormat(IVertexFormat* f, IIndexFormat* fi) override { _format = f; _iformat = fi; }
 
-    bool IsAvailable() override { return true; }
+    unsigned int GetDrawMode() override { return _draw_mode; }
+    void SetDrawMode(const unsigned int& dm) override { _draw_mode = dm; }
+
+    inline void SetFormat(IVertexFormat* f, IIndexFormat* fi) override { _format = f; _iformat = fi; }
+    inline IVertexFormat* GetVertexFormat() override { return _format; }
+    inline IIndexFormat* GetIndexFormat() override { return _iformat; }
+
     void Release() override;
 
-    static GeometryBuffer* Plane(GL::IContext* ctx, const glm::vec3& scale, const glm::vec3 pos, const unsigned int& usage, const unsigned int& drawm);
+    unsigned int GetVAO() override { return _vao; }
 
-    GeometryBuffer(GL::IContext* ctx, GPUBuffer* vb, GPUBuffer* ib, IVertexFormat* f, IIndexFormat* fi, const unsigned int& drawMode);
+    GeometryBuffer(GPUBuffer* vb, GPUBuffer* ib, IVertexFormat* f, IIndexFormat* fi, const unsigned int& drawMode);
     virtual ~GeometryBuffer();
 protected:
     GPUBuffer* _vb;
@@ -104,25 +94,63 @@ protected:
     unsigned int _draw_mode;
 };
 
-class Geometry : public IGeometry, public IObject {
+class GeometryDrawParams : public IGeometryDrawParams {
 public:
-    void SetGeometryBuffer(IGeometryBuffer* buffer) override;
-    void SetIStart(const unsigned int& i) override;
-    void SetVStart(const unsigned int& v) override;
-    void SetICount(const int& i) override;
-    void SetVCount(const int& i) override;
-    void Draw(IRenderSystem* rc) override;
+    void SetIndexStart(const unsigned int& i) override;
+    void SetVertexStart(const unsigned int& v) override;
+    void SetIndexCount(const unsigned int& i) override;
+    void SetVertexCount(const unsigned int& i) override;
 
-    Geometry(IGeometryBuffer* buffer, const unsigned int& index_start, const unsigned int& vertex_start, const int& ind_count, const int& vert_count);
-    virtual ~Geometry();
+    unsigned int GetIndexStart() override { return _istart; }
+    unsigned int GetVertexStart() override { return _vstart; }
+    unsigned int GetIndexCount() override { return _icount; }
+    unsigned int GetVertexCount() override { return _vcount; }
 
+    void* GetIndirectPtr() override { return drawCmd; }
+
+    void SetUseIndexBuffer(const bool& state) override;
+    bool GetUseIndexBuffer() override;
+
+    void BeginDraw() override;
+    void EndDraw() override;
+
+    static IGeometryDrawParamsPtr DrawArrays(const unsigned int& vstart, const unsigned int& vcount);
+    static IGeometryDrawParamsPtr DrawElements(const unsigned int& istart, const unsigned int& icount);
+
+    GeometryDrawParams(const bool& indexBuffer, const unsigned int& istart, const unsigned int& vstart, const unsigned int& icount, const unsigned int& vcount);
+    virtual ~GeometryDrawParams();
 protected:
-    IGeometryBuffer* _buffer;
-    unsigned int _istart, _vstart;
-    int _icount, _vcount;
+    void _MakeDrawCmd();
+
+    void* drawCmd;
+    unsigned int _istart, _vstart, _icount, _vcount;
+    bool _index_buffer;
+
+    unsigned int _indirect_buffer;
 };
 
-class GeometryManager {
+class Geometry : public IGeometry {
+public:
+    IGeometryBuffer* GetGeometryBuffer() override { return _buffer; }
+    void SetGeometryBuffer(IGeometryBuffer* buffer) override;
+
+    IGeometryDrawParamsPtr GetDrawParams() override { return _draw_params; }
+    void SetDrawParams(IGeometryDrawParamsPtr params) override { _draw_params = params; }
+
+    void Draw() override;
+
+    Geometry(IGeometryBuffer* buffer, IGeometryDrawParamsPtr params);
+    virtual ~Geometry();
+
+    static Geometry* MakeTriangle(const float& scale = 1.0f, const glm::vec3& offset = glm::vec3(0.0f, 0.0f, 0.0f));
+    static Geometry* MakeQuad(const glm::vec2& scale = glm::vec2(1.0f, 1.0f), const glm::vec3& offset = glm::vec3(0.0f, 0.0f, 0.0f), const bool& texCoords = true, const glm::vec2& texCoordsScale = glm::vec2(1.0f, 1.0f));
+    static Geometry* MakeBox(const glm::vec3& scale = glm::vec3(1.0f, 1.0f, 1.0f), const glm::vec3& offset = glm::vec3(0.0f, 0.0f, 0.0f), const bool& inside = false);
+protected:
+    IGeometryBuffer* _buffer;
+    IGeometryDrawParamsPtr _draw_params;
+};
+
+class GeometryManager : public Singleton<GeometryManager> {
 public:
     GeometryBuffer * PlaceGeometry(  IVertexFormat* vfo, IIndexFormat* ifo,
                                 void* vert_data, const size_t& vert_data_size,
@@ -132,10 +160,6 @@ public:
 
     GeometryManager();
     ~GeometryManager();
-
-    static GeometryManager* Instance();
-    static void DestroyInstance();
-
 protected:
 
     size_t _max_buffer_size;

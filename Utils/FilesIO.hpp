@@ -3,6 +3,8 @@
 #ifndef _MR_FILES_IO_H_
 
 #include "Containers.hpp"
+#include "Singleton.hpp"
+
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -83,7 +85,7 @@ public:
     virtual bool SplitPath(const std::string& fullPathToFile, std::string& path, std::string& fileName) = 0;
 };
 
-class FileUtils : public IFileUtils {
+class FileUtils : public IFileUtils, public Singleton<FileUtils> {
 public:
     inline void AddSearchPath(const std::string& path) override { _searchPaths.push_back(path); }
     inline void RemoveSearchPath(const std::string& path) override{ auto it = std::find(_searchPaths.begin(), _searchPaths.end(), path); if(it==_searchPaths.end()) return; _searchPaths.erase(it); }
@@ -92,8 +94,6 @@ public:
     std::string FindFile(const std::string& fileName) override;
     inline bool IsFileExist(const std::string& fileName) override { return (this->FindFile(fileName) != ""); }
     bool SplitPath(const std::string& fullPathToFile, std::string& path, std::string& fileName) override;
-
-    static FileUtils* Instance();
 protected:
     std::vector<std::string> _searchPaths;
 };

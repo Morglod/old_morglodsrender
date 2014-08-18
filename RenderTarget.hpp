@@ -3,8 +3,8 @@
 #ifndef _MR_RENDER_TARGET_H_
 #define _MR_RENDER_TARGET_H_
 
+#include "Textures/TextureInterfaces.hpp"
 #include "Utils/Events.hpp"
-#include "Texture.hpp"
 
 #include <string>
 

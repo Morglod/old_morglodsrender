@@ -1,8 +1,7 @@
 #include "Scene.hpp"
-#include "Camera.hpp"
-#include "../RenderSystem.hpp"
 #include "../Model.hpp"
 #include "../Utils/Log.hpp"
+#include "../RenderManager.hpp"
 
 namespace MR {
 
@@ -71,7 +70,7 @@ void MR::SceneManager::RemoveEntity(Entity* ent) {
 Entity* MR::SceneManager::CreateEntity(const std::string& modelSrc) {
     MR::Model* model = nullptr;
     if(modelSrc != ""){
-        model = MR::ModelManager::Instance()->NeedModel(modelSrc);
+        model = MR::ModelManager::GetInstance()->NeedModel(modelSrc);
     }
     Entity* ent = CreateEntity(model);
     AddEntity(ent);
@@ -120,16 +119,18 @@ void MR::SceneManager::GetFogInfo(float* minDist, float* maxDist, glm::vec4* col
     if(color) *color = _fogColor;
 }
 
-void MR::SceneManager::Draw(IRenderSystem* rc){
+void MR::SceneManager::Draw(){
     EntityDrawParams edparams;
     edparams._fogColor = &_fogColor;
     edparams._fogMax = &_fogMax;
     edparams._fogMin = &_fogMin;
 
+    MR::RenderManager* rm = MR::RenderManager::GetInstance();
+
     for(size_t i = 0; i < _entities.size(); ++i){
         LightsList ll = MakeLightsList(_entities[i]);
         edparams._llist = &ll;
-        rc->DrawEntity(_entities[i], &edparams);
+        rm->DrawEntity(_entities[i], &edparams);
     }
 }
 

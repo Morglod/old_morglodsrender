@@ -12,7 +12,6 @@ namespace MR{
 
 class Entity;
 class Camera;
-class IRenderSystem;
 class ILightSource;
 class LightsList;
 
@@ -64,7 +63,7 @@ public:
     virtual void GetFogInfo(float* minDist, float* maxDist, glm::vec4* color);
 
     /** **/
-    virtual void Draw(IRenderSystem* rc);
+    virtual void Draw();
 
     SceneManager();
     virtual ~SceneManager();

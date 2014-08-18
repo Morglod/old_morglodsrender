@@ -12,11 +12,11 @@ namespace MR {
 class ITexture;
 class ITextureSettings;
 class IViewport;
-class IRenderWindow;
 class IVertexFormat;
 class IIndexFormat;
 class IGeometry;
 class IShaderProgram;
+class IContext;
 
 class Camera;
 class Entity;
@@ -34,7 +34,7 @@ public:
         Fill = 0x1B02
     };
 
-    virtual bool Init(IRenderWindow* window, bool multithreaded = false) = 0;
+    virtual bool Init(IContext* ctx) = 0;
     virtual void Shutdown() = 0;
 
     /* Is Initializated and not shutdowned */
@@ -72,8 +72,7 @@ public:
 
     virtual void DrawEntity(Entity* ent, void* edp) = 0; //MR::SceneManager::EntityDrawParams* edp
 
-    //Get actived window
-    virtual IRenderWindow* GetWindow() = 0;
+    virtual IContext* GetContext() = 0;
 };
 
 /** BASE RENDER SYSTEM CALLS THIS METHODS AUTOMATICALLY **/
@@ -96,7 +95,7 @@ class RenderSystem : public MR::IRenderSystem, public MR::IObject {
 public:
     inline std::string ToString() override { return "RenderSystem(base)"; }
 
-    bool Init(IRenderWindow* window, bool multithreaded = false) override;
+    bool Init(IContext* ctx) override;
     void Shutdown() override;
 
     inline bool Alive() override { return _alive; }
@@ -136,7 +135,7 @@ public:
 
     void DrawEntity(MR::Entity* ent, void* edp) override;
 
-    IRenderWindow* GetWindow() override { return _window; }
+    IContext* GetContext() override { return _ctx; }
 
     RenderSystem();
     ~RenderSystem();
@@ -174,7 +173,7 @@ protected:
     RenderTarget* _renderTarget;
     PolygonMode _poly_mode;
 
-    IRenderWindow* _window;
+    IContext* _ctx;
 };
 
 }

@@ -1,6 +1,6 @@
 #include "MachineInfo.hpp"
 #include "Utils/Log.hpp"
-#include "GL/Context.hpp"
+#include "Context.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
@@ -29,6 +29,12 @@
 #define WGL_GPU_NUM_SIMD_AMD               0x21A6
 #define WGL_GPU_NUM_RB_AMD                 0x21A7
 #define WGL_GPU_NUM_SPI_AMD                0x21A8
+
+typedef unsigned int (*PROC_wglGetGPUIDsAMD)(unsigned int maxCount, unsigned int * ids);
+typedef int (*PROC_wglGetGPUInfoAMD)(unsigned int id, int property, GLenum dataType, unsigned int size, void * data);
+
+PROC_wglGetGPUIDsAMD wglGetGPUIDsAMD = 0;
+PROC_wglGetGPUInfoAMD wglGetGPUInfoAMD = 0;
 
 int MR::MachineInfo::gl_version_major() {
     int outv = 0;
@@ -100,7 +106,7 @@ std::string MR::MachineInfo::gpu_vendor_string() {
 MR::MachineInfo::GPUVendor MR::MachineInfo::gpu_vendor() {
     static std::string v = gpu_vendor_string();
     if(v == "NVIDIA Corporation") return GPUVendor::Nvidia;
-    else if(v == "ATI Technologies") return GPUVendor::ATI;
+    else if(v == "ATI Technologies" || v == "ATI Technologies Inc.") return GPUVendor::ATI;
     else if(v == "INTEL") return GPUVendor::Intel;
     else if(v == "Microsoft") return GPUVendor::Microsoft_DirectX_Wrapper;
     else return GPUVendor::Other;
@@ -121,21 +127,27 @@ std::string MR::MachineInfo::gl_version_glsl() {
     return outv;
 }
 
-int MR::MachineInfo::total_memory_kb() {
-    GLint total_mem_kb = 0;
-    if(gpu_vendor() == GPUVendor::Nvidia) glGetIntegerv(GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX, &total_mem_kb);
-    /*else if(gpu_vendor() == GPUVendor::ATI) {
-        unsigned int n = wglGetGPUIDsAMD(0, 0);
-        unsigned int *ids = new unsigned int[n];
-        size_t total_mem_mb = 0;
-        wglGetGPUIDsAMD(n, ids);
-        wglGetGPUInfoAMD(ids[0],
-          WGL_GPU_RAM_AMD,
-          GL_UNSIGNED_INT,
-          sizeof(size_t),
-          &total_mem_mb);
-        total_mem_kb = total_mem_mb / 1024;
-    }*/
+unsigned int MR::MachineInfo::total_memory_kb() {
+    unsigned int total_mem_kb = 0;
+    if(gpu_vendor() == GPUVendor::Nvidia) glGetIntegerv(GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX, (int*)&total_mem_kb);
+    else if(gpu_vendor() == GPUVendor::ATI) {
+        //glGetIntegerv(VBO_FREE_MEMORY_ATI, (int*)&total_mem_kb);
+        /*if(wglGetGPUIDsAMD == 0) {
+            wglGetGPUIDsAMD = (PROC_wglGetGPUIDsAMD)wglGetProcAddress("wglGetGPUIDsAMD");
+            wglGetGPUInfoAMD = (PROC_wglGetGPUInfoAMD)wglGetProcAddress("wglGetGPUInfoAMD");
+        }
+        if(wglGetGPUIDsAMD == 0) {
+            MR::Log::LogString("Failed wglGetProcAddress(\"wglGetGPUIDsAMD\") at MR::MachineInfo::total_memory_kb().", MR_LOG_LEVEL_ERROR);
+            return 0;
+        }
+        unsigned int uNoOfGPUs = wglGetGPUIDsAMD(0,0);
+        unsigned int* uGPUIDs = new unsigned int[uNoOfGPUs];
+        wglGetGPUIDsAMD(uNoOfGPUs,uGPUIDs);
+
+        wglGetGPUInfoAMD(uGPUIDs[0], WGL_GPU_RAM_AMD, GL_UNSIGNED_INT, sizeof(unsigned int), &total_mem_kb);
+        total_mem_kb /= 1024;*/
+        MR::Log::LogString("Failed MR::MachineInfo::total_memory_kb(). AMD is glitchy shit. Sorry", MR_LOG_LEVEL_ERROR);
+    }
     else {
         //COPYPASTA
         DWORD	i[5] = { 0, 0, 0x27, 0, 0 };
@@ -164,13 +176,11 @@ int MR::MachineInfo::total_memory_kb() {
     return total_mem_kb;
 }
 
-int MR::MachineInfo::current_memory_kb() {
-    GLint cur_avail_mem_kb = 0;
-    if(gpu_vendor() == GPUVendor::Nvidia) glGetIntegerv(GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX, &cur_avail_mem_kb);
+unsigned int  MR::MachineInfo::current_memory_kb() {
+    unsigned int cur_avail_mem_kb = 0;
+    if(gpu_vendor() == GPUVendor::Nvidia) glGetIntegerv(GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX, (int*)&cur_avail_mem_kb);
     else if(gpu_vendor() == GPUVendor::ATI){
-        int free_mem[4] = {0};
-        glGetIntegerv(GL_TEXTURE_FREE_MEMORY_ATI, &free_mem[0]);
-        cur_avail_mem_kb = free_mem[0];
+        glGetIntegerv(GL_TEXTURE_FREE_MEMORY_ATI, (int*)&cur_avail_mem_kb);
     }
     return cur_avail_mem_kb;
 }
@@ -187,20 +197,30 @@ void MR::MachineInfo::PrintInfo() {
 
         MR::Log::LogString("\nNvidia VBUM: " + std::to_string(MR::MachineInfo::FeatureNV_GPUPTR()));
         MR::Log::LogString("Direct state access: " + std::to_string(MR::MachineInfo::IsDirectStateAccessSupported()));
+    MR::MachineInfo::ClearError();
 }
 
-bool MR::MachineInfo::FeatureNV_GPUPTR(){
+const bool MR::MachineInfo::FeatureNV_GPUPTR(){
     static bool support = (gpu_vendor() == MR::MachineInfo::GPUVendor::Nvidia) && (__glewGetBufferParameterui64vNV);
     return support;
 }
 
-bool MR::MachineInfo::IsDirectStateAccessSupported(){
+const bool MR::MachineInfo::Feature_DrawIndirect() {
+    static bool support = (__glewDrawArraysIndirect);
+    return support;
+}
+
+const bool MR::MachineInfo::Feautre_DrawIndirect_UseGPUBuffer() {
+    return MR::MachineInfo::Feature_DrawIndirect();
+}
+
+const bool MR::MachineInfo::IsDirectStateAccessSupported(){
     static bool state = (__glewNamedBufferDataEXT);
     return state;
 }
 
-bool MR::MachineInfo::IsVertexAttribBindingSupported() {
-    static bool state = MR::GL::GetCurrent()->ExtensionSupported("ARB_vertex_attrib_binding");
+const bool MR::MachineInfo::IsVertexAttribBindingSupported(IContext* ctx) {
+    static bool state = ctx->ExtensionSupported("ARB_vertex_attrib_binding");
     return state;
 }
 
@@ -210,6 +230,15 @@ int MR::MachineInfo::GetGeometryStreamsNum() {
         glGetIntegerv(GL_MAX_VERTEX_ATTRIB_BINDINGS, &num);
     }
     return num;
+}
+
+const bool MR::MachineInfo::IsTextureStorageSupported() {
+    static unsigned char state = 2;
+    if(state == 2) {
+        if(MR::MachineInfo::gl_version_major() >= 4 || GLEW_ARB_texture_storage) state = 1;
+        else state = 0;
+    }
+    return (bool)state;
 }
 
 bool MR::MachineInfo::CatchError(std::string* errorOutput, int * glCode){
@@ -273,6 +302,33 @@ int MR::MachineInfo::MaxTextureUnits(){
     static int s = 0;
     if(s == 0){
         glGetIntegerv(GL_MAX_TEXTURE_UNITS, &s);
+        if(s == 0) glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &s);
+        if(s == 0) {
+            MR::Log::LogString("Failed MachineInfo::MaxTextureUnits. MaxTextureUnits always 0. 32 will be used.", MR_LOG_LEVEL_ERROR);
+            s = 32;
+        }
     }
     return s;
+}
+
+std::string MR::MachineInfo::glsl_version_directive() {
+    static std::string s = "";
+    if(s == "") {
+        switch(MR::MachineInfo::gl_version()) {
+        case MR::MachineInfo::GLVersion::VUnknown:
+        case MR::MachineInfo::GLVersion::VNotSupported:
+        case MR::MachineInfo::GLVersion::Vx_x:
+        case MR::MachineInfo::GLVersion::V3_2:
+            s = std::string("#version 150 ") + (gl_core_profile() ? "core" : "");
+            break;
+        default:
+            s = std::string("#version ")+std::to_string(MR::MachineInfo::gl_version_major())+std::to_string(MR::MachineInfo::gl_version_minor())+"0 " + (gl_core_profile() ? "core" : "");
+            break;
+        }
+    }
+    return s;
+}
+
+bool MR::MachineInfo::gl_core_profile() {
+    return true;
 }

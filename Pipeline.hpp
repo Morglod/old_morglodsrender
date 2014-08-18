@@ -8,18 +8,15 @@ namespace MR {
 class SceneManager;
 class RenderTarget;
 class GeometryBuffer;
-class IRenderSystem;
-class IRenderWindow;
 class IGeometry;
 class IShaderProgram;
-
-namespace GL { class IContext; }
+class IContext;
 
 class IPipeline {
 public:
     typedef bool (*FrameProc)(IPipeline* pipeline, const float& delta);
 
-    virtual bool Setup(IRenderSystem* rs, GL::IContext* ctx, IRenderWindow* rw) = 0;
+    virtual bool Setup(IContext* ctx) = 0;
     virtual bool Frame(const float& delta) = 0;
     virtual void Shutdown() = 0;
 
@@ -33,9 +30,7 @@ public:
 
 protected:
     FrameProc _pre_scene = nullptr, _post_scene = nullptr;
-    IRenderSystem* _rs;
-    GL::IContext* _ctx;
-    IRenderWindow* _rw;
+    IContext* _ctx;
 };
 
 class IRenderingPipeline : public IPipeline {
@@ -52,7 +47,7 @@ protected:
 /** Good for 2D scenes, without builtin lights **/
 class ForwardRenderingPipeline : public IRenderingPipeline {
 public:
-    bool Setup(IRenderSystem* rs, GL::IContext* ctx, IRenderWindow* rw) override;
+    bool Setup(IContext* ctx) override;
     bool Frame(const float& delta) override;
     void Shutdown() override;
 
@@ -65,7 +60,7 @@ public:
 /** Good for massive scenes, with many light sources **/
 class DefferedRenderingPipeline : public IRenderingPipeline {
 public:
-    bool Setup(IRenderSystem* rs, GL::IContext* ctx, IRenderWindow* rw) override;
+    bool Setup(IContext* ctx) override;
     bool Frame(const float& delta) override;
     void Shutdown() override;
 

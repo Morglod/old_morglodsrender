@@ -1,30 +1,26 @@
 #include "Pipeline.hpp"
 #include "Scene/Scene.hpp"
-#include "RenderWindow.hpp"
 #include "RenderTarget.hpp"
-#include "Texture.hpp"
-#include "RenderSystem.hpp"
-#include "Material.hpp"
+#include "Materials/MaterialInterfaces.hpp"
 #include "Geometry/GeometryBufferV2.hpp"
-
 #include "Shaders/ShaderBuilder.hpp"
+#include "Context.hpp"
+#include "RenderManager.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
 #endif
 
-MR::GeometryBuffer* __pipeline__createScreenQuad(MR::GL::IContext* ctx){
-    return MR::GeometryBuffer::Plane(ctx, glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0,0,0), MR::IBuffer::Static+MR::IBuffer::Draw, MR::IGeometryBuffer::Draw_Quads);
+MR::GeometryBuffer* __pipeline__createScreenQuad(){
+    return nullptr; //MR::GeometryBuffer::Plane(glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0,0,0), MR::IBuffer::Static+MR::IBuffer::Draw, MR::IGeometryBuffer::Draw_Quads);
 }
 
 namespace MR {
 
 ///FORWARD
 
-bool ForwardRenderingPipeline::Setup(IRenderSystem* rs, GL::IContext* ctx, IRenderWindow* rw) {
-    _rs = rs;
+bool ForwardRenderingPipeline::Setup(IContext* ctx) {
     _ctx = ctx;
-    _rw = rw;
 
     return true;
 }
@@ -41,7 +37,7 @@ void ForwardRenderingPipeline::Shutdown() {
 
 bool ForwardRenderingPipeline::FrameScene(const float& delta) {
     if(_pre_scene) _pre_scene(dynamic_cast<MR::IPipeline*>(this), delta);
-    if(_scene) _scene->Draw(_rs);
+    if(_scene) _scene->Draw();
     if(_post_scene) _post_scene(dynamic_cast<MR::IPipeline*>(this), delta);
 
     return true;
@@ -55,48 +51,52 @@ ForwardRenderingPipeline::~ForwardRenderingPipeline() {
 
 ///DEFFERED
 
-bool DefferedRenderingPipeline::Setup(IRenderSystem* rs, GL::IContext* ctx, IRenderWindow* rw) {
-    _rs = rs;
+bool DefferedRenderingPipeline::Setup(IContext* ctx) {
     _ctx = ctx;
-    _rw = rw;
 
     int win_w, win_h;
-    rw->GetSize(&win_w, &win_h);
+    ctx->GetWindowSizes(&win_w, &win_h);
 
     _gbuffer = new RenderTarget("DefferedRenderingPipeline_GBuffer", 3, win_w, win_h);
-    _gbuffer->CreateTargetTexture(0, MR::ITexture::InternalFormat::RGB10_A2, MR::ITexture::Format::RGBA, MR::ITexture::Type::FLOAT); // scene color + nothing
-    _gbuffer->CreateTargetTexture(1, MR::ITexture::InternalFormat::RGB10_A2, MR::ITexture::Format::RGBA, MR::ITexture::Type::FLOAT); // world normal + light model
-    _gbuffer->CreateTargetTexture(2, MR::ITexture::InternalFormat::RGBA16, MR::ITexture::Format::RGBA, MR::ITexture::Type::FLOAT); // world pos + depth
+    _gbuffer->CreateTargetTexture(0, MR::ITexture::IFormat_RGB10_A2, MR::ITexture::Format_RGBA, MR::ITexture::Type_FLOAT); // scene color + nothing
+    _gbuffer->CreateTargetTexture(1, MR::ITexture::IFormat_RGB10_A2, MR::ITexture::Format_RGBA, MR::ITexture::Type_FLOAT); // world normal + light model
+    _gbuffer->CreateTargetTexture(2, MR::ITexture::IFormat_RGBA16, MR::ITexture::Format_RGBA, MR::ITexture::Type_FLOAT); // world pos + depth
 
-    _plane_buf = __pipeline__createScreenQuad(_ctx);
-    _plane = new MR::Geometry(_plane_buf, 0, 0, 4, 4);
+    _plane_buf = __pipeline__createScreenQuad();
+    _plane = new MR::Geometry(_plane_buf, 0);
 
     MR::IShaderProgram::Features shaderRequest;
     shaderRequest.ambient = true;
     shaderRequest.toScreen = true;
     shaderRequest.defferedRendering = true;
-    _rtt_shader = MR::ShaderBuilder::Need(shaderRequest);
+
+    MR::ShaderBuilder::Params reqParams;
+    reqParams.features = shaderRequest;
+
+    _rtt_shader = MR::ShaderBuilder::Need(reqParams);
 
     return true;
 }
 
 bool DefferedRenderingPipeline::Frame(const float& delta) {
-    _rs->BindRenderTarget(_gbuffer);
+    MR::RenderManager* rm = MR::RenderManager::GetInstance();
+
+    rm->BindRenderTarget(_gbuffer);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    MR::MaterialManager::Instance()->ActiveFlag(2);
+    rm->ActiveMaterialFlag(2);//TODO MR::MaterialManager::GetInstance()->ActiveFlag(2);
     FrameScene(delta);
-    _rs->UnBindRenderTarget();
+    rm->UnBindRenderTarget();
 
     glClear(GL_DEPTH_BUFFER_BIT);
     glDisable(GL_CULL_FACE);
 
-    _rs->BindTexture(GL_TEXTURE_2D, _gbuffer->GetTargetTexture(0), 0);
-    _rs->BindTexture(GL_TEXTURE_2D, _gbuffer->GetTargetTexture(1), 1);
-    _rs->BindTexture(GL_TEXTURE_2D, _gbuffer->GetTargetTexture(2), 2);
-    _rs->BindTexture(GL_TEXTURE_2D, _gbuffer->GetTargetTexture(0), 10);
+    rm->SetTexture(GL_TEXTURE_2D, _gbuffer->GetTargetTexture(0), 0);
+    rm->SetTexture(GL_TEXTURE_2D, _gbuffer->GetTargetTexture(1), 1);
+    rm->SetTexture(GL_TEXTURE_2D, _gbuffer->GetTargetTexture(2), 2);
+    rm->SetTexture(GL_TEXTURE_2D, _gbuffer->GetTargetTexture(0), 10);
 
-    MR::MaterialManager::Instance()->ActiveFlag(0);
-    _rs->UseShaderProgram(_rtt_shader);
+    rm->ActiveMaterialFlag(2);//MR::MaterialManager::GetInstance()->ActiveFlag(0);
+    rm->SetShaderProgram(_rtt_shader);
     glProgramUniform1i(_rtt_shader->GetGPUHandle(), glGetUniformLocation(_rtt_shader->GetGPUHandle(), MR_SHADER_UNIFORM_GBUFFER_1), 0);
     glProgramUniform1i(_rtt_shader->GetGPUHandle(), glGetUniformLocation(_rtt_shader->GetGPUHandle(), MR_SHADER_UNIFORM_GBUFFER_2), 1);
     glProgramUniform1i(_rtt_shader->GetGPUHandle(), glGetUniformLocation(_rtt_shader->GetGPUHandle(), MR_SHADER_UNIFORM_GBUFFER_3), 2);
@@ -153,12 +153,12 @@ bool DefferedRenderingPipeline::Frame(const float& delta) {
         glUniform1i(glGetUniformLocation(_rtt_shader->GetGPUHandle(), MR_SHADER_DIR_LIGHTS_NUM), dirLightsNum);
     }
 
-    _plane->Draw(_rs);
+    _plane->Draw();
 
-    _rs->UnBindTexture(0);
-    _rs->UnBindTexture(1);
-    _rs->UnBindTexture(2);
-    _rs->UnBindTexture(10);
+    rm->UnBindTexture(0);
+    rm->UnBindTexture(1);
+    rm->UnBindTexture(2);
+    rm->UnBindTexture(10);
 
     glEnable(GL_CULL_FACE);
 
@@ -175,7 +175,7 @@ void DefferedRenderingPipeline::Shutdown() {
 
 bool DefferedRenderingPipeline::FrameScene(const float& delta) {
     if(_pre_scene) _pre_scene(dynamic_cast<MR::IPipeline*>(this), delta);
-    if(_scene) _scene->Draw(_rs);
+    if(_scene) _scene->Draw();
     if(_post_scene) _post_scene(dynamic_cast<MR::IPipeline*>(this), delta);
 
     return true;

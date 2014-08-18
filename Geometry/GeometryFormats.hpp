@@ -6,6 +6,7 @@
 #include "../Types.hpp"
 #include "../Config.hpp"
 #include "GeometryInterfaces.hpp"
+#include "../Utils/Singleton.hpp"
 
 #ifndef glm_glm
 #   include <glm/glm.hpp>
@@ -23,7 +24,7 @@ class GeometryBuffer;
 class VertexFormatCustom;
 class VertexFormatCustomFixed;
 
-class VertexDataTypeInt : public IVertexDataType {
+class VertexDataTypeInt : public IVertexDataType, public Singleton<VertexDataTypeInt> {
 public:
     inline unsigned char Size() override { return sizeof(int); }
     inline unsigned int GPUDataType() override { return 0x1404; }
@@ -33,11 +34,9 @@ public:
         if(0x1404 != dt->GPUDataType()) return false;
         return true;
     }
-
-    static IVertexDataType* Instance();
 };
 
-class VertexDataTypeUInt : public IVertexDataType {
+class VertexDataTypeUInt : public IVertexDataType, public Singleton<VertexDataTypeUInt> {
 public:
     inline unsigned char Size() override { return sizeof(unsigned int); }
     inline unsigned int GPUDataType() override { return 0x1405; }
@@ -47,11 +46,9 @@ public:
         if(0x1405 != dt->GPUDataType()) return false;
         return true;
     }
-
-    static IVertexDataType* Instance();
 };
 
-class VertexDataTypeFloat : public IVertexDataType {
+class VertexDataTypeFloat : public IVertexDataType, public Singleton<VertexDataTypeFloat> {
 public:
     inline unsigned char Size() override { return sizeof(float); }
     inline unsigned int GPUDataType() override { return 0x1406; }
@@ -61,8 +58,6 @@ public:
         if(0x1406 != dt->GPUDataType()) return false;
         return true;
     }
-
-    static IVertexDataType* Instance();
 };
 
 class VertexDataTypeCustom : public IVertexDataType {
@@ -82,19 +77,19 @@ protected:
     unsigned char _size;
 };
 
-class VertexAttributePos3F : public IVertexAttribute {
+class VertexAttributePos3F : public IVertexAttribute, public Singleton<VertexAttributePos3F> {
 public:
-    inline uint64_t Size() override {return ((uint64_t)VertexDataTypeFloat::Instance()->Size()) * ((uint64_t)3);}
+    inline uint64_t Size() override {return ((uint64_t)VertexDataTypeFloat::GetInstance()->Size()) * ((uint64_t)3);}
     inline unsigned char ElementsNum() override { return 3; }
-    inline IVertexDataType* DataType() override { return VertexDataTypeFloat::Instance();}
+    inline IVertexDataType* DataType() override { return VertexDataTypeFloat::GetInstance();}
     inline unsigned int ShaderIndex() override { return IVertexAttribute::SI_Position; }
 
     inline bool Equal(IVertexAttribute* va) override {
-        if((((uint64_t)VertexDataTypeFloat::Instance()->Size()) * ((uint64_t)3)) != va->Size()) return false;
+        if((((uint64_t)VertexDataTypeFloat::GetInstance()->Size()) * ((uint64_t)3)) != va->Size()) return false;
         if(3 != va->ElementsNum()) return false;
         if(IVertexAttribute::SI_Position != va->ShaderIndex()) return false;
 
-        return VertexDataTypeFloat::Instance()->Equal(va->DataType());
+        return VertexDataTypeFloat::GetInstance()->Equal(va->DataType());
     }
 };
 
@@ -131,10 +126,10 @@ public:
 
     VertexFormatCustom();
     ~VertexFormatCustom();
-protected:
-    inline size_t _Attributes(IVertexAttribute*** dst) override { *dst = &_attribs[0]; return _attribs.size(); }
-    inline size_t _Offsets(uint64_t** dst) override { *dst = &_pointers[0]; return _pointers.size(); }
 
+    inline StaticArray<IVertexAttribute*> _Attributes() override { return StaticArray<IVertexAttribute*>(&_attribs[0], _attribs.size(), false); }
+    inline StaticArray<uint64_t> _Offsets() override { return StaticArray<uint64_t>(&_pointers[0], _pointers.size(), false); }
+protected:
     std::vector<IVertexAttribute*> _attribs;
     std::vector<uint64_t> _pointers;
     uint64_t _nextPtr;
@@ -152,13 +147,14 @@ public:
     /// call this after creating new object of this type
     /// resets all data
     void SetAttributesNum(const size_t& num);
-    void RecalcSize(); //SetVertexAttribute calls it automatically
 
     VertexFormatCustomFixed();
     ~VertexFormatCustomFixed();
+
+    inline StaticArray<IVertexAttribute*> _Attributes() override { return StaticArray<IVertexAttribute*>(&_attribs[0], _attribsNum, false); }
+    inline StaticArray<uint64_t> _Offsets() override { return StaticArray<uint64_t>(&_pointers[0], _attribsNum, false); }
 protected:
-    inline size_t _Attributes(IVertexAttribute*** dst) override { *dst = _attribs; return _attribsNum; }
-    inline size_t _Offsets(uint64_t** dst) override { *dst = _pointers; return _attribsNum; }
+    void _RecalcSize(); //SetVertexAttribute calls it automatically
     void SetVertexAttribute(IVertexAttribute* a, const size_t& index);
 
     IVertexAttribute** _attribs;

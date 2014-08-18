@@ -49,7 +49,7 @@ public:
     virtual LightManager* GetManager() = 0;
 };
 
-class LightSource : public IObject, public ILightSource {
+class LightSource : public ILightSource {
 public:
     inline glm::vec3 GetPos() override { return _pos; }
     inline glm::vec3 GetEmission() override { return _em; }
@@ -77,7 +77,7 @@ public:
 
     virtual ~LightSource();
 private:
-    LightSource() : IObject() {}
+    LightSource() {}
 
 protected:
     LightManager* _manager;
