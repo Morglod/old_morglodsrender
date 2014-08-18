@@ -100,6 +100,7 @@ void GPUBuffer::Allocate(const Usage& usage, const size_t& size, const bool& map
     }
 
     if(_size > size) return; //Current size is enough
+    _size = size;
 
     unsigned int usageFlags = 0, mappingFlags = 0;
 
@@ -107,7 +108,7 @@ void GPUBuffer::Allocate(const Usage& usage, const size_t& size, const bool& map
     if(!MR::MachineInfo::IsDirectStateAccessSupported()) binded = ReBind(ArrayBuffer);
 
     MR_BUFFERS_CHECK_BUFFER_DATA_ERRORS_CATCH(
-        if(GLEW_ARB_buffer_storage) {
+        /*if(GLEW_ARB_buffer_storage) {
             switch(usage) {
             case Draw:
                 usageFlags = mappingFlags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
@@ -121,7 +122,7 @@ void GPUBuffer::Allocate(const Usage& usage, const size_t& size, const bool& map
             } else {
                 glBufferStorage(_MR_BUFFER_BIND_TARGETS_REMAP_FROM_INDEX_[(size_t)ArrayBuffer], size, 0, usageFlags);
             }
-        } else {
+        } else {*/
             switch(usage) {
             case Draw:
                 usageFlags = GL_STATIC_DRAW;
@@ -137,7 +138,7 @@ void GPUBuffer::Allocate(const Usage& usage, const size_t& size, const bool& map
             } else {
                 glBufferData(_MR_BUFFER_BIND_TARGETS_REMAP_FROM_INDEX_[(size_t)ArrayBuffer], size, 0, usageFlags);
             }
-        }
+        //}
     )
 
     if(mapMemory) {
@@ -157,7 +158,7 @@ void GPUBuffer::Allocate(const Usage& usage, const size_t& size, const bool& map
     if(binded != 0) binded->Bind(ArrayBuffer);
 }
 
-bool GPUBuffer::BufferData(void* data, const size_t& offset, const size_t& size, size_t* out_realOffset) {
+bool GPUBuffer::BufferData(void* data, const size_t& offset, const size_t& size, size_t* out_realOffset, BufferedDataInfo* out_info) {
     if(GetMappedMemory() != 0) return false;
     Assert(data == 0)
     Assert(size == 0)
@@ -175,6 +176,7 @@ bool GPUBuffer::BufferData(void* data, const size_t& offset, const size_t& size,
     )
 
     if(out_realOffset) *out_realOffset = offset;
+    if(out_info) *out_info = MR::IGPUBuffer::BufferedDataInfo(dynamic_cast<MR::IGPUBuffer*>(this), offset, size);
     return true;
 }
 

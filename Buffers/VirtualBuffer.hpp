@@ -23,7 +23,7 @@ public:
     IGPUBuffer* ReBind(const BindTargets& target) override { return _realBuffer->ReBind(target); }
     BindTargets GetTarget() override { return _realBuffer->GetTarget(); }
     void* GetMappedMemory() override { return _mapped_mem; }
-    bool BufferData(void* data, const size_t& offset, const size_t& size, size_t* out_realOffset) override;
+    bool BufferData(void* data, const size_t& offset, const size_t& size, size_t* out_realOffset, BufferedDataInfo* out_info) override;
 
     /* GPUObjectHandle */
     unsigned int GetGPUHandle() override { return (_realBuffer) ? _realBuffer->GetGPUHandle() : 0; }
@@ -39,7 +39,7 @@ public:
     virtual ~VirtualGPUBuffer();
 protected:
     /* IGPUBuffer */
-    void Allocate(const Usage& usage, const size_t& size, const bool& mapMemory) override;
+    void Allocate(const Usage& usage, const size_t& size, const bool& mapMemory) override {}
 
     IGPUBuffer* _realBuffer;
     size_t _realBuffer_offset;

@@ -6,6 +6,7 @@
 #include "../Types.hpp"
 #include "../Utils/Containers.hpp"
 #include "../Shaders/ShaderConfig.hpp"
+#include "../Buffers/BuffersInterfaces.hpp"
 
 namespace MR {
 
@@ -85,51 +86,11 @@ public:
     virtual ~IIndexData() {}
 };
 
-class IBuffer {
+class IGPUGeometryBuffer {
 public:
-    enum UsageFlags {
-        Stream = 0x88E0,
-        Static = 0x88E4,
-        Dynamic = 0x88E8,
-
-        //Stream/Static/Dynamic + one of this
-        Draw = 0,
-        Read = 1,
-        Copy = 2
-    };
-
-    enum AccessFlags {
-        ReadOnly = 0x88B8,
-        WriteOnly = 0x88B9,
-        ReadWrite = 0x88BA
-    };
-
-    enum StorageBits {
-        DynamicBit = 0x0100,
-        ReadBit = 0x0001,
-        WriteBit = 0x0002,
-        PersistentBit = 0x00000040,
-        CoherentBit = 0x00000080,
-        ClientStorageBit = 0x0200
-    };
-
-    //stream->format should be binded
-    virtual void BindToStream(IGeometryStream* stream, const unsigned int& offset) = 0;
-
-    virtual bool Buffer(void* data, const unsigned int& size, const unsigned int& usage) = 0;
-    virtual bool BufferAutoLocate(void* data, const unsigned int& size, unsigned int * offset) = 0;
-    virtual bool Update(void* data, const unsigned int& size, const unsigned int& offset) = 0;
-    virtual bool GetBuffered(void* data, const unsigned int& offset, const unsigned int& size) = 0;
-    virtual void Release() = 0;
-
-    virtual size_t GetAllocatedSize() = 0;
-    virtual size_t GetUsedSize() = 0;
-    virtual size_t GetFreeSize() = 0;
-    virtual unsigned int GetNextFreeOffset() = 0;
-
-    virtual bool _CopyTo(const unsigned int& dstHandle, const unsigned int& srcOffset, const unsigned int& dstOffset, const unsigned int& size) = 0;
-
-    virtual unsigned int GetGPUHandle() = 0;
+    virtual void SetGPUBuffer(IGPUBuffer* buf) = 0;
+    virtual IGPUBuffer* GetGPUBuffer() = 0;
+    virtual void GetNVGPUPTR(uint64_t* nv_resident_ptr, int* nv_buffer_size) = 0;
 };
 
 class IGeometryBuffer {
@@ -146,11 +107,11 @@ public:
         Draw_QuadStrip = 8
     };
 
-    virtual bool SetVertexBuffer(GPUBuffer* buf) = 0;
-    virtual GPUBuffer* GetVertexBuffer() = 0;
+    virtual bool SetVertexBuffer(IGPUGeometryBuffer* buf) = 0;
+    virtual IGPUGeometryBuffer* GetVertexBuffer() = 0;
 
-    virtual bool SetIndexBuffer(GPUBuffer* buf) = 0;
-    virtual GPUBuffer* GetIndexBuffer() = 0;
+    virtual bool SetIndexBuffer(IGPUGeometryBuffer* buf) = 0;
+    virtual IGPUGeometryBuffer* GetIndexBuffer() = 0;
 
     virtual void Release() = 0;
 
@@ -162,8 +123,6 @@ public:
     virtual IIndexFormat* GetIndexFormat() = 0;
 
     virtual unsigned int GetVAO() = 0; //if zero, don't use vao
-
-    virtual ~IGeometryBuffer() {}
 };
 
 class IGeometryDrawParams {

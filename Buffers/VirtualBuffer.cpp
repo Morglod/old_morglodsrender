@@ -32,7 +32,7 @@ private:
     MR::VirtualGPUBuffer* _vgb;
 };
 
-bool VirtualGPUBuffer::BufferData(void* data, const size_t& offset, const size_t& size, size_t* out_realOffset) {
+bool VirtualGPUBuffer::BufferData(void* data, const size_t& offset, const size_t& size, size_t* out_realOffset, BufferedDataInfo* out_info) {
     if(GetMappedMemory() != 0) return false;
     Assert(data == 0)
     Assert(size == 0)
@@ -50,6 +50,7 @@ bool VirtualGPUBuffer::BufferData(void* data, const size_t& offset, const size_t
     )
 
     if(out_realOffset) *out_realOffset = GetRealOffset()+offset;
+    if(out_info) *out_info = MR::IGPUBuffer::BufferedDataInfo(GetRealBuffer(), GetRealOffset()+offset, size);
     return true;
 }
 

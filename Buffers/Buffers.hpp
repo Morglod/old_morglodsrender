@@ -15,9 +15,9 @@ public:
     IGPUBuffer* ReBind(const BindTargets& target) override;
     BindTargets GetTarget() override;
 
-    void* GetMappedMemory() override;
+    void* GetMappedMemory() override { return _mapped_mem; }
     void Allocate(const Usage& usage, const size_t& size, const bool& mapMemory) override;
-    bool BufferData(void* data, const size_t& offset, const size_t& size, size_t* out_realOffset) override;
+    bool BufferData(void* data, const size_t& offset, const size_t& size, size_t* out_realOffset, BufferedDataInfo* out_info) override;
 
     /* GPUObjectHandle */
     //unsigned int GetGPUHandle() override;

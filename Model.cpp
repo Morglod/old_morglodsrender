@@ -442,7 +442,8 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
         }
 
         unsigned int vbuf_off_bytes = 0, ibuf_off_bytes = 0;
-        MR::GeometryBuffer* new_gb = MR::GeometryManager::GetInstance()->PlaceGeometry(vformat, gl_i_format, &vbuffer[0], vbufferSize, &ibuffer[0], ibufferSize, IBuffer::Static+IBuffer::Draw, IBuffer::ReadOnly, GL_TRIANGLES, &vbuf_off_bytes, &ibuf_off_bytes);//new GeometryBuffer(GL::GetCurrent(), gl_v_buffer, gl_i_buffer, vformat, gl_i_format, GL_TRIANGLES);
+        MR::Log::LogString("445 line in Model.cpp TODO");
+        /*MR::GeometryBuffer* new_gb = MR::GeometryManager::GetInstance()->PlaceGeometry(vformat, gl_i_format, &vbuffer[0], vbufferSize, &ibuffer[0], ibufferSize, IBuffer::Static+IBuffer::Draw, IBuffer::ReadOnly, GL_TRIANGLES, &vbuf_off_bytes, &ibuf_off_bytes);//new GeometryBuffer(GL::GetCurrent(), gl_v_buffer, gl_i_buffer, vformat, gl_i_format, GL_TRIANGLES);
         if(new_gb != 0){
             vbuf_off_bytes = vbuf_off_bytes / vformat->Size();
 
@@ -456,7 +457,7 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
 
             for_meshes[materialId-1].num_verts.push_back(numVerts);
             for_meshes[materialId-1].num_inds.push_back(indsNum);
-        }
+        }*/
 
         delete meshName;
         delete vbuffer;

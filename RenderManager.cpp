@@ -69,7 +69,11 @@ void MR::RenderManager::DrawGeometryBuffer(IGeometryBuffer* b, IGeometryDrawPara
         StaticArray<IVertexAttribute*> attrs = _vformat->_Attributes();
         StaticArray<uint64_t> ptrs = _vformat->_Offsets();
 
-        GPUBuffer * buff = b->GetVertexBuffer();
+        MR::IGPUGeometryBuffer * buff = b->GetVertexBuffer();
+        uint64_t nv_res_ptr = 0;
+        int nv_buf_size = 0;
+        buff->GetNVGPUPTR(&nv_res_ptr, &nv_buf_size);
+
         if(!buff) {
             MR::Log::LogString("Failed RenderManager::DrawGeometryBuffer(...). No VertexBuffer.", MR_LOG_LEVEL_ERROR);
             return;
@@ -78,17 +82,18 @@ void MR::RenderManager::DrawGeometryBuffer(IGeometryBuffer* b, IGeometryDrawPara
         for(size_t i = 0; i < attrs.GetNum(); ++i) {
             glBufferAddressRangeNV(GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV,
                                    attrs.At(i)->ShaderIndex(),
-                                   buff->_GetResidentPtr() + ptrs.At(i),
-                                   buff->_GetBufferSize()
+                                   nv_res_ptr + ptrs.At(i),
+                                   nv_buf_size
                                    );
         }
 
         if((buff = b->GetIndexBuffer()) != nullptr && drawParams->GetUseIndexBuffer()){
+            buff->GetNVGPUPTR(&nv_res_ptr, &nv_buf_size);
             SetIndexFormat(b->GetIndexFormat());
             if(!_iformat) {
                 MR::Log::LogString("Failed RenderManager::DrawGeometryBuffer(...). No IndexFormat.", MR_LOG_LEVEL_ERROR);
             }
-            glBufferAddressRangeNV(GL_ELEMENT_ARRAY_ADDRESS_NV, 0, buff->_GetResidentPtr(), buff->_GetBufferSize());
+            glBufferAddressRangeNV(GL_ELEMENT_ARRAY_ADDRESS_NV, 0, nv_res_ptr, nv_buf_size);
             if(MR::MachineInfo::Feature_DrawIndirect()) glDrawElementsIndirect(b->GetDrawMode(), _iformat->GetDataType()->GPUDataType(), drawCmd);
             else {
                 glDrawRangeElements(b->GetDrawMode(),
@@ -106,16 +111,16 @@ void MR::RenderManager::DrawGeometryBuffer(IGeometryBuffer* b, IGeometryDrawPara
     }
     else {
         SetVAO(b->GetVAO());
-        GPUBuffer* ibuff = b->GetIndexBuffer();
+        IGPUGeometryBuffer* ibuff = b->GetIndexBuffer();
         MR::IIndexFormat * iform = nullptr;
 
         if(_vao == 0) {
-            GPUBuffer* buff = b->GetVertexBuffer();
+            IGPUGeometryBuffer* buff = b->GetVertexBuffer();
             if(!buff) {
                 MR::Log::LogString("Failed RenderManager::DrawGeometryBuffer(...). No VertexBuffer.", MR_LOG_LEVEL_ERROR);
                 return;
             }
-            glBindBuffer(GL_ARRAY_BUFFER, buff->GetGPUHandle());
+            glBindBuffer(GL_ARRAY_BUFFER, buff->GetGPUBuffer()->GetGPUHandle());
 
             SetVertexFormat(b->GetVertexFormat());
             if(!_vformat) {
@@ -124,7 +129,7 @@ void MR::RenderManager::DrawGeometryBuffer(IGeometryBuffer* b, IGeometryDrawPara
             }
 
             if(ibuff && drawParams->GetUseIndexBuffer()) {
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibuff->GetGPUHandle());
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibuff->GetGPUBuffer()->GetGPUHandle());
                 SetIndexFormat(b->GetIndexFormat());
                 if(!_iformat) {
                     MR::Log::LogString("Failed RenderManager::DrawGeometryBuffer(...). No IndexFormat.", MR_LOG_LEVEL_ERROR);

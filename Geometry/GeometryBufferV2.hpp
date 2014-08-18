@@ -22,55 +22,28 @@ class IRenderSystem;
 class Geometry;
 class GeometryBuffer;
 
-class GPUBuffer : public IBuffer {
+class GPUGeometryBuffer : public IGPUGeometryBuffer {
 public:
-    void BindToStream(IGeometryStream* stream, const unsigned int& offset) override;
+    void SetGPUBuffer(IGPUBuffer* buf) override;
+    inline IGPUBuffer* GetGPUBuffer() override { return _buffer; }
+    void GetNVGPUPTR(uint64_t* nv_resident_ptr, int* nv_buffer_size) override;
 
-    bool Buffer(void* data, const unsigned int& size, const unsigned int& usage) override;
-    bool BufferAutoLocate(void* data, const unsigned int& size, unsigned int * offset) override;
-    bool Update(void* data, const unsigned int& size, const unsigned int& offset) override;
-    bool GetBuffered(void* data, const unsigned int& offset, const unsigned int& size) override;
-    void Release() override;
-
-    inline size_t GetAllocatedSize() override { return _allocated_size; }
-    inline size_t GetUsedSize() override { return _used_size; }
-    inline size_t GetFreeSize() override { return _free_size; }
-    inline unsigned int GetNextFreeOffset() override { return _next_free_offset; }
-
-    bool _CopyTo(const unsigned int& dstHandle, const unsigned int& srcOffset, const unsigned int& dstOffset, const unsigned int& size) override;
-
-    inline void SetNum(const unsigned int & num) { _num = num; }
-    inline unsigned int GetNum() { return _num; }
-
-    unsigned int GetGPUHandle() override { return _handle; }
-    inline uint64_t _GetResidentPtr() { return _resident_ptr; }
-    inline int _GetBufferSize() { return _buffer_size; }
-
-    GPUBuffer(const unsigned int& target);
-    virtual ~GPUBuffer();
+    GPUGeometryBuffer(IGPUBuffer* buf);
+    virtual ~GPUGeometryBuffer();
 protected:
-    uint64_t _resident_ptr;
-    int _buffer_size;
-    unsigned int _usage;
-    unsigned int _accessFlag;
-    unsigned int _handle;
-    unsigned int _num;
+    IGPUBuffer* _buffer;
 
-    unsigned int _target; //gl target / buffer type (vertex, index, etc)
-
-    size_t _allocated_size;
-    size_t _used_size;
-    size_t _free_size;
-    unsigned int _next_free_offset;
+    uint64_t _nv_resident_ptr;
+    int _nv_buffer_size;
 };
 
 class GeometryBuffer : public IGeometryBuffer {
 public:
-    bool SetVertexBuffer(GPUBuffer* buf) override;
-    inline GPUBuffer* GetVertexBuffer() override { return _vb; }
+    bool SetVertexBuffer(IGPUGeometryBuffer* buf) override;
+    inline IGPUGeometryBuffer* GetVertexBuffer() override { return _vb; }
 
-    bool SetIndexBuffer(GPUBuffer* buf) override;
-    inline GPUBuffer* GetIndexBuffer() override { return _ib; }
+    bool SetIndexBuffer(IGPUGeometryBuffer* buf) override;
+    inline IGPUGeometryBuffer* GetIndexBuffer() override { return _ib; }
 
     unsigned int GetDrawMode() override { return _draw_mode; }
     void SetDrawMode(const unsigned int& dm) override { _draw_mode = dm; }
@@ -83,11 +56,11 @@ public:
 
     unsigned int GetVAO() override { return _vao; }
 
-    GeometryBuffer(GPUBuffer* vb, GPUBuffer* ib, IVertexFormat* f, IIndexFormat* fi, const unsigned int& drawMode);
+    GeometryBuffer(IGPUGeometryBuffer* vb, IGPUGeometryBuffer* ib, IVertexFormat* f, IIndexFormat* fi, const unsigned int& drawMode);
     virtual ~GeometryBuffer();
 protected:
-    GPUBuffer* _vb;
-    GPUBuffer* _ib;
+    IGPUGeometryBuffer* _vb;
+    IGPUGeometryBuffer* _ib;
     IVertexFormat* _format;
     IIndexFormat* _iformat;
     unsigned int _vao;
