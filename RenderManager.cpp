@@ -69,7 +69,7 @@ void MR::RenderManager::DrawGeometryBuffer(IGeometryBuffer* b, IGeometryDrawPara
         StaticArray<IVertexAttribute*> attrs = _vformat->_Attributes();
         StaticArray<uint64_t> ptrs = _vformat->_Offsets();
 
-        MR::IGPUGeometryBuffer * buff = b->GetVertexBuffer();
+        MR::IGPUGeometryBuffer* buff = b->GetVertexBuffer();
         uint64_t nv_res_ptr = 0;
         int nv_buf_size = 0;
         buff->GetNVGPUPTR(&nv_res_ptr, &nv_buf_size);

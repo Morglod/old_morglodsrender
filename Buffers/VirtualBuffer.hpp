@@ -46,6 +46,8 @@ protected:
 
     void* _mapped_mem;
     size_t _size;
+
+    void* _events[2];
 };
 
 class VirtualGPUBufferManager {

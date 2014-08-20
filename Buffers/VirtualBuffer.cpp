@@ -23,7 +23,7 @@ private:
 class VirtualGPUBuffer_DestroyEvent : public MR::EventHandle<ObjectHandle*> {
 public:
     void Invoke(EventListener<ObjectHandle*>* event, ObjectHandle* o) override {
-        _vgb->Destroy();
+        if(_vgb) _vgb->Destroy();
     }
 
     VirtualGPUBuffer_DestroyEvent(MR::VirtualGPUBuffer* vgb) : _vgb(vgb) {}
@@ -55,6 +55,15 @@ bool VirtualGPUBuffer::BufferData(void* data, const size_t& offset, const size_t
 }
 
 void VirtualGPUBuffer::Destroy() {
+    if(_realBuffer) {
+        if(_events[0]) {
+            _realBuffer->OnMemoryMapped.UnRegisterHandle((MR::EventHandle<IGPUBuffer*, void*>*)_events[0]);
+        }
+        if(_events[1]) {
+            _realBuffer->OnDestroy.UnRegisterHandle((MR::EventHandle<ObjectHandle*>*)_events[1]);
+        }
+    }
+
     _mapped_mem = 0;
     _size = 0;
     _realBuffer_offset = 0;
@@ -63,17 +72,17 @@ void VirtualGPUBuffer::Destroy() {
 }
 
 VirtualGPUBuffer::VirtualGPUBuffer(IGPUBuffer* realBuffer, size_t const& offset, size_t const& size) : _realBuffer(realBuffer), _realBuffer_offset(offset), _mapped_mem(0), _size(size) {
-    Assert(realBuffer == 0)
+    Assert(_realBuffer == 0)
     Assert(size == 0)
-    Assert(offset >= realBuffer->GetGPUMem())
+    Assert(offset >= _realBuffer->GetGPUMem())
 
-    if(realBuffer->GetGPUMem() == 0) {
+    if(_realBuffer->GetGPUMem() == 0) {
         _mapped_mem = 0;
-        MR::Log::LogString("VirtualGPUBuffer::ctor. RealBuffer not mapped.", MR_LOG_LEVEL_WARNING);
+        MR::Log::LogString("VirtualGPUBuffer::ctor. RealBuffer not allocated.", MR_LOG_LEVEL_WARNING);
     }
-    else _mapped_mem = (void*)(realBuffer->GetGPUMem() + offset);
-    realBuffer->OnMemoryMapped.RegisterHandle(new VirtualGPUBuffer_MemoryMappedEvent(this));
-    realBuffer->OnDestroy.RegisterHandle(new VirtualGPUBuffer_DestroyEvent(this));
+    else if(_realBuffer->GetMappedMemory() != 0) _mapped_mem = (void*)(_realBuffer->GetGPUMem() + offset);
+    _events[0] = _realBuffer->OnMemoryMapped.RegisterHandle(new VirtualGPUBuffer_MemoryMappedEvent(this));
+    _events[1] = _realBuffer->OnDestroy.RegisterHandle(new VirtualGPUBuffer_DestroyEvent(this));
 }
 
 VirtualGPUBuffer::~VirtualGPUBuffer() {

@@ -48,6 +48,7 @@ public:
     public:
         IGPUBuffer* buffer;
         size_t offset, size;
+        BufferedDataInfo() : buffer(nullptr), offset(0), size(0) {}
         BufferedDataInfo(IGPUBuffer* b, size_t const& o, size_t const& s) : buffer(b), offset(o), size(s) {}
     };
 
@@ -66,6 +67,8 @@ public:
     /*  out_realOffset is offset of buffered data. out_realOffset pointer and out_info may be nullptr
         false will be returned if memory is mapped */
     virtual bool BufferData(void* data, const size_t& offset, const size_t& size, size_t* out_realOffset, BufferedDataInfo* out_info) = 0;
+
+    virtual ~IGPUBuffer() {}
 };
 
 }

@@ -18,7 +18,7 @@ public:
     /* ObjectHandle */
     //void Destroy();
 protected:
-    unsigned int _handle;
+    unsigned int _handle = 0;
 };
 
 }

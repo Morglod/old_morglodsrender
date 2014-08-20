@@ -521,10 +521,16 @@ IShaderProgram* ShaderBuilder::Need(const MR::ShaderBuilder::Params& req){
 
     if(!compiler.Compile(vertCode, IShaderCompiler::ST_Vertex, vertSub->GetGPUHandle()).Good()) {
         MR::Log::LogString("Failed vertex shader compilation");
+        vertSub->Destroy();
+        fragSub->Destroy();
+        shader->Destroy();
         return nullptr;
     }
     if(!compiler.Compile(fragCode, IShaderCompiler::ST_Fragment, fragSub->GetGPUHandle()).Good()) {
         MR::Log::LogString("Failed fragment shader compilation");
+        vertSub->Destroy();
+        fragSub->Destroy();
+        shader->Destroy();
         return nullptr;
     }
     /*if(!compiler.Compile(geomCode, IShaderCompiler::ST_Geometry, geomSub->GetGPUHandle()).Good()) {
@@ -534,6 +540,9 @@ IShaderProgram* ShaderBuilder::Need(const MR::ShaderBuilder::Params& req){
 
     if( !vertSub->Attach(shader) || !fragSub->Attach(shader) /*|| !geomSub->Attach(shader)*/ ) {
         MR::Log::LogString("Failed attaching");
+        vertSub->Destroy();
+        fragSub->Destroy();
+        shader->Destroy();
         return nullptr;
     }
 
@@ -544,8 +553,14 @@ IShaderProgram* ShaderBuilder::Need(const MR::ShaderBuilder::Params& req){
     }
     if(!out.Good()){
         MR::Log::LogString("Failed linking");
+        vertSub->Destroy();
+        fragSub->Destroy();
+        shader->Destroy();
         return nullptr;
     }
+
+    vertSub->Destroy();
+    fragSub->Destroy();
 
     _SHADER_BUILDER__defaultShaders.push_back(std::make_pair(req, shader));
     return shader;

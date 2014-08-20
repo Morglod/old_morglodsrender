@@ -93,6 +93,8 @@ public:
     virtual void GetNVGPUPTR(uint64_t* nv_resident_ptr, int* nv_buffer_size) = 0;
 };
 
+typedef std::shared_ptr<IGPUGeometryBuffer> IGPUGeometryBufferPtr;
+
 class IGeometryBuffer {
 public:
     enum DrawModes {
@@ -107,10 +109,10 @@ public:
         Draw_QuadStrip = 8
     };
 
-    virtual bool SetVertexBuffer(IGPUGeometryBuffer* buf) = 0;
+    virtual bool SetVertexBuffer(IGPUGeometryBufferPtr buf) = 0;
     virtual IGPUGeometryBuffer* GetVertexBuffer() = 0;
 
-    virtual bool SetIndexBuffer(IGPUGeometryBuffer* buf) = 0;
+    virtual bool SetIndexBuffer(IGPUGeometryBufferPtr buf) = 0;
     virtual IGPUGeometryBuffer* GetIndexBuffer() = 0;
 
     virtual void Release() = 0;

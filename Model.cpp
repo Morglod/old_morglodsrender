@@ -480,9 +480,9 @@ ModelFile* ModelFile::ImportModelFile(std::string file, bool log, const MR::Mode
                 ibegin = for_meshes[mi].ibuffer_offsets[gmi];
             } else if(for_meshes[mi].buffers[gmi]->GetVertexBuffer()){
                 vcount = for_meshes[mi].num_verts[gmi];
-                vbegin = for_meshes[mi].vbuffer_offsets[gmi];
             }
-            mesh_geometry[gmi] = new MR::Geometry(for_meshes[mi].buffers[gmi], (ibegin != 0 || icount != 0) ? MR::GeometryDrawParams::DrawElements(ibegin, icount) : MR::GeometryDrawParams::DrawArrays(vbegin, vcount));
+            vbegin = for_meshes[mi].vbuffer_offsets[gmi];
+            mesh_geometry[gmi] = new MR::Geometry(for_meshes[mi].buffers[gmi], (ibegin != 0 || icount != 0) ? MR::GeometryDrawParams::DrawElements(ibegin, icount, vbegin) : MR::GeometryDrawParams::DrawArrays(vbegin, vcount));
         }
         meshes[mi] = new MR::Mesh(StaticArray<IGeometry*>(mesh_geometry, for_meshes[mi].buffers.size(), true), for_meshes[mi].mat);
     }

@@ -90,14 +90,16 @@ public:
 template<typename... Args>
 class EventListener {
 public:
-    inline virtual void RegisterHandle(EventHandle<Args...>* h) {
+    inline virtual EventHandle<Args...>* RegisterHandle(EventHandle<Args...>* h) {
         _handles.push_back(h);
+        return h;
     }
 
-    inline virtual void UnRegisterHandle(EventHandle<Args...>* h){
+    inline virtual EventHandle<Args...>* UnRegisterHandle(EventHandle<Args...>* h){
         auto it = std::find(_handles.begin(), _handles.end(), h);
-        if(it == _handles.end()) return;
+        if(it == _handles.end()) return h;
         _handles.erase(it);
+        return h;
     }
 
     template<typename HandleClass, typename... ConstructArgs>
