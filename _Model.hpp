@@ -6,7 +6,7 @@
 #include "Geometry/Mesh.hpp"
 #include "Resources/ResourceManager.hpp"
 #include "Utils/Events.hpp"
-#include "Boxes.hpp"
+#include "Collisions/CollisionInterfaces.hpp"
 #include "Utils/Singleton.hpp"
 
 namespace MR{
@@ -35,7 +35,7 @@ class Model : public virtual Resource {
 public:
     inline void AddLod(ModelLod* l) { lods.push_back(l); }
     inline void SetDistStep(const float & dist){ dist_step = dist; }
-    inline Box* GetAABBP() { return &_aabb; }
+    inline IBox* GetAABBP() { return &_aabb; }
 
     ModelLod* GetLod(const float & dist);
     inline ModelLod* GetLodN(const unsigned short & i){ if(GetLodNum() == 0) return nullptr; return lods[i]; }

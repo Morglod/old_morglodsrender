@@ -86,6 +86,32 @@ protected:
     ITexture::CompressionMode _compression_mode;
     Target _target;
 };
+/*
+class TextureBinded : public ITextureBinded {
+public:
+    void UnBind() override;
+    inline ITexture* GetTexture() override { return tex; }
+    inline int GetShaderInt() override { return i; } //Send it to shader
+    inline bool NVBindless() { return false; }
+    inline uint64_t GetNVInt() { return 0; }
+    TextureBinded(ITexture* t, int const& i_);
+protected:
+    ITexture* tex = nullptr;
+    int i = 0;
+};
+
+class TextureBindedNV : public ITextureBinded {
+public:
+    void UnBind() override;
+    inline ITexture* GetTexture() override { return tex; }
+    inline int GetShaderInt() override { return 0; }
+    inline bool NVBindless() { return true; }
+    inline uint64_t GetNVInt() { return nv; }
+    TextureBinded(ITexture* t, uint64_t const& i);
+protected:
+    ITexture* tex = nullptr;
+    uint64_t nv = 0;
+};*/
 
 }
 

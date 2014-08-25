@@ -8,14 +8,6 @@
 
 namespace MR {
 
-class IBox {
-public:
-    virtual glm::vec3 GetMin() = 0;
-    virtual glm::vec3 GetMax() = 0;
-    virtual glm::vec3 GetSize() = 0; // min + size = max
-    virtual float GetVolume() = 0;
-};
-
 class Box : public IBox {
 public:
     inline glm::vec3 GetMin() override { return _min; }

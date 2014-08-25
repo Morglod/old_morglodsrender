@@ -52,8 +52,6 @@
 		</Linker>
 		<Unit filename="Anim.cpp" />
 		<Unit filename="Anim.hpp" />
-		<Unit filename="Boxes.cpp" />
-		<Unit filename="Boxes.hpp" />
 		<Unit filename="Buffers/Buffers.cpp" />
 		<Unit filename="Buffers/Buffers.hpp" />
 		<Unit filename="Buffers/BuffersConfig.hpp" />
@@ -62,6 +60,9 @@
 		<Unit filename="Buffers/StreamingBuffer.hpp" />
 		<Unit filename="Buffers/VirtualBuffer.cpp" />
 		<Unit filename="Buffers/VirtualBuffer.hpp" />
+		<Unit filename="Collisions/CollisionBoxes.cpp" />
+		<Unit filename="Collisions/CollisionBoxes.hpp" />
+		<Unit filename="Collisions/CollisionInterfaces.hpp" />
 		<Unit filename="Config.hpp" />
 		<Unit filename="Context.cpp" />
 		<Unit filename="Context.hpp" />
@@ -90,11 +91,13 @@
 		<Unit filename="Materials/MaterialInterfaces.hpp" />
 		<Unit filename="Materials/MaterialResource.hpp" />
 		<Unit filename="Materials/MaterialsConfig.hpp" />
-		<Unit filename="Model.cpp" />
-		<Unit filename="Model.hpp" />
 		<Unit filename="MorglodsRender.hpp" />
 		<Unit filename="Pipeline.cpp" />
 		<Unit filename="Pipeline.hpp" />
+		<Unit filename="Postprocessing/PostprocessConfig.hpp" />
+		<Unit filename="Postprocessing/PostprocessInterfaces.hpp" />
+		<Unit filename="Postprocessing/PostprocessStep.cpp" />
+		<Unit filename="Postprocessing/PostprocessStep.hpp" />
 		<Unit filename="Query.cpp" />
 		<Unit filename="Query.hpp" />
 		<Unit filename="RenderManager.cpp" />
@@ -107,15 +110,17 @@
 		<Unit filename="Resources/Importer.hpp" />
 		<Unit filename="Resources/ResourceManager.cpp" />
 		<Unit filename="Resources/ResourceManager.hpp" />
-		<Unit filename="Scene/Entity.cpp" />
 		<Unit filename="Scene/Entity.hpp" />
-		<Unit filename="Scene/Light.cpp" />
 		<Unit filename="Scene/Light.hpp" />
 		<Unit filename="Scene/PerspectiveCamera.cpp" />
 		<Unit filename="Scene/PerspectiveCamera.hpp" />
 		<Unit filename="Scene/SceneInterfaces.hpp" />
 		<Unit filename="Scene/Transformation.cpp" />
 		<Unit filename="Scene/Transformation.hpp" />
+		<Unit filename="Shaders/Fixed/FixedShaderConfig.hpp" />
+		<Unit filename="Shaders/Fixed/FixedShaderInterfaces.hpp" />
+		<Unit filename="Shaders/Fixed/FixedShaderObject.cpp" />
+		<Unit filename="Shaders/Fixed/FixedShaderObject.hpp" />
 		<Unit filename="Shaders/ShaderBuilder.cpp" />
 		<Unit filename="Shaders/ShaderBuilder.hpp" />
 		<Unit filename="Shaders/ShaderCompiler.cpp" />

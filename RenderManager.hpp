@@ -53,6 +53,7 @@ public:
     bool SetTexture(const unsigned int& target, const unsigned int& handle, const int& unit);
     bool SetTextureSettings(ITextureSettings* ts, const int& unit);
     bool SetTexture(TextureSlot* ts);
+    //ITextureBindedPtr BindTexture(ITexture* tx); //bind texture to any free slot
     bool UnBindTexture(const int& unit, TextureSlot* binded = nullptr); //binded may be nullptr. it stores info about unbinded texture
     void ActiveMaterialFlag(const unsigned char& flag);
     inline unsigned char GetActivedMaterialFlag() { return _material_flag; }

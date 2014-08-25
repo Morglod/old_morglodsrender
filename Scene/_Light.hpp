@@ -6,7 +6,7 @@
 #include "../Config.hpp"
 #include "../Types.hpp"
 #include "../Shaders/ShaderInterfaces.hpp"
-#include "../Boxes.hpp"
+//#include "../Boxes.hpp"
 
 #ifndef glm_glm
 #   include <glm/glm.hpp>

@@ -358,7 +358,7 @@ IGeometry* Geometry::MakeTriangle(const float& scale, const glm::vec3& offset) {
 
     return MR::GeometryManager::GetInstance()->PlaceGeometry(vformat, &vdata[0], 3,
                                                                                 nullptr, 0, 0,
-                                                                                IGPUBuffer::Draw, GL_TRIANGLES);
+                                                                                IGPUBuffer::Static, GL_TRIANGLES);
 }
 
 IGeometry* Geometry::MakeQuad(const glm::vec2& scale, const glm::vec3& offset, const bool& texCoords, const glm::vec2& texCoordsScale) {
@@ -399,7 +399,7 @@ IGeometry* Geometry::MakeQuad(const glm::vec2& scale, const glm::vec3& offset, c
     //return geom;
     return MR::GeometryManager::GetInstance()->PlaceGeometry(vformat, &vdata[0], 4,
                                                             iformat, &idata[0], 6,
-                                                            IGPUBuffer::Draw, GL_TRIANGLES);
+                                                            IGPUBuffer::Static, GL_TRIANGLES);
 }
 
 IGeometry* Geometry::MakeBox(const glm::vec3& scale, const glm::vec3& offset, const bool& inside) {
@@ -469,7 +469,7 @@ IGeometry* Geometry::MakeBox(const glm::vec3& scale, const glm::vec3& offset, co
     //Geometry* geom = new MR::Geometry(buffer, GeometryDrawParams::DrawElements(0, 36));
     return MR::GeometryManager::GetInstance()->PlaceGeometry(vformat, &vdata[0], 8,
                                                             iformat, &idata[0], 36,
-                                                            IGPUBuffer::Draw, GL_TRIANGLES);
+                                                            IGPUBuffer::Static, GL_TRIANGLES);
 }
 
 //GEOMETRY MANAGER

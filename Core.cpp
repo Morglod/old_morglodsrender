@@ -3,7 +3,7 @@
 #include "Geometry/GeometryBufferV2.hpp"
 #include "Geometry/GeometryFormats.hpp"
 #include "Materials/MaterialInterfaces.hpp"
-#include "Model.hpp"
+//#include "Model.hpp"
 #include "Textures/TextureResource.hpp"
 #include "Utils/FilesIO.hpp"
 #include "RenderManager.hpp"
@@ -68,7 +68,7 @@ void MR::Shutdown() {
 
     //TODO MR::MaterialManager::DestroyInstance();
 
-    MR::ModelManager::DestroyInstance();
+    //MR::ModelManager::DestroyInstance();
 
     MR::FileUtils::DestroyInstance();
 }

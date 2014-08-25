@@ -236,15 +236,6 @@ union TypeBits {
     BaseType data : bits;
 };
 
-/** **/
-
-class ICollidable {
-public:
-    virtual bool TestPoint(const glm::vec3& point) = 0;
-    virtual bool TestAABB(const glm::vec3& min, const glm::vec3& size) = 0;
-    virtual bool TestSphere(const glm::vec3& point, const float& radius) = 0;
-};
-
 }
 
 #endif // _MR_TYPES_H_

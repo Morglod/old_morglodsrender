@@ -5,7 +5,7 @@
 
 #include "../Config.hpp"
 #include "../Utils/Events.hpp"
-#include "Entity.hpp"
+//#include "Entity.hpp"
 #include "Light.hpp"
 
 namespace MR{

@@ -157,6 +157,8 @@ void MR::RenderManager::DrawGeometryBuffer(IGeometryBuffer* b, IGeometryDrawPara
             if(MR::MachineInfo::Feature_DrawIndirect()) glDrawArraysIndirect(b->GetDrawMode(), drawCmd);
             else glDrawArrays(b->GetDrawMode(), drawParams->GetVertexStart(), drawParams->GetVertexCount());
         }
+
+        SetVAO(0);
     }
 
     drawParams->EndDraw();
@@ -189,8 +191,8 @@ void MR::RenderManager::SetShaderProgram(MR::IShaderProgram* p) {
 }
 
 bool MR::RenderManager::SetTexture(MR::ITexture* t, const int& unit) {
-    if(unit > MR::MachineInfo::MaxTextureUnits()) {
-        MR::Log::LogString("Failed RenderManager::SetTexture(...). unit ("+std::to_string(unit)+") > " + std::to_string(MR::MachineInfo::MaxTextureUnits())+".", MR_LOG_LEVEL_ERROR);
+    if(unit > MR::MachineInfo::MaxActivedTextureUnits()) {
+        MR::Log::LogString("Failed RenderManager::SetTexture(...). unit ("+std::to_string(unit)+") > " + std::to_string(MR::MachineInfo::MaxActivedTextureUnits())+".", MR_LOG_LEVEL_ERROR);
         return false;
     }
     if(unit < 0) {
@@ -205,8 +207,8 @@ bool MR::RenderManager::SetTexture(MR::ITexture* t, const int& unit) {
 }
 
 bool MR::RenderManager::SetTexture(const unsigned int& target, const unsigned int& handle, const int& unit) {
-    if(unit > MR::MachineInfo::MaxTextureUnits()) {
-        MR::Log::LogString("Failed RenderManager::SetTexture(...). unit ("+std::to_string(unit)+") > " + std::to_string(MR::MachineInfo::MaxTextureUnits())+".", MR_LOG_LEVEL_ERROR);
+    if(unit > MR::MachineInfo::MaxActivedTextureUnits()) {
+        MR::Log::LogString("Failed RenderManager::SetTexture(...). unit ("+std::to_string(unit)+") > " + std::to_string(MR::MachineInfo::MaxActivedTextureUnits())+".", MR_LOG_LEVEL_ERROR);
         return false;
     }
     if(unit < 0) {
@@ -238,8 +240,8 @@ bool MR::RenderManager::SetTexture(const unsigned int& target, const unsigned in
 }
 
 bool MR::RenderManager::SetTextureSettings(ITextureSettings* ts, const int& unit) {
-    if(unit > MR::MachineInfo::MaxTextureUnits()) {
-        MR::Log::LogString("Failed RenderManager::SetTextureSettings(...). unit ("+std::to_string(unit)+") > " + std::to_string(MR::MachineInfo::MaxTextureUnits())+".", MR_LOG_LEVEL_ERROR);
+    if(unit > MR::MachineInfo::MaxActivedTextureUnits()) {
+        MR::Log::LogString("Failed RenderManager::SetTextureSettings(...). unit ("+std::to_string(unit)+") > " + std::to_string(MR::MachineInfo::MaxActivedTextureUnits())+".", MR_LOG_LEVEL_ERROR);
         return false;
     }
     if(unit < 0) {
@@ -260,9 +262,19 @@ bool MR::RenderManager::SetTexture(TextureSlot* ts) {
     }
     return (SetTexture(ts->target, ts->handle, ts->self_unit) && SetTextureSettings(ts->settings, ts->self_unit));
 }
+/*
+MR::ITextureBindedPtr MR::RenderManager::BindTexture(MR::ITexture* tx) {
+    MR::ITextureBinded* tb = nullptr;
+    if(tx) {
+        if(MR::MachineInfo::FeatureNV_GPUPTR()) {
 
+        }
+    }
+    return tb;
+}
+*/
 bool MR::RenderManager::UnBindTexture(const int& unit, TextureSlot* binded) {
-    if(unit > MR::MachineInfo::MaxTextureUnits() || unit < 0) {
+    if(unit > MR::MachineInfo::MaxActivedTextureUnits() || unit < 0) {
         MR::Log::LogString("Failed RenderManager::UnBindTexture(...). Bad texture unit.", MR_LOG_LEVEL_ERROR);
         return false;
     }
@@ -307,13 +319,13 @@ void MR::RenderManager::Reset() {
     SetActivedMaterialPass(nullptr);
     SetShaderProgram(nullptr);
     if(_textures) {
-        for(int i = 0; i < MR::MachineInfo::MaxTextureUnits(); ++i){
+        for(int i = 0; i < MR::MachineInfo::MaxActivedTextureUnits(); ++i){
             UnBindTexture(i, nullptr);
         }
     }
     else {
-        _textures = new TextureSlot[MR::MachineInfo::MaxTextureUnits()];
-        for(int i = 0; i < MR::MachineInfo::MaxTextureUnits(); ++i){
+        _textures = new TextureSlot[MR::MachineInfo::MaxActivedTextureUnits()];
+        for(int i = 0; i < MR::MachineInfo::MaxActivedTextureUnits(); ++i){
             _textures[i].self_unit = i;
         }
     }
@@ -325,8 +337,8 @@ void MR::RenderManager::Reset() {
 }
 
 MR::RenderManager::RenderManager() : _vformat(nullptr), _iformat(nullptr), _vao(0), _indirect_drawParams_buffer(0), _pass(nullptr), _program(nullptr), _textures(nullptr), _target(nullptr), _material_flag(0) {
-    _textures = new TextureSlot[MR::MachineInfo::MaxTextureUnits()];
-    for(int i = 0; i < MR::MachineInfo::MaxTextureUnits(); ++i){
+    _textures = new TextureSlot[MR::MachineInfo::MaxActivedTextureUnits()];
+    for(int i = 0; i < MR::MachineInfo::MaxActivedTextureUnits(); ++i){
         _textures[i].self_unit = i;
     }
 }

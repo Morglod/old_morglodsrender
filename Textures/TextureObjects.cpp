@@ -129,3 +129,18 @@ MR::Texture::Texture(const unsigned int& handle, const MR::ITexture::Target& tar
 
 MR::Texture::~Texture() {
 }
+/*
+void MR::TextureBinded::UnBind() {
+    MR::RenderManager* rm = MR::RenderManager::GetInstance();
+    rm->UnBindTexture(i, nullptr);
+}
+
+MR::TextureBinded::TextureBinded(ITexture* t, int const& i_) : tex(t), i(i_) {
+}
+
+void MR::TextureBindedNV::UnBind() {
+}
+
+MR::TextureBindedNV::TextureBindedNV(ITexture* t, uint64_t const& i_) : tex(t), nv(i_) {
+}
+*/

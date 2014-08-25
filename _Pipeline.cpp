@@ -1,5 +1,5 @@
 #include "Pipeline.hpp"
-#include "Scene/Scene.hpp"
+//#include "Scene/Scene.hpp"
 #include "RenderTarget.hpp"
 #include "Materials/MaterialInterfaces.hpp"
 #include "Geometry/GeometryBufferV2.hpp"
@@ -37,7 +37,7 @@ void ForwardRenderingPipeline::Shutdown() {
 
 bool ForwardRenderingPipeline::FrameScene(const float& delta) {
     if(_pre_scene) _pre_scene(dynamic_cast<MR::IPipeline*>(this), delta);
-    if(_scene) _scene->Draw();
+//    if(_scene) _scene->Draw();
     if(_post_scene) _post_scene(dynamic_cast<MR::IPipeline*>(this), delta);
 
     return true;

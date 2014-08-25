@@ -5,7 +5,7 @@
 
 #include "Context.hpp"
 #include "Utils/Exception.hpp"
-#include "Pipeline.hpp"
+//#include "Pipeline.hpp"
 #include "RenderManager.hpp"
 #include "Utils/ConfigClass.hpp"
 #include "Config.hpp"
@@ -230,13 +230,13 @@ public:
         //scene.AddCamera(camera);
         //scene.SetMainCamera(camera);
 
-        pipeline = /*new MR::DefferedRenderingPipeline();//*/new MR::ForwardRenderingPipeline();
+        /*pipeline = new MR::ForwardRenderingPipeline();//new MR::DefferedRenderingPipeline()
         if(!pipeline->Setup(&context)) {
             if(ThrowExceptions()) {
                 throw MR::Exception("Failed RenderingPipeline::Setup.");
             }
             return false;
-        }
+        }*/
 
         //pipeline->SetScene(&scene);
 
@@ -262,10 +262,10 @@ public:
         }
 
         Free();
-        pipeline->Shutdown();
+        //pipeline->Shutdown();
 
         delete camera;
-        delete pipeline;
+        //delete pipeline;
 
         return true;
     }
@@ -292,7 +292,7 @@ protected:
     MR::ICamera* camera;
     //MR::SceneManager scene;
 
-    MR::IRenderingPipeline* pipeline;
+    //MR::IRenderingPipeline* pipeline;
 };
 
 }

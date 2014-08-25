@@ -228,6 +228,25 @@ public:
     virtual ~ITexture() {}
 };
 
+/*
+class ITextureBinded {
+public:
+    virtual void UnBind() = 0;
+    virtual ITexture* GetTexture() = 0;
+    virtual int GetShaderInt() = 0;
+    virtual bool NVBindless() = 0; //used nv extension, if true, get 'GetNVInt' otherwise use 'GetShaderInt'
+    virtual uint64_t GetNVInt() = 0;
+};
+
+typedef std::shared_ptr<ITextureBinded> ITextureBindedPtr;*/
+
+//TODO
+class ITextureStream {
+public:
+    virtual bool Push(ITexture* srcTex, const size_t& srcOffset, const size_t& srcSize) = 0;
+    virtual bool Pop(ITexture* dstTex, const size_t& dstOffset, const size_t& size) = 0;
+};
+
 }
 
 #endif // _MR_TEXTURE_INTERFACES_H_

@@ -5,20 +5,20 @@
 
 #include "../Utils/Events.hpp"
 #include "../Types.hpp"
-#include "../Boxes.hpp"
+//#include "../Boxes.hpp"
 #include "Transformation.hpp"
 
 #include <glm/glm.hpp>
 
 namespace MR {
-
+/*
 class IEntity : public Copyable<IEntity*> {
 public:
     virtual std::string GetName() = 0;
     virtual MR::Transform* GetTransformPtr() = 0;
     virtual MR::BoundingBox* GetBBPtr() = 0;
 };
-
+*/
 class ICamera {
 public:
     MR::EventListener<ICamera*, const glm::vec3&> OnPositionChanged;

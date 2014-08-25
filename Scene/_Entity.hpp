@@ -7,7 +7,7 @@
 #include "Transformation.hpp"
 #include "../Utils/Events.hpp"
 #include "../Types.hpp"
-#include "../Boxes.hpp"
+//#include "../Boxes.hpp"
 #include "SceneInterfaces.hpp"
 
 #include <string>

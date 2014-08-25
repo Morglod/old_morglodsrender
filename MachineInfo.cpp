@@ -224,6 +224,11 @@ const bool MR::MachineInfo::IsVertexAttribBindingSupported(IContext* ctx) {
     return state;
 }
 
+const bool MR::MachineInfo::IsBufferStorageSupported() {
+    static bool state = (__glewBufferStorage);
+    return state;
+}
+
 int MR::MachineInfo::GetGeometryStreamsNum() {
     static int num = -10;
     if(num == -10) {
@@ -298,14 +303,37 @@ int MR::MachineInfo::MaxTextureSize(){
     return s;
 }
 
-int MR::MachineInfo::MaxTextureUnits(){
+int MR::MachineInfo::MaxFragmentShaderTextureUnits() {
     static int s = 0;
     if(s == 0){
-        glGetIntegerv(GL_MAX_TEXTURE_UNITS, &s);
-        if(s == 0) glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &s);
+        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &s);
         if(s == 0) {
-            MR::Log::LogString("Failed MachineInfo::MaxTextureUnits. MaxTextureUnits always 0. 32 will be used.", MR_LOG_LEVEL_ERROR);
-            s = 32;
+            MR::Log::LogString("Failed MachineInfo::MaxFragmentShaderTextureUnits. MaxTextureUnits always 0. 8 will be used.", MR_LOG_LEVEL_ERROR);
+            s = 8;
+        }
+    }
+    return s;
+}
+
+int MR::MachineInfo::MaxVertexShaderTextureUnits() {
+    static int s = 0;
+    if(s == 0){
+        glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &s);
+        if(s == 0) {
+            MR::Log::LogString("Failed MachineInfo::MaxVertexShaderTextureUnits. MaxTextureUnits always 0. 8 will be used.", MR_LOG_LEVEL_ERROR);
+            s = 8;
+        }
+    }
+    return s;
+}
+
+int MR::MachineInfo::MaxActivedTextureUnits() {
+    static int s = 0;
+    if(s == 0){
+        glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &s);
+        if(s == 0) {
+            MR::Log::LogString("Failed MachineInfo::MaxActivedTextureUnits. MaxTextureUnits always 0. 8 will be used.", MR_LOG_LEVEL_ERROR);
+            s = 8;
         }
     }
     return s;

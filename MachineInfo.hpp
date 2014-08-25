@@ -60,13 +60,16 @@ class IContext;
         const bool IsDirectStateAccessSupported();
         const bool IsVertexAttribBindingSupported(IContext* ctx);
         const bool IsTextureStorageSupported();
+        const bool IsBufferStorageSupported();
         int GetGeometryStreamsNum();
 
         /** GL INFO **/
         bool CatchError(std::string* errorOutput, int* glCode); //return true on error and print error's description in string; errorOutput and glCode can be NULL
         void ClearError(); //set error status to no_error
         int MaxTextureSize();
-        int MaxTextureUnits();
+        int MaxFragmentShaderTextureUnits();
+        int MaxVertexShaderTextureUnits();
+        int MaxActivedTextureUnits();
 
         std::string glsl_version_directive();
         bool gl_core_profile();

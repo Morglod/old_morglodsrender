@@ -38,8 +38,9 @@ public:
     };
 
     enum Usage {
-        Draw,
-        ReadWrite
+        Static,
+        FastWrite,
+        FastReadWrite
     };
 
     MR::EventListener<IGPUBuffer*, const IGPUBuffer::Usage&, const size_t&, const bool&> OnAllocated;
@@ -61,12 +62,18 @@ public:
     virtual IGPUBuffer* ReBind(const BindTargets& target) = 0; //BindBuffer and return what was binded (may be nullptr)
     virtual BindTargets GetTarget() = 0; //returns last binded target, or NotBinded
 
-    virtual void Allocate(const Usage& usage, const size_t& size, const bool& mapMemory) = 0;
-    virtual void* GetMappedMemory() = 0; //returns zero, if not mapped
+    virtual void Allocate(const Usage& usage, const size_t& size, bool mapMemory) = 0;
 
     /*  out_realOffset is offset of buffered data. out_realOffset pointer and out_info may be nullptr
         false will be returned if memory is mapped */
-    virtual bool BufferData(void* data, const size_t& offset, const size_t& size, size_t* out_realOffset, BufferedDataInfo* out_info) = 0;
+    virtual bool Write(void* data, const size_t& offset, const size_t& size, size_t* out_realOffset, BufferedDataInfo* out_info) = 0;
+    virtual bool Read(void* dstData, const size_t& offset, const size_t& size) = 0;
+
+    /*
+    DAT STUPID DRIVER DEVELOPERS, nothing works...
+    virtual void* GetMappedMemory() = 0; //returns zero, if not mapped
+    virtual bool MapMemory() = 0;
+    virtual void UnMapMemory() = 0;*/
 
     virtual ~IGPUBuffer() {}
 };

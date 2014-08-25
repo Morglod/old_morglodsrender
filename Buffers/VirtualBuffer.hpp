@@ -24,6 +24,8 @@ public:
     BindTargets GetTarget() override { return _realBuffer->GetTarget(); }
     void* GetMappedMemory() override { return _mapped_mem; }
     bool BufferData(void* data, const size_t& offset, const size_t& size, size_t* out_realOffset, BufferedDataInfo* out_info) override;
+    inline bool MapMemory() override { return _realBuffer->MapMemory(); }
+    inline void UnMapMemory() override { _realBuffer->UnMapMemory(); }
 
     /* GPUObjectHandle */
     unsigned int GetGPUHandle() override { return (_realBuffer) ? _realBuffer->GetGPUHandle() : 0; }
@@ -39,7 +41,7 @@ public:
     virtual ~VirtualGPUBuffer();
 protected:
     /* IGPUBuffer */
-    void Allocate(const Usage& usage, const size_t& size, const bool& mapMemory) override {}
+    void Allocate(const Usage& usage, const size_t& size, bool mapMemory) override {}
 
     IGPUBuffer* _realBuffer;
     size_t _realBuffer_offset;
