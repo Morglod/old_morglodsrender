@@ -20,7 +20,8 @@ bool MR::ShaderBuilder::Params::operator == (const MR::ShaderBuilder::Params& p)
     return  (features == p.features) && (textures == p.textures) &&
             (uniforms == p.uniforms) && (customVertexCode == p.customVertexCode) &&
             (customVertexFuncName == p.customVertexFuncName) && (customFragmentCode == p.customFragmentCode) &&
-            (customFragmentFuncName == p.customFragmentFuncName);
+            (customFragmentFuncName == p.customFragmentFuncName) &&
+            (lightMode == p.lightMode) && (vertexProcess == p.vertexProcess);
 }
 
 char * __SHADER_BUILDER__textFileRead(const char *fn, int * count = nullptr) {
@@ -547,7 +548,7 @@ IShaderProgram* ShaderBuilder::Need(const MR::ShaderBuilder::Params& req){
     }
 
     shader->BindDefaultShaderInOut();
-    ShaderCompilationOutput out = compiler.Link(StaticArray<unsigned int>(), shader->GetGPUHandle());
+    ShaderCompilationOutput out = compiler.Link(TStaticArray<unsigned int>(), shader->GetGPUHandle());
     for(size_t i = 0; i < out.GetMessagesNum(); ++i){
         MR::Log::LogString(out.GetMessage(i).GetText());
     }
@@ -604,7 +605,7 @@ IShaderProgram* ShaderBuilder::SimpleMake(const std::string& vertex_shader, cons
 
     unsigned int handles[2] {vshader->GetGPUHandle(), fshader->GetGPUHandle()};
     IShaderProgram* prog = new MR::ShaderProgram(glCreateProgram(), MR::IShaderProgram::Features());
-    shader_out = sc.Link(MR::StaticArray<unsigned int>(&handles[0], 2, false), prog->GetGPUHandle());
+    shader_out = sc.Link(MR::TStaticArray<unsigned int>(&handles[0], 2, false), prog->GetGPUHandle());
     for(size_t i = 0; i < shader_out.GetMessagesNum(); ++i){
         MR::Log::LogString(shader_out.GetMessage(i).GetText(), MR_LOG_LEVEL_INFO);
     }
