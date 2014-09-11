@@ -71,9 +71,9 @@ class IMaterial {
 public:
     //
 
-    virtual MR::StaticArray<IMaterialPass*> GetAllPasses() = 0;
+    virtual MR::TStaticArray<IMaterialPass*> GetAllPasses() = 0;
     virtual IMaterialPass* GetPass(const size_t& index) = 0;
-    virtual MR::StaticArray<IMaterialPass*> GetPasses(const MaterialFlag& flag) = 0;
+    virtual MR::TStaticArray<IMaterialPass*> GetPasses(const MaterialFlag& flag) = 0;
 
     //
 

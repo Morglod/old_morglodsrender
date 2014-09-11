@@ -35,11 +35,40 @@ public:
 
     class Params {
     public:
-        MR::IShaderProgram::Features features;
+        enum TextureMaps {
+            NoMap = 0,
+            ColorMap = 1,
+            NormalMap,
+            SpecularMap, //Reflections color and strength
+            DisplacementMap, //Height, will not used if not enought texture units
+            GlossMap,
+            AOMap, //Baked ambient occlusion, will not used if not enought texture units
+            OpacityMap,
+            EnvironmentMap, //eg for IBL
+            EmissionMap,
+            TextureMapsNum
+        };
+
+        enum LightMode {
+            UnLit = 0,
+            Lit = 1,
+            LightModsNum
+        };
+
+        enum VertexProcess {
+            ToWorld = 0,
+            ToScreen = 1,
+            VertexProcessNum
+        };
+
         std::vector<Params_Texture> textures;
         std::vector<Params_Uniform> uniforms;
         std::string customVertexCode, customVertexFuncName;
         std::string customFragmentCode, customFragmentFuncName;
+
+        LightMode lightMode;
+        VertexProcess vertexProcess;
+        std::vector<TextureMaps> textureMaps;
 
         /*
             Custom vertex func runs at the end of vertex shader (Makes Final changes)

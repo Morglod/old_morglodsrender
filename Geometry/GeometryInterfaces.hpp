@@ -42,8 +42,8 @@ public:
     virtual bool Bind() = 0;
     virtual void UnBind() = 0;
 
-    virtual StaticArray<IVertexAttribute*> _Attributes() = 0;
-    virtual StaticArray<uint64_t> _Offsets() = 0; //offsets of each attributes from starting point of vertex in bytes
+    virtual TStaticArray<IVertexAttribute*> _Attributes() = 0;
+    virtual TStaticArray<uint64_t> _Offsets() = 0; //offsets of each attributes from starting point of vertex in bytes
 };
 
 class IInstancedDataFormat : public Comparable<IInstancedDataFormat*> {
@@ -53,8 +53,8 @@ public:
     virtual bool Bind() = 0;
     virtual void UnBind() = 0;
 
-    virtual StaticArray<IVertexAttribute*> _Attributes() = 0;
-    virtual StaticArray<uint64_t> _Offsets() = 0;
+    virtual TStaticArray<IVertexAttribute*> _Attributes() = 0;
+    virtual TStaticArray<uint64_t> _Offsets() = 0;
 };
 
 class IIndexFormat : public Comparable<IIndexFormat*> {

@@ -3,11 +3,7 @@
 #ifndef _MR_SHADER_INTERFACES_H_
 #define _MR_SHADER_INTERFACES_H_
 
-#include "../Utils/Containers.hpp"
-#include "../Utils/Events.hpp"
-#include "../Types.hpp"
-
-#include <string>
+#include "../CoreObjects.hpp"
 
 namespace MR {
 
@@ -17,28 +13,30 @@ class IShaderUniform {
     friend class IShaderProgram;
 public:
     enum Type {
-        SUT_Float = 0,
-        SUT_Vec2 = 1, //glm::vec2 float[2]
-        SUT_Vec3 = 2, //glm::vec3 float[3]
-        SUT_Vec4 = 3, //glm::vec4 float[4]
-        SUT_Mat4 = 4, //glm::mat4 float[4][4]
-        SUT_Int = 5, //int
-        SUT_Sampler1D, //int
-        SUT_Sampler2D, //int
-        SUT_Sampler3D  //int
+        Float = 0,
+        Vec2 = 1, //glm::vec2 float[2]
+        Vec3 = 2, //glm::vec3 float[3]
+        Vec4 = 3, //glm::vec4 float[4]
+        Mat4 = 4, //glm::mat4 float[4][4]
+        Int = 5, //int
+        Sampler1D, //int
+        Sampler2D, //int
+        Sampler3D  //int
     };
 
     static std::string TypeToString(const IShaderUniform::Type& t);
 
     MR::EventListener<IShaderUniform*, void*> OnNewValuePtr;
-    MR::EventListener<IShaderUniform*, IShaderProgram*, const int&> OnMapped; //as args (shader program, new uniform location)
+    MR::EventListener<IShaderUniform*, IShaderProgram*, const int&> OnNewLocation; //as args (shader program, new uniform location)
 
-    virtual const std::string& GetName() = 0;
-    virtual const IShaderUniform::Type& GetType() = 0;
+    virtual std::string GetName() = 0;
+    virtual IShaderUniform::Type GetType() = 0;
     virtual void SetPtr(void* ptr)  = 0;
     virtual void* GetPtr() = 0;
-    virtual const int& GetGPULocation() = 0;
-    virtual bool Map(IShaderProgram* shader) = 0; //reset gpu location
+    virtual int GetGPULocation() = 0;
+    virtual bool ResetLocation() = 0;
+    virtual void Update() = 0; //Update value
+    virtual IShaderProgram* GetParent() = 0;
 
     virtual ~IShaderUniform() {}
 };
@@ -50,7 +48,7 @@ public:
     int uniform_size;
     unsigned int uniform_gl_type;
 
-    ShaderUniformInfo() {}
+    ShaderUniformInfo();
     ShaderUniformInfo(IShaderProgram* p, const std::string& n, const int& s, const unsigned int & t);
 };
 
@@ -58,66 +56,47 @@ public:
     For shader compilation, use ShaderCompiler
 **/
 
-class IShader : public ObjectHandle {
+class IShader : public GPUObjectHandle {
 public:
     enum Type {
-        ST_Vertex = 0x8B31,
-        ST_Fragment = 0x8B30,
-        ST_Compute = 0x91B9,
-        ST_TessControl = 0x8E88,
-        ST_TessEvaluation = 0x8E87,
-        ST_Geometry = 0x8DD9
+        None = 0,
+        Vertex = 0x8B31,
+        Fragment = 0x8B30,
+        Compute = 0x91B9,
+        TessControl = 0x8E88,
+        TessEvaluation = 0x8E87,
+        Geometry = 0x8DD9,
+        TypesNum = 8
     };
 
     MR::EventListener<IShader*, const std::string&, const IShader::Type&> OnCompiled; //as args(new code, new shader type)
 
-    virtual const unsigned int& GetGPUHandle() = 0;
-    virtual const IShader::Type& GetType() = 0;
-
-    virtual bool Attach(IShaderProgram* program) = 0;
-    virtual void Detach(IShaderProgram* program) = 0;
-    virtual StaticArray<IShaderProgram*> GetConnectedPrograms() = 0;
+    //virtual const unsigned int& GetGPUHandle() = 0; GPUObjectHandle
+    virtual IShader::Type GetType() = 0;
+    virtual bool IsCompiled() = 0;
+    virtual bool Compile(IShader::Type const& type, std::string const& code) = 0;
 
     virtual ~IShader() {}
 };
 
-class IShaderProgram : public ObjectHandle, public Usable {
+struct ShaderProgramCache {
 public:
-    class Features {
-    public:
-        //Options
-        bool colorFilter = false;
-        bool opacityDiscardOnAlpha = true;
-        float opacityDiscardValue = 0.9f;
+    unsigned int format;
+    MR::TStaticArray<unsigned char> data;
 
-        //List of used maps
-        bool ambient = false;
-        bool diffuse = false;
-        bool displacement = false;
-        bool emissive = false;
-        bool height = false;
-        bool baked_lightmap = false;
-        bool normal = false;
-        bool opacity = false;
-        bool reflection = false;
-        bool shininess = false;
-        bool specular = false;
+    ShaderProgramCache& operator = (ShaderProgramCache& c);
 
-        //Output (not both, use only one of two if needed)
-        bool toRenderTarget = false;
-        bool toScreen = false;
+    ShaderProgramCache();
+    ShaderProgramCache(unsigned int const& f, MR::TStaticArray<unsigned char> d);
+};
 
-        //Tech
-        bool defferedRendering = false; //if toRenderTarget is false, lights and effects will be calculated from buffers, otherwise, only buffers will be writed
-        bool light = true;
-        bool fog = false;
-
-        bool operator == (const IShaderProgram::Features& dsr1) const;
-    };
-
-    virtual bool BindDefaultShaderInOut() = 0; /// Call before linking
-
+class IShaderProgram : public GPUObjectHandle, public Usable {
+public:
+    /** Handle uniforms **/
     virtual IShaderUniform* CreateUniform(const std::string& name, const MR::IShaderUniform::Type& type, void* value) = 0;
+
+    virtual void DeleteUniform(IShaderUniform* su) = 0;
+    virtual IShaderUniform* FindShaderUniform(const std::string& name) = 0;
 
     virtual void SetUniform(const std::string& name, const int& value) = 0;
     virtual void SetUniform(const std::string& name, const float& value) = 0;
@@ -126,16 +105,17 @@ public:
     virtual void SetUniform(const std::string& name, const glm::vec4& value) = 0;
     virtual void SetUniform(const std::string& name, const glm::mat4& value) = 0;
 
-    virtual size_t GetShaderUniformsPtr(IShaderUniform*** list_ptr) = 0; //out as (IShaderUniform** ptr) &ptr
-    virtual StaticArray<ShaderUniformInfo> GetCompiledUniforms() = 0; //returns used in shaders uniforms. don't forget to free this array manually
+    virtual void UpdateUniforms() = 0; //update all attached uniform values
 
-    virtual void DeleteUniform(IShaderUniform* su) = 0;
-    virtual IShaderUniform* FindShaderUniform(const std::string& name) = 0;
+    virtual TStaticArray<IShaderUniform*> GetShaderUniforms() = 0; //get all uniform handles
+    virtual TStaticArray<ShaderUniformInfo> GetCompiledUniforms() = 0; //returns used in shaders uniforms. don't forget to free this array manually
 
-    virtual unsigned int GetGPUHandle() = 0;
-    virtual Features GetFeatures() = 0;
+    virtual bool Link(TStaticArray<IShader*> shaders) = 0;
+    virtual bool IsLinked() = 0;
 
-    virtual void UpdateUniforms() = 0;
+    virtual ShaderProgramCache GetCache() = 0;
+
+    //virtual unsigned int GetGPUHandle() = 0; GPUObjectHandle
 
     virtual ~IShaderProgram() {}
 };

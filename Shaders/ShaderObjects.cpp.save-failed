@@ -374,31 +374,6 @@ ShaderProgram* ShaderProgram::FromCache(ShaderProgramCache cache) {
         MR::Log::LogString("Failed ShaderProgram::FromCache. Failed creating OpenGL shader program.", MR_LOG_LEVEL_ERROR);
         return nullptr;
     }
-
-#ifdef MR_CHECK_LARGE_GL_ERRORS
-    std::string gl_str = "";
-    MR::MachineInfo::ClearError();
-#endif
-     glProgramBinary(sp_handle, cache.format, cache.data.GetRaw(), cache.data.GetNum());
-#ifdef MR_CHECK_LARGE_GL_ERRORS
-    if(MR::MachineInfo::CatchError(&gl_str, 0)) {
-        MR::Log::LogString("Failed ShaderProgram::FromCache. Failed loading shader program binary. " + gl_str, MR_LOG_LEVEL_ERROR);
-        return nullptr;
-    }
-#endif
-
-    int link_status = -1;
-    glGetProgramiv(sp_handle, GL_LINK_STATUS, &link_status);
-    if(link_status != GL_TRUE){
-        MR::Log::LogString("Failed ShaderProgram::FromCache. Shader program linking failed.", MR_LOG_LEVEL_ERROR);
-        glDeleteProgram(sp_handle);
-        return nullptr;
-    }
-
-    ShaderProgram* prog = new ShaderProgram();
-    prog->_linked = true;
-    prog->_handle = sp_handle;
-    return prog;
 }
 
 /** **/

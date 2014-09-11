@@ -6,19 +6,6 @@
 #include <GL/glew.h>
 
 namespace MR {
-class VirtualGPUBuffer_MemoryMappedEvent : public MR::EventHandle<IGPUBuffer*, void*> {
-public:
-    void Invoke(EventListener<IGPUBuffer*, void*>* event, IGPUBuffer* buf, void* mem) override {
-        if(mem == 0) _vgb->_mapped_mem = 0;
-        else _vgb->_mapped_mem = (void*)((size_t)mem + _vgb->_realBuffer_offset);
-        _vgb->OnMemoryMapped(dynamic_cast<MR::IGPUBuffer*>(_vgb), _vgb->_mapped_mem);
-    }
-
-    VirtualGPUBuffer_MemoryMappedEvent(MR::VirtualGPUBuffer* vgb) : _vgb(vgb) {}
-    virtual ~VirtualGPUBuffer_MemoryMappedEvent() {}
-private:
-    MR::VirtualGPUBuffer* _vgb;
-};
 
 class VirtualGPUBuffer_DestroyEvent : public MR::EventHandle<ObjectHandle*> {
 public:
@@ -32,57 +19,28 @@ private:
     MR::VirtualGPUBuffer* _vgb;
 };
 
-bool VirtualGPUBuffer::BufferData(void* data, const size_t& offset, const size_t& size, size_t* out_realOffset, BufferedDataInfo* out_info) {
-    if(GetMappedMemory() != 0) return false;
-    Assert(data == 0)
-    Assert(size == 0)
-    Assert(size+offset > GetGPUMem())
-    Assert(GetGPUHandle() == 0)
-
-    MR_BUFFERS_CHECK_BUFFER_DATA_ERRORS_CATCH(
-        if(MR::MachineInfo::IsDirectStateAccessSupported()) {
-            glNamedBufferSubDataEXT(GetGPUHandle(), GetRealOffset()+offset, size, data);
-        } else {
-            IGPUBuffer* binded = ReBind(ArrayBuffer);
-            glBufferSubData(GL_ARRAY_BUFFER, GetRealOffset()+offset, size, data);
-            if(binded) binded->Bind(ArrayBuffer);
-        }
-    )
-
-    if(out_realOffset) *out_realOffset = GetRealOffset()+offset;
-    if(out_info) *out_info = MR::IGPUBuffer::BufferedDataInfo(GetRealBuffer(), GetRealOffset()+offset, size);
-    return true;
-}
-
 void VirtualGPUBuffer::Destroy() {
     if(_realBuffer) {
-        if(_events[0]) {
-            _realBuffer->OnMemoryMapped.UnRegisterHandle((MR::EventHandle<IGPUBuffer*, void*>*)_events[0]);
-        }
-        if(_events[1]) {
-            _realBuffer->OnDestroy.UnRegisterHandle((MR::EventHandle<ObjectHandle*>*)_events[1]);
+        if(_eventHandle) {
+            _realBuffer->OnDestroy.UnRegisterHandle((MR::EventHandle<ObjectHandle*>*)_eventHandle);
         }
     }
 
-    _mapped_mem = 0;
     _size = 0;
     _realBuffer_offset = 0;
     _realBuffer = nullptr;
     OnDestroy(dynamic_cast<MR::IGPUBuffer*>(this));
 }
 
-VirtualGPUBuffer::VirtualGPUBuffer(IGPUBuffer* realBuffer, size_t const& offset, size_t const& size) : _realBuffer(realBuffer), _realBuffer_offset(offset), _mapped_mem(0), _size(size) {
+VirtualGPUBuffer::VirtualGPUBuffer(IGPUBuffer* realBuffer, size_t const& offset, size_t const& size) : _realBuffer(realBuffer), _realBuffer_offset(offset), _size(size), _eventHandle(0) {
     Assert(_realBuffer == 0)
     Assert(size == 0)
     Assert(offset >= _realBuffer->GetGPUMem())
 
     if(_realBuffer->GetGPUMem() == 0) {
-        _mapped_mem = 0;
-        MR::Log::LogString("VirtualGPUBuffer::ctor. RealBuffer not allocated.", MR_LOG_LEVEL_WARNING);
+        MR::Log::LogString("VirtualGPUBuffer::ctor. RealBuffer not allocated or allocated with some errors.", MR_LOG_LEVEL_WARNING);
     }
-    else if(_realBuffer->GetMappedMemory() != 0) _mapped_mem = (void*)(_realBuffer->GetGPUMem() + offset);
-    _events[0] = _realBuffer->OnMemoryMapped.RegisterHandle(new VirtualGPUBuffer_MemoryMappedEvent(this));
-    _events[1] = _realBuffer->OnDestroy.RegisterHandle(new VirtualGPUBuffer_DestroyEvent(this));
+    _eventHandle = _realBuffer->OnDestroy.RegisterHandle(new VirtualGPUBuffer_DestroyEvent(this));
 }
 
 VirtualGPUBuffer::~VirtualGPUBuffer() {

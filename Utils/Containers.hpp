@@ -4,37 +4,48 @@
 #define _MR_CONTAINERS_H_
 
 #include "Threads.hpp"
-#include <stddef.h>
+#include <string.h>
+#include <chrono>
 #include <queue>
 
 namespace MR {
 
 template < typename T >
-class StaticArray {
+class TStaticArray {
 public:
     inline T* GetRaw() { return _ar; }
     inline size_t GetNum() { return _el_num; }
     inline T& At(const size_t& i) { return _ar[i]; }
     inline T* AtPtr(const size_t& i) { return &_ar[i]; }
     inline void DeleteFlag(const bool& d) { _delete = d; }
+    inline bool GetDeleteFlag() { return _delete; }
 
-    StaticArray() : _ar(0), _el_num(0), _delete(false) {}
-    StaticArray(T* ar, const size_t& num) : _ar(ar), _el_num(num), _delete(false) {}
-    StaticArray(T* ar, const size_t& num, const bool& del) : _ar(ar), _el_num(num), _delete(del) {}
-    ~StaticArray() {
+    inline TStaticArray<T> Combine(TStaticArray<T> a) {
+        size_t sz = a.GetNum()+GetNum();
+        TStaticArray<T> ra = TStaticArray<T>(new T[sz], sz, GetDeleteFlag());
+        size_t sz1 = sizeof(T) * GetNum();
+        memcpy(ra.GetRaw(), GetRaw(), sz1);
+        memcpy((void*)((size_t)ra.GetRaw() + sz1), a.GetRaw(), sizeof(T) * a.GetNum());
+        return ra;
+    }
+
+    TStaticArray() : _ar(0), _el_num(0), _delete(false) {}
+    TStaticArray(T* ar, const size_t& num) : _ar(ar), _el_num(num), _delete(false) {}
+    TStaticArray(T* ar, const size_t& num, const bool& del) : _ar(ar), _el_num(num), _delete(del) {}
+    ~TStaticArray() {
         if(_delete && _ar) {
             delete [] _ar;
             _ar = 0;
         }
     }
 
-    StaticArray(StaticArray<T> const& a) : _ar(new T [a._el_num]), _el_num(a._el_num), _delete(a._delete) {
+    TStaticArray(TStaticArray<T> const& a) : _ar(new T [a._el_num]), _el_num(a._el_num), _delete(a._delete) {
         for(size_t i = 0; i < _el_num; ++i){
             _ar[i] = a._ar[i];
         }
     }
 
-    inline MR::StaticArray<T>& operator = (MR::StaticArray<T> const& ar) {
+    inline MR::TStaticArray<T>& operator = (MR::TStaticArray<T> const& ar) {
         if(this == &ar) {
             return *this;
         }
@@ -47,7 +58,7 @@ public:
         return *this;
     }
 
-    inline MR::StaticArray<T>& operator = (MR::StaticArray<T> & ar) {
+    inline MR::TStaticArray<T>& operator = (MR::TStaticArray<T> & ar) {
         if(this == &ar) {
             return *this;
         }
@@ -62,6 +73,35 @@ protected:
     size_t _el_num = 0;
     bool _delete = false;
 };
+/*
+template < typename T >
+class TDynamicArrayTimed {
+    inline T* GetRaw() { return _ar; }
+    inline size_t GetNum() { return _el_num; }
+    inline T& At(const size_t& i) { return _ar[i]; }
+    inline T* AtPtr(const size_t& i) { return &_ar[i]; }
+    inline void DeleteFlag(const bool& d) { _delete = d; }
+    inline bool GetDeleteFlag() { return _delete; }
+
+    inline void PushBack(T t) {
+    }
+
+    inline bool Resize(size_t const& num) {
+        void * p = realloc(_ar, num*sizeof(T));
+        if(!p) return false;
+        _el_capacity = num;
+        if(_el_num < _el_capacity) _el_num = _el_capacity;
+        _ar = p;
+        return true;
+    }
+protected:
+    T* _ar = 0;
+    size_t _el_num = 0;
+    size_t _el_capacity = 0;
+    bool _delete = false;
+    std::chrono::milliseconds _last_mem_reallocated;
+};
+*/
 
 /*
     map-like class with priority sorting and bordered size
@@ -85,7 +125,7 @@ public:
         memcpy(old, _queue.GetRaw(), sizeof(CacheElement)*old_num);
 
         //Free old cache and create new
-        _queue = StaticArray<CacheElement>(new CacheElement[size], size, true);
+        _queue = TStaticArray<CacheElement>(new CacheElement[size], size, true);
 
         //Store old cache
         memcpy(_queue.GetRaw(), old, sizeof(CacheElement)*old_num);
@@ -134,13 +174,13 @@ public:
         return false;
     }
 
-    StaticArray<PriorityCache<KeyT, ValueT>::CacheElement> * GetQueuePtr() { return &_queue; }
+    TStaticArray<PriorityCache<KeyT, ValueT>::CacheElement> * GetQueuePtr() { return &_queue; }
 
     PriorityCache() : _queue() {}
     PriorityCache(const size_t& size) : _queue(new PriorityCache<KeyT, ValueT>::CacheElement[size], size, true) {}
     ~PriorityCache() {}
 protected:
-    StaticArray<PriorityCache<KeyT, ValueT>::CacheElement> _queue;
+    TStaticArray<PriorityCache<KeyT, ValueT>::CacheElement> _queue;
 };
 
 template< typename elementT >

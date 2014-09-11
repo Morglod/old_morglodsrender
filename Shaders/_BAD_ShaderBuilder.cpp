@@ -115,7 +115,8 @@ std::string ShaderBuilder::GenerateCode(const ShaderBuilder::Params& req, const 
         "   EndPrimitive();\n"
         "}\n";
     }
-    else*/ if(type == MR::IShader::ST_Vertex) {
+    else*/
+    if(type == MR::IShader::ST_Vertex) {
         code =
         "#version 150 core\n"
         "#extension GL_ARB_separate_shader_objects : enable\n"
@@ -135,7 +136,7 @@ std::string ShaderBuilder::GenerateCode(const ShaderBuilder::Params& req, const 
         "layout (location = "+std::to_string(MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION)+") in vec4 "+std::string(MR_SHADER_VERTEX_COLOR_ATTRIB_NAME)+";\n"
         "layout (location = "+std::to_string(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION)+") in vec2 "+std::string(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_NAME)+";\n";
 
-        if(!req.features.toScreen){
+        if(req.vertexProcess == Params::ToWorld){
             code +=
             "uniform mat4 "+std::string(MR_SHADER_MVP_MAT4)+";\n"
             "uniform mat4 "+std::string(MR_SHADER_MODEL_MAT4)+";\n"
@@ -178,7 +179,7 @@ std::string ShaderBuilder::GenerateCode(const ShaderBuilder::Params& req, const 
             code += "\n\n" + req.customVertexCode + "\n\n";
 
         ///Main
-        if(req.features.toScreen){
+        if(req.vertexProcess == Params::ToScreen){
             if(req.customVertexCode == "" || req.customVertexFuncName == "") {
                 code +=
                 "void main() {"
@@ -251,54 +252,46 @@ std::string ShaderBuilder::GenerateCode(const ShaderBuilder::Params& req, const 
         "in vec2 MR_VertexTexCoord;\n"
         "\n"
         "uniform vec3 "+std::string(MR_SHADER_CAM_POS)+";\n"
-        "uniform vec3 "+std::string(MR_SHADER_CAM_DIR)+";\n"
-        "uniform mat4 "+std::string(MR_SHADER_MVP_MAT4)+";\n"
-        "uniform mat4 "+std::string(MR_SHADER_MODEL_MAT4)+";\n"
-        "uniform mat4 "+std::string(MR_SHADER_VIEW_MAT4)+";\n"
-        "uniform mat4 "+std::string(MR_SHADER_PROJ_MAT4)+";\n";
+        "uniform vec3 "+std::string(MR_SHADER_CAM_DIR)+";\n";
 
-        if(req.features.toScreen && req.features.defferedRendering) {
+        if(req.vertexProcess == Params::ToWorld) {
             code +=
-            "uniform sampler2D "+std::string(MR_SHADER_UNIFORM_GBUFFER_1)+";\n"
-            "uniform sampler2D "+std::string(MR_SHADER_UNIFORM_GBUFFER_2)+";\n"
-            "uniform sampler2D "+std::string(MR_SHADER_UNIFORM_GBUFFER_3)+";\n";
+            "uniform mat4 "+std::string(MR_SHADER_MVP_MAT4)+";\n"
+            "uniform mat4 "+std::string(MR_SHADER_MODEL_MAT4)+";\n"
+            "uniform mat4 "+std::string(MR_SHADER_VIEW_MAT4)+";\n"
+            "uniform mat4 "+std::string(MR_SHADER_PROJ_MAT4)+";\n";
         }
 
-        if(req.features.ambient) code += "uniform sampler2D "+std::string(MR_SHADER_AMBIENT_TEX)+";\n";
-        if(req.features.diffuse) code += "uniform sampler2D "+std::string(MR_SHADER_DIFFUSE_TEX)+";\n";
-        if(req.features.opacity) code += "uniform sampler2D "+std::string(MR_SHADER_OPACITY_TEX)+";\n";
-        if(req.features.colorFilter) code += "uniform vec4 "+std::string(MR_SHADER_COLOR_V4)+";\n";
-
-        if(req.features.fog) { code +=
-            "uniform float "+std::string(MR_SHADER_FOG_MAX_DIST)+";\n"
-            "uniform float "+std::string(MR_SHADER_FOG_MIN_DIST)+";\n"
-            "uniform vec4 "+std::string(MR_SHADER_FOG_COLOR)+";\n";
-        }
-
-        if(req.features.light){
-            code +=
-            "\n"
-            "struct PointLight {\n"
-            "   vec3 pos;\n"
-            "   vec3 emission;\n"
-            "   vec3 ambient;\n"
-            "   float attenuation;\n"
-            "   float power;\n"
-            "   float radius;\n"
-            "};\n"
-            "\n"
-            "struct DirLight {\n"
-            "   vec3 dir;\n"
-            "   vec3 emission;\n"
-            "   vec3 ambient;\n"
-            "};\n"
-            "\n"
-            "uniform int "+std::string(MR_SHADER_POINT_LIGHTS_NUM)+";\n"
-            "uniform PointLight "+std::string(MR_SHADER_POINT_LIGHTS)+"["+std::to_string(MR_SHADER_MAX_POINT_LIGHTS)+"];\n"
-            "\n"
-            "uniform int "+std::string(MR_SHADER_DIR_LIGHTS_NUM)+";\n"
-            "uniform DirLight "+std::string(MR_SHADER_DIR_LIGHTS)+"["+std::to_string(MR_SHADER_MAX_DIR_LIGHTS)+"];\n"
-            "\n";
+        for(size_t i = 0; i < req.textureMaps.size(); ++i){
+            switch(textureMaps[i]) {
+            case ColorMap:
+                code += "uniform sampler2D "MR_SHADER_COLOR_MAP";\n";
+                break;
+            case NormalMap:
+                code += "uniform sampler2D "MR_SHADER_NORMAL_MAP";\n";
+                break;
+            case SpecularMap:
+                code += "uniform sampler2D "MR_SHADER_SPECULAR_MAP";\n";
+                break;
+            case DisplacementMap:
+                code += "uniform sampler2D "MR_SHADER_DISPLACEMENT_MAP";\n";
+                break;
+            case GlossMap:
+                code += "uniform sampler2D "MR_SHADER_GLOSS_MAP";\n";
+                break;
+            case AOMap:
+                code += "uniform sampler2D "MR_SHADER_AO_MAP";\n";
+                break;
+            case OpacityMap:
+                code += "uniform sampler2D "MR_SHADER_OPACITY_MAP";\n";
+                break;
+            case EnvironmentMap:
+                code += "uniform sampler2D "MR_SHADER_ENVIRONMENT_MAP";\n";
+                break;
+            case EmissionMap:
+                code += "uniform sampler2D "MR_SHADER_EMISSION_MAP";\n";
+                break;
+            }
         }
 
         for(size_t it = 0; it < req.uniforms.size(); ++it) {
@@ -324,12 +317,6 @@ std::string ShaderBuilder::GenerateCode(const ShaderBuilder::Params& req, const 
         ///Outputs
         code +=
         "out vec4 "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+";\n";
-
-        if(req.features.toRenderTarget) {
-            code +=
-            "out vec4 "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_2)+";\n"
-            "out vec4 "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_3)+";\n";
-        }
 
         ///Functions
         if(req.features.toScreen && req.features.defferedRendering) {

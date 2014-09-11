@@ -9,13 +9,28 @@
 
 namespace MR {
 
+std::string ShaderCompilationMessage::MessageTypeNames[3] { "Info", "Warning", "Error" };
+
 ShaderCompilationMessage::ShaderCompilationMessage
 (const MessageType& type, const int& code, const unsigned int& line, const std::string& text)
 : _type(type), _code(code), _line(line), _text(text) {}
 
+ShaderCompilationMessage& ShaderCompilationMessage::operator = (const ShaderCompilationMessage& msg) {
+    if(this == &msg) {
+        return *this;
+    }
+
+    _type = msg._type;
+    _code = msg._code;
+    _line = msg._line;
+    _text = msg._text;
+
+    return *this;
+}
+
 ShaderCompilationOutput::ShaderCompilationOutput() : _messages(), _result(false) {}
 ShaderCompilationOutput::ShaderCompilationOutput(ShaderCompilationMessage* ar, const size_t& num, const bool& result) : _messages(ar, num, true), _result(result) {}
-ShaderCompilationOutput::ShaderCompilationOutput(const StaticArray<ShaderCompilationMessage>& msg, const bool& result) : _messages(msg), _result(result) {}
+ShaderCompilationOutput::ShaderCompilationOutput(const TStaticArray<ShaderCompilationMessage>& msg, const bool& result) : _messages(msg), _result(result) {}
 
 /**
     COMPILE
@@ -77,8 +92,8 @@ ShaderCompilationOutput ShaderCompiler::Compile(const std::string& code, const M
     //get result
     int compile_status = -1;
     glGetShaderiv(gpu_handle, GL_COMPILE_STATUS, &compile_status);
-    if(compile_status == GL_FALSE){
-        if(debug_log) MR::Log::LogString("Shader compilation failed", MR_LOG_LEVEL_ERROR);
+    if(compile_status != GL_TRUE){
+        MR::Log::LogString("Shader compilation failed", MR_LOG_LEVEL_ERROR);
     }
 
     //if glCompileShader is failed
@@ -114,7 +129,7 @@ ShaderCompilationOutput ShaderCompiler::Compile(const std::string& code, const M
     LINK
 **/
 
-ShaderCompilationOutput ShaderCompiler::Link(StaticArray<unsigned int> gpu_handles, const unsigned int& gpu_program_handle) {
+ShaderCompilationOutput ShaderCompiler::Link(TStaticArray<unsigned int> gpu_handles, const unsigned int& gpu_program_handle) {
     if(gpu_program_handle == 0) {
         return ShaderCompilationOutput(
                                 new ShaderCompilationMessage[1]{ ShaderCompilationMessage( ShaderCompilationMessage::MT_Error, 0, 0, "gpu_program_handle == 0" ) },
@@ -163,6 +178,7 @@ ShaderCompilationOutput ShaderCompiler::Link(StaticArray<unsigned int> gpu_handl
     }
 #endif
 
+    glProgramParameteri(gpu_program_handle, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE); ///FOR GetCache
     glLinkProgram(gpu_program_handle);
 
     //get log
@@ -177,7 +193,7 @@ ShaderCompilationOutput ShaderCompiler::Link(StaticArray<unsigned int> gpu_handl
 
     int link_status = -1;
     glGetProgramiv(gpu_program_handle, GL_LINK_STATUS, &link_status);
-    if(link_status == GL_FALSE){
+    if(link_status != GL_TRUE){
         if(debug_log) MR::Log::LogString("Shader program linking failed", MR_LOG_LEVEL_ERROR);
     }
 
@@ -229,7 +245,7 @@ ShaderCompilationOutput ShaderCompiler::Link(StaticArray<unsigned int> gpu_handl
     LINK TO BYTE CODE
 **/
 
-ShaderCompilationOutput ShaderCompiler::LinkToByteCode(StaticArray<unsigned int> gpu_handles, const unsigned int & gpu_program_handle, int* outLength, unsigned int* outFromat, void** outData, bool* byteCode) {
+ShaderCompilationOutput ShaderCompiler::LinkToByteCode(TStaticArray<unsigned int> gpu_handles, const unsigned int & gpu_program_handle, int* outLength, unsigned int* outFromat, void** outData, bool* byteCode) {
     if(outLength == 0 || outFromat == 0 || outData == 0 || byteCode == 0) {
         return ShaderCompilationOutput(
                                 new ShaderCompilationMessage[1]{ ShaderCompilationMessage( ShaderCompilationMessage::MT_Error, 0, 0, "outLength == 0 || outFromat == 0 || outData == 0 || byteCode == 0" ) },

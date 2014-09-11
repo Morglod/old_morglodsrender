@@ -1,5 +1,6 @@
 #include "FilesIO.hpp"
 #include "Singleton.hpp"
+#include "Debug.hpp"
 
 namespace MR {
 
@@ -100,6 +101,35 @@ bool FileUtils::SplitPath(const std::string& fullPathToFile, std::string& path, 
     path = fullPathToFile.substr(0, it);
     fileName = fullPathToFile.substr(it+1, fullPathToFile.size()-it);
     return true;
+}
+
+bool FileIO::WriteBytes(std::string const& path, TStaticArray<unsigned char> bytes) {
+    Assert(path == "")
+    Assert(bytes.GetNum() == 0)
+
+    std::ofstream file(path, std::ios::out | std::ios::binary);
+    if(file.bad() || !file.is_open()) return false;
+    file.write((const char*)bytes.GetRaw(), bytes.GetNum());
+    return true;
+}
+
+bool FileIO::ReadBytes(std::string const& path, TStaticArray<unsigned char>& out_bytes) {
+    Assert(path == "")
+
+    size_t sz = GetFileSize(path);
+    if(sz == 0) return false;
+
+    out_bytes = TStaticArray<unsigned char>(new unsigned char [sz], sz, true);
+
+    std::ifstream file(path, std::ios::in | std::ios::binary);
+    if(file.bad() || !file.is_open()) return false;
+    file.read((char*)out_bytes.GetRaw(), sz);
+    return true;
+}
+
+size_t FileIO::GetFileSize(std::string const& path) {
+    std::ifstream in(path, std::ifstream::ate | std::ifstream::binary);
+    return in.tellg();
 }
 
 }

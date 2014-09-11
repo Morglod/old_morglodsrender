@@ -32,7 +32,6 @@ zlib http://www.zlib.net
 //#include "Model.hpp"
 //#include "Scene/Scene.hpp"
 #include "Shaders/ShaderInterfaces.hpp"
-#include "Shaders/ShaderBuilder.hpp"
 #include "Shaders/ShaderCompiler.hpp"
 #include "Shaders/ShaderUniforms.hpp"
 #include "Shaders/ShaderObjects.hpp"

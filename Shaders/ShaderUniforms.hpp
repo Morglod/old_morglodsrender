@@ -12,26 +12,31 @@
 namespace MR {
 
 /** Named uniform of shader
- *  After shader recompilation, call MapUniform method
+ *  After shader recompilation, call ShaderUniform::ResetLocation method
  */
 class ShaderUniform : public IShaderUniform {
 public:
-    inline const std::string& GetName() override { return _name; }
-    inline const IShaderUniform::Type& GetType() override { return _type; }
+    inline std::string GetName() override { return _name; }
+    inline IShaderUniform::Type GetType() override { return _type; }
     inline void SetPtr(void* ptr) override { _value = ptr; OnNewValuePtr(dynamic_cast<IShaderUniform*>(this), ptr); }
     inline void* GetPtr() override { return _value; }
-    inline const int& GetGPULocation() override { return _gpu_location; }
+    inline int GetGPULocation() override { return _gpu_location; }
+    void Update() override;
 
-    bool Map(IShaderProgram* program) override;
+    bool ResetLocation() override;
 
-    //Map will be called
-    ShaderUniform(const std::string& name, const ShaderUniform::Type& type, void* value, IShaderProgram* program);
+    inline IShaderProgram* GetParent() override { return _owner; }
+
+    //ResetLocation will be called
+    ShaderUniform();
+    ShaderUniform(const std::string& name, const IShaderUniform::Type& type, void* value, IShaderProgram* program);
     virtual ~ShaderUniform() {}
 protected:
     std::string _name;
     int _gpu_location;
     IShaderUniform::Type _type;
     void* _value;
+    IShaderProgram* _owner;
 };
 
 }

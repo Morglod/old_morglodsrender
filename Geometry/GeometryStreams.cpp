@@ -15,7 +15,7 @@ void GeometryStream::BindVertexFormat(IVertexFormat* format) {
         MR::Log::LogString("Failed GeometryStream::BindVertexFormat(null). format is null.", MR_LOG_LEVEL_ERROR);
         return;
     }
-    StaticArray<IVertexAttribute*> attr = format->_Attributes();
+    TStaticArray<IVertexAttribute*> attr = format->_Attributes();
 
     for(size_t i = 0; i < attr.GetNum(); ++i) {
         if(!attr.At(i)) MR::Log::LogString("Failed GeometryStream::BindVertexFormat(...). format->Attribute["+std::to_string(i)+"] is null.", MR_LOG_LEVEL_ERROR);

@@ -7,29 +7,26 @@
 
 namespace MR {
 
-class VirtualGPUBuffer_MemoryMappedEvent;
 class VirtualGPUBuffer_DestroyEvent;
 
 /**
     It uses part of GPUBuffer as unique buffer
 **/
 class VirtualGPUBuffer : public IGPUBuffer {
-    friend class VirtualGPUBuffer_MemoryMappedEvent;
     friend class VirtualGPUBuffer_DestroyEvent;
 public:
     /* IGPUBuffer */
-    void Bind(const BindTargets& target) override { _realBuffer->Bind(target); }
-    void BindAt(const BindTargets& target, const unsigned int& index) override { _realBuffer->BindAt(target, index); }
-    IGPUBuffer* ReBind(const BindTargets& target) override { return _realBuffer->ReBind(target); }
-    BindTargets GetTarget() override { return _realBuffer->GetTarget(); }
-    void* GetMappedMemory() override { return _mapped_mem; }
-    bool BufferData(void* data, const size_t& offset, const size_t& size, size_t* out_realOffset, BufferedDataInfo* out_info) override;
-    inline bool MapMemory() override { return _realBuffer->MapMemory(); }
-    inline void UnMapMemory() override { _realBuffer->UnMapMemory(); }
+    inline void Bind(const BindTargets& target) override { _realBuffer->Bind(target); }
+    inline void BindAt(const BindTargets& target, const unsigned int& index) override { _realBuffer->BindAt(target, index); }
+    inline IGPUBuffer* ReBind(const BindTargets& target) override { return _realBuffer->ReBind(target); }
+    inline BindTargets GetTarget() override { return _realBuffer->GetTarget(); }
+    inline bool Write(void* srcData, const size_t& srcOffset, const size_t& dstOffset, const size_t& size, size_t* out_realOffset, BufferedDataInfo* out_info) override { return _realBuffer->Write(srcData, srcOffset, dstOffset+GetRealOffset(), size, out_realOffset, out_info); }
+    inline bool Read(void* dstData, const size_t& dstOffset, const size_t& srcOffset, const size_t& size) override { return _realBuffer->Read(dstData, dstOffset, srcOffset+GetRealOffset(), size); }
+    inline Usage GetUsage() override { return _realBuffer->GetUsage(); }
 
     /* GPUObjectHandle */
-    unsigned int GetGPUHandle() override { return (_realBuffer) ? _realBuffer->GetGPUHandle() : 0; }
-    size_t GetGPUMem() override { return _size; }
+    inline unsigned int GetGPUHandle() override { return (_realBuffer) ? _realBuffer->GetGPUHandle() : 0; }
+    inline size_t GetGPUMem() override { return _size; }
 
     /* ObjectHandle */
     void Destroy() override;
@@ -41,15 +38,12 @@ public:
     virtual ~VirtualGPUBuffer();
 protected:
     /* IGPUBuffer */
-    void Allocate(const Usage& usage, const size_t& size, bool mapMemory) override {}
+    void Allocate(const Usage& usage, const size_t& size) override {}
 
     IGPUBuffer* _realBuffer;
     size_t _realBuffer_offset;
-
-    void* _mapped_mem;
     size_t _size;
-
-    void* _events[2];
+    void* _eventHandle;
 };
 
 class VirtualGPUBufferManager {
@@ -61,7 +55,7 @@ public:
 
     virtual VirtualGPUBuffer* Take(const size_t& size);
     virtual VirtualGPUBuffer* TakeAll() { return Take(GetFreeMemorySize()); }
-    inline virtual MR::StaticArray<VirtualGPUBuffer*> GetAllBuffers() { return MR::StaticArray<VirtualGPUBuffer*>(&_buffers[0], _buffers.size(), false); }
+    inline virtual MR::TStaticArray<VirtualGPUBuffer*> GetAllBuffers() { return MR::TStaticArray<VirtualGPUBuffer*>(&_buffers[0], _buffers.size(), false); }
 
     inline virtual IGPUBuffer* GetRealBuffer() { return _realBuffer; }
 

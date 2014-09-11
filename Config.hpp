@@ -15,7 +15,7 @@
 #define MR_DELTA_TYPE float
 
 /** DEBUG **/
-//#define MR_CHECK_SMALL_GL_ERRORS ///undefine it, to turn off
+#define MR_CHECK_SMALL_GL_ERRORS ///undefine it, to turn off
 #define MR_CHECK_LARGE_GL_ERRORS ///undefine it, to turn off
 
 //Textures

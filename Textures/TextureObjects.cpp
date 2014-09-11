@@ -123,6 +123,13 @@ void MR::Texture::CreateGLTexture(const unsigned char *const data, const char fa
     }
 }
 
+void MR::Texture::Destroy() {
+    if(gl_texture != 0){
+        glDeleteTextures(1, &gl_texture);
+        gl_texture = 0;
+    }
+}
+
 MR::Texture::Texture(const unsigned int& handle, const MR::ITexture::Target& target) : gl_texture(handle), _settings(nullptr), _target(target) {
     if(handle) ResetInfo();
 }

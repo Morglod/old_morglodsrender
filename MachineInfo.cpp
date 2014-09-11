@@ -195,32 +195,32 @@ void MR::MachineInfo::PrintInfo() {
             std::string("\nMem Total(kb): ") + std::to_string(MR::MachineInfo::total_memory_kb()) + std::string(" Current(kb): ") + std::to_string(MR::MachineInfo::current_memory_kb()) + "\n\n"
         , MR_LOG_LEVEL_INFO);
 
-        MR::Log::LogString("\nNvidia VBUM: " + std::to_string(MR::MachineInfo::FeatureNV_GPUPTR()));
+        MR::Log::LogString("\nNvidia VBUM: " + std::to_string(MR::MachineInfo::IsNVVBUMSupported()));
         MR::Log::LogString("Direct state access: " + std::to_string(MR::MachineInfo::IsDirectStateAccessSupported()));
     MR::MachineInfo::ClearError();
 }
 
-const bool MR::MachineInfo::FeatureNV_GPUPTR(){
-    static bool support = (gpu_vendor() == MR::MachineInfo::GPUVendor::Nvidia) && (__glewGetBufferParameterui64vNV);
+const bool MR::MachineInfo::IsNVVBUMSupported(){
+    static bool support = GLEW_NV_vertex_buffer_unified_memory;
     return support;
 }
 
-const bool MR::MachineInfo::Feature_DrawIndirect() {
-    static bool support = (__glewDrawArraysIndirect);
+const bool MR::MachineInfo::IsIndirectDrawSupported() {
+    static bool support = false;//GLEW_ARB_draw_indirect;//(__glewDrawArraysIndirect);
     return support;
 }
 
-const bool MR::MachineInfo::Feautre_DrawIndirect_UseGPUBuffer() {
-    return MR::MachineInfo::Feature_DrawIndirect();
+const bool MR::MachineInfo::IndirectDraw_UseGPUBuffer() {
+    return MR::MachineInfo::IsIndirectDrawSupported();
 }
 
 const bool MR::MachineInfo::IsDirectStateAccessSupported(){
-    static bool state = (__glewNamedBufferDataEXT);
+    static bool state = GLEW_EXT_direct_state_access;//(__glewNamedBufferDataEXT);
     return state;
 }
 
-const bool MR::MachineInfo::IsVertexAttribBindingSupported(IContext* ctx) {
-    static bool state = ctx->ExtensionSupported("ARB_vertex_attrib_binding");
+const bool MR::MachineInfo::IsVertexAttribBindingSupported() {
+    static bool state = GLEW_ARB_vertex_attrib_binding;//ctx->ExtensionSupported("ARB_vertex_attrib_binding");
     return state;
 }
 

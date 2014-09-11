@@ -56,8 +56,6 @@
 		<Unit filename="Buffers/Buffers.hpp" />
 		<Unit filename="Buffers/BuffersConfig.hpp" />
 		<Unit filename="Buffers/BuffersInterfaces.hpp" />
-		<Unit filename="Buffers/StreamingBuffer.cpp" />
-		<Unit filename="Buffers/StreamingBuffer.hpp" />
 		<Unit filename="Buffers/VirtualBuffer.cpp" />
 		<Unit filename="Buffers/VirtualBuffer.hpp" />
 		<Unit filename="Collisions/CollisionBoxes.cpp" />
@@ -92,7 +90,6 @@
 		<Unit filename="Materials/MaterialResource.hpp" />
 		<Unit filename="Materials/MaterialsConfig.hpp" />
 		<Unit filename="MorglodsRender.hpp" />
-		<Unit filename="Pipeline.cpp" />
 		<Unit filename="Pipeline.hpp" />
 		<Unit filename="Postprocessing/PostprocessConfig.hpp" />
 		<Unit filename="Postprocessing/PostprocessInterfaces.hpp" />
@@ -104,8 +101,6 @@
 		<Unit filename="RenderManager.hpp" />
 		<Unit filename="RenderTarget.cpp" />
 		<Unit filename="RenderTarget.hpp" />
-		<Unit filename="RenderingUtils/ScreenQuad.cpp" />
-		<Unit filename="RenderingUtils/ScreenQuad.hpp" />
 		<Unit filename="Resources/Importer.cpp" />
 		<Unit filename="Resources/Importer.hpp" />
 		<Unit filename="Resources/ResourceManager.cpp" />
@@ -117,12 +112,6 @@
 		<Unit filename="Scene/SceneInterfaces.hpp" />
 		<Unit filename="Scene/Transformation.cpp" />
 		<Unit filename="Scene/Transformation.hpp" />
-		<Unit filename="Shaders/Fixed/FixedShaderConfig.hpp" />
-		<Unit filename="Shaders/Fixed/FixedShaderInterfaces.hpp" />
-		<Unit filename="Shaders/Fixed/FixedShaderObject.cpp" />
-		<Unit filename="Shaders/Fixed/FixedShaderObject.hpp" />
-		<Unit filename="Shaders/ShaderBuilder.cpp" />
-		<Unit filename="Shaders/ShaderBuilder.hpp" />
 		<Unit filename="Shaders/ShaderCompiler.cpp" />
 		<Unit filename="Shaders/ShaderCompiler.hpp" />
 		<Unit filename="Shaders/ShaderConfig.hpp" />
@@ -163,6 +152,8 @@
 		<Unit filename="Utils/Memory.hpp" />
 		<Unit filename="Utils/PluginSystem.cpp" />
 		<Unit filename="Utils/PluginSystem.hpp" />
+		<Unit filename="Utils/Serialization.cpp" />
+		<Unit filename="Utils/Serialization.hpp" />
 		<Unit filename="Utils/Singleton.hpp" />
 		<Unit filename="Utils/Threads.cpp" />
 		<Unit filename="Utils/Threads.hpp" />

@@ -6,6 +6,7 @@
 #include "Textures/TextureInterfaces.hpp"
 #include "RenderTarget.hpp"
 #include "Shaders/ShaderInterfaces.hpp"
+#include "Shaders/ShaderObjects.hpp"
 #include "Utils/Log.hpp"
 #include "Geometry/GeometryBufferV2.hpp"
 
@@ -48,8 +49,8 @@ void MR::RenderManager::DrawGeometryBuffer(IGeometryBuffer* b, IGeometryDrawPara
     }
 
     void* drawCmd = drawParams->GetIndirectPtr();
-    if(MR::MachineInfo::Feature_DrawIndirect()) {
-        if(!drawCmd && !MR::MachineInfo::Feautre_DrawIndirect_UseGPUBuffer()) {
+    if(MR::MachineInfo::IsIndirectDrawSupported()) {
+        if(!drawCmd && !MR::MachineInfo::IndirectDraw_UseGPUBuffer()) {
             MR::Log::LogString("RenderManager::DrawGeometryBuffer(...) drawCmd is null and not an offset (Feautre_DrawIndirect_UseGPUBuffer == false).", MR_LOG_LEVEL_ERROR);
         }
     } else if(drawCmd) {
@@ -58,7 +59,7 @@ void MR::RenderManager::DrawGeometryBuffer(IGeometryBuffer* b, IGeometryDrawPara
 
     drawParams->BeginDraw();
 
-    if(MR::MachineInfo::FeatureNV_GPUPTR()){
+    if(MR::MachineInfo::IsNVVBUMSupported()) {
         SetVAO(0);
         SetVertexFormat(b->GetVertexFormat());
         if(!_vformat) {
@@ -66,8 +67,8 @@ void MR::RenderManager::DrawGeometryBuffer(IGeometryBuffer* b, IGeometryDrawPara
             return;
         }
 
-        StaticArray<IVertexAttribute*> attrs = _vformat->_Attributes();
-        StaticArray<uint64_t> ptrs = _vformat->_Offsets();
+        TStaticArray<IVertexAttribute*> attrs = _vformat->_Attributes();
+        TStaticArray<uint64_t> ptrs = _vformat->_Offsets();
 
         MR::IGPUGeometryBuffer* buff = b->GetVertexBuffer();
         uint64_t nv_res_ptr = 0;
@@ -94,18 +95,23 @@ void MR::RenderManager::DrawGeometryBuffer(IGeometryBuffer* b, IGeometryDrawPara
                 MR::Log::LogString("Failed RenderManager::DrawGeometryBuffer(...). No IndexFormat.", MR_LOG_LEVEL_ERROR);
             }
             glBufferAddressRangeNV(GL_ELEMENT_ARRAY_ADDRESS_NV, 0, nv_res_ptr, nv_buf_size);
-            if(MR::MachineInfo::Feature_DrawIndirect()) glDrawElementsIndirect(b->GetDrawMode(), _iformat->GetDataType()->GPUDataType(), drawCmd);
+            if(MR::MachineInfo::IsIndirectDrawSupported()) glDrawElementsIndirect(b->GetDrawMode(), _iformat->GetDataType()->GPUDataType(), drawCmd);
             else {
-                glDrawRangeElements(b->GetDrawMode(),
+                /*glDrawRangeElements(b->GetDrawMode(),
                                     drawParams->GetVertexStart(),
                                     drawParams->GetVertexStart()+drawParams->GetVertexCount(),
                                     drawParams->GetIndexCount(),
                                     _iformat->GetDataType()->GPUDataType(),
-                                    (void*)(_iformat->Size() * drawParams->GetIndexStart()));
+                                    (void*)(_iformat->Size() * drawParams->GetIndexStart()));*/
+                glDrawElementsBaseVertex(  b->GetDrawMode(),
+                                            drawParams->GetIndexCount(),
+                                            _iformat->GetDataType()->GPUDataType(),
+                                            (void*)(_iformat->Size() * drawParams->GetIndexStart()),
+                                            drawParams->GetVertexStart());
             }
         }
         else {
-            if(MR::MachineInfo::Feature_DrawIndirect()) glDrawArraysIndirect(b->GetDrawMode(), drawCmd);
+            if(MR::MachineInfo::IsIndirectDrawSupported()) glDrawArraysIndirect(b->GetDrawMode(), drawCmd);
             else glDrawArrays(b->GetDrawMode(), drawParams->GetVertexStart(), drawParams->GetVertexCount());
         }
     }
@@ -142,7 +148,7 @@ void MR::RenderManager::DrawGeometryBuffer(IGeometryBuffer* b, IGeometryDrawPara
         }
 
         if(ibuff && drawParams->GetUseIndexBuffer()) {
-            if(MR::MachineInfo::Feature_DrawIndirect()) {
+            if(MR::MachineInfo::IsIndirectDrawSupported()) {
                 glDrawElementsIndirect(b->GetDrawMode(), iform->GetDataType()->GPUDataType(), drawCmd);
             }
             else {
@@ -154,7 +160,7 @@ void MR::RenderManager::DrawGeometryBuffer(IGeometryBuffer* b, IGeometryDrawPara
             }
         }
         else {
-            if(MR::MachineInfo::Feature_DrawIndirect()) glDrawArraysIndirect(b->GetDrawMode(), drawCmd);
+            if(MR::MachineInfo::IsIndirectDrawSupported()) glDrawArraysIndirect(b->GetDrawMode(), drawCmd);
             else glDrawArrays(b->GetDrawMode(), drawParams->GetVertexStart(), drawParams->GetVertexCount());
         }
 
@@ -180,14 +186,6 @@ void MR::RenderManager::SetIndirectDrawParamsBuffer(const unsigned int& buf) {
 
 void MR::RenderManager::SetActivedMaterialPass(MR::IMaterialPass* p) {
     _pass = p;
-}
-
-void MR::RenderManager::SetShaderProgram(MR::IShaderProgram* p) {
-    if(_program != p) {
-        if(p) p->Use();
-        else glUseProgram(0);
-        _program = p;
-    }
 }
 
 bool MR::RenderManager::SetTexture(MR::ITexture* t, const int& unit) {
@@ -317,7 +315,8 @@ void MR::RenderManager::Reset() {
     SetVAO(0);
     SetIndirectDrawParamsBuffer(0);
     SetActivedMaterialPass(nullptr);
-    SetShaderProgram(nullptr);
+    MR::UseNullShaderProgram();
+    //SetShaderProgram(nullptr);
     if(_textures) {
         for(int i = 0; i < MR::MachineInfo::MaxActivedTextureUnits(); ++i){
             UnBindTexture(i, nullptr);
@@ -336,7 +335,7 @@ void MR::RenderManager::Reset() {
     _material_flag = 0;
 }
 
-MR::RenderManager::RenderManager() : _vformat(nullptr), _iformat(nullptr), _vao(0), _indirect_drawParams_buffer(0), _pass(nullptr), _program(nullptr), _textures(nullptr), _target(nullptr), _material_flag(0) {
+MR::RenderManager::RenderManager() : _vformat(nullptr), _iformat(nullptr), _vao(0), _indirect_drawParams_buffer(0), _pass(nullptr), _textures(nullptr), _target(nullptr), _material_flag(0) {
     _textures = new TextureSlot[MR::MachineInfo::MaxActivedTextureUnits()];
     for(int i = 0; i < MR::MachineInfo::MaxActivedTextureUnits(); ++i){
         _textures[i].self_unit = i;

@@ -16,7 +16,7 @@ namespace MR {
 void GPUGeometryBuffer::SetGPUBuffer(IGPUBuffer* buf) {
     Assert(!buf)
 
-    if(MR::MachineInfo::FeatureNV_GPUPTR()){
+    if(MR::MachineInfo::IsNVVBUMSupported()){
         if(MR::MachineInfo::IsDirectStateAccessSupported()){
             glGetNamedBufferParameterui64vNV(buf->GetGPUHandle(), GL_BUFFER_GPU_ADDRESS_NV, &_nv_resident_ptr);
             glGetNamedBufferParameterivEXT(buf->GetGPUHandle(), GL_BUFFER_SIZE, &_nv_buffer_size);
@@ -45,114 +45,6 @@ GPUGeometryBuffer::GPUGeometryBuffer(IGPUBuffer* buf) : _buffer(nullptr), _nv_re
 
 GPUGeometryBuffer::~GPUGeometryBuffer() {
 }
-
-/*
-bool GPUBuffer::Storage(void* initData, const unsigned int& size, const unsigned int& storageBits) {
-    if(_handle == 0) {
-        glGenBuffers(1, &_handle);
-        _allocated_size = size;
-        _next_free_offset = 0;
-        _used_size = 0;
-        _free_size = size;
-    }
-
-    _allocated_size = size;
-    _free_size = size;
-    _used_size = 0;
-    _next_free_offset = 0;
-
-    *//*if(MR::MachineInfo::IsDirectStateAccessSupported()){
-        glNamedBufferStorageEXT(_handle, size, initData, storageBits);
-    } else {
-        glBindBuffer(_target, _handle);
-        glBufferStorage(_target, size, initData, storageBits);
-        glBindBuffer(_target, 0);
-    }*/
-/*
-    if(MR::MachineInfo::IsDirectStateAccessSupported()){
-        glNamedBufferDataEXT(_handle, size, initData, GL_STATIC_DRAW);
-    } else {
-        glBindBuffer(_target, _handle);
-        glBufferData(_target, size, initData, GL_STATIC_DRAW);
-        glBindBuffer(_target, 0);
-    }
-
-    if(MR::MachineInfo::FeatureNV_GPUPTR()){
-        if(MR::MachineInfo::IsDirectStateAccessSupported()){
-            glGetNamedBufferParameterui64vNV(_handle, GL_BUFFER_GPU_ADDRESS_NV, &_resident_ptr);
-            glGetNamedBufferParameterivEXT(_handle, GL_BUFFER_SIZE, &_buffer_size);
-            //glMakeNamedBufferResidentNV(_handle, accessFlag);
-        } else {
-            glBindBuffer(GL_ARRAY_BUFFER, _handle);
-            glGetBufferParameterui64vNV(GL_ARRAY_BUFFER, GL_BUFFER_GPU_ADDRESS_NV, &_resident_ptr);
-            glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &_buffer_size);
-            //glMakeBufferResidentNV(GL_ARRAY_BUFFER, accessFlag);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-        }
-    }
-
-    return true;
-}
-*/
-
-/*GeometryBuffer* GeometryBuffer::Plane(const glm::vec3& scale, const glm::vec3 pos, const unsigned int& usage, const unsigned int& drawm){
-    const int per_verts_elements = 5;
-    const int garray_size = per_verts_elements * 4;
-    float garray[garray_size] {
-        //v1
-        -0.5f*scale.x + pos.x,-0.5f*scale.y + pos.y, -0.5f*scale.y + pos.z, //pos
-        0.0f, 0.0f, //tex coord
-        //v2
-        -0.5f*scale.x + pos.x, 0.5f*scale.y + pos.y,  0.5f*scale.y + pos.z,
-        0.0f, 1.0f,
-        //v4
-        0.5f*scale.x + pos.x,  0.5f*scale.y + pos.y,  0.5f*scale.y + pos.z,
-        1.0f, 1.0f,
-        //v3
-        0.5f*scale.x + pos.x, -0.5f*scale.y + pos.y, -0.5f*scale.y + pos.z,
-        1.0f, 0.0f
-    };
-
-    //Create index array for 2 triangles
-
-    int iarray_size = 4;
-    unsigned int* iarray = 0;
-
-    switch(drawm){
-    case IGeometryBuffer::Draw_Points:
-    case IGeometryBuffer::Draw_LineLoop:
-    case IGeometryBuffer::Draw_LineStrip:
-    case IGeometryBuffer::Draw_Quads:
-        iarray = new unsigned int[4] { 0, 1, 2, 3 };
-        iarray_size = 4;
-        break;
-    case IGeometryBuffer::Draw_Triangles:
-        iarray = new unsigned int[6] { 0, 1, 2, 2, 3, 0 };
-        iarray_size = 6;
-        break;
-    }
-
-    //Create vertex declaration that tells engine in wich sequence data is stored
-    MR::VertexFormatCustom* vformat = new VertexFormatCustom();
-    vformat->AddVertexAttribute(new MR::VertexAttributeCustom(3, VertexDataTypeFloat::GetInstance(), IVertexAttribute::SI_Position));
-    vformat->AddVertexAttribute(new MR::VertexAttributeCustom(2, VertexDataTypeFloat::GetInstance(), IVertexAttribute::SI_TexCoord));
-
-    MR::GPUBuffer* vbuffer = new GPUBuffer(GL_ARRAY_BUFFER);
-    vbuffer->Buffer(&garray[0], sizeof(float)*garray_size, usage);
-    vbuffer->SetNum(4); //set vertexes num
-
-    MR::IndexFormatCustom* iformat = new IndexFormatCustom(VertexDataTypeUInt::GetInstance());
-
-    MR::GPUBuffer* ibuffer = new GPUBuffer(GL_ELEMENT_ARRAY_BUFFER);
-    ibuffer->Buffer(&iarray[0], sizeof(unsigned int)*iarray_size, usage);
-    ibuffer->SetNum(iarray_size);
-
-    //Create geometry buffer
-    MR::GeometryBuffer* gb = new GeometryBuffer(vbuffer, ibuffer, vformat, iformat, drawm); //new MR::GeometryBuffer(vDecl, iDecl, &garray[0], sizeof(float)*garray_size, &iarray[0], sizeof(unsigned int)*iarray_size, garray_size / per_verts_elements, iarray_size, usage, usage, drawm);
-    delete [] iarray;
-
-    return gb;
-}*/
 
 bool GeometryBuffer::SetVertexBuffer(IGPUGeometryBufferPtr buf) {
     _vb = buf;
@@ -193,7 +85,7 @@ void GeometryBuffer::Release() {
 GeometryBuffer::GeometryBuffer(IGPUGeometryBufferPtr vb, IGPUGeometryBufferPtr ib, IVertexFormat* f, IIndexFormat* fi, const unsigned int& drawMode) :
     _vb(vb), _ib(ib), _format(f), _iformat(fi), _vao(0), _draw_mode(drawMode)
 {
-    if(!MR::MachineInfo::FeatureNV_GPUPTR()){
+    if(!MR::MachineInfo::IsNVVBUMSupported()){
         glGenVertexArrays(1, &_vao);
         glBindVertexArray(_vao);
 
@@ -218,27 +110,27 @@ GeometryBuffer::~GeometryBuffer(){
 
 void GeometryDrawParams::SetIndexStart(const unsigned int& i) {
     _istart = i;
-    if(MR::MachineInfo::Feature_DrawIndirect()) _MakeDrawCmd();
+    if(MR::MachineInfo::IsIndirectDrawSupported()) _MakeDrawCmd();
 }
 
 void GeometryDrawParams::SetVertexStart(const unsigned int& v) {
     _vstart = v;
-    if(MR::MachineInfo::Feature_DrawIndirect()) _MakeDrawCmd();
+    if(MR::MachineInfo::IsIndirectDrawSupported()) _MakeDrawCmd();
 }
 
 void GeometryDrawParams::SetIndexCount(const unsigned int& i) {
     _icount = i;
-    if(MR::MachineInfo::Feature_DrawIndirect()) _MakeDrawCmd();
+    if(MR::MachineInfo::IsIndirectDrawSupported()) _MakeDrawCmd();
 }
 
 void GeometryDrawParams::SetVertexCount(const unsigned int& i) {
     _vcount = i;
-    if(MR::MachineInfo::Feature_DrawIndirect()) _MakeDrawCmd();
+    if(MR::MachineInfo::IsIndirectDrawSupported()) _MakeDrawCmd();
 }
 
 void GeometryDrawParams::SetUseIndexBuffer(const bool& state) {
     _index_buffer = state;
-    if(MR::MachineInfo::Feature_DrawIndirect()) _MakeDrawCmd();
+    if(MR::MachineInfo::IsIndirectDrawSupported()) _MakeDrawCmd();
 }
 
 bool GeometryDrawParams::GetUseIndexBuffer() {
@@ -254,7 +146,7 @@ void GeometryDrawParams::EndDraw() {
 }
 
 void GeometryDrawParams::_MakeDrawCmd() {
-    if(MR::MachineInfo::Feautre_DrawIndirect_UseGPUBuffer()) {
+    if(MR::MachineInfo::IndirectDraw_UseGPUBuffer()) {
         bool direct = MR::MachineInfo::IsDirectStateAccessSupported();
 
         void* data = (_index_buffer == true) ? (void*)(new MR::IGeometryDrawParams::DrawElementsIndirectCmd {_icount, 1, _istart, _vstart, 0}) : (void*)(new MR::IGeometryDrawParams::DrawArraysIndirectCmd {_vcount, 1, _vstart, 0});
@@ -296,7 +188,7 @@ void GeometryDrawParams::_MakeDrawCmd() {
 
 GeometryDrawParams::GeometryDrawParams(const bool& indexBuffer, const unsigned int& istart, const unsigned int& vstart, const unsigned int& icount, const unsigned int& vcount)
  : drawCmd(0), _istart(istart), _vstart(vstart), _icount(icount), _vcount(vcount), _index_buffer(indexBuffer) {
-     if(MR::MachineInfo::Feature_DrawIndirect()) _MakeDrawCmd();
+     if(MR::MachineInfo::IsIndirectDrawSupported()) _MakeDrawCmd();
 }
 
 GeometryDrawParams::~GeometryDrawParams() {
@@ -491,16 +383,16 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
 
     if(_buffer_per_geom) {
         GPUBuffer* vertexBuffer = new MR::GPUBuffer();
-        vertexBuffer->Allocate(usage, vertexDataSize, false);
-        vertexBuffer->BufferData(vertexData, 0, vertexDataSize, nullptr, nullptr);
+        vertexBuffer->Allocate(usage, vertexDataSize);
+        vertexBuffer->Write(vertexData, 0, 0, vertexDataSize,  nullptr, nullptr);
         GPUGeometryBuffer* vertexGeom = new MR::GPUGeometryBuffer(vertexBuffer);
 
         GPUBuffer* indexBuffer = nullptr;
         GPUGeometryBuffer* indexGeom = nullptr;
         if(indexFormat) {
             indexBuffer = new MR::GPUBuffer();
-            indexBuffer->Allocate(usage, indexDataSize, false);
-            indexBuffer->BufferData(indexData, 0, indexDataSize, nullptr, nullptr);
+            indexBuffer->Allocate(usage, indexDataSize);
+            indexBuffer->Write(indexData, 0, 0, indexDataSize, nullptr, nullptr);
             indexGeom = new MR::GPUGeometryBuffer(indexBuffer);
         }
         MR::GeometryBuffer* geomBuffer = new MR::GeometryBuffer(IGPUGeometryBufferPtr(vertexGeom), (indexFormat) ? IGPUGeometryBufferPtr(indexGeom) : nullptr, vertexFormat, indexFormat, drawMode);
@@ -510,21 +402,9 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
     FormatBuffer* fbuf = _RequestFormatBuffer(vertexFormat, vertexDataSize, indexFormat, indexDataSize, usage);
 
     VirtualGPUBuffer* virtualBuffer = fbuf->manager->Take(vertexDataSize+indexDataSize);
-    unsigned char* mappedMem = (unsigned char*)(virtualBuffer->GetMappedMemory());
     MR::IGPUBuffer::BufferedDataInfo bufferedVertexDataInfo, bufferedIndexDataInfo;
-    if(mappedMem != 0) {
-        for(size_t mi = 0; mi < vertexDataSize; ++mi) {
-            mappedMem[mi] = ((unsigned char*)(vertexData))[mi];
-        }
-        if(indexDataSize) {
-            for(size_t mi = vertexDataSize; mi < (vertexDataSize+indexDataSize); ++mi) {
-                mappedMem[mi] = ((unsigned char*)(indexData))[mi-vertexDataSize];
-            }
-        }
-    } else {
-        virtualBuffer->BufferData(vertexData, 0, vertexDataSize, nullptr, &bufferedVertexDataInfo);
-        if(indexDataSize) virtualBuffer->BufferData(indexData, vertexDataSize, indexDataSize, nullptr, &bufferedIndexDataInfo);
-    }
+    virtualBuffer->Write(vertexData, 0, 0, vertexDataSize, nullptr, &bufferedVertexDataInfo);
+    if(indexDataSize) virtualBuffer->Write(indexData, 0, vertexDataSize, indexDataSize, nullptr, &bufferedIndexDataInfo);
 
     GPUGeometryBuffer* vertexGeom = new GPUGeometryBuffer(fbuf->manager->GetRealBuffer());
     GPUGeometryBuffer* indexGeom = (indexFormat) ? (new GPUGeometryBuffer(fbuf->manager->GetRealBuffer())) : nullptr;
@@ -550,7 +430,7 @@ GeometryManager::FormatBuffer* GeometryManager::_RequestFormatBuffer(IVertexForm
 
     FormatBuffer formatBuf;
     formatBuf.buffer = new MR::GPUBuffer();
-    formatBuf.buffer->Allocate(usage, std::max(vertexDataSize+indexDataSize, _max_buffer_size), _map_global_buffers);
+    formatBuf.buffer->Allocate(usage, std::max(vertexDataSize+indexDataSize, _max_buffer_size));
     formatBuf.iFormat = indexFormat;
     formatBuf.vFormat = vertexFormat;
     formatBuf.usage = usage;
@@ -561,7 +441,7 @@ GeometryManager::FormatBuffer* GeometryManager::_RequestFormatBuffer(IVertexForm
 }
 
 //5 mb per buffer
-GeometryManager::GeometryManager() : _max_buffer_size(5242880), _buffer_per_geom(false), _map_global_buffers(false) {
+GeometryManager::GeometryManager() : _max_buffer_size(5242880), _buffer_per_geom(false) {
 }
 
 GeometryManager::~GeometryManager() {

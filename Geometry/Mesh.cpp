@@ -14,7 +14,7 @@ void MR::Mesh::Draw() {
     }
 }
 
-MR::Mesh::Mesh(const StaticArray<IGeometry*>& geom, IMaterial* mat)
+MR::Mesh::Mesh(const TStaticArray<IGeometry*>& geom, IMaterial* mat)
  : _geom(geom), _mat(mat) {
 }
 

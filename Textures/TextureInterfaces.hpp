@@ -225,6 +225,8 @@ public:
     virtual void UpdateData(const int& mipMapLevel, const int& xOffset, const int& yOffset, const int& width, const int& height, const Format& format, const Type& type, void* data) = 0;
     virtual ITexture::CompressionMode GetCompressionMode() = 0;
 
+    virtual void Destroy() = 0;
+
     virtual ~ITexture() {}
 };
 

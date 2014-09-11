@@ -25,7 +25,7 @@ void VertexFormatCustom::AddVertexAttribute(IVertexAttribute* a) {
 }
 
 bool VertexFormatCustom::Bind() {
-    if(MR::MachineInfo::FeatureNV_GPUPTR()){
+    if(MR::MachineInfo::IsNVVBUMSupported()){
         for(size_t i = 0; i < _attribs.size(); ++i) {
             glVertexAttribFormatNV(_attribs[i]->ShaderIndex(), (int)_attribs[i]->ElementsNum(), _attribs[i]->DataType()->GPUDataType(), GL_FALSE, this->Size());
             glEnableVertexAttribArray(_attribs[i]->ShaderIndex());
@@ -44,7 +44,7 @@ bool VertexFormatCustom::Bind() {
 }
 
 void VertexFormatCustom::UnBind() {
-    if(MR::MachineInfo::FeatureNV_GPUPTR()){
+    if(MR::MachineInfo::IsNVVBUMSupported()){
         for(size_t i = 0; i < _attribs.size(); ++i) {
             glDisableVertexAttribArray(_attribs[i]->ShaderIndex());
         }
@@ -60,7 +60,7 @@ void VertexFormatCustom::UnBind() {
 bool VertexFormatCustom::Equal(IVertexFormat* vf){
     if(Size() != vf->Size()) return false;
 
-    StaticArray<IVertexAttribute*> attrArray = vf->_Attributes();
+    TStaticArray<IVertexAttribute*> attrArray = vf->_Attributes();
 
     size_t i2 = 0;
     for(size_t i = 0; i < attrArray.GetNum(); ++i){
@@ -83,7 +83,7 @@ void VertexFormatCustomFixed::SetVertexAttribute(IVertexAttribute* a, const size
 }
 
 bool VertexFormatCustomFixed::Bind() {
-    if(MR::MachineInfo::FeatureNV_GPUPTR()){
+    if(MR::MachineInfo::IsNVVBUMSupported()){
         for(size_t i = 0; i < _attribsNum; ++i) {
             glEnableVertexAttribArray(_attribs[i]->ShaderIndex());
             glVertexAttribFormatNV(_attribs[i]->ShaderIndex(), (int)_attribs[i]->ElementsNum(), _attribs[i]->DataType()->GPUDataType(), GL_FALSE, this->Size());
@@ -103,7 +103,7 @@ bool VertexFormatCustomFixed::Bind() {
 }
 
 void VertexFormatCustomFixed::UnBind() {
-    if(MR::MachineInfo::FeatureNV_GPUPTR()){
+    if(MR::MachineInfo::IsNVVBUMSupported()){
         for(size_t i = 0; i < _attribsNum; ++i) {
             glDisableVertexAttribArray(_attribs[i]->ShaderIndex());
         }
@@ -119,7 +119,7 @@ void VertexFormatCustomFixed::UnBind() {
 bool VertexFormatCustomFixed::Equal(IVertexFormat* vf) {
     if(_size != vf->Size()) return false;
 
-    StaticArray<IVertexAttribute*> attrArray = vf->_Attributes();
+    TStaticArray<IVertexAttribute*> attrArray = vf->_Attributes();
 
     size_t i2 = 0;
     for(size_t i = 0; i < attrArray.GetNum(); ++i){
@@ -156,14 +156,14 @@ VertexFormatCustomFixed::~VertexFormatCustomFixed() {
 }
 
 bool IndexFormatCustom::Bind(){
-    if(MR::MachineInfo::FeatureNV_GPUPTR()){
+    if(MR::MachineInfo::IsNVVBUMSupported()){
         glEnableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
     }
     return true;
 }
 
 void IndexFormatCustom::UnBind(){
-    if(MR::MachineInfo::FeatureNV_GPUPTR()){
+    if(MR::MachineInfo::IsNVVBUMSupported()){
         glDisableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
     }
 }

@@ -48,7 +48,6 @@ public:
 
     inline IMaterialPass* GetActivedMaterialPass() { return _pass; }
     void SetActivedMaterialPass(IMaterialPass* p);
-    void SetShaderProgram(IShaderProgram* p);
     bool SetTexture(ITexture*, const int& unit);
     bool SetTexture(const unsigned int& target, const unsigned int& handle, const int& unit);
     bool SetTextureSettings(ITextureSettings* ts, const int& unit);
@@ -85,7 +84,6 @@ protected:
     unsigned int _indirect_drawParams_buffer;
 
     IMaterialPass* _pass;
-    IShaderProgram* _program;
     TextureSlot* _textures;
     RenderTarget* _target;
     unsigned char _material_flag;

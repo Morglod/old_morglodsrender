@@ -74,7 +74,7 @@ typedef std::shared_ptr<TextureLayer> TextureLayerPtr;
 
 class ProcedureTexture {
 public:
-    inline virtual StaticArray<TextureLayerPtr> GetLayers() { return StaticArray<TextureLayerPtr>(&_layers[0], _layers.size(), false); }
+    inline virtual TStaticArray<TextureLayerPtr> GetLayers() { return TStaticArray<TextureLayerPtr>(&_layers[0], _layers.size(), false); }
     inline virtual void AddLayer(TextureLayerPtr layer) { _layers.push_back(layer); }
     virtual TextureLayerPtr CreateLayer(const glm::vec4& fillColor);
     virtual void DeleteLayer(TextureLayerPtr layer);

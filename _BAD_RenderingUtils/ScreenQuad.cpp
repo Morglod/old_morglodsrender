@@ -36,7 +36,7 @@ ScreenQuad::ScreenQuad() {
     params.features.toScreen = true;
 
     _prog = MR::ShaderBuilder::Need(params);
-    _ambientTex = _prog->CreateUniform(MR_SHADER_AMBIENT_TEX, MR::IShaderUniform::Type::SUT_Sampler2D, &_ambientTexUnit);
+    _ambientTex = _prog->CreateUniform(MR_SHADER_AMBIENT_TEX, MR::IShaderUniform::Type::Sampler2D, &_ambientTexUnit);
 }
 
 ScreenQuad::~ScreenQuad() {

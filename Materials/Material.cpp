@@ -19,7 +19,7 @@ bool MaterialPass::Use() {
             return true;
         }
 
-        rm->SetShaderProgram(_program);
+        bool bStatus = _program->Use();
 
         for(size_t i = 0; i < _textures.GetNum(); ++i){
             switch(_textures.KeyAt(i)) {
@@ -40,7 +40,7 @@ bool MaterialPass::Use() {
 
         rm->SetActivedMaterialPass(dynamic_cast<MR::IMaterialPass*>(this));
 
-        return true;
+        return bStatus;
     } else {
         return false;
     }
@@ -65,14 +65,14 @@ MaterialPass::~MaterialPass() {
 
 // MATERIAL
 
-MR::StaticArray<IMaterialPass*> Material::GetPasses(const MaterialFlag& flag) {
+MR::TStaticArray<IMaterialPass*> Material::GetPasses(const MaterialFlag& flag) {
     std::vector<IMaterialPass*> passes;
     for(size_t i = 0; i < _passes.size(); ++i){
         if(_passes[i]->GetFlag() == flag) {
             passes.push_back(_passes[i]);
         }
     }
-    return MR::StaticArray<IMaterialPass*>(passes.data(), passes.size(), true);
+    return MR::TStaticArray<IMaterialPass*>(passes.data(), passes.size(), true);
 }
 
 IMaterialPass* Material::CreatePass(const MaterialFlag& flag) {
@@ -127,7 +127,7 @@ void Material::SetColor(const MaterialFlag& flag, const glm::vec4& color) {
 Material::Material() : _passes() {
 }
 
-Material::Material(MR::StaticArray<IMaterialPass*> passes) : _passes() {
+Material::Material(MR::TStaticArray<IMaterialPass*> passes) : _passes() {
     for(size_t i = 0; i < passes.GetNum(); ++i){
         _passes.push_back(passes.At(i));
     }

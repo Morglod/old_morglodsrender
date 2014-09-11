@@ -68,6 +68,8 @@ public:
     void SetData(const int& mipMapLevel, const InternalFormat& internalFormat, const int& width, const int& height, const Format& format, const Type& type, void* data);
     void UpdateData(const int& mipMapLevel, const int& xOffset, const int& yOffset, const int& width, const int& height, const Format& format, const Type& type, void* data);
 
+    void Destroy() override;
+
     Texture(const unsigned int& gpu_handle, const ITexture::Target& target);
     virtual ~Texture();
 

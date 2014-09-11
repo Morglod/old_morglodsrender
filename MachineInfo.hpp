@@ -51,17 +51,16 @@ class IContext;
 
         void PrintInfo();
 
-        /** FEATURES **/
-        const bool FeatureNV_GPUPTR(); //direct access to gpu's addresses (for vertex buffers)
-        const bool Feature_DrawIndirect();
-        const bool Feautre_DrawIndirect_UseGPUBuffer();
-
         /** EXTENSIONS **/
         const bool IsDirectStateAccessSupported();
-        const bool IsVertexAttribBindingSupported(IContext* ctx);
+        const bool IsVertexAttribBindingSupported();
         const bool IsTextureStorageSupported();
         const bool IsBufferStorageSupported();
-        int GetGeometryStreamsNum();
+        const bool IsIndirectDrawSupported();
+        const bool IsNVVBUMSupported(); //direct access to gpu's addresses (for vertex buffers)
+
+        /** EXT MISC **/
+        const bool IndirectDraw_UseGPUBuffer();
 
         /** GL INFO **/
         bool CatchError(std::string* errorOutput, int* glCode); //return true on error and print error's description in string; errorOutput and glCode can be NULL
@@ -70,6 +69,7 @@ class IContext;
         int MaxFragmentShaderTextureUnits();
         int MaxVertexShaderTextureUnits();
         int MaxActivedTextureUnits();
+        int GetGeometryStreamsNum();
 
         std::string glsl_version_directive();
         bool gl_core_profile();

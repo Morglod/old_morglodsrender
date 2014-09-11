@@ -64,22 +64,6 @@ public:
     virtual ~Usable() {}
 };
 
-/// Convert smth to binary format
-template<typename t>
-class SerializableBytes {
-public:
-    static StaticArray<unsigned char> ToBytes(t*);
-    static t* FromBytes(const StaticArray<unsigned char>&);
-};
-
-/// Convert smth to text format
-template<typename t>
-class SerializableString {
-public:
-    static std::string ToString(t*);
-    static t* FromString(const std::string&);
-};
-
 template<typename flag_t>
 class IFlags {
 public:

@@ -77,7 +77,7 @@ class IFileUtils {
 public:
     virtual void AddSearchPath(const std::string& path) = 0;
     virtual void RemoveSearchPath(const std::string& path) = 0;
-    virtual StaticArray<std::string> GetSearchPaths() = 0; //sets (*paths_ptr) to ptr to list of paths
+    virtual TStaticArray<std::string> GetSearchPaths() = 0; //sets (*paths_ptr) to ptr to list of paths
 
     virtual std::string FindFile(const std::string& fileName) = 0; //returns full path or null string
     virtual bool IsFileExist(const std::string& fileName) = 0;
@@ -89,13 +89,20 @@ class FileUtils : public IFileUtils, public Singleton<FileUtils> {
 public:
     inline void AddSearchPath(const std::string& path) override { _searchPaths.push_back(path); }
     inline void RemoveSearchPath(const std::string& path) override{ auto it = std::find(_searchPaths.begin(), _searchPaths.end(), path); if(it==_searchPaths.end()) return; _searchPaths.erase(it); }
-    inline StaticArray<std::string> GetSearchPaths() override { return StaticArray<std::string>(&_searchPaths[0], _searchPaths.size(), false); }
+    inline TStaticArray<std::string> GetSearchPaths() override { return TStaticArray<std::string>(&_searchPaths[0], _searchPaths.size(), false); }
 
     std::string FindFile(const std::string& fileName) override;
     inline bool IsFileExist(const std::string& fileName) override { return (this->FindFile(fileName) != ""); }
     bool SplitPath(const std::string& fullPathToFile, std::string& path, std::string& fileName) override;
 protected:
     std::vector<std::string> _searchPaths;
+};
+
+class FileIO {
+public:
+    static bool WriteBytes(std::string const& path, TStaticArray<unsigned char> bytes);
+    static bool ReadBytes(std::string const& path, TStaticArray<unsigned char>& out_bytes);
+    static size_t GetFileSize(std::string const& path);
 };
 
 }

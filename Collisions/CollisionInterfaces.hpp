@@ -35,8 +35,7 @@ public:
     virtual bool TestPoint(const glm::vec3& point) = 0;
     virtual bool TestAABB(const glm::vec3& minPoint, const glm::vec3& size) = 0;
     virtual bool TestFastSphere(const glm::vec3& center, const float& radius) = 0; //sphere is cube (so test with cube)
-    virtual bool TestSphere(const glm::vec3& center, const float& radius) = 0;
-    virtual bool TestFrustum(CollisionFrustumInfo const& info, glm::vec3 const& pos) = 0;
+    virtual bool TestFastFrustum(CollisionFrustumInfo const& info, glm::vec3 const& pos) = 0;
     virtual bool TestRayFirstPoint(RayInfo const& ray, glm::vec3 * out_Point) = 0;
     virtual bool TestRay(RayInfo const& ray, RayHitInfo<glm::vec3> * out_Points) = 0;
 };

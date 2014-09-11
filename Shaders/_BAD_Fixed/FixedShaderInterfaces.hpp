@@ -11,19 +11,7 @@ class ITexture;
 
 class IFixedShaderProgram : public IShaderProgram {
 public:
-    enum TextureMaps {
-        NoMap = 0,
-        ColorMap = 1,
-        NormalMap,
-        SpecularMap, //Reflections color and strength
-        DisplacementMap, //Height, will not used if not enought texture units
-        GlossMap,
-        AOMap, //Baked ambient occlusion, will not used if not enought texture units
-        OpacityMap,
-        EnvironmentMap, //eg for IBL
-        EmissionMap,
-        TextureMapsNum
-    };
+
 
     enum DisplacementTech {
         BumpTech = 0,

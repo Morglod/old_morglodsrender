@@ -14,13 +14,13 @@ class IMaterial;
 class IMesh {
 public:
     MR::EventListener<IMesh*, IMaterial*> OnMaterialChanged;
-    MR::EventListener<IMesh*, const StaticArray<IGeometry*>&> OnGeometryChanged;
+    MR::EventListener<IMesh*, const TStaticArray<IGeometry*>&> OnGeometryChanged;
 
     virtual void SetMaterial(IMaterial* m) = 0;
     virtual IMaterial* GetMaterial() = 0;
 
-    virtual void SetGeometry(StaticArray<IGeometry*>& geom) = 0;
-    virtual StaticArray<IGeometry*> GetGeometry() = 0;
+    virtual void SetGeometry(TStaticArray<IGeometry*>& geom) = 0;
+    virtual TStaticArray<IGeometry*> GetGeometry() = 0;
 
     virtual void Draw() = 0;
 

@@ -41,9 +41,9 @@ protected:
 
 class Material : public IMaterial {
 public:
-    MR::StaticArray<IMaterialPass*> GetAllPasses() override { return MR::StaticArray<IMaterialPass*>(&_passes[0], _passes.size(), false); }
+    MR::TStaticArray<IMaterialPass*> GetAllPasses() override { return MR::TStaticArray<IMaterialPass*>(&_passes[0], _passes.size(), false); }
     IMaterialPass* GetPass(const size_t& index) override { return _passes[index];}
-    MR::StaticArray<IMaterialPass*> GetPasses(const MaterialFlag& flag) override;
+    MR::TStaticArray<IMaterialPass*> GetPasses(const MaterialFlag& flag) override;
 
     IMaterialPass* CreatePass(const MaterialFlag& flag) override;
     inline void AddPass(IMaterialPass* pass) override { _passes.push_back(pass); }
@@ -57,7 +57,7 @@ public:
     void SetColor(const MaterialFlag& flag, const glm::vec4& color) override;
 
     Material();
-    Material(MR::StaticArray<IMaterialPass*> passes);
+    Material(MR::TStaticArray<IMaterialPass*> passes);
     virtual ~Material();
 protected:
     std::vector<IMaterialPass*> _passes;

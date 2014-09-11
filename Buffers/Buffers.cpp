@@ -7,7 +7,7 @@
 #include <GL/glew.h>
 
 #define MR_BUFFERS_BIND_TARGETS_NUM 14
-MR::StaticArray<MR::IGPUBuffer*> _MR_BUFFERS_BIND_TARGETS_(new MR::IGPUBuffer*[MR_BUFFERS_BIND_TARGETS_NUM], MR_BUFFERS_BIND_TARGETS_NUM, true);
+MR::TStaticArray<MR::IGPUBuffer*> _MR_BUFFERS_BIND_TARGETS_(new MR::IGPUBuffer*[MR_BUFFERS_BIND_TARGETS_NUM], MR_BUFFERS_BIND_TARGETS_NUM, true);
 
 class _MR_BUFFERS_BIND_TARGETS_NULL_ {
 public:
@@ -92,7 +92,7 @@ IGPUBuffer::BindTargets GPUBuffer::GetTarget() {
     return _bindedTarget;
 }
 
-void GPUBuffer::Allocate(const Usage& usage, const size_t& size, bool mapMemory) {
+void GPUBuffer::Allocate(const Usage& usage, const size_t& size) {
     Assert(size == 0)
     if(_handle == 0) {
         glGenBuffers(1, &_handle);
@@ -103,142 +103,75 @@ void GPUBuffer::Allocate(const Usage& usage, const size_t& size, bool mapMemory)
     _size = size;
 
     unsigned int usageFlags = 0;
-    _mappingFlags = 0;
     switch(usage) {
     case Static:
         usageFlags = GL_STATIC_DRAW;
-        _mappingFlags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
         break;
-    case FastWrite:
-        _mappingFlags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-        usageFlags = GL_STREAM_DRAW;
-        break;
-    case FastReadWrite:
-        _mappingFlags = GL_MAP_WRITE_BIT | GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+    case FastChange:
         usageFlags = GL_STREAM_DRAW;
         break;
     default:
         MR::Log::LogString("GPUBuffer::Allocate. Unknown usage option ("+std::to_string((int)usage)+"), Static will be used.", MR_LOG_LEVEL_WARNING);
         usageFlags = GL_STATIC_DRAW;
-        _mappingFlags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
         break;
-    }
-    if(usage == FastWrite) {
-        _mappingFlags = GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT;
-        usageFlags = GL_STREAM_DRAW;
     }
 
     IGPUBuffer* binded = 0;
     if(!MR::MachineInfo::IsDirectStateAccessSupported()) binded = ReBind(ArrayBuffer);
 
-    if(mapMemory && !MR::MachineInfo::IsBufferStorageSupported()) {
-        MR::Log::LogString("Can not map memory (BufferStorage ext not supported). Regular BufferData will be used.", MR_LOG_LEVEL_WARNING);
-        mapMemory = false;
-    }
     MR_BUFFERS_CHECK_BUFFER_DATA_ERRORS_CATCH(
-        /*if(mapMemory) {
-            if(MR::MachineInfo::IsDirectStateAccessSupported()) {
-                glNamedBufferStorageEXT(_handle, _size, 0, _mappingFlags);
-            } else {
-                binded = ReBind(ArrayBuffer);
-                MR::Log::LogString("BUFFERSTORAGE", MR_LOG_LEVEL_ERROR);
-                glBufferStorage(_MR_BUFFER_BIND_TARGETS_REMAP_FROM_INDEX_[(size_t)ArrayBuffer], _size, 0, _mappingFlags);
-            }
-            if(!MapMemory()) {
-                MR::Log::LogString("Failed MapMemory in GPUBuffer::Allocate.", MR_LOG_LEVEL_ERROR);
-            }
-        } else {
-            if(MR::MachineInfo::IsDirectStateAccessSupported()) {
-                glNamedBufferDataEXT(_handle, _size, 0, usageFlags);
-            } else {
-                glBufferData(_MR_BUFFER_BIND_TARGETS_REMAP_FROM_INDEX_[(size_t)ArrayBuffer], _size, 0, usageFlags);
-            }
-        }*/
         if(MR::MachineInfo::IsDirectStateAccessSupported()) {
             glNamedBufferDataEXT(_handle, _size, 0, usageFlags);
         } else {
             glBufferData(_MR_BUFFER_BIND_TARGETS_REMAP_FROM_INDEX_[(size_t)ArrayBuffer], _size, 0, usageFlags);
         }
-        if(mapMemory) if(!MapMemory()) {
-            MR::Log::LogString("Failed MapMemory in GPUBuffer::Allocate.", MR_LOG_LEVEL_ERROR);
-        }
     )
 
-    OnAllocated(dynamic_cast<MR::IGPUBuffer*>(this), usage, _size, mapMemory);
+    OnAllocated(dynamic_cast<MR::IGPUBuffer*>(this), usage, _size);
     if(binded) binded->Bind(ArrayBuffer);
 }
 
-bool GPUBuffer::BufferData(void* data, const size_t& offset, const size_t& size, size_t* out_realOffset, BufferedDataInfo* out_info) {
-    if(GetMappedMemory() != 0) return false;
-    Assert(data == 0)
+bool GPUBuffer::Write(void* srcData, const size_t& srcOffset, const size_t& dstOffset, const size_t& size, size_t* out_realOffset, BufferedDataInfo* out_info) {
+    Assert(srcData == 0)
     Assert(size == 0)
-    Assert(size+offset > GetGPUMem())
+    Assert(size+dstOffset > GetGPUMem())
     Assert(GetGPUHandle() == 0)
 
     MR_BUFFERS_CHECK_BUFFER_DATA_ERRORS_CATCH(
         if(MR::MachineInfo::IsDirectStateAccessSupported()) {
-            glNamedBufferSubDataEXT(GetGPUHandle(), offset, size, data);
+            glNamedBufferSubDataEXT(GetGPUHandle(), dstOffset, size, (void*)((size_t)srcData+srcOffset));
         } else {
             IGPUBuffer* binded = ReBind(ArrayBuffer);
-            glBufferSubData(_MR_BUFFER_BIND_TARGETS_REMAP_FROM_INDEX_[(size_t)ArrayBuffer], offset, size, data);
+            glBufferSubData(_MR_BUFFER_BIND_TARGETS_REMAP_FROM_INDEX_[(size_t)ArrayBuffer], dstOffset, size, (void*)((size_t)srcData+srcOffset));
             if(binded) binded->Bind(ArrayBuffer);
         }
     )
 
-    if(out_realOffset) *out_realOffset = offset;
-    if(out_info) *out_info = MR::IGPUBuffer::BufferedDataInfo(dynamic_cast<MR::IGPUBuffer*>(this), offset, size);
+    if(out_realOffset) *out_realOffset = dstOffset;
+    if(out_info) *out_info = MR::IGPUBuffer::BufferedDataInfo(dynamic_cast<MR::IGPUBuffer*>(this), dstOffset, size);
     return true;
 }
 
-bool GPUBuffer::MapMemory() {
-    if(_mappingFlags == 0) {
-        MR::Log::LogString("Failed GPUBuffer::MapMemory. Looks like buffer is not allocated.", MR_LOG_LEVEL_ERROR);
-        return false;
-    }
-    IGPUBuffer* binded = 0;
-    MR_BUFFERS_CHECK_MAPPINGS_ERRORS_CATCH(
-        ///DAT STUPID glMapNamedBufferRange crash =(
-        if(MR::MachineInfo::IsDirectStateAccessSupported()) {
-            if(_bindedTarget == NotBinded) {
-                binded = ReBind(ArrayBuffer);
-            }
-        }
-        _mapped_mem = glMapBufferRange(_MR_BUFFER_BIND_TARGETS_REMAP_FROM_INDEX_[(size_t)_bindedTarget], 0, _size, _mappingFlags);
+bool GPUBuffer::Read(void* dstData, const size_t& dstOffset, const size_t& srcOffset, const size_t& size) {
+    Assert(!dstData)
+    Assert(size+srcOffset > GetGPUMem())
+    Assert(size == 0)
+
+    MR_BUFFERS_CHECK_BUFFER_DATA_ERRORS_CATCH(
+        /*if(MR::MachineInfo::IsDirectStateAccessSupported()) {
+            glGetNamedBufferSubData(GetGPUHandle(), srcOffset, size, (void*)((size_t)dstData+dstOffset));
+        } else {*/
+            IGPUBuffer* binded = ReBind(ArrayBuffer);
+            glGetBufferSubData(_MR_BUFFER_BIND_TARGETS_REMAP_FROM_INDEX_[(size_t)ArrayBuffer], srcOffset, size, (void*)((size_t)dstData+dstOffset));
+            if(binded) binded->Bind(ArrayBuffer);
+        //}
     )
-    if(binded) binded->Bind(ArrayBuffer);
-    if(_mapped_mem) OnMemoryMapped(dynamic_cast<MR::IGPUBuffer*>(this), _mapped_mem);
-    else return false;
-    return true;
-}
 
-void GPUBuffer::UnMapMemory() {
-    if(_mapped_mem == 0) return;
-    bool bResult = true;
-    if(MR::MachineInfo::IsDirectStateAccessSupported()) {
-        MR_BUFFERS_CHECK_MAPPINGS_ERRORS_CATCH(
-            bResult = glUnmapNamedBufferEXT(_handle);
-        )
-    } else {
-        IGPUBuffer* binded = 0;
-        if(_bindedTarget == MR::IGPUBuffer::NotBinded) {
-            binded = ReBind(ArrayBuffer);
-        }
-        MR_BUFFERS_CHECK_MAPPINGS_ERRORS_CATCH(
-            bResult = glUnmapBuffer(_MR_BUFFER_BIND_TARGETS_REMAP_FROM_INDEX_[(size_t)_bindedTarget]);
-        )
-        if(binded) binded->Bind(ArrayBuffer);
-    }
-    _mapped_mem = 0;
-    if(!bResult) {
-        #if (MR_BUFFERS_CHECK_MAPPINGS_ERRORS == 1)
-            MR::Log::LogString("Failed GPUBuffer::UnMap(). UnmapBuffer returned false.", MR_LOG_LEVEL_ERROR);
-        #endif
-    }
+    return true;
 }
 
 void GPUBuffer::Destroy() {
     if(_handle != 0) {
-        if(GetMappedMemory() != 0) UnMapMemory();
         glDeleteBuffers(1, &_handle);
         _handle = 0;
         OnGPUHandleChanged(dynamic_cast<MR::GPUObjectHandle*>(this), 0);
@@ -246,7 +179,7 @@ void GPUBuffer::Destroy() {
     }
 }
 
-GPUBuffer::GPUBuffer() : _mapped_mem(0), _bindedTarget(NotBinded), _size(0), _mappingFlags(0) {
+GPUBuffer::GPUBuffer() : _bindedTarget(NotBinded), _size(0), _usage(Static) {
 }
 
 GPUBuffer::~GPUBuffer() {

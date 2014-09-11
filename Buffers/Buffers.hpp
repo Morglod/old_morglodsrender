@@ -15,11 +15,10 @@ public:
     IGPUBuffer* ReBind(const BindTargets& target) override;
     BindTargets GetTarget() override;
 
-    void* GetMappedMemory() override { return _mapped_mem; }
-    void Allocate(const Usage& usage, const size_t& size, bool mapMemory) override;
-    bool BufferData(void* data, const size_t& offset, const size_t& size, size_t* out_realOffset, BufferedDataInfo* out_info) override;
-    bool MapMemory() override;
-    void UnMapMemory() override;
+    void Allocate(const Usage& usage, const size_t& size) override;
+    inline Usage GetUsage() override { return _usage; }
+    bool Write(void* srcData, const size_t& srcOffset, const size_t& dstOffset, const size_t& size, size_t* out_realOffset, BufferedDataInfo* out_info) override;
+    bool Read(void* dstData, const size_t& dstOffset, const size_t& srcOffset, const size_t& size) override;
 
     /* GPUObjectHandle */
     //unsigned int GetGPUHandle() override;
@@ -31,10 +30,9 @@ public:
     GPUBuffer();
     virtual ~GPUBuffer();
 protected:
-    void* _mapped_mem;
     BindTargets _bindedTarget;
     size_t _size;
-    unsigned int _mappingFlags;
+    Usage _usage;
 };
 
 IGPUBuffer* GPUBufferGetBinded(const IGPUBuffer::BindTargets& target);

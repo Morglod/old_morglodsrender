@@ -4,6 +4,7 @@
 #define _MR_COLLISION_BOXES_H_
 
 #include "CollisionInterfaces.hpp"
+#include "../Utils/Containers.hpp"
 
 namespace MR {
 
@@ -33,12 +34,13 @@ public:
         return false;
     }
 
-    bool TestSphere(const glm::vec3& center, const float& radius) override;
-    bool TestFrustum(CollisionFrustumInfo const& info, glm::vec3 const& pos) override {}
-    bool TestRayFirstPoint(RayInfo const& ray, glm::vec3 * out_Point) override {}
-    bool TestRay(RayInfo const& ray, RayHitInfo<glm::vec3> * out_Points) override {}
+    bool TestFastSphere(const glm::vec3& center, const float& radius) override;
+    bool TestFastFrustum(CollisionFrustumInfo const& info, glm::vec3 const& pos) override;
+    bool TestRayFirstPoint(RayInfo const& ray, glm::vec3 * out_Point) override;
+    bool TestRay(RayInfo const& ray, RayHitInfo<glm::vec3> * out_Points) override;
 
     Box(glm::vec3 const& p1, glm::vec3 const& p2);
+    Box(MR::TStaticArray<glm::vec3> points);
 protected:
     glm::vec3 _min, _max;
 };

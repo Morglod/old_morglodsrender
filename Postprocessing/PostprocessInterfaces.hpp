@@ -23,8 +23,8 @@ public:
 
 class IPostprocessChain {
 public:
-    virtual MR::StaticArray<IPostprocessStep*> GetSteps() = 0;
-    virtual void SetSteps(const MR::StaticArray<IPostprocessStep*>& steps) = 0;
+    virtual MR::TStaticArray<IPostprocessStep*> GetSteps() = 0;
+    virtual void SetSteps(const MR::TStaticArray<IPostprocessStep*>& steps) = 0;
 };
 
 }
