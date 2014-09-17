@@ -43,7 +43,6 @@ zlib http://www.zlib.net
 #include "Resources/ResourceManager.hpp"
 #include "Scene/Transformation.hpp"
 #include "Utils/Time.hpp"
-#include "UI.hpp"
 #include "Query.hpp"
 #include "Geometry/InstancedGeometry.hpp"
 
