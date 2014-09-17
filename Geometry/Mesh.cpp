@@ -20,3 +20,7 @@ MR::Mesh::Mesh(const TStaticArray<IGeometry*>& geom, IMaterial* mat)
 
 MR::Mesh::~Mesh() {
 }
+
+MR::IMesh* MR::Mesh::Create(const TStaticArray<IGeometry*>& geom, IMaterial* mat) {
+    return dynamic_cast<MR::IMesh*>(new MR::Mesh(geom, mat));
+}

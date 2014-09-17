@@ -5,12 +5,52 @@
 
 #include "../Utils/Events.hpp"
 
-#ifndef glm_glm
-#   include <glm/glm.hpp>
-#   include <glm/gtc/matrix_transform.hpp>
-#endif
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
 
 namespace MR{
+
+class ITransformable {
+public:
+    virtual glm::vec3 GetPos() = 0;
+    virtual glm::vec3 GetRot() = 0;
+    virtual glm::vec3 GetScale() = 0;
+
+    virtual void SetPos(glm::vec3 const&) = 0;
+    virtual void SetRot(glm::vec3 const&) = 0;
+    virtual void SetScale(glm::vec3 const&) = 0;
+
+    virtual glm::mat4 GetMat() = 0;
+    virtual glm::mat4* GetMatPtr() = 0;
+
+    virtual void CalcMatrix() = 0;
+    virtual void SetAutoCalcMatrix(bool const&) = 0;
+    virtual bool GetAutoCalcMatrix() = 0;
+};
+
+class Transformable : public ITransformable {
+public:
+    inline glm::vec3 GetPos() override { return _pos; }
+    inline glm::vec3 GetRot() override { return _rot; }
+    inline glm::vec3 GetScale() override { return _scale; }
+
+    inline void SetPos(glm::vec3 const& v) override { _pos = v; if(_auto_calc) CalcMatrix(); }
+    inline void SetRot(glm::vec3 const& v) override { _rot = v; if(_auto_calc) CalcMatrix();  }
+    inline void SetScale(glm::vec3 const& v) override { _scale = v; if(_auto_calc) CalcMatrix();  }
+
+    inline void CalcMatrix() override {
+        _matrix = ( glm::translate(glm::mat4(1.0f), _pos) * ( glm::rotate(glm::mat4(1.0f), _rot.x, glm::vec3(1,0,0)) * glm::rotate(glm::mat4(1.0f), _rot.y, glm::vec3(0,1,0)) * glm::rotate(glm::mat4(1.0f), _rot.z, glm::vec3(0,0,1)) ) * glm::scale(glm::mat4(1.0f), _scale) );
+    }
+
+    void SetAutoCalcMatrix(bool const& s) override { _auto_calc = s; if(s) CalcMatrix(); }
+    bool GetAutoCalcMatrix() override { return _auto_calc; }
+private:
+    glm::vec3 _pos, _rot, _scale;
+    glm::mat4 _matrix = glm::mat4(1.0f);
+    bool _auto_calc = true;
+};
+
 class Transform{
 public:
     MR::EventListener<Transform*, const glm::mat4&> OnChanged;

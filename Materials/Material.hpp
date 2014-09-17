@@ -59,6 +59,8 @@ public:
     Material();
     Material(MR::TStaticArray<IMaterialPass*> passes);
     virtual ~Material();
+
+    static IMaterial* Create();
 protected:
     std::vector<IMaterialPass*> _passes;
 };

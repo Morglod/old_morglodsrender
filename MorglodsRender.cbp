@@ -70,6 +70,8 @@
 		<Unit filename="CoreObjects.hpp" />
 		<Unit filename="Geometry/GeometryBufferV2.cpp" />
 		<Unit filename="Geometry/GeometryBufferV2.hpp" />
+		<Unit filename="Geometry/GeometryBuilder.cpp" />
+		<Unit filename="Geometry/GeometryBuilder.hpp" />
 		<Unit filename="Geometry/GeometryData.cpp" />
 		<Unit filename="Geometry/GeometryData.hpp" />
 		<Unit filename="Geometry/GeometryFormats.cpp" />
@@ -89,6 +91,9 @@
 		<Unit filename="Materials/MaterialInterfaces.hpp" />
 		<Unit filename="Materials/MaterialResource.hpp" />
 		<Unit filename="Materials/MaterialsConfig.hpp" />
+		<Unit filename="Models/ModelInterfaces.hpp" />
+		<Unit filename="Models/Models.cpp" />
+		<Unit filename="Models/Models.hpp" />
 		<Unit filename="MorglodsRender.hpp" />
 		<Unit filename="Pipeline.hpp" />
 		<Unit filename="Postprocessing/PostprocessConfig.hpp" />
@@ -103,6 +108,7 @@
 		<Unit filename="RenderTarget.hpp" />
 		<Unit filename="Resources/Importer.cpp" />
 		<Unit filename="Resources/Importer.hpp" />
+		<Unit filename="Resources/ResourceIOInterfaces.hpp" />
 		<Unit filename="Resources/ResourceManager.cpp" />
 		<Unit filename="Resources/ResourceManager.hpp" />
 		<Unit filename="Scene/Entity.hpp" />

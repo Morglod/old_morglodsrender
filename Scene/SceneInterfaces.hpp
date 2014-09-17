@@ -34,14 +34,13 @@ public:
     virtual void SetAutoRecalc(const bool& state) = 0;
     virtual bool GetAutoRecalc() = 0;
 
-    virtual glm::vec3 GetForwardDirection() = 0;
-    virtual glm::vec3 GetLeftDirection() = 0;
-    virtual glm::vec3 GetUpDirection() = 0;
+    virtual glm::vec3 GetForward() = 0;
+    virtual glm::vec3 GetLeft() = 0;
+    virtual glm::vec3 GetUp() = 0;
 
     virtual glm::vec3 GetPosition() = 0;
     virtual glm::vec3 GetRotation() = 0;
     virtual glm::vec3 GetTarget() = 0;
-    virtual glm::vec3 GetUp() = 0;
 
     virtual float GetFovY() = 0;
     virtual float GetNearZ() = 0;

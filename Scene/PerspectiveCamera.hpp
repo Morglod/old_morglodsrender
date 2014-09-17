@@ -12,14 +12,13 @@ public:
     inline void SetAutoRecalc(const bool& state) override { _auto_recalc = state; if(state) Calc(); }
     inline bool GetAutoRecalc() override { return _auto_recalc; }
 
-    inline glm::vec3 GetForwardDirection() override { return _dir_forward; }
-    inline glm::vec3 GetLeftDirection() override { return _dir_left; }
-    inline glm::vec3 GetUpDirection() override { return _dir_up; }
+    inline glm::vec3 GetForward() override { return _dir_forward; }
+    inline glm::vec3 GetLeft() override { return _dir_left; }
+    inline glm::vec3 GetUp() override { return _dir_up; }
 
     inline glm::vec3 GetPosition() override { return _pos; }
     inline glm::vec3 GetRotation() override { return _rot; }
-    inline glm::vec3 GetTarget() override { return GetPosition()+GetForwardDirection(); }
-    inline glm::vec3 GetUp() override { return _dir_up; }
+    inline glm::vec3 GetTarget() override { return GetPosition()+GetForward(); }
 
     inline float GetFovY() override { return _fovy; }
     inline float GetNearZ() override { return _near_z; }

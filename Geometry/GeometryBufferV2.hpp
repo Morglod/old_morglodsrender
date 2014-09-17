@@ -139,6 +139,7 @@ public:
 protected:
     size_t _max_buffer_size;
     bool _buffer_per_geom;
+    bool _split_by_data_formats;
 
     class FormatBuffer {
     public:

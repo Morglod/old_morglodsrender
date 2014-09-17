@@ -48,12 +48,12 @@ public:
     inline IndexType AddIndexData(IndexType const& i1, IndexType const& i2, IndexType const& i3) { AddIndexData(i1); AddIndexData(i2); return AddIndexData(i3); }
 
     IGeometry* Build(IGPUBuffer::Usage const& usage);
+    void Clear();
 
 protected:
     std::vector<float> _vertexData;
     std::vector<IndexType> _indexData;
-    size_t _firstVertexAttribute, _lastVertexAttribute;
-    size_t _vertexes;
+    size_t _firstVertexAttribute, _lastVertexAttribute, _vertexes;
     std::vector<VertexDataAttribute> _vertexAttributes;
 };
 

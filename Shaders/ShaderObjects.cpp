@@ -281,7 +281,7 @@ ShaderProgram* ShaderProgram::CreateAndLink(TStaticArray<IShader*> shaders) {
     return sp;
 }
 
-ShaderProgram* ShaderProgram::DefaultShaderProgram() {
+ShaderProgram* ShaderProgram::Default() {
     std::string vs =
         "#version 150 core\n"
         "#extension GL_ARB_separate_shader_objects : enable\n"

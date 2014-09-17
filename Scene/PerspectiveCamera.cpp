@@ -18,7 +18,7 @@ namespace MR {
 
 void PerspectiveCamera::MoveForward(const float& v) {
     if(v == 0.0f) return;
-    _pos += GetForwardDirection() * v;
+    _pos += GetForward() * v;
 
     if(GetAutoRecalc()) Calc();
 
@@ -29,7 +29,7 @@ void PerspectiveCamera::MoveForward(const float& v) {
 
 void PerspectiveCamera::MoveLeft(const float& v)  {
     if(v == 0.0f) return;
-    _pos += GetLeftDirection() * v;
+    _pos += GetLeft() * v;
 
     if(GetAutoRecalc()) Calc();
 
@@ -40,7 +40,7 @@ void PerspectiveCamera::MoveLeft(const float& v)  {
 
 void PerspectiveCamera::MoveUp(const float& v)  {
     if(v == 0.0f) return;
-    _pos += GetUpDirection() * v;
+    _pos += GetUp() * v;
 
     if(GetAutoRecalc()) Calc();
 

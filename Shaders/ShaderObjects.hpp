@@ -64,7 +64,7 @@ public:
     virtual ~ShaderProgram();
 
     static ShaderProgram* CreateAndLink(TStaticArray<IShader*> shaders);
-    static ShaderProgram* DefaultShaderProgram();
+    static ShaderProgram* Default();
     static ShaderProgram* FromCache(ShaderProgramCache cache);
 
 protected:

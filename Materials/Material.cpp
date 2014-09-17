@@ -137,4 +137,8 @@ Material::~Material() {
     _passes.clear();
 }
 
+IMaterial* Material::Create() {
+    return dynamic_cast<MR::IMaterial*>(new Material());
+}
+
 }

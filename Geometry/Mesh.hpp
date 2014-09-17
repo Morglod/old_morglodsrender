@@ -19,6 +19,8 @@ public:
 
     Mesh(const TStaticArray<IGeometry*>& geom, IMaterial* mat);
     virtual ~Mesh();
+
+    static IMesh* Create(const TStaticArray<IGeometry*>& geom, IMaterial* mat);
 protected:
     TStaticArray<IGeometry*> _geom;
     IMaterial* _mat;

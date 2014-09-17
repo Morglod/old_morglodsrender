@@ -77,4 +77,13 @@ IGeometry* ManualGeometry::Build(IGPUBuffer::Usage const& usage) {
     return MR::GeometryManager::GetInstance()->PlaceGeometry(vformat, &_vertexData[0], _vertexes+1, iformat, &_indexData[0], _indexData.size(), usage, 0x0004); //GL_TRIANGLES - 0x0004
 }
 
+void ManualGeometry::Clear() {
+    _vertexData.clear();
+    _indexData.clear();
+    _firstVertexAttribute = 0;
+    _lastVertexAttribute = 0;
+    _vertexes = 0;
+    _vertexAttributes.clear();
+}
+
 }
