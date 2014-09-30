@@ -48,6 +48,7 @@ void GPUBuffer::Bind(const IGPUBuffer::BindTargets& target) {
 
     Assert(target < 0)
     Assert((size_t)target >= MR_BUFFERS_BIND_TARGETS_NUM)
+    Assert(GetGPUHandle() == 0)
 
     if(_MR_BUFFERS_BIND_TARGETS_.GetRaw()[(size_t)target] == dynamic_cast<MR::IGPUBuffer*>(this)) return;
     _MR_BUFFERS_BIND_TARGETS_.GetRaw()[(size_t)target] = dynamic_cast<MR::IGPUBuffer*>(this);
@@ -66,6 +67,7 @@ void GPUBuffer::BindAt(const BindTargets& target, const unsigned int& index) {
 
     Assert(target < 0)
     Assert((size_t)target >= MR_BUFFERS_BIND_TARGETS_NUM)
+    Assert(GetGPUHandle() == 0)
 
     _bindedTarget = target;
 
@@ -156,6 +158,7 @@ bool GPUBuffer::Read(void* dstData, const size_t& dstOffset, const size_t& srcOf
     Assert(!dstData)
     Assert(size+srcOffset > GetGPUMem())
     Assert(size == 0)
+    Assert(GetGPUHandle() == 0)
 
     MR_BUFFERS_CHECK_BUFFER_DATA_ERRORS_CATCH(
         /*if(MR::MachineInfo::IsDirectStateAccessSupported()) {
@@ -175,7 +178,7 @@ void GPUBuffer::Destroy() {
         glDeleteBuffers(1, &_handle);
         _handle = 0;
         OnGPUHandleChanged(dynamic_cast<MR::GPUObjectHandle*>(this), 0);
-        OnDestroy(dynamic_cast<MR::IGPUBuffer*>(this));
+        OnDestroy(dynamic_cast<MR::ObjectHandle*>(this));
     }
 }
 

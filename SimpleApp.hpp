@@ -6,7 +6,6 @@
 #include "Context.hpp"
 #include "Utils/Exception.hpp"
 //#include "Pipeline.hpp"
-#include "RenderManager.hpp"
 #include "Utils/ConfigClass.hpp"
 #include "Config.hpp"
 #include "Core.hpp"

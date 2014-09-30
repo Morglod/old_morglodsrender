@@ -206,7 +206,7 @@ const bool MR::MachineInfo::IsNVVBUMSupported(){
 }
 
 const bool MR::MachineInfo::IsIndirectDrawSupported() {
-    static bool support = false;//GLEW_ARB_draw_indirect;//(__glewDrawArraysIndirect);
+    static bool support = GLEW_ARB_draw_indirect;//(__glewDrawArraysIndirect);
     return support;
 }
 

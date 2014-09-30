@@ -9,7 +9,7 @@
 
 namespace MR {
 
-std::string ShaderCompilationMessage::MessageTypeNames[3] { "Info", "Warning", "Error" };
+std::string ShaderCompilationMessage::MessageTypeNames[3] { std::string("Info"), std::string("Warning"), std::string("Error") };
 
 ShaderCompilationMessage::ShaderCompilationMessage
 (const MessageType& type, const int& code, const unsigned int& line, const std::string& text)

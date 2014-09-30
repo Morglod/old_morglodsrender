@@ -45,13 +45,15 @@ public:
 
     void SetAutoCalcMatrix(bool const& s) override { _auto_calc = s; if(s) CalcMatrix(); }
     bool GetAutoCalcMatrix() override { return _auto_calc; }
+
+    Transformable() {}
 private:
     glm::vec3 _pos, _rot, _scale;
     glm::mat4 _matrix = glm::mat4(1.0f);
     bool _auto_calc = true;
 };
 
-class Transform{
+class Transform {
 public:
     MR::EventListener<Transform*, const glm::mat4&> OnChanged;
 

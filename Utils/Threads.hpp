@@ -12,12 +12,7 @@ public:
     virtual void UnLock();
 
     inline bool IsLocked() { return _locked; }
-
-    inline int GetLastError() {
-        int a = _lastErCode;
-        _lastErCode = 0;
-        return a;
-    }
+    inline int GetErrorCode() { return _lastErCode; }
 
     Mutex(const Mutex& m);
     Mutex();
@@ -30,14 +25,14 @@ private:
 
 class Thread {
 public:
-    virtual void* Run(void* arg) = 0;
+    virtual int Run() = 0;
 
-    bool Start(void* arg);
+    bool Start(void* argPtr);
     bool IsRunning();
 
-    static void* Join(Thread* thread);
+    static int Join(Thread* thread);
     static void Detach(Thread* thread);
-    static void ExitThis(void* result);
+    static void ExitThis(int result);
     static Thread* Self();
 
     bool operator==(const Thread& thread);
@@ -51,22 +46,22 @@ protected:
     Thread(const Thread& t);
 
     void* _handle;
-    void* _runArg;
+    void* arg;
+    int _returned;
 };
 
 class SelfThread : public Thread {
 public:
-    void* Run(void* arg) override { return 0; }
+    int Run() override { return 0; }
     SelfThread(void* handle);
 };
 
-
 class AsyncHandle {
 public:
-    typedef void* (*MethodPtr)(void* arg);
+    typedef int (*MethodPtr)(void* arg);
 
     inline Thread* GetThread() { return _thread; }
-    void* End();
+    int End();
     void* GetArg() { return _arg; }
     bool NoErrors() { return _noErrors && _thread; }
 

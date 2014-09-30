@@ -1,12 +1,11 @@
 #include "Core.hpp"
 #include "MachineInfo.hpp"
-#include "Geometry/GeometryBufferV2.hpp"
+#include "Geometry/GeometryBuffer.hpp"
 #include "Geometry/GeometryFormats.hpp"
 #include "Materials/MaterialInterfaces.hpp"
+#include "Geometry/GeometryManager.hpp"
 //#include "Model.hpp"
-#include "Textures/TextureResource.hpp"
 #include "Utils/FilesIO.hpp"
-#include "RenderManager.hpp"
 #include "Context.hpp"
 #include "Utils/Log.hpp"
 
@@ -56,15 +55,15 @@ bool MR::Init(MR::IContext* ctx) {
 }
 
 void MR::Shutdown() {
-    MR::RenderManager::DestroyInstance();
+    //TODO MR::RenderManager::DestroyInstance();
 
-    MR::VertexDataTypeFloat::DestroyInstance();
+    /*MR::VertexDataTypeFloat::DestroyInstance();
     MR::VertexDataTypeInt::DestroyInstance();
     MR::VertexDataTypeUInt::DestroyInstance();
-    MR::VertexAttributePos3F::DestroyInstance();
+    MR::VertexAttributePos3F::DestroyInstance();*/
     MR::GeometryManager::DestroyInstance();
 
-    MR::TextureManager::DestroyInstance();
+    //TODO MR::TextureManager::DestroyInstance();
 
     //TODO MR::MaterialManager::DestroyInstance();
 

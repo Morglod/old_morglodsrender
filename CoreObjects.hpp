@@ -12,6 +12,7 @@ class GPUObjectHandle : public ObjectHandle {
 public:
     MR::EventListener<GPUObjectHandle*, unsigned int const&> OnGPUHandleChanged;
 
+    virtual bool Good() { return (_handle != 0); }
     virtual unsigned int GetGPUHandle() { return _handle; }
     virtual size_t GetGPUMem();
 

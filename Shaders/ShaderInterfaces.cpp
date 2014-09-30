@@ -3,15 +3,15 @@
 namespace MR {
 
 const std::string __MR_SHADER_UNIFORM_TYPE_NAMES[] {
-    "float",
-    "int",
-    "mat4",
-    "vec2",
-    "vec3",
-    "vec4",
-    "sampler1D",
-    "sampler2D",
-    "sampler3D"
+    std::string("float"),
+    std::string("int"),
+    std::string("mat4"),
+    std::string("vec2"),
+    std::string("vec3"),
+    std::string("vec4"),
+    std::string("sampler1D"),
+    std::string("sampler2D"),
+    std::string("sampler3D")
 };
 
 std::string IShaderUniform::TypeToString(const IShaderUniform::Type& t) {

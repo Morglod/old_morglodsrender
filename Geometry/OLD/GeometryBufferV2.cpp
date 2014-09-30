@@ -2,51 +2,26 @@
 #include "../MachineInfo.hpp"
 #include "../Utils/Log.hpp"
 #include "../Utils/Singleton.hpp"
-#include "../RenderManager.hpp"
+//#include "../RenderManager.hpp"
 #include "../Utils/Debug.hpp"
 #include "../Buffers/Buffers.hpp"
 
-#ifndef __glew_h__
-#   define GLEW_STATIC
-#   include <GL\glew.h>
-#endif
+#define GLEW_STATIC
+#include <GL\glew.h>
+
+unsigned int _MR_DRAW_MODE_FLAG_TO_GL_[4] {
+    GL_POINTS,
+    GL_LINES,
+    GL_TRIANGLES,
+    GL_QUADS
+};
+
+MR::IGeometryBuffer* _MR_BINDED_GEOMETRY_BUFFER_ = nullptr;
 
 namespace MR {
 
-void GPUGeometryBuffer::SetGPUBuffer(IGPUBuffer* buf) {
-    Assert(!buf)
-
-    if(MR::MachineInfo::IsNVVBUMSupported()){
-        if(MR::MachineInfo::IsDirectStateAccessSupported()){
-            glGetNamedBufferParameterui64vNV(buf->GetGPUHandle(), GL_BUFFER_GPU_ADDRESS_NV, &_nv_resident_ptr);
-            glGetNamedBufferParameterivEXT(buf->GetGPUHandle(), GL_BUFFER_SIZE, &_nv_buffer_size);
-        } else {
-            IGPUBuffer* binded = buf->ReBind(MR::IGPUBuffer::ArrayBuffer);
-            glGetBufferParameterui64vNV(GL_ARRAY_BUFFER, GL_BUFFER_GPU_ADDRESS_NV, &_nv_resident_ptr);
-            glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &_nv_buffer_size);
-            if(binded) binded->Bind(MR::IGPUBuffer::ArrayBuffer);
-        }
-    }
-
-    _buffer = buf;
-}
-
-void GPUGeometryBuffer::GetNVGPUPTR(uint64_t* nv_resident_ptr, int* nv_buffer_size) {
-    Assert(!nv_resident_ptr)
-    Assert(!nv_buffer_size)
-
-    *nv_resident_ptr = _nv_resident_ptr;
-    *nv_buffer_size = _nv_buffer_size;
-}
-
-GPUGeometryBuffer::GPUGeometryBuffer(IGPUBuffer* buf) : _buffer(nullptr), _nv_resident_ptr(0), _nv_buffer_size(0) {
-    SetGPUBuffer(buf);
-}
-
-GPUGeometryBuffer::~GPUGeometryBuffer() {
-}
-
-bool GeometryBuffer::SetVertexBuffer(IGPUGeometryBufferPtr buf) {
+bool GeometryBuffer::SetVertexBuffer(IGPUBuffer* buf) {
+    Assert(buf == nullptr)
     _vb = buf;
     if(_vao) {
         glBindVertexArray(_vao);
@@ -54,35 +29,63 @@ bool GeometryBuffer::SetVertexBuffer(IGPUGeometryBufferPtr buf) {
             glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
         else {
-            glBindBuffer(GL_ARRAY_BUFFER, buf->GetGPUBuffer()->GetGPUHandle());
+            glBindBuffer(GL_ARRAY_BUFFER, _vb->GetGPUHandle());
+            if(MR::MachineInfo::IsNVVBUMSupported() && !MR::MachineInfo::IsDirectStateAccessSupported()) {
+                glGetBufferParameterui64vNV(GL_ARRAY_BUFFER, GL_BUFFER_GPU_ADDRESS_NV, &_vb_nv_resident_ptr);
+                glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &_vb_nv_buffer_size);
+            }
             if(!_format->Bind()) return false;
         }
         glBindVertexArray(0);
     }
+
+    if(MR::MachineInfo::IsNVVBUMSupported()){
+        if(MR::MachineInfo::IsDirectStateAccessSupported()){
+            glGetNamedBufferParameterui64vNV(buf->GetGPUHandle(), GL_BUFFER_GPU_ADDRESS_NV, &_vb_nv_resident_ptr);
+            glGetNamedBufferParameterivEXT(buf->GetGPUHandle(), GL_BUFFER_SIZE, &_vb_nv_buffer_size);
+        }
+    }
+
     return true;
 }
 
-bool GeometryBuffer::SetIndexBuffer(IGPUGeometryBufferPtr buf) {
+bool GeometryBuffer::SetIndexBuffer(IGPUBuffer* buf) {
+    Assert(buf == nullptr)
     _ib = buf;
     if(_vao) {
         glBindVertexArray(_vao);
         if(buf == nullptr) {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         } else {
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf->GetGPUBuffer()->GetGPUHandle());
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ib->GetGPUHandle());
+            if(MR::MachineInfo::IsNVVBUMSupported() && !MR::MachineInfo::IsDirectStateAccessSupported()) {
+                glGetBufferParameterui64vNV(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_GPU_ADDRESS_NV, &_ib_nv_resident_ptr);
+                glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &_ib_nv_buffer_size);
+            }
             if(!_iformat->Bind()) return false;
         }
         glBindVertexArray(0);
     }
+
+    if(MR::MachineInfo::IsNVVBUMSupported()){
+        if(MR::MachineInfo::IsDirectStateAccessSupported()){
+            glGetNamedBufferParameterui64vNV(buf->GetGPUHandle(), GL_BUFFER_GPU_ADDRESS_NV, &_ib_nv_resident_ptr);
+            glGetNamedBufferParameterivEXT(buf->GetGPUHandle(), GL_BUFFER_SIZE, &_ib_nv_buffer_size);
+        }
+    }
+
     return true;
 }
 
-void GeometryBuffer::Release() {
+void GeometryBuffer::Destroy() {
     if(_vao != 0) glDeleteVertexArrays(1, &_vao);
     _vao = 0;
 }
 
-GeometryBuffer::GeometryBuffer(IGPUGeometryBufferPtr vb, IGPUGeometryBufferPtr ib, IVertexFormat* f, IIndexFormat* fi, const unsigned int& drawMode) :
+void GeometryBuffer::Bind() {
+}
+
+GeometryBuffer::GeometryBuffer(IGPUBuffer* vb, IGPUBuffer* ib, IVertexFormat* f, IIndexFormat* fi, const unsigned int& drawMode) :
     _vb(vb), _ib(ib), _format(f), _iformat(fi), _vao(0), _draw_mode(drawMode)
 {
     if(!MR::MachineInfo::IsNVVBUMSupported()){
@@ -91,12 +94,12 @@ GeometryBuffer::GeometryBuffer(IGPUGeometryBufferPtr vb, IGPUGeometryBufferPtr i
 
         if(vb == nullptr) glBindBuffer(GL_ARRAY_BUFFER, 0);
         else {
-            glBindBuffer(GL_ARRAY_BUFFER, vb->GetGPUBuffer()->GetGPUHandle());
+            glBindBuffer(GL_ARRAY_BUFFER, vb->GetGPUHandle());
             if(f != nullptr) f->Bind();
         }
 
         if(ib != nullptr){
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->GetGPUBuffer()->GetGPUHandle());
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->GetGPUHandle());
             if(fi != nullptr) fi->Bind();
         }
 
@@ -105,7 +108,7 @@ GeometryBuffer::GeometryBuffer(IGPUGeometryBufferPtr vb, IGPUGeometryBufferPtr i
 }
 
 GeometryBuffer::~GeometryBuffer(){
-    Release();
+    Destroy();
 }
 
 void GeometryDrawParams::SetIndexStart(const unsigned int& i) {
@@ -138,7 +141,7 @@ bool GeometryDrawParams::GetUseIndexBuffer() {
 }
 
 void GeometryDrawParams::BeginDraw() {
-    if(_indirect_buffer) MR::RenderManager::GetInstance()->SetIndirectDrawParamsBuffer(_indirect_buffer);
+    //TODO if(_indirect_buffer) MR::RenderManager::GetInstance()->SetIndirectDrawParamsBuffer(_indirect_buffer);
 }
 
 void GeometryDrawParams::EndDraw() {
@@ -459,6 +462,18 @@ GeometryManager::~GeometryManager() {
         }
         _buffers.pop_back();
     }
+}
+
+IGeometryBuffer* GeometryBufferGetBinded() {
+    return _MR_BINDED_GEOMETRY_BUFFER_;
+}
+
+void GeometryBufferUnBind() {
+    if(!_MR_BINDED_GEOMETRY_BUFFER_) return;
+    if(_MR_BINDED_GEOMETRY_BUFFER_->GetGPUHandle() != 0) {
+        glBindVertexArray(0);
+    }
+    _MR_BINDED_GEOMETRY_BUFFER_ = nullptr;
 }
 
 }

@@ -21,7 +21,7 @@ void MR::AddResourceTask(const MR::AsyncResourceTask& task) {
 
 bool _async_thread_running = false;
 
-void* __MR_RESOURCE_ASYNC_THREAD(void* icontext) {
+int __MR_RESOURCE_ASYNC_THREAD(void* icontext) {
     _async_thread_running = true;
 
     ((MR::IContext*)icontext)->MakeMultithreadCurrent();
@@ -50,7 +50,7 @@ void* __MR_RESOURCE_ASYNC_THREAD(void* icontext) {
     ((MR::IContext*)icontext)->MakeNullCurrent();
     _async_thread_running = false;
 
-    return (void*)1;
+    return 1;
 }
 
 void MR::_MR_RequestGPUThread(MR::IContext* ctx) {

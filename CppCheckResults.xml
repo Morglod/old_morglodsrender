@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<results>
+    <error file="Utils\Containers.hpp" line="16" id="noCopyConstructor" severity="style" msg="&apos;class TStaticArray&apos; does not have a copy constructor which is recommended since the class contains a pointer to allocated memory." />
+    <error file="Utils\Containers.hpp" line="87" id="noCopyConstructor" severity="style" msg="&apos;class TDynamicArray&apos; does not have a copy constructor which is recommended since the class contains a pointer to allocated memory." />
+    <error file="Anim.hpp" line="21" id="unusedStructMember" severity="style" msg="struct or union member &apos;AnimValue::time&apos; is never used." />
+    <error file="Collisions\CollisionInterfaces.hpp" line="20" id="unusedStructMember" severity="style" msg="struct or union member &apos;CollisionFrustumInfo::nearPlane&apos; is never used." />
+    <error file="Collisions\CollisionInterfaces.hpp" line="20" id="unusedStructMember" severity="style" msg="struct or union member &apos;CollisionFrustumInfo::farPlane&apos; is never used." />
+    <error file="Collisions\CollisionInterfaces.hpp" line="20" id="unusedStructMember" severity="style" msg="struct or union member &apos;CollisionFrustumInfo::fov&apos; is never used." />
+    <error file="Geometry\GeometryInterfaces.hpp" line="138" id="unusedStructMember" severity="style" msg="struct or union member &apos;DrawArraysIndirectCmd::count&apos; is never used." />
+    <error file="Geometry\GeometryInterfaces.hpp" line="139" id="unusedStructMember" severity="style" msg="struct or union member &apos;DrawArraysIndirectCmd::instanceCount&apos; is never used." />
+    <error file="Geometry\GeometryInterfaces.hpp" line="140" id="unusedStructMember" severity="style" msg="struct or union member &apos;DrawArraysIndirectCmd::first&apos; is never used." />
+    <error file="Geometry\GeometryInterfaces.hpp" line="141" id="unusedStructMember" severity="style" msg="struct or union member &apos;DrawArraysIndirectCmd::baseInstance&apos; is never used." />
+    <error file="Geometry\GeometryInterfaces.hpp" line="145" id="unusedStructMember" severity="style" msg="struct or union member &apos;DrawElementsIndirectCmd::count&apos; is never used." />
+    <error file="Geometry\GeometryInterfaces.hpp" line="146" id="unusedStructMember" severity="style" msg="struct or union member &apos;DrawElementsIndirectCmd::primCount&apos; is never used." />
+    <error file="Geometry\GeometryInterfaces.hpp" line="147" id="unusedStructMember" severity="style" msg="struct or union member &apos;DrawElementsIndirectCmd::firstIndex&apos; is never used." />
+    <error file="Geometry\GeometryInterfaces.hpp" line="148" id="unusedStructMember" severity="style" msg="struct or union member &apos;DrawElementsIndirectCmd::baseVertex&apos; is never used." />
+    <error file="Geometry\GeometryInterfaces.hpp" line="149" id="unusedStructMember" severity="style" msg="struct or union member &apos;DrawElementsIndirectCmd::baseInstance&apos; is never used." />
+    <error file="MachineInfo.cpp" line="204" id="unreadVariable" severity="style" msg="Variable &apos;support&apos; is assigned a value that is never used." />
+    <error file="Resources\Importer.cpp" line="162" id="uninitMemberVar" severity="style" msg="Member variable &apos;Importer::_stages&apos; is not initialized in the constructor." />
+    <error file="SimpleApp.hpp" line="283" id="uninitMemberVar" severity="style" msg="Member variable &apos;SimpleApp::camera&apos; is not initialized in the constructor." />
+    <error file="Utils\PluginSystem.cpp" line="13" id="uninitMemberVar" severity="style" msg="Member variable &apos;Plugin::_sys&apos; is not initialized in the constructor." />
+    <error file="Utils\Threads.cpp" line="52" id="cstyleCast" severity="style" msg="C-style pointer casting" />
+    <error file="Utils\Threads.cpp" line="53" id="cstyleCast" severity="style" msg="C-style pointer casting" />
+    <error file="Context.hpp" line="32" id="unusedFunction" severity="style" msg="The function &apos;AnyContextAlive&apos; is never used." />
+    <error file="Query.cpp" line="17" id="unusedFunction" severity="style" msg="The function &apos;Begin&apos; is never used." />
+    <error file="Geometry\GeometryBuilder.cpp" line="68" id="unusedFunction" severity="style" msg="The function &apos;Build&apos; is never used." />
+    <error file="Scene\Transformation.hpp" line="93" id="unusedFunction" severity="style" msg="The function &apos;CalcDist&apos; is never used." />
+    <error file="Textures\TextureInterfaces.hpp" line="104" id="unusedFunction" severity="style" msg="The function &apos;CalcMaxVolume&apos; is never used." />
+    <error file="Textures\TextureInterfaces.hpp" line="119" id="unusedFunction" severity="style" msg="The function &apos;CalcTotalBits&apos; is never used." />
+    <error file="Textures\TextureInterfaces.hpp" line="105" id="unusedFunction" severity="style" msg="The function &apos;CalcVolume&apos; is never used." />
+    <error file="Utils\Containers.hpp" line="467" id="unusedFunction" severity="style" msg="The function &apos;ContainKey&apos; is never used." />
+    <error file="Materials\Material.cpp" line="78" id="unusedFunction" severity="style" msg="The function &apos;CreatePass&apos; is never used." />
+    <error file="Materials\MaterialInterfaces.hpp" line="29" id="unusedFunction" severity="style" msg="The function &apos;Default&apos; is never used." />
+    <error file="Shaders\ShaderObjects.cpp" line="180" id="unusedFunction" severity="style" msg="The function &apos;DeleteUniform&apos; is never used." />
+    <error file="Utils\Threads.cpp" line="65" id="unusedFunction" severity="style" msg="The function &apos;Detach&apos; is never used." />
+    <error file="Utils\Time.hpp" line="57" id="unusedFunction" severity="style" msg="The function &apos;Elapsed&apos; is never used." />
+    <error file="Utils\ConfigClass.hpp" line="29" id="unusedFunction" severity="style" msg="The function &apos;Exists&apos; is never used." />
+    <error file="Utils\Threads.cpp" line="73" id="unusedFunction" severity="style" msg="The function &apos;ExitThis&apos; is never used." />
+    <error file="SimpleApp.hpp" line="67" id="unusedFunction" severity="style" msg="The function &apos;ExtensionSupported&apos; is never used." />
+    <error file="Shaders\ShaderObjects.cpp" line="187" id="unusedFunction" severity="style" msg="The function &apos;FindShaderUniform&apos; is never used." />
+    <error file="Utils\ConfigClass.hpp" line="34" id="unusedFunction" severity="style" msg="The function &apos;FromFile&apos; is never used." />
+    <error file="Buffers\Buffers.cpp" line="200" id="unusedFunction" severity="style" msg="The function &apos;GPUBufferCopy&apos; is never used." />
+    <error file="Utils\Serialization.cpp" line="18" id="unusedFunction" severity="style" msg="The function &apos;GPUBufferFromBytes&apos; is never used." />
+    <error file="Buffers\Buffers.cpp" line="193" id="unusedFunction" severity="style" msg="The function &apos;GPUBufferGetBinded&apos; is never used." />
+    <error file="Buffers\Buffers.cpp" line="223" id="unusedFunction" severity="style" msg="The function &apos;GPUBufferUnBind&apos; is never used." />
+    <error file="Buffers\Buffers.cpp" line="235" id="unusedFunction" severity="style" msg="The function &apos;GPUBufferUnBindAt&apos; is never used." />
+    <error file="Geometry\GeometryBuffer.cpp" line="117" id="unusedFunction" severity="style" msg="The function &apos;GeometryBufferGetBinded&apos; is never used." />
+    <error file="Utils\Containers.hpp" line="370" id="unusedFunction" severity="style" msg="The function &apos;Get&apos; is never used." />
+    <error file="Anim.hpp" line="36" id="unusedFunction" severity="style" msg="The function &apos;GetActivationTime&apos; is never used." />
+    <error file="Utils\Threads.hpp" line="65" id="unusedFunction" severity="style" msg="The function &apos;GetArg&apos; is never used." />
+    <error file="Scene\Transformation.hpp" line="47" id="unusedFunction" severity="style" msg="The function &apos;GetAutoCalcMatrix&apos; is never used." />
+    <error file="Types.hpp" line="194" id="unusedFunction" severity="style" msg="The function &apos;GetBits&apos; is never used." />
+    <error file="Textures\TextureObjects.hpp" line="13" id="unusedFunction" severity="style" msg="The function &apos;GetBitsInfo&apos; is never used." />
+    <error file="Textures\TextureSettings.hpp" line="30" id="unusedFunction" severity="style" msg="The function &apos;GetBorderColor&apos; is never used." />
+    <error file="Geometry\GeometryManager.hpp" line="18" id="unusedFunction" severity="style" msg="The function &apos;GetBufferPerGeometry&apos; is never used." />
+    <error file="Utils\Containers.hpp" line="141" id="unusedFunction" severity="style" msg="The function &apos;GetCapacity&apos; is never used." />
+    <error file="Textures\TextureSettings.hpp" line="57" id="unusedFunction" severity="style" msg="The function &apos;GetCompareFunc&apos; is never used." />
+    <error file="Textures\TextureSettings.hpp" line="54" id="unusedFunction" severity="style" msg="The function &apos;GetCompareMode&apos; is never used." />
+    <error file="Textures\TextureObjects.hpp" line="16" id="unusedFunction" severity="style" msg="The function &apos;GetCompressionMode&apos; is never used." />
+    <error file="Utils\Events.hpp" line="61" id="unusedFunction" severity="style" msg="The function &apos;GetCurrentTime&apos; is never used." />
+    <error file="Textures\TextureObjects.cpp" line="84" id="unusedFunction" severity="style" msg="The function &apos;GetData&apos; is never used." />
+    <error file="Textures\TextureObjects.hpp" line="14" id="unusedFunction" severity="style" msg="The function &apos;GetDataStorageFormat&apos; is never used." />
+    <error file="Resources\ResourceManager.hpp" line="135" id="unusedFunction" severity="style" msg="The function &apos;GetDebugMessagesState&apos; is never used." />
+    <error file="Anim.hpp" line="37" id="unusedFunction" severity="style" msg="The function &apos;GetDeltaMult&apos; is never used." />
+    <error file="Utils\Threads.hpp" line="15" id="unusedFunction" severity="style" msg="The function &apos;GetErrorCode&apos; is never used." />
+    <error file="Utils\Containers.hpp" line="408" id="unusedFunction" severity="style" msg="The function &apos;GetFront&apos; is never used." />
+    <error file="Shaders\ShaderUniforms.hpp" line="23" id="unusedFunction" severity="style" msg="The function &apos;GetGPULocation&apos; is never used." />
+    <error file="Resources\Importer.hpp" line="36" id="unusedFunction" severity="style" msg="The function &apos;GetImporter&apos; is never used." />
+    <error file="Utils\Containers.hpp" line="92" id="unusedFunction" severity="style" msg="The function &apos;GetIndex&apos; is never used." />
+    <error file="Geometry\GeometryBuffer.hpp" line="45" id="unusedFunction" severity="style" msg="The function &apos;GetIndexBuffer_NVGPUPTR&apos; is never used." />
+    <error file="Utils\Containers.hpp" line="493" id="unusedFunction" severity="style" msg="The function &apos;GetKeysPtr&apos; is never used." />
+    <error file="Textures\TextureSettings.hpp" line="27" id="unusedFunction" severity="style" msg="The function &apos;GetLodBias&apos; is never used." />
+    <error file="Textures\TextureSettings.hpp" line="36" id="unusedFunction" severity="style" msg="The function &apos;GetMagFilter&apos; is never used." />
+    <error file="SimpleApp.hpp" line="79" id="unusedFunction" severity="style" msg="The function &apos;GetMainWindow&apos; is never used." />
+    <error file="Resources\ResourceManager.hpp" line="103" id="unusedFunction" severity="style" msg="The function &apos;GetManager&apos; is never used." />
+    <error file="Geometry\Mesh.hpp" line="16" id="unusedFunction" severity="style" msg="The function &apos;GetMaterial&apos; is never used." />
+    <error file="Textures\TextureSettings.hpp" line="42" id="unusedFunction" severity="style" msg="The function &apos;GetMaxLod&apos; is never used." />
+    <error file="Utils\PluginSystem.hpp" line="33" id="unusedFunction" severity="style" msg="The function &apos;GetMethod&apos; is never used." />
+    <error file="Textures\TextureSettings.hpp" line="33" id="unusedFunction" severity="style" msg="The function &apos;GetMinFilter&apos; is never used." />
+    <error file="Textures\TextureSettings.hpp" line="39" id="unusedFunction" severity="style" msg="The function &apos;GetMinLod&apos; is never used." />
+    <error file="Resources\Importer.hpp" line="34" id="unusedFunction" severity="style" msg="The function &apos;GetNext&apos; is never used." />
+    <error file="Buffers\VirtualBuffer.hpp" line="54" id="unusedFunction" severity="style" msg="The function &apos;GetOffset&apos; is never used." />
+    <error file="Shaders\ShaderUniforms.hpp" line="28" id="unusedFunction" severity="style" msg="The function &apos;GetParent&apos; is never used." />
+    <error file="Materials\Material.hpp" line="45" id="unusedFunction" severity="style" msg="The function &apos;GetPass&apos; is never used." />
+    <error file="Utils\PluginSystem.hpp" line="32" id="unusedFunction" severity="style" msg="The function &apos;GetPluginSystem&apos; is never used." />
+    <error file="Resources\Importer.hpp" line="35" id="unusedFunction" severity="style" msg="The function &apos;GetPrev&apos; is never used." />
+    <error file="Shaders\ShaderUniforms.hpp" line="22" id="unusedFunction" severity="style" msg="The function &apos;GetPtr&apos; is never used." />
+    <error file="Query.cpp" line="99" id="unusedFunction" severity="style" msg="The function &apos;GetQuery&apos; is never used." />
+    <error file="Resources\ResourceManager.hpp" line="69" id="unusedFunction" severity="style" msg="The function &apos;GetResourceFreeState&apos; is never used." />
+    <error file="Query.cpp" line="39" id="unusedFunction" severity="style" msg="The function &apos;GetResult&apos; is never used." />
+    <error file="Utils\ConfigClass.hpp" line="19" id="unusedFunction" severity="style" msg="The function &apos;GetS&apos; is never used." />
+    <error file="Materials\Material.hpp" line="17" id="unusedFunction" severity="style" msg="The function &apos;GetShaderProgram&apos; is never used." />
+    <error file="Materials\Material.cpp" line="53" id="unusedFunction" severity="style" msg="The function &apos;GetTexture&apos; is never used." />
+    <error file="Utils\Events.hpp" line="62" id="unusedFunction" severity="style" msg="The function &apos;GetTickTime&apos; is never used." />
+    <error file="Materials\Material.hpp" line="23" id="unusedFunction" severity="style" msg="The function &apos;GetTwoSided&apos; is never used." />
+    <error file="Utils\Containers.hpp" line="497" id="unusedFunction" severity="style" msg="The function &apos;GetValuesPtr&apos; is never used." />
+    <error file="Geometry\GeometryBuffer.hpp" line="14" id="unusedFunction" severity="style" msg="The function &apos;GetVertexBuffer&apos; is never used." />
+    <error file="Geometry\GeometryBuffer.hpp" line="38" id="unusedFunction" severity="style" msg="The function &apos;GetVertexBuffer_NVGPUPTR&apos; is never used." />
+    <error file="Geometry\GeometryBuffer.hpp" line="23" id="unusedFunction" severity="style" msg="The function &apos;GetVertexFormat&apos; is never used." />
+    <error file="SimpleApp.hpp" line="75" id="unusedFunction" severity="style" msg="The function &apos;GetWindowSizes&apos; is never used." />
+    <error file="Textures\TextureSettings.hpp" line="48" id="unusedFunction" severity="style" msg="The function &apos;GetWrapR&apos; is never used." />
+    <error file="Textures\TextureSettings.hpp" line="45" id="unusedFunction" severity="style" msg="The function &apos;GetWrapS&apos; is never used." />
+    <error file="Textures\TextureSettings.hpp" line="51" id="unusedFunction" severity="style" msg="The function &apos;GetWrapT&apos; is never used." />
+    <error file="SimpleApp.hpp" line="159" id="unusedFunction" severity="style" msg="The function &apos;Go&apos; is never used." />
+    <error file="Resources\Importer.cpp" line="20" id="unusedFunction" severity="style" msg="The function &apos;Import&apos; is never used." />
+    <error file="Geometry\GeometryFormats.cpp" line="234" id="unusedFunction" severity="style" msg="The function &apos;IndexFormatGetBinded&apos; is never used." />
+    <error file="Materials\Material.hpp" line="50" id="unusedFunction" severity="style" msg="The function &apos;InsertPass&apos; is never used." />
+    <error file="Utils\Worker.hpp" line="26" id="unusedFunction" severity="style" msg="The function &apos;IsAny&apos; is never used." />
+    <error file="Shaders\ShaderObjects.hpp" line="13" id="unusedFunction" severity="style" msg="The function &apos;IsCompiled&apos; is never used." />
+    <error file="Textures\TextureObjects.hpp" line="15" id="unusedFunction" severity="style" msg="The function &apos;IsCompressed&apos; is never used." />
+    <error file="Query.hpp" line="38" id="unusedFunction" severity="style" msg="The function &apos;IsEnded&apos; is never used." />
+    <error file="Utils\FilesIO.hpp" line="95" id="unusedFunction" severity="style" msg="The function &apos;IsFileExist&apos; is never used." />
+    <error file="Shaders\ShaderObjects.hpp" line="53" id="unusedFunction" severity="style" msg="The function &apos;IsLinked&apos; is never used." />
+    <error file="Resources\ResourceManager.hpp" line="95" id="unusedFunction" severity="style" msg="The function &apos;IsLoaded&apos; is never used." />
+    <error file="Utils\Threads.hpp" line="14" id="unusedFunction" severity="style" msg="The function &apos;IsLocked&apos; is never used." />
+    <error file="Utils\FilesIO.cpp" line="7" id="unusedFunction" severity="style" msg="The function &apos;IsOpen&apos; is never used." />
+    <error file="Utils\UIUtil.hpp" line="27" id="unusedFunction" severity="style" msg="The function &apos;IsPointIn&apos; is never used." />
+    <error file="Utils\Threads.cpp" line="69" id="unusedFunction" severity="style" msg="The function &apos;IsRunning&apos; is never used." />
+    <error file="Utils\Containers.hpp" line="501" id="unusedFunction" severity="style" msg="The function &apos;KeyAt&apos; is never used." />
+    <error file="Shaders\ShaderCompiler.cpp" line="248" id="unusedFunction" severity="style" msg="The function &apos;LinkToByteCode&apos; is never used." />
+    <error file="Utils\PluginSystem.cpp" line="20" id="unusedFunction" severity="style" msg="The function &apos;LoadFromModule&apos; is never used." />
+    <error file="Utils\Log.hpp" line="32" id="unusedFunction" severity="style" msg="The function &apos;LogException&apos; is never used." />
+    <error file="Geometry\GeometryObject.cpp" line="112" id="unusedFunction" severity="style" msg="The function &apos;MakeBox&apos; is never used." />
+    <error file="Geometry\GeometryObject.cpp" line="71" id="unusedFunction" severity="style" msg="The function &apos;MakeQuad&apos; is never used." />
+    <error file="Geometry\GeometryObject.cpp" line="55" id="unusedFunction" severity="style" msg="The function &apos;MakeTriangle&apos; is never used." />
+    <error file="Scene\PerspectiveCamera.cpp" line="52" id="unusedFunction" severity="style" msg="The function &apos;Move&apos; is never used." />
+    <error file="Scene\PerspectiveCamera.cpp" line="19" id="unusedFunction" severity="style" msg="The function &apos;MoveForward&apos; is never used." />
+    <error file="Scene\PerspectiveCamera.cpp" line="30" id="unusedFunction" severity="style" msg="The function &apos;MoveLeft&apos; is never used." />
+    <error file="Scene\PerspectiveCamera.cpp" line="41" id="unusedFunction" severity="style" msg="The function &apos;MoveUp&apos; is never used." />
+    <error file="Utils\Threads.hpp" line="66" id="unusedFunction" severity="style" msg="The function &apos;NoErrors&apos; is never used." />
+    <error file="Scene\PerspectiveCamera.cpp" line="79" id="unusedFunction" severity="style" msg="The function &apos;Pitch&apos; is never used." />
+    <error file="Utils\Containers.hpp" line="181" id="unusedFunction" severity="style" msg="The function &apos;PopBack&apos; is never used." />
+    <error file="Utils\Containers.hpp" line="160" id="unusedFunction" severity="style" msg="The function &apos;PushBack&apos; is never used." />
+    <error file="Resources\ResourceManager.hpp" line="87" id="unusedFunction" severity="style" msg="The function &apos;ReLoad&apos; is never used." />
+    <error file="Utils\FilesIO.cpp" line="116" id="unusedFunction" severity="style" msg="The function &apos;ReadBytes&apos; is never used." />
+    <error file="Materials\Material.cpp" line="85" id="unusedFunction" severity="style" msg="The function &apos;RemovePass&apos; is never used." />
+    <error file="Utils\FilesIO.hpp" line="91" id="unusedFunction" severity="style" msg="The function &apos;RemoveSearchPath&apos; is never used." />
+    <error file="Utils\Containers.hpp" line="324" id="unusedFunction" severity="style" msg="The function &apos;Resize&apos; is never used." />
+    <error file="Scene\PerspectiveCamera.cpp" line="59" id="unusedFunction" severity="style" msg="The function &apos;Roll&apos; is never used." />
+    <error file="Utils\ConfigClass.hpp" line="14" id="unusedFunction" severity="style" msg="The function &apos;Save&apos; is never used." />
+    <error file="Utils\Threads.cpp" line="77" id="unusedFunction" severity="style" msg="The function &apos;Self&apos; is never used." />
+    <error file="Scene\Transformation.hpp" line="46" id="unusedFunction" severity="style" msg="The function &apos;SetAutoCalcMatrix&apos; is never used." />
+    <error file="Types.hpp" line="207" id="unusedFunction" severity="style" msg="The function &apos;SetBits&apos; is never used." />
+    <error file="Geometry\GeometryManager.hpp" line="19" id="unusedFunction" severity="style" msg="The function &apos;SetBufferPerGeometry&apos; is never used." />
+    <error file="Resources\ResourceManager.hpp" line="184" id="unusedFunction" severity="style" msg="The function &apos;SetContext&apos; is never used." />
+    <error file="Utils\Events.hpp" line="63" id="unusedFunction" severity="style" msg="The function &apos;SetCurrentTime&apos; is never used." />
+    <error file="Geometry\GeometryFormats.hpp" line="164" id="unusedFunction" severity="style" msg="The function &apos;SetDataType&apos; is never used." />
+    <error file="Resources\ResourceManager.hpp" line="128" id="unusedFunction" severity="style" msg="The function &apos;SetDebugMessagesState&apos; is never used." />
+    <error file="Utils\Containers.hpp" line="22" id="unusedFunction" severity="style" msg="The function &apos;SetDeleteFlag&apos; is never used." />
+    <error file="Geometry\GeometryBuffer.hpp" line="20" id="unusedFunction" severity="style" msg="The function &apos;SetDrawMode&apos; is never used." />
+    <error file="Geometry\GeometryObject.hpp" line="16" id="unusedFunction" severity="style" msg="The function &apos;SetDrawParams&apos; is never used." />
+    <error file="Geometry\GeometryBuffer.hpp" line="22" id="unusedFunction" severity="style" msg="The function &apos;SetFormat&apos; is never used." />
+    <error file="Geometry\GeometryObject.cpp" line="19" id="unusedFunction" severity="style" msg="The function &apos;SetGeometryBuffer&apos; is never used." />
+    <error file="Geometry\GeometryBuffer.cpp" line="49" id="unusedFunction" severity="style" msg="The function &apos;SetIndexBuffer&apos; is never used." />
+    <error file="Geometry\GeometryDrawParams.cpp" line="16" id="unusedFunction" severity="style" msg="The function &apos;SetIndexCount&apos; is never used." />
+    <error file="Geometry\GeometryDrawParams.cpp" line="6" id="unusedFunction" severity="style" msg="The function &apos;SetIndexStart&apos; is never used." />
+    <error file="Geometry\Mesh.hpp" line="15" id="unusedFunction" severity="style" msg="The function &apos;SetMaterial&apos; is never used." />
+    <error file="Scene\PerspectiveCamera.cpp" line="89" id="unusedFunction" severity="style" msg="The function &apos;SetModelMatrixPtr&apos; is never used." />
+    <error file="Scene\Transformation.cpp" line="16" id="unusedFunction" severity="style" msg="The function &apos;SetPos&apos; is never used." />
+    <error file="Shaders\ShaderUniforms.hpp" line="21" id="unusedFunction" severity="style" msg="The function &apos;SetPtr&apos; is never used." />
+    <error file="Viewports\Viewport.cpp" line="10" id="unusedFunction" severity="style" msg="The function &apos;SetRect&apos; is never used." />
+    <error file="Resources\ResourceManager.hpp" line="59" id="unusedFunction" severity="style" msg="The function &apos;SetResourceFreeState&apos; is never used." />
+    <error file="Scene\Transformation.cpp" line="28" id="unusedFunction" severity="style" msg="The function &apos;SetRot&apos; is never used." />
+    <error file="Scene\Transformation.cpp" line="40" id="unusedFunction" severity="style" msg="The function &apos;SetScale&apos; is never used." />
+    <error file="Textures\TextureObjects.hpp" line="21" id="unusedFunction" severity="style" msg="The function &apos;SetSettings&apos; is never used." />
+    <error file="Utils\Events.hpp" line="65" id="unusedFunction" severity="style" msg="The function &apos;SetTickTime&apos; is never used." />
+    <error file="Shaders\ShaderObjects.cpp" line="138" id="unusedFunction" severity="style" msg="The function &apos;SetUniform&apos; is never used." />
+    <error file="Geometry\GeometryDrawParams.cpp" line="26" id="unusedFunction" severity="style" msg="The function &apos;SetUseIndexBuffer&apos; is never used." />
+    <error file="Geometry\GeometryBuffer.cpp" line="31" id="unusedFunction" severity="style" msg="The function &apos;SetVertexBuffer&apos; is never used." />
+    <error file="Geometry\GeometryDrawParams.cpp" line="21" id="unusedFunction" severity="style" msg="The function &apos;SetVertexCount&apos; is never used." />
+    <error file="Geometry\GeometryDrawParams.cpp" line="11" id="unusedFunction" severity="style" msg="The function &apos;SetVertexStart&apos; is never used." />
+    <error file="Utils\Serialization.cpp" line="41" id="unusedFunction" severity="style" msg="The function &apos;ShaderProgramFromBytes&apos; is never used." />
+    <error file="Materials\MaterialInterfaces.hpp" line="30" id="unusedFunction" severity="style" msg="The function &apos;ShadowMap&apos; is never used." />
+    <error file="Utils\Containers.hpp" line="338" id="unusedFunction" severity="style" msg="The function &apos;Store&apos; is never used." />
+    <error file="Buffers\VirtualBuffer.hpp" line="57" id="unusedFunction" severity="style" msg="The function &apos;TakeAll&apos; is never used." />
+    <error file="Collisions\CollisionBoxes.cpp" line="15" id="unusedFunction" severity="style" msg="The function &apos;TestFastFrustum&apos; is never used." />
+    <error file="Collisions\CollisionBoxes.cpp" line="9" id="unusedFunction" severity="style" msg="The function &apos;TestFastSphere&apos; is never used." />
+    <error file="Collisions\CollisionBoxes.cpp" line="25" id="unusedFunction" severity="style" msg="The function &apos;TestRay&apos; is never used." />
+    <error file="Collisions\CollisionBoxes.cpp" line="20" id="unusedFunction" severity="style" msg="The function &apos;TestRayFirstPoint&apos; is never used." />
+    <error file="Utils\Exception.cpp" line="11" id="unusedFunction" severity="style" msg="The function &apos;ThrowCriticalExceptions&apos; is never used." />
+    <error file="Utils\Time.hpp" line="58" id="unusedFunction" severity="style" msg="The function &apos;TimerTime&apos; is never used." />
+    <error file="Materials\MaterialInterfaces.hpp" line="31" id="unusedFunction" severity="style" msg="The function &apos;ToTexture&apos; is never used." />
+    <error file="Utils\Threads.cpp" line="15" id="unusedFunction" severity="style" msg="The function &apos;TryLock&apos; is never used." />
+    <error file="Textures\TextureObjects.cpp" line="147" id="unusedFunction" severity="style" msg="The function &apos;UpdateData&apos; is never used." />
+    <error file="Shaders\ShaderObjects.cpp" line="406" id="unusedFunction" severity="style" msg="The function &apos;UseNullShaderProgram&apos; is never used." />
+    <error file="Utils\Containers.hpp" line="505" id="unusedFunction" severity="style" msg="The function &apos;ValueAt&apos; is never used." />
+    <error file="Geometry\GeometryFormats.cpp" line="224" id="unusedFunction" severity="style" msg="The function &apos;VertexFormatGetBinded&apos; is never used." />
+    <error file="Utils\FilesIO.cpp" line="106" id="unusedFunction" severity="style" msg="The function &apos;WriteBytes&apos; is never used." />
+    <error file="Scene\PerspectiveCamera.cpp" line="69" id="unusedFunction" severity="style" msg="The function &apos;Yaw&apos; is never used." />
+    <error file="Core.cpp" line="14" id="unusedFunction" severity="style" msg="The function &apos;_OutOfMemory&apos; is never used." />
+    <error file="Geometry\GeometryFormats.cpp" line="12" id="unusedFunction" severity="style" msg="The function &apos;__MR_SET_VERTEX_FORMAT_AS_BINDED_&apos; is never used." />
+    <error id="missingInclude" severity="style" msg="Cppcheck cannot find all the include files. Cppcheck can check the code without the include files found. But the results will probably be more accurate if all the include files are found. Please check your project&apos;s include directories and add all of them as include directories for Cppcheck. To see what files Cppcheck cannot find use --check-config." />
+</results>

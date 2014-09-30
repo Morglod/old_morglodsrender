@@ -29,6 +29,8 @@ public:
     virtual ~IContext() {}
 };
 
+inline bool AnyContextAlive() { return (IContext::Current != nullptr); }
+
 }
 
 #endif // _MR_GL_CONTEXT_H_

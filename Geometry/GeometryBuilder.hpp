@@ -28,21 +28,21 @@ public:
 
     struct VertexDataAttribute {
     public:
-        size_t attributeType; //shader index also
-        size_t elementsNum;
+        unsigned int attributeType; //shader index also
+        unsigned int elementsNum;
         VertexDataAttribute();
-        VertexDataAttribute(size_t const& t, size_t const& e);
+        VertexDataAttribute(unsigned int const& t, unsigned int const& e);
     };
 
     /**
         Returns index of first element of added data.
     **/
 
-    IndexType AddVertexData(size_t const& attribute, glm::vec4 const& data, size_t const& elementsNum);
-    inline IndexType AddVertexData(size_t const& attribute, float const& data) { return AddVertexData(attribute, glm::vec4(data, 0,0,0), 1); }
-    inline IndexType AddVertexData(size_t const& attribute, glm::vec2 const& data) { return AddVertexData(attribute, glm::vec4(data, 0.0f, 0.0f), 2); }
-    inline IndexType AddVertexData(size_t const& attribute, glm::vec3 const& data) { return AddVertexData(attribute, glm::vec4(data, 0.0f), 3); }
-    inline IndexType AddVertexData(size_t const& attribute, glm::vec4 const& data) { return AddVertexData(attribute, data, 4); }
+    IndexType AddVertexData(unsigned int const& attribute, glm::vec4 const& data, unsigned int const& elementsNum);
+    inline IndexType AddVertexData(unsigned int const& attribute, float const& data) { return AddVertexData(attribute, glm::vec4(data, 0,0,0), 1); }
+    inline IndexType AddVertexData(unsigned int const& attribute, glm::vec2 const& data) { return AddVertexData(attribute, glm::vec4(data, 0.0f, 0.0f), 2); }
+    inline IndexType AddVertexData(unsigned int const& attribute, glm::vec3 const& data) { return AddVertexData(attribute, glm::vec4(data, 0.0f), 3); }
+    inline IndexType AddVertexData(unsigned int const& attribute, glm::vec4 const& data) { return AddVertexData(attribute, data, 4); }
 
     IndexType AddIndexData(IndexType const& index);
     inline IndexType AddIndexData(IndexType const& i1, IndexType const& i2, IndexType const& i3) { AddIndexData(i1); AddIndexData(i2); return AddIndexData(i3); }

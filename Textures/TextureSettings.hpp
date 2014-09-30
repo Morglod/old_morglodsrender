@@ -24,9 +24,6 @@ public:
     void SetCompareMode(const CompareMode& v) override ;
     void SetCompareFunc(const CompareFunc& v) override ;
 
-    inline unsigned int GetGLSampler() override {
-        return _sampler;
-    }
     inline float GetLodBias() override {
         return _lod_bias;
     }
@@ -61,10 +58,12 @@ public:
         return _compare_func;
     }
 
+    void Create() override;
+    void Destroy() override;
+
     TextureSettings();
     virtual ~TextureSettings();
 protected:
-    unsigned int _sampler;
     float _lod_bias;
     float _border_color[4];
     MinFilter _min_filter;

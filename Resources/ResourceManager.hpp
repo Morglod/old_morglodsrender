@@ -183,7 +183,7 @@ public:
     virtual MR::IContext* GetContext() { return _ctx; }
     virtual void SetContext(MR::IContext* ctx) { _ctx = ctx; }
 
-    ResourceManager() : _debugMessages(MR_RESOURCE_MANAGER_DEBUG_MSG_DEFAULT) {}
+    ResourceManager() : _debugMessages(MR_RESOURCE_MANAGER_DEBUG_MSG_DEFAULT), _resources(), _ctx(nullptr) {}
 
 protected:
     bool _debugMessages;

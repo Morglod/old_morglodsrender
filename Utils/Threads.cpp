@@ -38,8 +38,8 @@ Mutex::~Mutex(){
 
 /* THREAD */
 
-bool Thread::Start(void* arg){
-    _runArg = arg;
+bool Thread::Start(void* argPtr){
+    arg = argPtr;
 
     if (pthread_create((pthread_t*)_handle, NULL, threadFunc, (void*)this) != 0) {
         return false;
@@ -49,16 +49,17 @@ bool Thread::Start(void* arg){
 }
 
 void* Thread::threadFunc(void* th) {
-    return ((Thread*)th)->Run(((Thread*)th)->_runArg);
+    ((Thread*)th)->_returned = ((Thread*)th)->Run();
+    return &(((Thread*)th)->_returned);
 }
 
-void* Thread::Join(Thread* thread){
-    if(!thread) return NULL;
+int Thread::Join(Thread* thread){
+    if(!thread) return 0;
 
     void* rptr = 0;
     pthread_join(*((pthread_t*)(thread->_handle)), &rptr);
 
-    return rptr;
+    return *(int*)rptr;
 }
 
 void Thread::Detach(Thread* thread){
@@ -69,8 +70,8 @@ bool Thread::IsRunning(){
     return !(pthread_kill(*((pthread_t*)(_handle)), 0));
 }
 
-void Thread::ExitThis(void* result){
-    pthread_exit(result);
+void Thread::ExitThis(int result){
+    pthread_exit(&result);
 }
 
 Thread* Thread::Self(){
@@ -82,13 +83,13 @@ bool Thread::operator==(const Thread& thread){
     return false;
 }
 
-Thread::Thread(const Thread& t) : _handle(t._handle), _runArg(t._runArg) {
+Thread::Thread(const Thread& t) : _handle(t._handle), arg(t.arg), _returned(t._returned) {
 }
 
-Thread::Thread(void* handle) : _handle(handle), _runArg(0) {
+Thread::Thread(void* handle) : _handle(handle), arg(0), _returned(0) {
 }
 
-Thread::Thread() : _handle(new pthread_t()), _runArg(0) {
+Thread::Thread() : _handle(new pthread_t()), arg(0), _returned(0) {
 
 }
 
@@ -98,7 +99,7 @@ Thread::~Thread(){
 SelfThread::SelfThread(void* handle) : Thread(handle) {
 }
 
-void* AsyncHandle::End(){
+int AsyncHandle::End(){
     return Thread::Join(_thread);
 }
 
@@ -111,7 +112,7 @@ class AsyncThread : public Thread {
 public:
     AsyncHandle::MethodPtr _method;
 
-    void* Run(void* arg) override {
+    int Run() override {
         return _method(arg);
     }
 

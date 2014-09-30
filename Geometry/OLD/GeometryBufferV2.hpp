@@ -20,53 +20,50 @@
 
 namespace MR {
 
-class IRenderSystem;
 class Geometry;
 class GeometryBuffer;
 
-class GPUGeometryBuffer : public IGPUGeometryBuffer {
-public:
-    void SetGPUBuffer(IGPUBuffer* buf) override;
-    inline IGPUBuffer* GetGPUBuffer() override { return _buffer; }
-    void GetNVGPUPTR(uint64_t* nv_resident_ptr, int* nv_buffer_size) override;
-
-    GPUGeometryBuffer(IGPUBuffer* buf);
-    virtual ~GPUGeometryBuffer();
-protected:
-    IGPUBuffer* _buffer;
-
-    uint64_t _nv_resident_ptr;
-    int _nv_buffer_size;
-};
-
 class GeometryBuffer : public IGeometryBuffer {
 public:
-    bool SetVertexBuffer(IGPUGeometryBufferPtr buf) override;
-    inline IGPUGeometryBuffer* GetVertexBuffer() override { return _vb.get(); }
+    bool SetVertexBuffer(IGPUBuffer* buf) override;
+    inline IGPUBuffer* GetVertexBuffer() override { return _vb; }
+    inline bool GetVertexBuffer_NVGPUPTR(uint64_t* nv_resident_ptr, int* nv_buffer_size) override {
+        if(_vb_nv_buffer_size == 0) return false;
+        if(nv_resident_ptr) *nv_resident_ptr = _vb_nv_resident_ptr;
+        if(nv_buffer_size) *nv_buffer_size = _vb_nv_buffer_size;
+        return true;
+    }
 
-    bool SetIndexBuffer(IGPUGeometryBufferPtr buf) override;
-    inline IGPUGeometryBuffer* GetIndexBuffer() override { return _ib.get(); }
+    bool SetIndexBuffer(IGPUBuffer* buf) override;
+    inline IGPUBuffer* GetIndexBuffer() override { return _ib; }
+    inline bool GetIndexBuffer_NVGPUPTR(uint64_t* nv_resident_ptr, int* nv_buffer_size) override {
+        if(_ib_nv_buffer_size == 0) return false;
+        if(nv_resident_ptr) *nv_resident_ptr = _ib_nv_resident_ptr;
+        if(nv_buffer_size) *nv_buffer_size = _ib_nv_buffer_size;
+        return true;
+    }
 
-    unsigned int GetDrawMode() override { return _draw_mode; }
-    void SetDrawMode(const unsigned int& dm) override { _draw_mode = dm; }
+    inline unsigned int GetDrawMode() override { return _draw_mode; }
+    inline void SetDrawMode(const unsigned int& dm) override { _draw_mode = dm; }
 
     inline void SetFormat(IVertexFormat* f, IIndexFormat* fi) override { _format = f; _iformat = fi; }
     inline IVertexFormat* GetVertexFormat() override { return _format; }
     inline IIndexFormat* GetIndexFormat() override { return _iformat; }
 
-    void Release() override;
+    inline bool Good() override { return true; }
+    void Destroy() override;
 
-    unsigned int GetVAO() override { return _vao; }
-
-    GeometryBuffer(IGPUGeometryBufferPtr vb, IGPUGeometryBufferPtr ib, IVertexFormat* f, IIndexFormat* fi, const unsigned int& drawMode);
+    GeometryBuffer(IGPUBuffer* vb, IGPUBuffer* ib, IVertexFormat* f, IIndexFormat* fi, const unsigned int& drawMode);
     virtual ~GeometryBuffer();
 protected:
-    IGPUGeometryBufferPtr _vb;
-    IGPUGeometryBufferPtr _ib;
+    IGPUBuffer* _vb;
+    IGPUBuffer* _ib;
     IVertexFormat* _format;
     IIndexFormat* _iformat;
-    unsigned int _vao;
     unsigned int _draw_mode;
+
+    uint64_t _vb_nv_resident_ptr, _ib_nv_resident_ptr;
+    int _vb_nv_buffer_size, _ib_nv_buffer_size;
 };
 
 class GeometryDrawParams : public IGeometryDrawParams {
@@ -156,6 +153,9 @@ protected:
                              IIndexFormat* indexFormat, const size_t& indexDataSize,
                              const IGPUBuffer::Usage& usage);
 };
+
+IGeometryBuffer* GeometryBufferGetBinded();
+void GeometryBufferUnBind();
 
 }
 

@@ -68,19 +68,19 @@
 		<Unit filename="Core.hpp" />
 		<Unit filename="CoreObjects.cpp" />
 		<Unit filename="CoreObjects.hpp" />
-		<Unit filename="Geometry/GeometryBufferV2.cpp" />
-		<Unit filename="Geometry/GeometryBufferV2.hpp" />
+		<Unit filename="Geometry/GeometryBuffer.cpp" />
+		<Unit filename="Geometry/GeometryBuffer.hpp" />
 		<Unit filename="Geometry/GeometryBuilder.cpp" />
 		<Unit filename="Geometry/GeometryBuilder.hpp" />
-		<Unit filename="Geometry/GeometryData.cpp" />
-		<Unit filename="Geometry/GeometryData.hpp" />
+		<Unit filename="Geometry/GeometryDrawParams.cpp" />
+		<Unit filename="Geometry/GeometryDrawParams.hpp" />
 		<Unit filename="Geometry/GeometryFormats.cpp" />
 		<Unit filename="Geometry/GeometryFormats.hpp" />
 		<Unit filename="Geometry/GeometryInterfaces.hpp" />
-		<Unit filename="Geometry/GeometryStreams.cpp" />
-		<Unit filename="Geometry/GeometryStreams.hpp" />
-		<Unit filename="Geometry/InstancedGeometry.cpp" />
-		<Unit filename="Geometry/InstancedGeometry.hpp" />
+		<Unit filename="Geometry/GeometryManager.cpp" />
+		<Unit filename="Geometry/GeometryManager.hpp" />
+		<Unit filename="Geometry/GeometryObject.cpp" />
+		<Unit filename="Geometry/GeometryObject.hpp" />
 		<Unit filename="Geometry/Mesh.cpp" />
 		<Unit filename="Geometry/Mesh.hpp" />
 		<Unit filename="Geometry/MeshInterfaces.hpp" />
@@ -95,17 +95,12 @@
 		<Unit filename="Models/Models.cpp" />
 		<Unit filename="Models/Models.hpp" />
 		<Unit filename="MorglodsRender.hpp" />
-		<Unit filename="Pipeline.hpp" />
 		<Unit filename="Postprocessing/PostprocessConfig.hpp" />
 		<Unit filename="Postprocessing/PostprocessInterfaces.hpp" />
 		<Unit filename="Postprocessing/PostprocessStep.cpp" />
 		<Unit filename="Postprocessing/PostprocessStep.hpp" />
 		<Unit filename="Query.cpp" />
 		<Unit filename="Query.hpp" />
-		<Unit filename="RenderManager.cpp" />
-		<Unit filename="RenderManager.hpp" />
-		<Unit filename="RenderTarget.cpp" />
-		<Unit filename="RenderTarget.hpp" />
 		<Unit filename="Resources/Importer.cpp" />
 		<Unit filename="Resources/Importer.hpp" />
 		<Unit filename="Resources/ResourceIOInterfaces.hpp" />
@@ -129,14 +124,10 @@
 		<Unit filename="Shaders/ShaderUniforms.cpp" />
 		<Unit filename="Shaders/ShaderUniforms.hpp" />
 		<Unit filename="SimpleApp.hpp" />
-		<Unit filename="Textures/TextureGenerator.hpp" />
+		<Unit filename="Textures/TextureInterfaces.cpp" />
 		<Unit filename="Textures/TextureInterfaces.hpp" />
-		<Unit filename="Textures/TextureLoader.cpp" />
-		<Unit filename="Textures/TextureLoader.hpp" />
 		<Unit filename="Textures/TextureObjects.cpp" />
 		<Unit filename="Textures/TextureObjects.hpp" />
-		<Unit filename="Textures/TextureResource.cpp" />
-		<Unit filename="Textures/TextureResource.hpp" />
 		<Unit filename="Textures/TextureSettings.cpp" />
 		<Unit filename="Textures/TextureSettings.hpp" />
 		<Unit filename="Types.cpp" />
@@ -161,6 +152,7 @@
 		<Unit filename="Utils/Serialization.cpp" />
 		<Unit filename="Utils/Serialization.hpp" />
 		<Unit filename="Utils/Singleton.hpp" />
+		<Unit filename="Utils/Text.hpp" />
 		<Unit filename="Utils/Threads.cpp" />
 		<Unit filename="Utils/Threads.hpp" />
 		<Unit filename="Utils/Time.hpp" />
@@ -171,10 +163,6 @@
 		<Unit filename="Viewports/Viewport.hpp" />
 		<Unit filename="Viewports/ViewportInterfaces.cpp" />
 		<Unit filename="Viewports/ViewportInterfaces.hpp" />
-		<Unit filename="Voxels/SVO.cpp" />
-		<Unit filename="Voxels/SVO.hpp" />
-		<Unit filename="Voxels/SolidVolume.cpp" />
-		<Unit filename="Voxels/SolidVolume.hpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />

@@ -10,7 +10,7 @@ bool Plugin::Init(PluginSystem* sys) {
 void Plugin::Free() {
 }
 
-Plugin::Plugin() {}
+Plugin::Plugin() : _sys(nullptr) {}
 
 Plugin::~Plugin() {
     Free();

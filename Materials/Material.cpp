@@ -1,6 +1,6 @@
 #include "Material.hpp"
 #include "../Utils/Log.hpp"
-#include "../RenderManager.hpp"
+//#include "../RenderManager.hpp"
 #include "../Shaders/ShaderInterfaces.hpp"
 #include "MaterialsConfig.hpp"
 #include "../Utils/Debug.hpp"
@@ -10,7 +10,7 @@
 
 namespace MR {
 
-bool MaterialPass::Use() {
+bool MaterialPass::Use() {/*
     MR::RenderManager* rm = MR::RenderManager::GetInstance();
     if( (_flag.always) || (rm->GetActivedMaterialFlag() == _flag.flag) ){
 
@@ -43,7 +43,7 @@ bool MaterialPass::Use() {
         return bStatus;
     } else {
         return false;
-    }
+    }*/
 }
 
 void MaterialPass::SetTexture(const TextureType& type, ITexture* tex) {

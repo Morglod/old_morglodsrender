@@ -7,6 +7,8 @@
 #include <string.h>
 #include <chrono>
 #include <queue>
+#include <stdlib.h>
+#include <initializer_list>
 
 namespace MR {
 
@@ -17,7 +19,7 @@ public:
     inline size_t GetNum() { return _el_num; }
     inline T& At(const size_t& i) { return _ar[i]; }
     inline T* AtPtr(const size_t& i) { return &_ar[i]; }
-    inline void DeleteFlag(const bool& d) { _delete = d; }
+    inline void SetDeleteFlag(const bool& d) { _delete = d; }
     inline bool GetDeleteFlag() { return _delete; }
 
     inline TStaticArray<T> Combine(TStaticArray<T> a) {
@@ -30,8 +32,15 @@ public:
     }
 
     TStaticArray() : _ar(0), _el_num(0), _delete(false) {}
+    TStaticArray(const size_t& num) : _ar(new T[num]), _el_num(num), _delete(true) {}
     TStaticArray(T* ar, const size_t& num) : _ar(ar), _el_num(num), _delete(false) {}
     TStaticArray(T* ar, const size_t& num, const bool& del) : _ar(ar), _el_num(num), _delete(del) {}
+
+    TStaticArray(const std::initializer_list<T>& il) : _ar(new T[il.size()]), _el_num(il.size()), _delete(true) {
+        for(size_t i = 0; i < il.size(); ++i)
+            _ar[i] = il[i];
+    }
+
     ~TStaticArray() {
         if(_delete && _ar) {
             delete [] _ar;
@@ -73,6 +82,200 @@ protected:
     size_t _el_num = 0;
     bool _delete = false;
 };
+
+template < typename T >
+class TDynamicArray {
+public:
+    class Iterator {
+    public:
+        inline T Get() { return _owner->GetRaw()[_el_index]; }
+        inline size_t GetIndex() { return _el_index; }
+        inline TDynamicArray<T>* GetDArray() { return _owner; }
+
+        inline T* operator -> () { return &(_owner->GetRaw()[_el_index]); }
+
+        inline Iterator& operator ++() {
+            ++_el_index;
+            return *this;
+        }
+        inline Iterator& operator --() {
+            --_el_index;
+            return *this;
+        }
+
+        inline Iterator& operator += (size_t const& offset) {
+            _el_index += offset;
+            return *this;
+        }
+
+        inline Iterator& operator -= (size_t const& offset) {
+            _el_index -= offset;
+            return *this;
+        }
+
+        inline Iterator& operator = (size_t const& i) {
+            _el_index = i;
+            return *this;
+        }
+
+        inline bool operator == (Iterator const& it) {
+            if(!_owner || !it._owner) return false;
+            return (_el_index == it._el_index) && (_owner->GetRaw() == it._owner->GetRaw());
+        }
+
+        inline bool operator != (Iterator const& it) {
+            return !(*this == it);
+        }
+
+        Iterator() : _el_index(0), _owner(nullptr) {}
+        Iterator(TDynamicArray<T>* ar, size_t const& i) : _el_index(i), _owner(ar) {}
+        Iterator(const TDynamicArray<T>::Iterator & i) : _el_index(i._el_index), _owner(i._owner) {}
+    protected:
+        size_t _el_index;
+        TDynamicArray<T>* _owner;
+    };
+    typedef Iterator It;
+
+    inline T* GetRaw() { return _ar; }
+    inline size_t GetNum() { return _el_num; }
+    inline size_t GetCapacity() { return _el_cap; }
+    inline T& At(size_t const& i) { return _ar[i]; }
+    inline T* AtPtr(size_t const& i) { return &_ar[0]; }
+
+    inline TDynamicArray<T>::Iterator GetFirst() {
+        return TDynamicArray<T>::Iterator(this, 0);
+    }
+
+    inline TDynamicArray<T>::Iterator GetLast() {
+        return TDynamicArray<T>::Iterator(this, _el_num-1);
+    }
+
+    inline TDynamicArray<T>::Iterator GetEnd() {
+        return TDynamicArray<T>::Iterator(this, _el_num);
+    }
+
+    inline void SetDeleteFlag(bool const& b) { _delete = b; }
+    inline bool GetDeleteFlag() { return _delete; }
+
+    inline bool PushBack(T t) {
+        if(_el_cap == 0) if(!SetCapacity(1)) return false;
+        if(_el_num >= _el_cap) {
+            if(!SetCapacity(_el_num*2)) return false;
+        }
+        _ar[_el_num] = t;
+        ++_el_num;
+        return true;
+    }
+
+    template<typename... Args>
+    inline bool EmplaceBack(Args... args) {
+        if(_el_cap == 0) if(!SetCapacity(1)) return false;
+        if(_el_num >= _el_cap) {
+            if(!SetCapacity(_el_num*2)) return false;
+        }
+        _ar[_el_num] = T(args...);
+        ++_el_num;
+        return true;
+    }
+
+    inline void PopBack() {
+        if(_el_num == 0) return;
+        --_el_num;
+    }
+
+    inline void Clear() {
+        _el_num = 0;
+    }
+
+    inline void Free() {
+        Clear();
+        free(_ar);
+        _ar = 0;
+        _el_cap = 0;
+    }
+
+    inline bool SetCapacity(size_t const& num) {
+        if(num == _el_cap) return true;
+        if(_ar == 0) {
+            _ar = new T[num];
+        }
+        else {
+            void * p = realloc(_ar, num*sizeof(T));
+            if(!p) {
+                _el_cap = 0;
+                _el_num = 0;
+                return false;
+            }
+            _ar = (T*)p;
+        }
+        _el_cap = num;
+        if(_el_num > _el_cap) _el_num = _el_cap;
+        return true;
+    }
+
+    inline TStaticArray<T> GetStaticArray() {
+        return TStaticArray<T>(_ar, _el_num, false);
+    }
+
+    inline TStaticArray<T> ConvertToStaticArray() {
+        T* ar = new T[_el_num];
+        for(size_t i = 0; i < _el_num; ++i) ar[i] = _ar[i];
+        return TStaticArray<T>(ar, _el_num, true);
+    }
+
+    TDynamicArray() : _ar(0), _el_num(0), _el_cap(0), _delete(true) {}
+    TDynamicArray(size_t const& el_num) : _ar(new T[el_num]), _el_num(el_num), _el_cap(el_num), _delete(true) {}
+    TDynamicArray(T* ar, size_t const& el_num) : _ar(ar), _el_num(el_num), _el_cap(el_num), _delete(false) {}
+    TDynamicArray(T* ar, size_t const& el_num, bool const& del) : _ar(ar), _el_num(el_num), _el_cap(el_num), _delete(del) {}
+
+    TDynamicArray(const std::initializer_list<T>& il) : _ar(0), _el_num(0), _el_cap(0), _delete(true) {
+        SetCapacity(il.size());
+        _el_num = il.size();
+        for(size_t i = 0; i < il.size(); ++i)
+            _ar[i] = il[i];
+    }
+
+    ~TDynamicArray() {
+        if(_delete) Free();
+    }
+
+    TDynamicArray(TDynamicArray<T> const& a) : _ar(new T [a._el_num]), _el_num(a._el_num), _el_cap(a._el_cap), _delete(a._delete) {
+        for(size_t i = 0; i < _el_num; ++i){
+            _ar[i] = a._ar[i];
+        }
+    }
+
+    inline MR::TDynamicArray<T>& operator = (MR::TDynamicArray<T> const& ar) {
+        if(this == &ar) {
+            return *this;
+        }
+        _ar = new T [ar._el_num];
+        _delete = ar._delete;
+        _el_num = ar._el_num;
+        _el_cap = ar._el_cap;
+        for(size_t i = 0; i < _el_num; ++i){
+            _ar[i] = ar._ar[i];
+        }
+        return *this;
+    }
+
+    inline MR::TDynamicArray<T>& operator = (MR::TDynamicArray<T> & ar) {
+        if(this == &ar) {
+            return *this;
+        }
+        _ar = ar._ar;
+        _delete = ar._delete;
+        _el_num = ar._el_num;
+        _el_cap = ar._el_cap;
+        ar._delete = false;
+        return *this;
+    }
+protected:
+    T* _ar = 0;
+    size_t _el_num = 0, _el_cap = 0;
+    bool _delete = false;
+};
+
 /*
 template < typename T >
 class TDynamicArrayTimed {
@@ -128,7 +331,8 @@ public:
         _queue = TStaticArray<CacheElement>(new CacheElement[size], size, true);
 
         //Store old cache
-        memcpy(_queue.GetRaw(), old, sizeof(CacheElement)*old_num);
+        memcpy(_queue.GetRaw(), old, sizeof(CacheElement)*old_num); //TODO: 'old' memory leak
+        delete [] old;
     }
 
     void Store(KeyT key, ValueT value) {
@@ -136,7 +340,7 @@ public:
 
         //find place
         size_t free_place_index = _queue.GetNum()-1;
-        for(size_t i = _queue.GetNum()-1; i >= 0; --i){
+        for(size_t i = _queue.GetNum()-1; i != 0; --i){
             if( !_queue.At(i).stored ) {
                 free_place_index = i;
                 break;
@@ -226,7 +430,7 @@ public:
 
     ThreadSafeQueue() : _mutex(), _q() {}
 
-    ThreadSafeQueue(const ThreadSafeQueue& c) {
+    ThreadSafeQueue(const ThreadSafeQueue& c) : _mutex(), _q() {
         c._mutex.Lock();
         _q = c._q;
         c._mutex.UnLock();
