@@ -8,6 +8,25 @@
 
 namespace MR {
 
+template<typename T>
+TStaticArray<unsigned char> Serialize(T* t) {
+    unsigned char* c_ptr = new unsigned char [sizeof(T)];
+    memcpy(&c_ptr[0], t, sizeof(T));
+    return TStaticArray<unsigned char>(c_ptr, sizeof(T), true);
+}
+
+template<typename T>
+T* DeSerialize(TStaticArray<unsigned char> T_bytes) {
+    T* t = new T;
+    memcpy(t, &(T_bytes.GetRaw()[0]), T_bytes.GetNum());
+    return t;
+}
+
+template<typename T>
+void DeSerializeTo(TStaticArray<unsigned char> T_bytes, T* dst) {
+    memcpy(dst, &(T_bytes.GetRaw()[0]), T_bytes.GetNum());
+}
+
 /// Convert smth to binary format
 template<typename t>
 class SerializableBytes {
@@ -38,14 +57,12 @@ public:
     bool FromString(const std::string&);
 };
 
-class IGPUBuffer;
-class IShaderProgram;
-class Serialize {
+class SerializeMRTypes {
 public:
-    static TStaticArray<unsigned char> GPUBufferToBytes(IGPUBuffer*);
+    static TStaticArray<unsigned char> GPUBufferToBytes(class IGPUBuffer*);
     static IGPUBuffer* GPUBufferFromBytes(TStaticArray<unsigned char>);
 
-    static TStaticArray<unsigned char> ShaderProgramToBytes(IShaderProgram*);
+    static TStaticArray<unsigned char> ShaderProgramToBytes(class IShaderProgram*);
     static IShaderProgram* ShaderProgramFromBytes(TStaticArray<unsigned char>);
 };
 

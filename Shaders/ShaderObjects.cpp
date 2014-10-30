@@ -214,6 +214,13 @@ TStaticArray<ShaderUniformInfo> ShaderProgram::GetCompiledUniforms() {
     return TStaticArray<ShaderUniformInfo>(&uni[0], act_uniforms, false);
 }
 
+bool ShaderProgram::IsUniform(std::string const& uniformName) {
+    for(size_t i = 0; i < _shaderUniforms.size(); ++i){
+        if(_shaderUniforms[i]->GetName() == uniformName) return true;
+    }
+    return false;
+}
+
 void ShaderProgram::UpdateUniforms() {
     IShaderUniform** su = &_shaderUniforms[0];
     for(size_t i = 0; i < _shaderUniforms.size(); ++i){
@@ -345,15 +352,101 @@ ShaderProgram* ShaderProgram::Default() {
         "uniform mat4 "+std::string(MR_SHADER_VIEW_MAT4)+";\n"
         "uniform mat4 "+std::string(MR_SHADER_PROJ_MAT4)+";\n"
 
+        "uniform sampler2D "+std::string(MR_SHADER_ALBEDO_TEX)+";\n"
+        "uniform vec4 "+std::string(MR_SHADER_ALBEDO_COLOR)+";\n"
+
+        "uniform vec4 "+std::string(MR_SHADER_EMISSION_COLOR)+";\n"
+
         "out vec4 "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+";\n"
 
         "void main() {"
-        "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+" = MR_VertexPos;"
+        "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+" = (texture("+std::string(MR_SHADER_ALBEDO_TEX)+", MR_VertexTexCoord) * "+std::string(MR_SHADER_ALBEDO_COLOR)+") + "+std::string(MR_SHADER_EMISSION_COLOR)+";\n"
         "}";
 
     IShader* sh[2] { dynamic_cast<MR::IShader*>(Shader::CreateAndCompile(IShader::Type::Vertex, vs)), dynamic_cast<MR::IShader*>(Shader::CreateAndCompile(IShader::Type::Fragment, fs))};
     if(sh[0] == nullptr || sh[1] == nullptr) return nullptr;
     ShaderProgram* sp = ShaderProgram::CreateAndLink(TStaticArray<IShader*>(&sh[0], 2, true));
+    sh[0]->Destroy(); sh[1]->Destroy();
+    delete sh[0]; delete sh[1];
+    return sp;
+}
+
+ShaderProgram* ShaderProgram::DefaultWithTexture() {
+    std::string vs =
+        "#version 150 core\n"
+        "#extension GL_ARB_separate_shader_objects : enable\n"
+        "#pragma optimize (on)\n"
+        "#pragma optionNV(fastmath on)\n"
+        "#pragma optionNV(fastprecision on)\n"
+        "#pragma optionNV(ifcvt none)\n"
+        "#pragma optionNV(inline all)\n"
+        "#pragma optionNV(strict on)\n"
+        "#pragma optionNV(unroll all)\n"
+        "precision mediump float;\n"
+
+        "layout (location = "+std::to_string(MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION)+") in vec3 "+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+";\n"
+        "layout (location = "+std::to_string(MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION)+") in vec3 "+std::string(MR_SHADER_VERTEX_NORMAL_ATTRIB_NAME)+";\n"
+        "layout (location = "+std::to_string(MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION)+") in vec4 "+std::string(MR_SHADER_VERTEX_COLOR_ATTRIB_NAME)+";\n"
+        "layout (location = "+std::to_string(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION)+") in vec2 "+std::string(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_NAME)+";\n"
+
+        "uniform mat4 "+std::string(MR_SHADER_MVP_MAT4)+";\n"
+        "uniform mat4 "+std::string(MR_SHADER_MODEL_MAT4)+";\n"
+        "uniform mat4 "+std::string(MR_SHADER_VIEW_MAT4)+";\n"
+        "uniform mat4 "+std::string(MR_SHADER_PROJ_MAT4)+";\n"
+
+        "out vec4 MR_VertexPos;\n"
+        "out vec4 MR_LocalVertexPos;\n"
+        "smooth out vec3 MR_VertexNormal;\n"
+        "out vec4 MR_VertexColor;\n"
+        "out vec2 MR_VertexTexCoord;\n"
+
+        "void main() {\n"
+        "	vec4 pos = "+std::string(MR_SHADER_MVP_MAT4)+" * vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
+        "	MR_VertexPos = pos;\n"
+        "   MR_LocalVertexPos = vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
+        "   MR_VertexNormal = "+std::string(MR_SHADER_VERTEX_NORMAL_ATTRIB_NAME)+";\n"
+        "	MR_VertexColor = "+std::string(MR_SHADER_VERTEX_COLOR_ATTRIB_NAME)+";\n"
+        "	MR_VertexTexCoord = "+std::string(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_NAME)+";\n"
+        "	gl_Position = pos;\n"
+        "}";
+    std::string fs =
+        "#version 150 core\n"
+        "#extension GL_ARB_separate_shader_objects : enable\n"
+        "#pragma optimize (on)\n"
+        "#pragma optionNV(fastmath on)\n"
+        "#pragma optionNV(fastprecision on)\n"
+        "#pragma optionNV(ifcvt none)\n"
+        "#pragma optionNV(inline all)\n"
+        "#pragma optionNV(strict on)\n"
+        "#pragma optionNV(unroll all)\n"
+        "precision mediump float;\n"
+
+        "in vec4 MR_VertexPos;\n"
+        "in vec4 MR_LocalVertexPos;\n"
+        "smooth in vec3 MR_VertexNormal;\n"
+        "in vec4 MR_VertexColor;\n"
+        "in vec2 MR_VertexTexCoord;\n"
+        "\n"
+        "uniform vec3 "+std::string(MR_SHADER_CAM_POS)+";\n"
+        "uniform vec3 "+std::string(MR_SHADER_CAM_DIR)+";\n"
+
+        "uniform mat4 "+std::string(MR_SHADER_MVP_MAT4)+";\n"
+        "uniform mat4 "+std::string(MR_SHADER_MODEL_MAT4)+";\n"
+        "uniform mat4 "+std::string(MR_SHADER_VIEW_MAT4)+";\n"
+        "uniform mat4 "+std::string(MR_SHADER_PROJ_MAT4)+";\n"
+
+        "uniform sampler2D MainTex;\n"
+        "uniform vec4 "+std::string(MR_SHADER_ALBEDO_COLOR)+";\n"
+
+        "out vec4 "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+";\n"
+
+        "void main() {"
+        "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+" = texture(MainTex, MR_VertexTexCoord) * MR_VertexNormal.z, vec3(0,0,1)) + 0.3;"
+        "}";
+
+    IShader* sh[2] { dynamic_cast<MR::IShader*>(Shader::CreateAndCompile(IShader::Type::Vertex, vs)), dynamic_cast<MR::IShader*>(Shader::CreateAndCompile(IShader::Type::Fragment, fs))};
+    if(sh[0] == nullptr || sh[1] == nullptr) return nullptr;
+    ShaderProgram* sp = ShaderProgram::CreateAndLink(TStaticArray<IShader*>(&sh[0], 2, false));
     sh[0]->Destroy(); sh[1]->Destroy();
     delete sh[0]; delete sh[1];
     return sp;

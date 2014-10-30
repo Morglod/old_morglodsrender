@@ -70,31 +70,31 @@ IGeometry* Geometry::MakeTriangle(const float& scale, const glm::vec3& offset) {
 
 IGeometry* Geometry::MakeQuad(const glm::vec2& scale, const glm::vec3& offset, const bool& texCoords, const glm::vec2& texCoordsScale) {
     MR::VertexFormatCustomFixed* vformat = new MR::VertexFormatCustomFixed();
-    vformat->SetAttributesNum(texCoords ? 2 : 1);
+    vformat->SetAttributesNum((texCoords) ? (2) : (1));
     vformat->AddVertexAttribute(&(MR::VertexAttributePos3F::GetInstance()));
     if(texCoords) vformat->AddVertexAttribute(new MR::VertexAttributeCustom(2, &(MR::VertexDataTypeFloat::GetInstance()), MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION));
 
     MR::IndexFormatCustom* iformat = new MR::IndexFormatCustom(new VertexDataTypeCustom(GL_UNSIGNED_BYTE, 1));
 
     float vdata_noTexCoords[] {
-        offset.x,                   offset.y,                 offset.z,
-        offset.x + 1.0f * scale.x,  offset.y,                 offset.z,
-        offset.x + 1.0f * scale.x,  offset.y + 1.0f * scale.y,offset.z,
-        offset.x,                   offset.y + 1.0f * scale.y,offset.z
+        offset.x,                   offset.y + scale.y, offset.z,
+        offset.x + scale.x,         offset.y + scale.y, offset.z,
+        offset.x + scale.x,         offset.y,           offset.z,
+        offset.x,                   offset.y,           offset.z
     };
 
     float vdata_texCoords[] {
-        offset.x,                   offset.y,                 offset.z, //p
-        0.0f, 1.0f * texCoordsScale.y,
-        offset.x + 1.0f * scale.x,  offset.y,                 offset.z, //p
-        1.0f * texCoordsScale.x, 1.0f * texCoordsScale.y,
-        offset.x + 1.0f * scale.x,  offset.y + 1.0f * scale.y,offset.z, //p
-        1.0f * texCoordsScale.x, 0.0f,
-        offset.x,                   offset.y + 1.0f * scale.y,offset.z,  //p
-        0.0f, 0.0f
+        offset.x,                   offset.y + scale.y,         offset.z,  //p
+        0.0f,                       0.0f,
+        offset.x + scale.x,         offset.y + scale.y,         offset.z, //p
+        texCoordsScale.x,           0.0f,
+        offset.x + scale.x,         offset.y,                   offset.z, //p
+        texCoordsScale.x,           texCoordsScale.y,
+        offset.x,                   offset.y,                   offset.z, //p
+        0.0f,                       texCoordsScale.y
     };
 
-    float* vdata = texCoords ? &vdata_texCoords[0] : &vdata_noTexCoords[0];
+    float* vdata = (texCoords) ? (&vdata_texCoords[0]) : (&vdata_noTexCoords[0]);
 
     unsigned char idata[] {
         0, 1, 2,
@@ -104,6 +104,7 @@ IGeometry* Geometry::MakeQuad(const glm::vec2& scale, const glm::vec3& offset, c
     //IGeometryBuffer* buffer = MR::GeometryManager::GetInstance()->PlaceGeometry(vformat, iformat, &vdata[0], sizeof(float) * (texCoords ? 20 : 12), &idata[0], sizeof(unsigned char) * 6, GL_STATIC_DRAW, GL_READ_ONLY, GL_TRIANGLES, nullptr, nullptr);
     //Geometry* geom = new MR::Geometry(buffer, GeometryDrawParams::DrawElements(0, 6));
     //return geom;
+
     return MR::GeometryManager::GetInstance()->PlaceGeometry(vformat, &vdata[0], 4,
                                                             iformat, &idata[0], 6,
                                                             IGPUBuffer::Static, IGeometryBuffer::DrawModes::Triangles);

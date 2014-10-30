@@ -225,7 +225,6 @@ public:
     virtual ITexture::StorageDataFormat GetDataStorageFormat() = 0;
     virtual bool IsCompressed() = 0;
     virtual ITexture::CompressionMode GetCompressionMode() = 0;
-    virtual void ResetInfo() = 0;
 
     virtual ITexture::Types GetType() = 0;
 
@@ -249,6 +248,10 @@ public:
                             const int& width, const int& height, const int& depth,
                             const ITexture::DataFormat& dformat, const ITexture::DataTypes& dtype,
                             void* data) = 0;
+
+    virtual bool Complete(bool mipMaps) = 0;
+
+    virtual void UpdateInfo() = 0;
 
     /* GPUObjectHandle */
     //virtual unsigned int GetGPUHandle();

@@ -38,7 +38,7 @@ public:
 
     TStaticArray(const std::initializer_list<T>& il) : _ar(new T[il.size()]), _el_num(il.size()), _delete(true) {
         for(size_t i = 0; i < il.size(); ++i)
-            _ar[i] = il[i];
+            _ar[i] = *(il.begin() + i);
     }
 
     ~TStaticArray() {
@@ -49,6 +49,12 @@ public:
     }
 
     TStaticArray(TStaticArray<T> const& a) : _ar(new T [a._el_num]), _el_num(a._el_num), _delete(a._delete) {
+        for(size_t i = 0; i < _el_num; ++i){
+            _ar[i] = a._ar[i];
+        }
+    }
+
+    TStaticArray(TStaticArray<T>& a) : _ar(new T [a._el_num]), _el_num(a._el_num), _delete(a._delete) {
         for(size_t i = 0; i < _el_num; ++i){
             _ar[i] = a._ar[i];
         }
@@ -240,6 +246,12 @@ public:
     }
 
     TDynamicArray(TDynamicArray<T> const& a) : _ar(new T [a._el_num]), _el_num(a._el_num), _el_cap(a._el_cap), _delete(a._delete) {
+        for(size_t i = 0; i < _el_num; ++i){
+            _ar[i] = a._ar[i];
+        }
+    }
+
+    TDynamicArray(TDynamicArray<T>& a) : _ar(new T [a._el_num]), _el_num(a._el_num), _el_cap(a._el_cap), _delete(a._delete) {
         for(size_t i = 0; i < _el_num; ++i){
             _ar[i] = a._ar[i];
         }
@@ -446,8 +458,73 @@ protected:
     std::queue<elementT> _q;
 };
 
-template<typename keyT, typename valueT, valueT defaultValue>
+template<typename keyT, class valueT>
 class Dictionary {
+public:
+    inline valueT& operator [] (const keyT& key) {
+        for(size_t i = 0; i < _keys.size(); ++i){
+            if(_keys[i] == key) return _values[i];
+        }
+        _keys.push_back(key);
+        _values.push_back(valueT());
+        return _values[_values.size()-1];
+    }
+
+    inline size_t GetNum() {
+        return _keys.size();
+    }
+
+    inline bool ContainKey(const keyT& key) {
+        for(size_t i = 0; i < _keys.size(); ++i){
+            if(_keys[i] == key) return true;
+        }
+        return false;
+    }
+
+    inline void Remove(const keyT& key) {
+        for(size_t i = 0; i < _keys.size(); ++i){
+            if(_keys[i] == key) {
+                _keys.erase(_keys.begin()+i);
+                _values.erase(_values.begin()+i);
+            }
+        }
+    }
+
+    inline void Add(const keyT& key, const valueT& value) {
+        _keys.push_back(key);
+        _values.push_back(value);
+    }
+
+    inline void Clear() {
+        _keys.clear();
+        _values.clear();
+    }
+
+    inline keyT* GetKeysPtr() {
+        return &_keys[0];
+    }
+
+    inline valueT* GetValuesPtr() {
+        return &_values[0];
+    }
+
+    inline keyT& KeyAt(const size_t& i) {
+        return _keys[i];
+    }
+
+    inline valueT& ValueAt(const size_t& i) {
+        return _values[i];
+    }
+
+    Dictionary() {}
+    ~Dictionary() {}
+protected:
+    std::vector<keyT> _keys;
+    std::vector<valueT> _values;
+};
+
+template<typename keyT, class valueT, valueT defaultValue>
+class DictionaryDefValue {
 public:
     const valueT DefaultValue = defaultValue;
 
@@ -506,8 +583,8 @@ public:
         return _values[i];
     }
 
-    Dictionary() {}
-    ~Dictionary() {}
+    DictionaryDefValue() {}
+    ~DictionaryDefValue() {}
 protected:
     std::vector<keyT> _keys;
     std::vector<valueT> _values;

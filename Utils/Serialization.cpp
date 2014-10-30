@@ -5,7 +5,7 @@
 
 namespace MR {
 
-TStaticArray<unsigned char> Serialize::GPUBufferToBytes(IGPUBuffer* buf) {
+TStaticArray<unsigned char> SerializeMRTypes::GPUBufferToBytes(IGPUBuffer* buf) {
     Assert(!buf)
     Assert(buf->GetGPUMem() == 0)
     TStaticArray<unsigned char> _dst = TStaticArray<unsigned char>(new unsigned char [buf->GetGPUMem()], buf->GetGPUMem(), true);
@@ -15,7 +15,7 @@ TStaticArray<unsigned char> Serialize::GPUBufferToBytes(IGPUBuffer* buf) {
     return _dst;
 }
 
-IGPUBuffer* Serialize::GPUBufferFromBytes(TStaticArray<unsigned char> bytes) {
+IGPUBuffer* SerializeMRTypes::GPUBufferFromBytes(TStaticArray<unsigned char> bytes) {
     Assert(bytes.GetNum() == 0)
     GPUBuffer* buf = new MR::GPUBuffer;
     buf->Allocate(IGPUBuffer::Static, bytes.GetNum());
@@ -25,7 +25,7 @@ IGPUBuffer* Serialize::GPUBufferFromBytes(TStaticArray<unsigned char> bytes) {
     return buf;
 }
 
-TStaticArray<unsigned char> Serialize::ShaderProgramToBytes(IShaderProgram* program) {
+TStaticArray<unsigned char> SerializeMRTypes::ShaderProgramToBytes(IShaderProgram* program) {
     Assert(!program)
     Assert(program->GetGPUHandle() == 0)
 
@@ -38,7 +38,7 @@ TStaticArray<unsigned char> Serialize::ShaderProgramToBytes(IShaderProgram* prog
     return bytes;
 }
 
-IShaderProgram* Serialize::ShaderProgramFromBytes(TStaticArray<unsigned char> bytes) {
+IShaderProgram* SerializeMRTypes::ShaderProgramFromBytes(TStaticArray<unsigned char> bytes) {
     Assert(bytes.GetNum() == 0)
 
     unsigned int format = 0;

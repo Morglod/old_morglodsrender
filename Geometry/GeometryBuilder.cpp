@@ -74,8 +74,7 @@ IGeometry* ManualGeometry::Build(IGPUBuffer::Usage const& usage) {
     }
 
     IndexFormatCustom* iformat = new IndexFormatCustom(new VertexDataTypeCustom(GPUIndexType, sizeof(ManualGeometry::IndexType)));
-
-    return MR::GeometryManager::GetInstance()->PlaceGeometry(vformat, &_vertexData[0], _vertexes+1, iformat, &_indexData[0], _indexData.size(), usage, IGeometryBuffer::DrawModes::Triangles); //GL_TRIANGLES - 0x0004
+    return MR::GeometryManager::GetInstance()->PlaceGeometry(vformat, &_vertexData[0], _vertexes+1, iformat, &_indexData[0], _indexData.size()+1, usage, IGeometryBuffer::DrawModes::Triangles); //GL_TRIANGLES - 0x0004
 }
 
 void ManualGeometry::Clear() {
@@ -85,6 +84,13 @@ void ManualGeometry::Clear() {
     _lastVertexAttribute = 0;
     _vertexes = 0;
     _vertexAttributes.clear();
+}
+
+ManualGeometry::ManualGeometry() : _vertexData(), _indexData(), _firstVertexAttribute(0), _lastVertexAttribute(0), _vertexes(0), _vertexAttributes() {
+}
+
+ManualGeometry::~ManualGeometry() {
+    Clear();
 }
 
 }

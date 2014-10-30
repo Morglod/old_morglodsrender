@@ -5,12 +5,9 @@
 #include "../Utils/Debug.hpp"
 
 void MR::Mesh::Draw() {
-    auto passes = _mat->GetAllPasses();
-    for(size_t im = 0; im < passes.GetNum(); ++im) {
-        passes.At(im)->Use();
-        for(size_t i = 0; i < _geom.GetNum(); ++i){
-            _geom.GetRaw()[i]->Draw();
-        }
+    _mat->Use();
+    for(size_t i = 0; i < _geom.GetNum(); ++i){
+        _geom.GetRaw()[i]->Draw();
     }
 }
 

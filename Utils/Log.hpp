@@ -16,28 +16,29 @@
 #include "Exception.hpp"
 
 namespace MR{
-    class Log{
-    public:
-        typedef void (*LogStringPtr)(const std::string&, const int&);
 
-        static void Add(const LogStringPtr& ptr){ _callbacks.push_back(ptr); }
-        static void Remove(const LogStringPtr& ptr){ _callbacks.erase( std::find(_callbacks.begin(), _callbacks.end(), ptr) ); }
+class Log final {
+public:
+    typedef void (*LogStringPtr)(const std::string&, const int&);
 
-        static void LogString(const std::string & s, const int & level = MR_LOG_LEVEL_DEFAULT){
-            for(size_t i = 0; i < _callbacks.size(); ++i){
-                _callbacks[i](s, level);
-            }
+    static void Add(const LogStringPtr& ptr){ _callbacks.push_back(ptr); }
+    static void Remove(const LogStringPtr& ptr){ _callbacks.erase( std::find(_callbacks.begin(), _callbacks.end(), ptr) ); }
+
+    static void LogString(const std::string & s, const int & level = MR_LOG_LEVEL_DEFAULT){
+        for(size_t i = 0; i < _callbacks.size(); ++i){
+            _callbacks[i](s, level);
         }
+    }
 
-        static void LogException(MR::Exception & e, const int & level = MR_LOG_LEVEL_EXCEPTION){
-            for(size_t i = 0; i < _callbacks.size(); ++i){
-                _callbacks[i](e.what(), level);
-            }
+    static void LogException(MR::Exception & e){
+        for(size_t i = 0; i < _callbacks.size(); ++i){
+            _callbacks[i](e.what(), MR_LOG_LEVEL_EXCEPTION);
         }
+    }
+private:
+    static std::vector<LogStringPtr> _callbacks;
+};
 
-    protected:
-        static std::vector<LogStringPtr> _callbacks;
-    };
 }
 
 #endif

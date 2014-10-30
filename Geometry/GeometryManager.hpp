@@ -20,6 +20,15 @@ public:
 
     GeometryManager();
     ~GeometryManager();
+
+    inline bool _GetNewBufferPerGeometry() { return _buffer_per_geom; }
+    inline void _SetNewBufferPerGeometry(bool b) { _buffer_per_geom = b; }
+
+    inline size_t _GetMaxBufferSize() { return _max_buffer_size; }
+    inline void _SetMaxBufferSize(size_t const& s) { _max_buffer_size = s; }
+
+    inline bool _GetSplitByDataFormats() { return _split_by_data_formats; }
+    inline void _SetSplitByDataFormats(bool b) { _split_by_data_formats = b; }
 protected:
     size_t _max_buffer_size;
     bool _buffer_per_geom;

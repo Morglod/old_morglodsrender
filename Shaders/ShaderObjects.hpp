@@ -46,6 +46,7 @@ public:
     IShaderUniform* FindShaderUniform(const std::string& name) override;
     TStaticArray<IShaderUniform*> GetShaderUniforms() override;
     TStaticArray<ShaderUniformInfo> GetCompiledUniforms() override;
+    bool IsUniform(std::string const& uniformName) override;
 
     void UpdateUniforms() override;
 
@@ -65,6 +66,7 @@ public:
 
     static ShaderProgram* CreateAndLink(TStaticArray<IShader*> shaders);
     static ShaderProgram* Default();
+    static ShaderProgram* DefaultWithTexture(); //Texture uniform "MainTex"
     static ShaderProgram* FromCache(ShaderProgramCache cache);
 
 protected:

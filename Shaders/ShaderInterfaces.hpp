@@ -109,6 +109,7 @@ public:
 
     virtual TStaticArray<IShaderUniform*> GetShaderUniforms() = 0; //get all uniform handles
     virtual TStaticArray<ShaderUniformInfo> GetCompiledUniforms() = 0; //returns used in shaders uniforms. don't forget to free this array manually
+    virtual bool IsUniform(std::string const& uniformName) = 0;
 
     virtual bool Link(TStaticArray<IShader*> shaders) = 0;
     virtual bool IsLinked() = 0;

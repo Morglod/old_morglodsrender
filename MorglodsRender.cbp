@@ -15,12 +15,8 @@
 				<Option createDefFile="1" />
 				<Compiler>
 					<Add option="-Wall" />
-					<Add option="-pg" />
 					<Add option="-g" />
 				</Compiler>
-				<Linker>
-					<Add option="-pg -lgmon" />
-				</Linker>
 			</Target>
 			<Target title="Release">
 				<Option output="BUILD/MorglodsRender" prefix_auto="1" extension_auto="1" />
@@ -39,6 +35,7 @@
 		</Build>
 		<Compiler>
 			<Add option="-std=c++11" />
+			<Add directory="C:/Libs/assimp-3.1.1-win-binaries/include" />
 		</Compiler>
 		<Linker>
 			<Add library="SOIL" />
@@ -49,6 +46,8 @@
 			<Add library="gdi32" />
 			<Add library="winmm" />
 			<Add library="pthread" />
+			<Add library="libassimp.dll.a" />
+			<Add directory="C:/Libs/assimp-3.1.1-win-binaries/mingw_build" />
 		</Linker>
 		<Unit filename="Anim.cpp" />
 		<Unit filename="Anim.hpp" />
@@ -77,6 +76,8 @@
 		<Unit filename="Geometry/GeometryFormats.cpp" />
 		<Unit filename="Geometry/GeometryFormats.hpp" />
 		<Unit filename="Geometry/GeometryInterfaces.hpp" />
+		<Unit filename="Geometry/GeometryLoader.cpp" />
+		<Unit filename="Geometry/GeometryLoader.hpp" />
 		<Unit filename="Geometry/GeometryManager.cpp" />
 		<Unit filename="Geometry/GeometryManager.hpp" />
 		<Unit filename="Geometry/GeometryObject.cpp" />
@@ -84,6 +85,8 @@
 		<Unit filename="Geometry/Mesh.cpp" />
 		<Unit filename="Geometry/Mesh.hpp" />
 		<Unit filename="Geometry/MeshInterfaces.hpp" />
+		<Unit filename="Importer/ObjImport.cpp" />
+		<Unit filename="Importer/ObjImport.hpp" />
 		<Unit filename="MachineInfo.cpp" />
 		<Unit filename="MachineInfo.hpp" />
 		<Unit filename="Materials/Material.cpp" />
@@ -120,7 +123,6 @@
 		<Unit filename="Shaders/ShaderInterfaces.hpp" />
 		<Unit filename="Shaders/ShaderObjects.cpp" />
 		<Unit filename="Shaders/ShaderObjects.hpp" />
-		<Unit filename="Shaders/ShaderResource.hpp" />
 		<Unit filename="Shaders/ShaderUniforms.cpp" />
 		<Unit filename="Shaders/ShaderUniforms.hpp" />
 		<Unit filename="SimpleApp.hpp" />
@@ -149,6 +151,7 @@
 		<Unit filename="Utils/Memory.hpp" />
 		<Unit filename="Utils/PluginSystem.cpp" />
 		<Unit filename="Utils/PluginSystem.hpp" />
+		<Unit filename="Utils/Pointers.hpp" />
 		<Unit filename="Utils/Serialization.cpp" />
 		<Unit filename="Utils/Serialization.hpp" />
 		<Unit filename="Utils/Singleton.hpp" />

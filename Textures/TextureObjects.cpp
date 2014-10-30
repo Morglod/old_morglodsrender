@@ -77,8 +77,25 @@ void Texture::Create(ITexture::Types const& type) {
     if(GetGPUHandle() != 0) {
         Destroy();
     }
+
     glGenTextures(1, &_handle);
     _texture_type = type;
+
+    /*
+    STUPID EXTENSIONS, THIS METHODS NOT SUPPORTED
+    if(MR::MachineInfo::IsDirectStateAccessSupported()) {
+        glTextureParameteri(_handle, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(_handle, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTextureParameteri(_handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteri(_handle, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    } else {*/
+        ITexture* tex = ReBind(0);
+        glTexParameteri(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+        glTexParameteri(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        if(tex) tex->Bind(0);
+    //}
 }
 
 void Texture::GetData(const int& mipMapLevel,
@@ -88,9 +105,9 @@ void Texture::GetData(const int& mipMapLevel,
     Assert(dstBufferSize == 0)
     Assert(!dstBuffer)
 
-    if(MR::MachineInfo::IsDirectStateAccessSupported()) {
+    /*if(MR::MachineInfo::IsDirectStateAccessSupported()) {
         glGetTextureImage(_handle, mipMapLevel, (int)dformat, (int)dtype, dstBufferSize, dstBuffer);
-    } else {
+    } else {*/
         unsigned short fu = TextureFreeUnit();
         ITexture* binded = nullptr;
         if(fu == 0) binded = ReBind(0);
@@ -98,7 +115,7 @@ void Texture::GetData(const int& mipMapLevel,
         glGetTexImage(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], mipMapLevel, (int)dformat, (int)dtype, dstBuffer);
         if(fu == 0) binded->Bind(0);
         else TextureUnBind(fu, false);
-    }
+    //}
 }
 
 void MR::Texture::SetData(const int& mipMapLevel,
@@ -110,6 +127,7 @@ void MR::Texture::SetData(const int& mipMapLevel,
     Assert(!data)
 
     if(MR::MachineInfo::IsDirectStateAccessSupported()) {
+        glPushClientAttribDefaultEXT(GL_CLIENT_PIXEL_STORE_BIT);
         switch(_texture_type) {
         case Base1D:
             glTextureImage1DEXT(_handle, _MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], mipMapLevel, (int)sdFormat, width, 0, (int)dformat, (int)dtype, data);
@@ -121,6 +139,7 @@ void MR::Texture::SetData(const int& mipMapLevel,
             glTextureImage3DEXT(_handle, _MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], mipMapLevel, (int)sdFormat, width, height, depth, 0, (int)dformat, (int)dtype, data);
             break;
         }
+        glPopClientAttrib();
     } else {
         unsigned short fu = TextureFreeUnit();
         ITexture* binded = nullptr;
@@ -154,7 +173,7 @@ void Texture::UpdateData(const int& mipMapLevel,
     Assert(xOffset <= 0)
     Assert(!data)
 
-    if(MR::MachineInfo::IsDirectStateAccessSupported()) {
+    /*if(MR::MachineInfo::IsDirectStateAccessSupported()) {
         switch(_texture_type) {
         case Base1D:
             glTextureSubImage1D(_handle, mipMapLevel, xOffset, width, (unsigned int)dformat, (unsigned int)dtype, data);
@@ -166,7 +185,7 @@ void Texture::UpdateData(const int& mipMapLevel,
             glTextureSubImage3D(_handle, mipMapLevel, xOffset, yOffset, zOffset, width, height, depth, (unsigned int)dformat, (unsigned int)dtype, data);
             break;
         }
-    } else {
+    } else {*/
         unsigned short fu = TextureFreeUnit();
         ITexture* binded = nullptr;
         if(fu == 0) binded = ReBind(0);
@@ -186,25 +205,73 @@ void Texture::UpdateData(const int& mipMapLevel,
 
         if(fu == 0) binded->Bind(0);
         else TextureUnBind(fu, false);
-    }
+    //}
 }
 
-void MR::Texture::ResetInfo() {
-    /*if(MR::MachineInfo::IsDirectStateAccessSupported()) {
-        glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_WIDTH, (int*)(&_width));
-    } else {
-        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, (int*)(&gl_width));
-        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, (int*)(&gl_height));
-        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_DEPTH, (int*)(&gl_depth));
-        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, (int*)(&gl_internal_format));
-        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_RED_SIZE, (int*)(&gl_red_bits_num));
-        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_GREEN_SIZE, (int*)(&gl_green_bits_num));
-        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_BLUE_SIZE, (int*)(&gl_blue_bits_num));
-        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_DEPTH_SIZE, (int*)(&gl_depth_bits_num));
-        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_ALPHA_SIZE, (int*)(&gl_alpha_bits_num));
-        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_COMPRESSED, (int*)(&gl_compressed));
+bool MR::Texture::Complete(bool mipMaps) {
+    if(_handle == 0) {
+        MR::Log::LogString("Failed Texture::Complete. Handle is null.", MR_LOG_LEVEL_ERROR);
+        return false;
     }
-    gl_mem_image_size = ((gl_red_bits_num+gl_green_bits_num+gl_blue_bits_num+gl_depth_bits_num+gl_alpha_bits_num)/8)*gl_width*gl_height;*/
+
+    if(mipMaps) {
+#ifdef MR_CHECK_LARGE_GL_ERRORS
+    int gl_er = 0;
+    MR::MachineInfo::ClearError();
+#endif
+        /*if(MR::MachineInfo::IsDirectStateAccessSupported()) {
+            glGenerateTextureMipmap(_handle);
+        } else {*/
+            ITexture* tex = ReBind(0);
+            glGenerateMipmap(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type]);
+            if(tex) tex->Bind(0);
+        //}
+#ifdef MR_CHECK_LARGE_GL_ERRORS
+    if(MR::MachineInfo::CatchError(0, &gl_er)) {
+        MR::Log::LogString("Error in Texture::Complete : glGenerateMipmap() ended with \"" + std::to_string(gl_er) + "\" code. ", MR_LOG_LEVEL_ERROR);
+        return false;
+    }
+#endif
+    }
+
+    UpdateInfo();
+
+    return true;
+}
+
+void Texture::UpdateInfo() {
+    int w = 0, h = 0, d = 0, fi = 0, rs = 0, gs = 0, bs = 0, ds = 0, as = 0, cm = 0;
+    /*if(MR::MachineInfo::IsDirectStateAccessSupported()) {
+        glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_WIDTH, &w);
+        glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_HEIGHT, &h);
+        glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_DEPTH, &d);
+        glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_INTERNAL_FORMAT, &fi);
+        glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_RED_SIZE, &rs);
+        glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_GREEN_SIZE, &gs);
+        glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_BLUE_SIZE, &bs);
+        glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_DEPTH_SIZE, &ds);
+        glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_ALPHA_SIZE, &as);
+        glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_COMPRESSED, &cm);
+    } else {
+        ITexture* binded = ReBind(0);
+
+        glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_WIDTH, &w);
+        glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_HEIGHT, &h);
+        glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_DEPTH, &d);
+        glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_INTERNAL_FORMAT, &fi);
+        glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_RED_SIZE, &rs);
+        glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_GREEN_SIZE, &gs);
+        glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_BLUE_SIZE, &bs);
+        glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_DEPTH_SIZE, &ds);
+        glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_ALPHA_SIZE, &as);
+        glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_COMPRESSED, &cm);
+
+        if(binded) binded->Bind(0);
+    }
+    _sizes = TextureSizeInfo(w, h, d);
+    _bits = TextureBitsInfo(rs, gs, bs, ds, as);
+    _mem_size = ((rs+gs+bs+ds+as)/8)*w*h;
+    _compressed = (GL_TRUE == cm);*/
 }
 
 void MR::Texture::Destroy() {
@@ -233,12 +300,12 @@ void TextureUnBind(const unsigned short& unit, const bool& fast) {
 
     if(!fast) {
         if(MR::MachineInfo::IsDirectStateAccessSupported()) {
-            glBindMultiTextureEXT(GL_TEXTURE0+unit, _MR_TEXTURE_BIND_TARGETS_.GetRaw()[unit]->GetType(), 0);
+            glBindMultiTextureEXT(GL_TEXTURE0+unit, _MR_TEXTURE_TYPE_TO_GL_TARGET_[_MR_TEXTURE_BIND_TARGETS_.GetRaw()[unit]->GetType()], 0);
         } else {
             int actived_tex = 0;
             glGetIntegerv(GL_ACTIVE_TEXTURE, &actived_tex);
             glActiveTexture(GL_TEXTURE0+unit);
-            glBindTexture(_MR_TEXTURE_BIND_TARGETS_.GetRaw()[unit]->GetType(), 0);
+            glBindTexture(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_MR_TEXTURE_BIND_TARGETS_.GetRaw()[unit]->GetType()], 0);
             glActiveTexture(actived_tex);
         }
         glBindSampler(unit, 0);
@@ -255,6 +322,48 @@ unsigned short TextureFreeUnit() {
         }
     }
     return 0;
+}
+
+ITexture* Texture::FromFile(std::string const& path) {
+    Texture* tex = new Texture();
+    tex->_handle =
+        SOIL_load_OGL_texture(path.c_str(),
+                               SOIL_LOAD_AUTO,
+                               SOIL_CREATE_NEW_ID,
+                               SOIL_FLAG_MIPMAPS);
+	if(tex->_handle == 0) return nullptr;
+	tex->UpdateInfo();
+	tex->_texture_type = MR::ITexture::Base2D;
+	return dynamic_cast<MR::ITexture*>(tex);
+}
+
+float * __MR_CHECKER_NEW_IMAGE_(size_t const& sizes, float c) {
+    float * pixel_data = new float [sizes*sizes];
+    for(size_t i = 0; i < (sizes*sizes); ++i){
+        pixel_data[i] = c;
+    }
+    return pixel_data;
+}
+
+ITexture* Texture::CreateMipmapChecker() {
+    ITexture* tex = dynamic_cast<ITexture*>(new MR::Texture());
+    tex->Create(Base2D);
+
+    if(!tex->Good()) {
+        delete tex;
+        return nullptr;
+    }
+    for(int i = 0; i < 10; ++i) {
+        int sz = glm::pow(2, 10-i);
+        float* data = __MR_CHECKER_NEW_IMAGE_(sz, (float)(10-i) * 0.1f);
+        MR::Log::LogString(std::to_string((float)(10-i) * 0.1f));
+        tex->SetData(i, ITexture::DF_RED, ITexture::DT_FLOAT, ITexture::SDF_RGB, sz, sz, 0, &data[0]);
+        delete [] data;
+    }
+
+    tex->Complete(false);
+
+    return tex;
 }
 
 }

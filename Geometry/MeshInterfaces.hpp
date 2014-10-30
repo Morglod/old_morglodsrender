@@ -11,6 +11,9 @@ namespace MR {
 class IGeometry;
 class IMaterial;
 
+/*
+    Only static geometry + material
+*/
 class IMesh {
 public:
     MR::EventListener<IMesh*, IMaterial*> OnMaterialChanged;

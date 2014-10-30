@@ -22,8 +22,6 @@ public:
 
     inline size_t GetGPUMem() override { return _mem_size; }
 
-    void ResetInfo(); //Get fresh info about texture
-
     void Bind(unsigned short const& unit) override;
     unsigned short Bind() override;
     ITexture* ReBind(unsigned short const& unit) override;
@@ -45,10 +43,16 @@ public:
                     const ITexture::DataFormat& dformat, const ITexture::DataTypes& dtype,
                     void* data) override;
 
+    bool Complete(bool mipMaps) override;
+    void UpdateInfo() override;
+
     void Destroy() override;
 
     Texture();
     virtual ~Texture();
+
+    static ITexture* FromFile(std::string const& path);
+    static ITexture* CreateMipmapChecker();
 
 protected:
     TextureSizeInfo _sizes;

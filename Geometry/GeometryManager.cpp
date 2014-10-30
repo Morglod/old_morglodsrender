@@ -58,10 +58,10 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
     }
 
     FormatBuffer* fbuf = _RequestFormatBuffer(vertexFormat, vertexDataSize, indexFormat, indexDataSize, usage);
-
     VirtualGPUBuffer* virtualBuffer = fbuf->manager->Take(vertexDataSize+indexDataSize);
     MR::IGPUBuffer::BufferedDataInfo bufferedVertexDataInfo, bufferedIndexDataInfo;
     virtualBuffer->Write(vertexData, 0, 0, vertexDataSize, nullptr, &bufferedVertexDataInfo);
+
     if(indexDataSize) virtualBuffer->Write(indexData, 0, vertexDataSize, indexDataSize, nullptr, &bufferedIndexDataInfo);
 
     MR::GeometryBuffer* geomBuffer = new MR::GeometryBuffer();
@@ -89,10 +89,10 @@ GeometryManager::FormatBuffer* GeometryManager::_RequestFormatBuffer(IVertexForm
                              const IGPUBuffer::Usage& usage) {
 
     for(size_t i = 0; i < _buffers.size(); ++i) {
-        if(_split_by_data_formats && !(
-                                        (_buffers[i].vFormat && _buffers[i].vFormat->Equal(vertexFormat)) &&
-                                        (_buffers[i].iFormat && _buffers[i].iFormat->Equal(indexFormat)))
-           ) continue;
+        if(_split_by_data_formats) {
+            if(_buffers[i].vFormat && !_buffers[i].vFormat->Equal(vertexFormat)) continue;
+            if(_buffers[i].iFormat && !_buffers[i].iFormat->Equal(indexFormat)) continue;
+        }
 
         if((_buffers[i].usage == usage) &&
            (_buffers[i].manager))
@@ -116,7 +116,7 @@ GeometryManager::FormatBuffer* GeometryManager::_RequestFormatBuffer(IVertexForm
 }
 
 //5 mb per buffer
-GeometryManager::GeometryManager() : _max_buffer_size(5242880), _buffer_per_geom(false), _split_by_data_formats(false) {
+GeometryManager::GeometryManager() : _max_buffer_size(5242880), _buffer_per_geom(false), _split_by_data_formats(true) {
 }
 
 GeometryManager::~GeometryManager() {

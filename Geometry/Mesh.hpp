@@ -7,6 +7,9 @@
 
 namespace MR {
 
+/*
+    Only static geometry + material
+*/
 class Mesh : public IMesh {
 public:
     void SetGeometry(TStaticArray<IGeometry*> & geom) override { _geom = geom; OnGeometryChanged(this, geom); }

@@ -143,6 +143,7 @@ bool GPUBuffer::Write(void* srcData, const size_t& srcOffset, const size_t& dstO
         if(MR::MachineInfo::IsDirectStateAccessSupported()) {
             glNamedBufferSubDataEXT(GetGPUHandle(), dstOffset, size, (void*)((size_t)srcData+srcOffset));
         } else {
+
             IGPUBuffer* binded = ReBind(ArrayBuffer);
             glBufferSubData(_MR_BUFFER_BIND_TARGETS_REMAP_FROM_INDEX_[(size_t)ArrayBuffer], dstOffset, size, (void*)((size_t)srcData+srcOffset));
             if(binded) binded->Bind(ArrayBuffer);

@@ -46,7 +46,7 @@ Example:
     std::cout << timer.TimerTime().count() << std::endl;
 **/
 template<typename ClockClass, typename DurotationType>
-class Timer {
+class Timer final {
 public:
     typedef typename ClockClass::time_point time_point;
 

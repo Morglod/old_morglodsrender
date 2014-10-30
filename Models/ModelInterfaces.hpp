@@ -9,7 +9,11 @@
 namespace MR {
 
 class IMesh;
-class ISubModel : public MR::Transformable {
+
+/*
+    Mesh + Dynamic content (Anim, etc)
+*/
+class ISubModel {
 public:
     virtual MR::TStaticArray<IMesh*> GetMeshes() = 0;
     virtual void SetMeshes(MR::TStaticArray<IMesh*>) = 0;

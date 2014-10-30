@@ -65,7 +65,7 @@
 1399872494 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\gl\globject.hpp
 	<string>
 
-1409005154 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\machineinfo.hpp
+1412381258 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\machineinfo.hpp
 	"Config.hpp"
 	<string>
 
@@ -73,7 +73,7 @@
 	"Types.hpp"
 	<glm/glm.hpp>
 
-1403185911 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\log.hpp
+1414074332 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\log.hpp
 	<vector>
 	<algorithm>
 	<string>
@@ -106,7 +106,7 @@
 	<string>
 	<fstream>
 
-1412081135 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\machineinfo.cpp
+1412461250 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\machineinfo.cpp
 	"MachineInfo.hpp"
 	"Utils/Log.hpp"
 	"Context.hpp"
@@ -149,10 +149,10 @@
 
 1401750373 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\threads.hpp
 
-1410195664 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderinterfaces.hpp
+1412967756 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderinterfaces.hpp
 	"../CoreObjects.hpp"
 
-1412073033 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\containers.hpp
+1414075431 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\containers.hpp
 	"Threads.hpp"
 	<string.h>
 	<chrono>
@@ -291,7 +291,7 @@
 	"ShaderObjects.hpp"
 	<map>
 
-1410621024 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderobjects.hpp
+1412967770 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderobjects.hpp
 	"ShaderInterfaces.hpp"
 
 1407420179 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\rendertarget.cpp
@@ -368,7 +368,7 @@
 1412075887 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderinterfaces.cpp
 	"ShaderInterfaces.hpp"
 
-1410621037 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderobjects.cpp
+1414356446 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderobjects.cpp
 	"ShaderObjects.hpp"
 	"../MachineInfo.hpp"
 	"../Utils/Debug.hpp"
@@ -531,20 +531,20 @@
 	<glm/gtc/matrix_transform.hpp>
 	<vector>
 
-1412063630 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometryformats.cpp
+1412451321 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometryformats.cpp
 	"GeometryFormats.hpp"
 	"../Utils/Log.hpp"
 	"../MachineInfo.hpp"
 	<GL\glew.h>
 
-1410621386 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\mesh.cpp
+1413293843 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\mesh.cpp
 	"Mesh.hpp"
 	"../Utils/Log.hpp"
 	"../Materials/MaterialInterfaces.hpp"
 	"GeometryInterfaces.hpp"
 	"../Utils/Debug.hpp"
 
-1410621352 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\mesh.hpp
+1414010386 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\mesh.hpp
 	"MeshInterfaces.hpp"
 
 1412075097 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\resources\resourcemanager.hpp
@@ -643,10 +643,10 @@
 	"../Resources/ResourceManager.hpp"
 	"TextureObjects.hpp"
 
-1411299204 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\textures\textureobjects.hpp
+1412621768 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\textures\textureobjects.hpp
 	"TextureInterfaces.hpp"
 
-1411301127 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\textures\textureinterfaces.hpp
+1412195457 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\textures\textureinterfaces.hpp
 	"../Utils/Events.hpp"
 	"../Types.hpp"
 	"../CoreObjects.hpp"
@@ -672,7 +672,7 @@
 	"../Utils/Log.hpp"
 	<SOIL.h>
 
-1412064763 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\textures\textureobjects.cpp
+1413318761 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\textures\textureobjects.cpp
 	"TextureObjects.hpp"
 	"../Utils/Exception.hpp"
 	"../Utils/Log.hpp"
@@ -1339,17 +1339,14 @@
 1408203756 c:\games\target\morglodsrender\buffers\virtualbuffer.hpp
 	"BuffersInterfaces.hpp"
 
-1410044386 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderconfig.hpp
+1412966599 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderconfig.hpp
 	"../Config.hpp"
 
-1409672513 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\materials\materialinterfaces.hpp
-	"../Types.hpp"
+1413293765 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\materials\materialinterfaces.hpp
 	"../Utils/Containers.hpp"
-	"../Utils/Events.hpp"
 	<glm/glm.hpp>
-	<vector>
 
-1409672513 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\meshinterfaces.hpp
+1414010383 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\meshinterfaces.hpp
 	"../Utils/Containers.hpp"
 	"../Utils/Events.hpp"
 
@@ -1369,17 +1366,17 @@
 1406812666 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\instancedgeometry.hpp
 	"GeometryInterfaces.hpp"
 
-1412064647 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\materials\material.cpp
+1413293745 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\materials\material.cpp
 	"Material.hpp"
 	"../Utils/Log.hpp"
 	"../Shaders/ShaderInterfaces.hpp"
 	"MaterialsConfig.hpp"
 	"../Utils/Debug.hpp"
+	"../Textures/TextureInterfaces.hpp"
 	<GL/glew.h>
 
-1410621522 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\materials\material.hpp
+1413293870 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\materials\material.hpp
 	"MaterialInterfaces.hpp"
-	<vector>
 
 1407846830 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\materials\materialsconfig.hpp
 
@@ -1454,7 +1451,7 @@
 1408133141 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\memory.hpp
 	<stddef.h>
 
-1411236389 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\buffers\buffers.cpp
+1412186693 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\buffers\buffers.cpp
 	"Buffers.hpp"
 	"../Utils/Containers.hpp"
 	"../Utils/Debug.hpp"
@@ -1492,23 +1489,23 @@
 1409269143 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\collisions\collisioninterfaces.hpp
 	<glm/glm.hpp>
 
-1410277264 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\serialization.cpp
+1412389931 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\serialization.cpp
 	"Serialization.hpp"
 	"Debug.hpp"
 	"../Buffers/Buffers.hpp"
 	"../Shaders/ShaderObjects.hpp"
 
-1410276634 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\serialization.hpp
+1412390788 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\serialization.hpp
 	"Containers.hpp"
 	<string>
 
-1412064013 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometrybuilder.cpp
+1412188714 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometrybuilder.cpp
 	"GeometryBuilder.hpp"
 	"../Utils/Debug.hpp"
 	"GeometryFormats.hpp"
 	"GeometryManager.hpp"
 
-1412063231 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometrybuilder.hpp
+1412186368 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometrybuilder.hpp
 	"../Utils/Containers.hpp"
 	"../Buffers/BuffersInterfaces.hpp"
 	"../Shaders/ShaderConfig.hpp"
@@ -1530,7 +1527,7 @@
 	"../MachineInfo.hpp"
 	<GL/glew.h>
 
-1412063987 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometrymanager.hpp
+1412390996 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometrymanager.hpp
 	"GeometryInterfaces.hpp"
 	"../Utils/Singleton.hpp"
 	"../Buffers/VirtualBuffer.hpp"
@@ -1542,7 +1539,7 @@
 1412061929 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometrydrawparams.hpp
 	"GeometryInterfaces.hpp"
 
-1412064397 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometrymanager.cpp
+1412455142 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometrymanager.cpp
 	"GeometryManager.hpp"
 	"../Buffers/Buffers.hpp"
 	"GeometryBuffer.hpp"
@@ -1552,11 +1549,200 @@
 1412062110 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometryobject.hpp
 	"GeometryInterfaces.hpp"
 
-1412073275 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometryobject.cpp
+1412460037 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometryobject.cpp
 	"GeometryObject.hpp"
 	"../MachineInfo.hpp"
 	"GeometryFormats.hpp"
 	"GeometryManager.hpp"
 	"../Utils/Debug.hpp"
 	<GL/glew.h>
+
+1412622849 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\importer\objimport.cpp
+	"ObjImport.hpp"
+	"../Utils/Log.hpp"
+	"../Geometry/GeometryObject.hpp"
+	"../Geometry/GeometryManager.hpp"
+	"../Geometry/GeometryFormats.hpp"
+
+1412536732 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\importer\objimport.hpp
+	<string>
+
+1412532490 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\3rd\tinyobjloader\tiny_obj_loader.cc
+	<cstdlib>
+	<cstring>
+	<cassert>
+	<string>
+	<vector>
+	<map>
+	<fstream>
+	<sstream>
+	"tiny_obj_loader.h"
+
+1412532490 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\3rd\tinyobjloader\tiny_obj_loader.h
+	<string>
+	<vector>
+	<map>
+
+1414343025 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometryloader.cpp
+	"GeometryLoader.hpp"
+	"../Utils/Log.hpp"
+	"GeometryFormats.hpp"
+	"GeometryManager.hpp"
+	<assimp/Importer.hpp>
+	<assimp/scene.h>
+	<assimp/postprocess.h>
+	<assimp/color4.h>
+	<glm/glm.hpp>
+
+1414185590 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometryloader.hpp
+	<string>
+	<memory>
+	"../Utils/Containers.hpp"
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\scene.h
+	"types.h"
+	"texture.h"
+	"mesh.h"
+	"light.h"
+	"camera.h"
+	"material.h"
+	"anim.h"
+	"metadata.h"
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\types.h
+	<sys/types.h>
+	<memory.h>
+	<math.h>
+	<stddef.h>
+	<string.h>
+	<limits.h>
+	"defs.h"
+	"vector3.h"
+	"vector2.h"
+	"color4.h"
+	"matrix3x3.h"
+	"matrix4x4.h"
+	"quaternion.h"
+	<cstring>
+	<new>
+	<string>
+	"./Compiler/pushpack1.h"
+	"./Compiler/poppack1.h"
+	"vector2.inl"
+	"vector3.inl"
+	"color4.inl"
+	"quaternion.inl"
+	"matrix3x3.inl"
+	"matrix4x4.inl"
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\defs.h
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\vector3.h
+	<cmath>
+	<math.h>
+	"./Compiler/pushpack1.h"
+	"./Compiler/poppack1.h"
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\compiler\pushpack1.h
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\compiler\poppack1.h
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\vector2.h
+	<cmath>
+	<math.h>
+	"./Compiler/pushpack1.h"
+	"./Compiler/poppack1.h"
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\color4.h
+	"./Compiler/pushpack1.h"
+	"./Compiler/poppack1.h"
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\matrix3x3.h
+	"./Compiler/pushpack1.h"
+	"./Compiler/poppack1.h"
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\matrix4x4.h
+	"./Compiler/pushpack1.h"
+	"./Compiler/poppack1.h"
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\quaternion.h
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\vector2.inl
+	"vector2.h"
+	<cmath>
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\vector3.inl
+	"vector3.h"
+	<cmath>
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\color4.inl
+	"color4.h"
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\quaternion.inl
+	"quaternion.h"
+	<cmath>
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\matrix3x3.inl
+	"matrix3x3.h"
+	"matrix4x4.h"
+	<algorithm>
+	<cmath>
+	<limits>
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\matrix4x4.inl
+	"matrix4x4.h"
+	"matrix3x3.h"
+	"quaternion.h"
+	<algorithm>
+	<limits>
+	<cmath>
+	<math.h>
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\texture.h
+	"types.h"
+	"./Compiler/pushpack1.h"
+	"./Compiler/poppack1.h"
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\mesh.h
+	"types.h"
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\light.h
+	"types.h"
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\camera.h
+	"types.h"
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\material.h
+	"types.h"
+	"./Compiler/pushpack1.h"
+	"./Compiler/poppack1.h"
+	"material.inl"
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\material.inl
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\anim.h
+	"types.h"
+	"quaternion.h"
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\metadata.h
+	<assert.h>
+	"Compiler/pstdint.h"
+	<stdint.h>
+	<string>
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\compiler\pstdint.h
+	<stddef.h>
+	<limits.h>
+	<signal.h>
+	<stdint.h>
+	<wchar.h>
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\importer.hpp
+	"types.h"
+	"config.h"
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\config.h
+
+1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\postprocess.h
+	"types.h"
 

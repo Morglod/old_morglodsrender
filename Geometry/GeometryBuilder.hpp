@@ -50,6 +50,8 @@ public:
     IGeometry* Build(IGPUBuffer::Usage const& usage);
     void Clear();
 
+    ManualGeometry();
+    ~ManualGeometry();
 protected:
     std::vector<float> _vertexData;
     std::vector<IndexType> _indexData;

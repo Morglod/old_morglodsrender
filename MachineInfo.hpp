@@ -47,7 +47,7 @@ class IContext;
         std::string gl_extensions_list();
         std::string gl_version_glsl();
         unsigned int total_memory_kb();
-        unsigned int current_memory_kb();
+        unsigned int current_memory_kb(); //free mem
 
         void PrintInfo();
 

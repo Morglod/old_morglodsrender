@@ -24,7 +24,7 @@ public:
 
     HandlePtr() : _ptr(nullptr), _counter(new CounterT(1)) {}
     HandlePtr(T* t) : _ptr(t), _counter(new CounterT(1)) {}
-    HandlePtr(const HandlePtr<T>& ptr) : _ptr(ptr._ptr), _counter(ptr._counter) {
+    HandlePtr(const HandlePtr<T, CounterT>& ptr) : _ptr(ptr._ptr), _counter(ptr._counter) {
         ++(*_counter);
     }
     virtual ~HandlePtr() {
@@ -43,11 +43,15 @@ protected:
 #include "../Context.hpp"
 
 template < typename T , typename CounterT = size_t >
-class GPUObjectHandlePtr : public HandlePtr<T, CounterT>, public GPUObjectHandle {
+class GPUObjectHandlePtr : public HandlePtr<T, CounterT> {
 public:
+    GPUObjectHandlePtr() : HandlePtr<T, CounterT>() {}
+    GPUObjectHandlePtr(T* t) : HandlePtr<T, CounterT>(t) {}
+    GPUObjectHandlePtr(const GPUObjectHandlePtr<T, CounterT>& ptr) : HandlePtr<T, CounterT>(ptr) {}
+
     virtual ~GPUObjectHandlePtr() {
-        if(AnyContextAlive() && GPUObjectHandle::Good()) {
-            Destroy();
+        if(AnyContextAlive()) {
+            this->HandlePtr<T, CounterT>::_ptr->Destroy();
         }
     }
 };

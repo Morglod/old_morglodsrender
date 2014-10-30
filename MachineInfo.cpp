@@ -192,7 +192,7 @@ void MR::MachineInfo::PrintInfo() {
             std::string("\nGLSL: ") + MR::MachineInfo::gl_version_glsl() +
             std::string("\nOpenGL: ") + std::to_string(MR::MachineInfo::gl_version_major()) + std::string(" ") + std::to_string(MR::MachineInfo::gl_version_minor()) +
             std::string("\nGPU: ") + MR::MachineInfo::gpu_name() + std::string(" from ") + MR::MachineInfo::gpu_vendor_string() +
-            std::string("\nMem Total(kb): ") + std::to_string(MR::MachineInfo::total_memory_kb()) + std::string(" Current(kb): ") + std::to_string(MR::MachineInfo::current_memory_kb()) + "\n\n"
+            std::string("\nMem Total(kb): ") + std::to_string(MR::MachineInfo::total_memory_kb()) + std::string(" Current free (kb): ") + std::to_string(MR::MachineInfo::current_memory_kb()) + "\n\n"
         , MR_LOG_LEVEL_INFO);
 
         MR::Log::LogString("\nNvidia VBUM: " + std::to_string(MR::MachineInfo::IsNVVBUMSupported()));
