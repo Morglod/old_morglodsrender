@@ -2,6 +2,7 @@
 
 #include "../Utils/Log.hpp"
 #include "../MachineInfo.hpp"
+#include "../Utils/Containers.hpp"
 
 #define GLEW_STATIC
 #include <GL\glew.h>
@@ -19,13 +20,53 @@ void __MR_SET_INDEX_FORMAT_AS_BINDED_(MR::IIndexFormat* fi) {
     _MR_BINDED_INDEX_FORMAT = fi;
 }
 
+MR::TDynamicArray<MR::VertexDataTypeCustomCached> __MR_VERTEX_DATA_TYPE_CACHED_;
+MR::TDynamicArray<MR::VertexAttributeCustomCached> __MR_VERTEX_ATTRIB_CACHED_;
+
 namespace MR {
 
-VertexDataTypeCustom::VertexDataTypeCustom(const unsigned int& _data_type, const unsigned int& size) :
-    _data_type(_data_type), _size(size) {}
+VertexDataTypeCustom::VertexDataTypeCustom() :
+    _data_type(0), _size(0) {}
+
+VertexDataTypeCustom::VertexDataTypeCustom(const unsigned int& data_type, const unsigned int& size) :
+    _data_type(data_type), _size(size) {}
+
+IVertexDataType* VertexDataTypeCustom::Cache() {
+    auto ar = __MR_VERTEX_DATA_TYPE_CACHED_.GetRaw();
+    MR::IVertexDataType* this_ptr = dynamic_cast<MR::IVertexDataType*>(this);
+    for(size_t i = 0; i < __MR_VERTEX_DATA_TYPE_CACHED_.GetNum(); ++i) {
+        if(ar[i].Equal(this_ptr)) {
+            return ar[i].GetReal();
+        }
+    }
+    VertexDataTypeCustomCached cached = VertexDataTypeCustomCached(this_ptr);
+    __MR_VERTEX_DATA_TYPE_CACHED_.PushBack(cached);
+    return cached.GetReal();
+}
+
+VertexDataTypeCustomCached::VertexDataTypeCustomCached(IVertexDataType* vdt) : _real(vdt) {}
+VertexDataTypeCustomCached::VertexDataTypeCustomCached() : _real(nullptr) {}
+VertexDataTypeCustomCached::VertexDataTypeCustomCached(VertexDataTypeCustomCached const& cpy) : _real(cpy._real) {}
 
 VertexAttributeCustom::VertexAttributeCustom(const unsigned int& elementsNum, IVertexDataType* dataType, const unsigned int& shaderIndex) :
     _el_num(elementsNum), _data_type(dataType), _size( ((uint64_t)_el_num) * ((uint64_t)_data_type->GetSize()) ), _shaderIndex(shaderIndex) {}
+
+IVertexAttribute* VertexAttributeCustom::Cache() {
+    auto ar = __MR_VERTEX_ATTRIB_CACHED_.GetRaw();
+    MR::IVertexAttribute* this_ptr = dynamic_cast<MR::IVertexAttribute*>(this);
+    for(size_t i = 0; i < __MR_VERTEX_ATTRIB_CACHED_.GetNum(); ++i) {
+        if(ar[i].Equal(this_ptr)) {
+            return ar[i].GetReal();
+        }
+    }
+    VertexAttributeCustomCached cached = VertexAttributeCustomCached(this_ptr);
+    __MR_VERTEX_ATTRIB_CACHED_.PushBack(cached);
+    return cached.GetReal();
+}
+
+VertexAttributeCustomCached::VertexAttributeCustomCached() : _real(nullptr) {}
+VertexAttributeCustomCached::VertexAttributeCustomCached(VertexAttributeCustomCached const& cpy) : _real(cpy._real) {}
+VertexAttributeCustomCached::VertexAttributeCustomCached(IVertexAttribute* va) : _real(va) {}
 
 void VertexFormatCustom::AddVertexAttribute(IVertexAttribute* a) {
     if(_pointers.size() == 0) _pointers.push_back(0);

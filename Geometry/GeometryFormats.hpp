@@ -54,6 +54,28 @@ public:
     }
 };
 
+class VertexDataTypeCustomCached : public IVertexDataType {
+public:
+    inline unsigned int GetSize() override {return _real->GetSize();}
+    inline unsigned int GetDataType() override {return _real->GetDataType();}
+
+    inline bool Equal(IVertexDataType* dt) override {
+        if(_real->GetSize() != dt->GetSize()) return false;
+        if(_real->GetDataType() != dt->GetDataType()) return false;
+        return true;
+    }
+
+    inline IVertexDataType* GetReal() {
+        return _real.get();
+    }
+
+    VertexDataTypeCustomCached();
+    VertexDataTypeCustomCached(VertexDataTypeCustomCached const& cpy);
+    VertexDataTypeCustomCached(IVertexDataType* vdt);
+protected:
+    std::shared_ptr<IVertexDataType> _real;
+};
+
 class VertexDataTypeCustom : public IVertexDataType {
 public:
     inline unsigned int GetSize() override {return _size;}
@@ -65,7 +87,10 @@ public:
         return true;
     }
 
-    VertexDataTypeCustom(const unsigned int& _data_type, const unsigned int& size);
+    IVertexDataType* Cache();
+
+    VertexDataTypeCustom();
+    VertexDataTypeCustom(const unsigned int& data_type, const unsigned int& size);
 protected:
     unsigned int _data_type;
     unsigned int _size;
@@ -87,6 +112,30 @@ public:
     }
 };
 
+class VertexAttributeCustomCached : public IVertexAttribute {
+public:
+    inline unsigned int GetSize() override { return _real->GetSize(); }
+    inline unsigned int GetElementsNum() override { return _real->GetElementsNum(); }
+    inline IVertexDataType* GetDataType() override { return _real->GetDataType(); }
+    inline unsigned int GetShaderIndex() override { return _real->GetShaderIndex(); }
+
+    inline bool Equal(IVertexAttribute* va) override {
+        if(_real->GetSize() != va->GetSize()) return false;
+        if(_real->GetElementsNum() != va->GetElementsNum()) return false;
+        if(_real->GetShaderIndex() != va->GetShaderIndex()) return false;
+
+        return _real->GetDataType()->Equal(va->GetDataType());
+    }
+
+    inline IVertexAttribute* GetReal() { return _real.get(); }
+
+    VertexAttributeCustomCached();
+    VertexAttributeCustomCached(VertexAttributeCustomCached const& cpy);
+    VertexAttributeCustomCached(IVertexAttribute* va);
+protected:
+    std::shared_ptr<IVertexAttribute> _real;
+};
+
 class VertexAttributeCustom : public IVertexAttribute {
 public:
     inline unsigned int GetSize() override { return _size; }
@@ -101,6 +150,8 @@ public:
 
         return _data_type->Equal(va->GetDataType());
     }
+
+    IVertexAttribute* Cache();
 
     VertexAttributeCustom(const unsigned int& elementsNum, IVertexDataType* dataType, const unsigned int& shaderIndex);
 protected:

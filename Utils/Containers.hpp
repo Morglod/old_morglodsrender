@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <initializer_list>
 
+#define MR_CONTAINERS_LOOP_INDEX 0
+
 namespace MR {
 
 template < typename T >
@@ -17,8 +19,21 @@ class TStaticArray {
 public:
     inline T* GetRaw() { return _ar; }
     inline size_t GetNum() { return _el_num; }
-    inline T& At(const size_t& i) { return _ar[i]; }
+#if MR_CONTAINERS_LOOP_INDEX == 0
+    inline T& At(size_t const& i) { return _ar[i]; }
     inline T* AtPtr(const size_t& i) { return &_ar[i]; }
+#else
+    inline T& At(size_t i) {
+        while(i >= _el_num) i -= _el_num;
+        while(i < 0) i += _el_num;
+        return _ar[i];
+    }
+    inline T* AtPtr(size_t i) {
+        while(i >= _el_num) i -= _el_num;
+        while(i < 0) i += _el_num;
+        return &_ar[i];
+    }
+#endif
     inline void SetDeleteFlag(const bool& d) { _delete = d; }
     inline bool GetDeleteFlag() { return _delete; }
 
@@ -29,6 +44,16 @@ public:
         memcpy(ra.GetRaw(), GetRaw(), sz1);
         memcpy((void*)((size_t)ra.GetRaw() + sz1), a.GetRaw(), sizeof(T) * a.GetNum());
         return ra;
+    }
+
+    inline TStaticArray<T> RangeRef(size_t const& begin_index, size_t const& end_index) {
+        return TStaticArray<T>(&_ar[begin_index], end_index - begin_index, false);
+    }
+
+    inline TStaticArray<T> RangeCopy(size_t const& begin_index, size_t const& end_index) {
+        T* _ar_cpy = new T[end_index - begin_index];
+        memcpy(_ar_cpy, &_ar[begin_index], end_index - begin_index);
+        return TStaticArray<T>(_ar_cpy, end_index - begin_index, true);
     }
 
     TStaticArray() : _ar(0), _el_num(0), _delete(false) {}

@@ -20,6 +20,9 @@ public:
         return *this;
     }
 
+    HandlePtr& operator = (HandlePtr const&) = delete;
+    HandlePtr& operator = (HandlePtr&) = delete;
+
     inline T* Get() { return _ptr; }
 
     HandlePtr() : _ptr(nullptr), _counter(new CounterT(1)) {}

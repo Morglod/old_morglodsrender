@@ -85,8 +85,6 @@
 		<Unit filename="Geometry/Mesh.cpp" />
 		<Unit filename="Geometry/Mesh.hpp" />
 		<Unit filename="Geometry/MeshInterfaces.hpp" />
-		<Unit filename="Importer/ObjImport.cpp" />
-		<Unit filename="Importer/ObjImport.hpp" />
 		<Unit filename="MachineInfo.cpp" />
 		<Unit filename="MachineInfo.hpp" />
 		<Unit filename="Materials/Material.cpp" />
@@ -104,11 +102,10 @@
 		<Unit filename="Postprocessing/PostprocessStep.hpp" />
 		<Unit filename="Query.cpp" />
 		<Unit filename="Query.hpp" />
-		<Unit filename="Resources/Importer.cpp" />
-		<Unit filename="Resources/Importer.hpp" />
-		<Unit filename="Resources/ResourceIOInterfaces.hpp" />
-		<Unit filename="Resources/ResourceManager.cpp" />
+		<Unit filename="Resources/ResourceInterfaces.hpp" />
 		<Unit filename="Resources/ResourceManager.hpp" />
+		<Unit filename="Resources/ResourceType.cpp" />
+		<Unit filename="Resources/ResourceType.hpp" />
 		<Unit filename="Scene/Entity.hpp" />
 		<Unit filename="Scene/Light.hpp" />
 		<Unit filename="Scene/PerspectiveCamera.cpp" />

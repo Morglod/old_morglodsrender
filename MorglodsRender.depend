@@ -152,7 +152,7 @@
 1412967756 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderinterfaces.hpp
 	"../CoreObjects.hpp"
 
-1414075431 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\containers.hpp
+1414704418 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\containers.hpp
 	"Threads.hpp"
 	<string.h>
 	<chrono>
@@ -368,7 +368,7 @@
 1412075887 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderinterfaces.cpp
 	"ShaderInterfaces.hpp"
 
-1414356446 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderobjects.cpp
+1414379857 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderobjects.cpp
 	"ShaderObjects.hpp"
 	"../MachineInfo.hpp"
 	"../Utils/Debug.hpp"
@@ -522,7 +522,7 @@
 	"GeometryInterfaces.hpp"
 	"../Buffers/VirtualBuffer.hpp"
 
-1412018745 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometryformats.hpp
+1414843318 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometryformats.hpp
 	"../Types.hpp"
 	"../Config.hpp"
 	"GeometryInterfaces.hpp"
@@ -531,10 +531,11 @@
 	<glm/gtc/matrix_transform.hpp>
 	<vector>
 
-1412451321 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometryformats.cpp
+1414842377 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometryformats.cpp
 	"GeometryFormats.hpp"
 	"../Utils/Log.hpp"
 	"../MachineInfo.hpp"
+	"../Utils/Containers.hpp"
 	<GL\glew.h>
 
 1413293843 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\mesh.cpp
@@ -1745,4 +1746,15 @@
 
 1402765209 c:\libs\assimp-3.1.1-win-binaries\include\assimp\postprocess.h
 	"types.h"
+
+1414703369 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\resources\resourcetype.cpp
+	"ResourceType.hpp"
+	<functional>
+
+1414703553 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\resources\resourcetype.hpp
+	<string>
+	"../Utils/Pointers.hpp"
+
+1414703494 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\pointers.hpp
+	"../Context.hpp"
 
