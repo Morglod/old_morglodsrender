@@ -20,9 +20,9 @@ private:
     ResourceManager();
     ~ResourceManager();
 
-    std::hash<std::string> _make_hash;
+    /*std::hash<std::string> _make_hash;
     std::map<size_t, IResource*> _res;
-    std::map<size_t, ResourceType> _res_types;
+    std::map<size_t, ResourceType> _res_types;*/
 
     static ResourceManager _inst;
 };

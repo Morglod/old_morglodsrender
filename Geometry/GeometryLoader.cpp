@@ -43,30 +43,30 @@ bool GeometryLoader::Import(std::string const& file) {
         if(bColorA) ++attr_num;
         if(bTexCoordA) ++attr_num;
 
-        VertexFormatCustomFixed* vf = new VertexFormatCustomFixed();
-        vf->SetAttributesNum(attr_num);
+        VertexFormatCustomFixed vf;
+        vf.SetAttributesNum(attr_num);
 
-        /*if(bPosA)*/vf->AddVertexAttribute(new VertexAttributeCustom(3, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION));
-        if(bNormalA) vf->AddVertexAttribute(new VertexAttributeCustom(3, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION));
-        if(bColorA) vf->AddVertexAttribute(new VertexAttributeCustom(4, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION));
-        if(bTexCoordA) vf->AddVertexAttribute(new VertexAttributeCustom(2, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION));
+        /*if(bPosA)*/   vf.AddVertexAttribute(VertexAttributeCustom(3, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION).Cache());
+        if(bNormalA)    vf.AddVertexAttribute(VertexAttributeCustom(3, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION).Cache());
+        if(bColorA)     vf.AddVertexAttribute(VertexAttributeCustom(4, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION).Cache());
+        if(bTexCoordA)  vf.AddVertexAttribute(VertexAttributeCustom(2, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION).Cache());
 
         ///Create index format
-        IndexFormatCustom* fi = new IndexFormatCustom(&VertexDataTypeUInt::GetInstance());
+        IndexFormatCustom fi(&VertexDataTypeUInt::GetInstance());
 
         ///Pack vertex data
 
         size_t posOffset = 0, normalOffset = 0, colorOffset = 0, texcoordOffset = 0;
 
         /*if(bPosA) posOffset = 0; */
-        if(bNormalA) normalOffset = (size_t)bPosA * sizeof(float) * 3;
-        if(bColorA) colorOffset = ((size_t)bPosA * sizeof(float) * 3) + ((size_t)bNormalA * + sizeof(float) * 3);
-        if(bTexCoordA) texcoordOffset = ((size_t)bPosA * sizeof(float) * 3) + ((size_t)bNormalA * + sizeof(float) * 3) + (size_t)bColorA * sizeof(float) * 4;
+        if(bNormalA)    normalOffset = (size_t)bPosA * sizeof(float) * 3;
+        if(bColorA)     colorOffset = ((size_t)bPosA * sizeof(float) * 3) + ((size_t)bNormalA * + sizeof(float) * 3);
+        if(bTexCoordA)  texcoordOffset = ((size_t)bPosA * sizeof(float) * 3) + ((size_t)bNormalA * + sizeof(float) * 3) + (size_t)bColorA * sizeof(float) * 4;
 
-        size_t vertexDataSize = mesh->mNumVertices * vf->GetSize();
+        size_t vertexDataSize = mesh->mNumVertices * vf.GetSize();
         unsigned char * vertexData = new unsigned char [vertexDataSize];
         for(size_t it = 0; it < mesh->mNumVertices; ++it) {
-            size_t offset = vf->GetSize() * it;
+            size_t offset = vf.GetSize() * it;
             *((aiVector3D*)&vertexData[offset + posOffset]) = mesh->mVertices[it];
             if(bNormalA) *((aiVector3D*)&vertexData[offset + normalOffset]) = mesh->mNormals[it];
             if(bColorA) *((aiColor4D*)&vertexData[offset + colorOffset]) = mesh->mColors[0][it];
@@ -85,9 +85,10 @@ bool GeometryLoader::Import(std::string const& file) {
 
         ///Make geometry
 
-        IGeometry* geom = MR::GeometryManager::GetInstance()->PlaceGeometry(dynamic_cast<MR::IVertexFormat*>(vf), &vertexData[0], mesh->mNumVertices,
-                                                                            dynamic_cast<MR::IIndexFormat*>(fi), &indexData[0], mesh->mNumFaces*3,
+        IGeometry* geom = MR::GeometryManager::GetInstance()->PlaceGeometry(vf.Cache(), &vertexData[0], mesh->mNumVertices,
+                                                                            fi.Cache(), &indexData[0], mesh->mNumFaces*3,
                                                                             MR::IGPUBuffer::Usage::Static, MR::IGeometryBuffer::DrawModes::Triangles);
+
         delete [] vertexData;
         delete [] indexData;
         _impl->_geoms.At(i) = geom;

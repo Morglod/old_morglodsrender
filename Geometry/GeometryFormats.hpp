@@ -54,28 +54,6 @@ public:
     }
 };
 
-class VertexDataTypeCustomCached : public IVertexDataType {
-public:
-    inline unsigned int GetSize() override {return _real->GetSize();}
-    inline unsigned int GetDataType() override {return _real->GetDataType();}
-
-    inline bool Equal(IVertexDataType* dt) override {
-        if(_real->GetSize() != dt->GetSize()) return false;
-        if(_real->GetDataType() != dt->GetDataType()) return false;
-        return true;
-    }
-
-    inline IVertexDataType* GetReal() {
-        return _real.get();
-    }
-
-    VertexDataTypeCustomCached();
-    VertexDataTypeCustomCached(VertexDataTypeCustomCached const& cpy);
-    VertexDataTypeCustomCached(IVertexDataType* vdt);
-protected:
-    std::shared_ptr<IVertexDataType> _real;
-};
-
 class VertexDataTypeCustom : public IVertexDataType {
 public:
     inline unsigned int GetSize() override {return _size;}
@@ -90,6 +68,7 @@ public:
     IVertexDataType* Cache();
 
     VertexDataTypeCustom();
+    VertexDataTypeCustom(VertexDataTypeCustom const& cpy);
     VertexDataTypeCustom(const unsigned int& data_type, const unsigned int& size);
 protected:
     unsigned int _data_type;
@@ -112,30 +91,6 @@ public:
     }
 };
 
-class VertexAttributeCustomCached : public IVertexAttribute {
-public:
-    inline unsigned int GetSize() override { return _real->GetSize(); }
-    inline unsigned int GetElementsNum() override { return _real->GetElementsNum(); }
-    inline IVertexDataType* GetDataType() override { return _real->GetDataType(); }
-    inline unsigned int GetShaderIndex() override { return _real->GetShaderIndex(); }
-
-    inline bool Equal(IVertexAttribute* va) override {
-        if(_real->GetSize() != va->GetSize()) return false;
-        if(_real->GetElementsNum() != va->GetElementsNum()) return false;
-        if(_real->GetShaderIndex() != va->GetShaderIndex()) return false;
-
-        return _real->GetDataType()->Equal(va->GetDataType());
-    }
-
-    inline IVertexAttribute* GetReal() { return _real.get(); }
-
-    VertexAttributeCustomCached();
-    VertexAttributeCustomCached(VertexAttributeCustomCached const& cpy);
-    VertexAttributeCustomCached(IVertexAttribute* va);
-protected:
-    std::shared_ptr<IVertexAttribute> _real;
-};
-
 class VertexAttributeCustom : public IVertexAttribute {
 public:
     inline unsigned int GetSize() override { return _size; }
@@ -153,6 +108,8 @@ public:
 
     IVertexAttribute* Cache();
 
+    VertexAttributeCustom();
+    VertexAttributeCustom(VertexAttributeCustom const& cpy);
     VertexAttributeCustom(const unsigned int& elementsNum, IVertexDataType* dataType, const unsigned int& shaderIndex);
 protected:
     unsigned int _el_num;
@@ -169,8 +126,11 @@ public:
     void UnBind() override;
     bool Equal(IVertexFormat* vf) override;
 
+    IVertexFormat* Cache();
+
     VertexFormatCustom();
-    ~VertexFormatCustom();
+    VertexFormatCustom(VertexFormatCustom const& cpy);
+    virtual ~VertexFormatCustom();
 
     inline TStaticArray<IVertexAttribute*> _GetAttributes() override { return TStaticArray<IVertexAttribute*>(&_attribs[0], _attribs.size(), false); }
     inline TStaticArray<uint64_t> _GetOffsets() override { return TStaticArray<uint64_t>(&_pointers[0], _pointers.size(), false); }
@@ -193,8 +153,11 @@ public:
     /// resets all data
     void SetAttributesNum(const size_t& num);
 
+    IVertexFormat* Cache();
+
     VertexFormatCustomFixed();
-    ~VertexFormatCustomFixed();
+    VertexFormatCustomFixed(VertexFormatCustomFixed const& cpy);
+    virtual ~VertexFormatCustomFixed();
 
     inline TStaticArray<IVertexAttribute*> _GetAttributes() override { return TStaticArray<IVertexAttribute*>(&_attribs[0], _attribsNum, false); }
     inline TStaticArray<uint64_t> _GetOffsets() override { return TStaticArray<uint64_t>(&_pointers[0], _attribsNum, false); }
@@ -218,8 +181,12 @@ public:
     void UnBind() override;
     bool Equal(IIndexFormat* ifo) override;
 
+    IIndexFormat* Cache();
+
+    IndexFormatCustom();
+    IndexFormatCustom(IndexFormatCustom const& cpy);
     IndexFormatCustom(IVertexDataType* dataType);
-    ~IndexFormatCustom();
+    virtual ~IndexFormatCustom();
 protected:
     IVertexDataType* _dataType;
 };

@@ -20,6 +20,8 @@ public:
 
     virtual unsigned int GetSize() = 0; //one element of this data type size in bytes
     virtual unsigned int GetDataType() = 0; //opengl data type
+
+    virtual ~IVertexDataType() {}
 };
 
 class IVertexAttribute : public Comparable<IVertexAttribute*> {
@@ -35,6 +37,8 @@ public:
     virtual unsigned int GetElementsNum() = 0; //num of elements used in attribute
     virtual IVertexDataType* GetDataType() = 0;
     virtual unsigned int GetShaderIndex() = 0;
+
+    virtual ~IVertexAttribute() {}
 };
 
 class IVertexFormat : public Comparable<IVertexFormat*> {
@@ -46,6 +50,8 @@ public:
 
     virtual TStaticArray<IVertexAttribute*> _GetAttributes() = 0;
     virtual TStaticArray<uint64_t> _GetOffsets() = 0; //offsets of each attributes from starting point of vertex in bytes
+
+    virtual ~IVertexFormat() {}
 };
 
 class IInstancedDataFormat : public Comparable<IInstancedDataFormat*> {
@@ -57,6 +63,8 @@ public:
 
     virtual TStaticArray<IVertexAttribute*> _GetAttributes() = 0;
     virtual TStaticArray<uint64_t> _GetOffsets() = 0;
+
+    virtual ~IInstancedDataFormat() {}
 };
 
 class IIndexFormat : public Comparable<IIndexFormat*> {
@@ -66,6 +74,8 @@ public:
     virtual IVertexDataType* GetDataType() = 0;
     virtual bool Bind() = 0;
     virtual void UnBind() = 0;
+
+    virtual ~IIndexFormat() {}
 };
 
 //When buffered is true, data may be deleted

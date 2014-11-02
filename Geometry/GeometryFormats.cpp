@@ -20,53 +20,96 @@ void __MR_SET_INDEX_FORMAT_AS_BINDED_(MR::IIndexFormat* fi) {
     _MR_BINDED_INDEX_FORMAT = fi;
 }
 
-MR::TDynamicArray<MR::VertexDataTypeCustomCached> __MR_VERTEX_DATA_TYPE_CACHED_;
-MR::TDynamicArray<MR::VertexAttributeCustomCached> __MR_VERTEX_ATTRIB_CACHED_;
+//Handles std::shared_ptr for safe using with std::vector
+namespace MR {
+
+struct __VertexDataTypeCached {
+    std::shared_ptr<IVertexDataType> _ptr;
+    __VertexDataTypeCached() : _ptr(nullptr) {}
+    __VertexDataTypeCached(IVertexDataType* vdt) : _ptr(vdt) {}
+};
+
+struct __VertexAttributeCached {
+    std::shared_ptr<IVertexAttribute> _ptr;
+    __VertexAttributeCached() : _ptr(nullptr) {}
+    __VertexAttributeCached(IVertexAttribute* va) : _ptr(va) {}
+};
+
+struct __VertexFormatCached {
+    std::shared_ptr<IVertexFormat> _ptr;
+    __VertexFormatCached() : _ptr(nullptr) {}
+    __VertexFormatCached(IVertexFormat* va) : _ptr(va) {}
+};
+
+struct __IndexFormatCached {
+    std::shared_ptr<IIndexFormat> _ptr;
+    __IndexFormatCached() : _ptr(nullptr) {}
+    __IndexFormatCached(IIndexFormat* va) : _ptr(va) {}
+};
+
+}
+
+//Cached objects
+std::vector<MR::__VertexDataTypeCached> __MR_VERTEX_DATA_TYPE_CACHED_;
+std::vector<MR::__VertexAttributeCached> __MR_VERTEX_ATTRIB_CACHED_;
+std::vector<MR::__VertexFormatCached> __MR_VERTEX_FORMAT_CACHED_;
+std::vector<MR::__IndexFormatCached> __MR_INDEX_FORMAT_CACHED_;
+
+/*
+    Cache function
+It adds copy of 'what' to 'where' vector, if there is no any equal to 'what'.
+Returns object from vector.
+
+Example for MR::VertexDataTypeCustom
+
+IVertexDataType* VertexDataTypeCustom::Cache() {
+    return __MR_GEOM_FORMAT_CACHE_FUNC_<MR::__VertexDataTypeCached, IVertexDataType, VertexDataTypeCustom> (this, __MR_VERTEX_DATA_TYPE_CACHED_);
+}
+
+*/
+template<typename CacheType, typename InterfaceType, typename Type>
+InterfaceType* __MR_GEOM_FORMAT_CACHE_FUNC_(Type* what, std::vector<CacheType>& where) {
+    CacheType * ar = &where[0];
+    InterfaceType* inter = dynamic_cast<InterfaceType*>(what);
+    for(size_t i = 0; i < where.size(); ++i) {
+        if(ar[i]._ptr->Equal(inter)) {
+            return ar[i]._ptr.get();
+        }
+    }
+    InterfaceType* cpy = dynamic_cast<InterfaceType*>(new Type(*what));
+    where.push_back( CacheType(cpy) );
+    return cpy;
+}
 
 namespace MR {
 
+IVertexDataType* VertexDataTypeCustom::Cache() {
+    return __MR_GEOM_FORMAT_CACHE_FUNC_<MR::__VertexDataTypeCached, IVertexDataType, VertexDataTypeCustom> (this, __MR_VERTEX_DATA_TYPE_CACHED_);
+}
+
 VertexDataTypeCustom::VertexDataTypeCustom() :
-    _data_type(0), _size(0) {}
+    _data_type(GL_FLOAT), _size(0) {}
 
 VertexDataTypeCustom::VertexDataTypeCustom(const unsigned int& data_type, const unsigned int& size) :
     _data_type(data_type), _size(size) {}
 
-IVertexDataType* VertexDataTypeCustom::Cache() {
-    auto ar = __MR_VERTEX_DATA_TYPE_CACHED_.GetRaw();
-    MR::IVertexDataType* this_ptr = dynamic_cast<MR::IVertexDataType*>(this);
-    for(size_t i = 0; i < __MR_VERTEX_DATA_TYPE_CACHED_.GetNum(); ++i) {
-        if(ar[i].Equal(this_ptr)) {
-            return ar[i].GetReal();
-        }
-    }
-    VertexDataTypeCustomCached cached = VertexDataTypeCustomCached(this_ptr);
-    __MR_VERTEX_DATA_TYPE_CACHED_.PushBack(cached);
-    return cached.GetReal();
+VertexDataTypeCustom::VertexDataTypeCustom(VertexDataTypeCustom const& cpy) :
+    _data_type(cpy._data_type), _size(cpy._data_type) {}
+
+
+IVertexAttribute* VertexAttributeCustom::Cache() {
+    return __MR_GEOM_FORMAT_CACHE_FUNC_<MR::__VertexAttributeCached, IVertexAttribute, VertexAttributeCustom>(this, __MR_VERTEX_ATTRIB_CACHED_);
 }
 
-VertexDataTypeCustomCached::VertexDataTypeCustomCached(IVertexDataType* vdt) : _real(vdt) {}
-VertexDataTypeCustomCached::VertexDataTypeCustomCached() : _real(nullptr) {}
-VertexDataTypeCustomCached::VertexDataTypeCustomCached(VertexDataTypeCustomCached const& cpy) : _real(cpy._real) {}
+VertexAttributeCustom::VertexAttributeCustom() :
+    _el_num(0), _data_type(nullptr), _size(0), _shaderIndex(0) {}
 
 VertexAttributeCustom::VertexAttributeCustom(const unsigned int& elementsNum, IVertexDataType* dataType, const unsigned int& shaderIndex) :
     _el_num(elementsNum), _data_type(dataType), _size( ((uint64_t)_el_num) * ((uint64_t)_data_type->GetSize()) ), _shaderIndex(shaderIndex) {}
 
-IVertexAttribute* VertexAttributeCustom::Cache() {
-    auto ar = __MR_VERTEX_ATTRIB_CACHED_.GetRaw();
-    MR::IVertexAttribute* this_ptr = dynamic_cast<MR::IVertexAttribute*>(this);
-    for(size_t i = 0; i < __MR_VERTEX_ATTRIB_CACHED_.GetNum(); ++i) {
-        if(ar[i].Equal(this_ptr)) {
-            return ar[i].GetReal();
-        }
-    }
-    VertexAttributeCustomCached cached = VertexAttributeCustomCached(this_ptr);
-    __MR_VERTEX_ATTRIB_CACHED_.PushBack(cached);
-    return cached.GetReal();
-}
+VertexAttributeCustom::VertexAttributeCustom(VertexAttributeCustom const& cpy) :
+    _el_num(cpy._el_num), _data_type(cpy._data_type), _size(cpy._size), _shaderIndex(cpy._shaderIndex) {}
 
-VertexAttributeCustomCached::VertexAttributeCustomCached() : _real(nullptr) {}
-VertexAttributeCustomCached::VertexAttributeCustomCached(VertexAttributeCustomCached const& cpy) : _real(cpy._real) {}
-VertexAttributeCustomCached::VertexAttributeCustomCached(IVertexAttribute* va) : _real(va) {}
 
 void VertexFormatCustom::AddVertexAttribute(IVertexAttribute* a) {
     if(_pointers.size() == 0) _pointers.push_back(0);
@@ -133,7 +176,14 @@ bool VertexFormatCustom::Equal(IVertexFormat* vf){
     return true;
 }
 
+IVertexFormat* VertexFormatCustom::Cache() {
+    return __MR_GEOM_FORMAT_CACHE_FUNC_<MR::__VertexFormatCached, IVertexFormat, VertexFormatCustom>(this, __MR_VERTEX_FORMAT_CACHED_);
+}
+
 VertexFormatCustom::VertexFormatCustom() : _attribs(), _pointers(), _nextPtr(0), _size(0) {
+}
+
+VertexFormatCustom::VertexFormatCustom(VertexFormatCustom const& cpy) : _attribs(cpy._attribs), _pointers(cpy._pointers), _nextPtr(cpy._nextPtr), _size(cpy._size) {
 }
 
 VertexFormatCustom::~VertexFormatCustom(){
@@ -221,7 +271,24 @@ void VertexFormatCustomFixed::_RecalcSize() {
     }
 }
 
+IVertexFormat* VertexFormatCustomFixed::Cache() {
+    return __MR_GEOM_FORMAT_CACHE_FUNC_<MR::__VertexFormatCached, IVertexFormat, VertexFormatCustomFixed>(this, __MR_VERTEX_FORMAT_CACHED_);
+}
+
 VertexFormatCustomFixed::VertexFormatCustomFixed() : _attribs(nullptr), _pointers(nullptr), _size(0), _nextIndex(0), _attribsNum(0) {}
+
+VertexFormatCustomFixed::VertexFormatCustomFixed(VertexFormatCustomFixed const& cpy)
+    : _attribs(nullptr), _pointers(nullptr), _size(cpy._size), _nextIndex(cpy._nextIndex), _attribsNum(cpy._attribsNum)
+{
+    if(_size != 0) {
+        _attribs = new IVertexAttribute*[_size];
+        _pointers = new uint64_t[_size];
+        for(unsigned int i = 0; i < _size; ++i) {
+            _attribs[i] = cpy._attribs[i];
+            _pointers[i] = cpy._pointers[i];
+        }
+    }
+}
 
 VertexFormatCustomFixed::~VertexFormatCustomFixed() {
     if(_attribs) delete [] _attribs;
@@ -254,6 +321,16 @@ void IndexFormatCustom::UnBind(){
 bool IndexFormatCustom::Equal(IIndexFormat* ifo) {
     if(ifo->GetSize() != this->GetSize()) return false;
     return (ifo->GetDataType()->Equal(this->GetDataType()));
+}
+
+IIndexFormat* IndexFormatCustom::Cache() {
+    return __MR_GEOM_FORMAT_CACHE_FUNC_<__IndexFormatCached, IIndexFormat, IndexFormatCustom>(this, __MR_INDEX_FORMAT_CACHED_);
+}
+
+IndexFormatCustom::IndexFormatCustom() : _dataType(nullptr) {
+}
+
+IndexFormatCustom::IndexFormatCustom(IndexFormatCustom const& cpy) : _dataType(cpy._dataType) {
 }
 
 IndexFormatCustom::IndexFormatCustom(IVertexDataType* dataType) : _dataType(dataType) {

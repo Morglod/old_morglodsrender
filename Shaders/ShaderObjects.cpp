@@ -42,6 +42,7 @@ bool Shader::Compile(IShader::Type const& type, std::string const& code) {
     }
 
     MR::ShaderCompiler compiler;
+    compiler.debug_log = false;
     MR::ShaderCompilationOutput out = compiler.Compile(code, (IShaderCompiler::ShaderType)type, _handle);
 
     if(!out.Good()) {
@@ -114,6 +115,7 @@ bool ShaderProgram::Link(TStaticArray<IShader*> shaders) {
     }
 
     MR::ShaderCompiler compiler;
+    compiler.debug_log = false;
     MR::ShaderCompilationOutput out = compiler.Link(shadersHandles, _handle);
 
     if(!out.Good()) {
@@ -441,7 +443,7 @@ ShaderProgram* ShaderProgram::DefaultWithTexture() {
         "out vec4 "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+";\n"
 
         "void main() {"
-        "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+" = texture(MainTex, MR_VertexTexCoord) * MR_VertexNormal.z, vec3(0,0,1)) + 0.3;"
+        "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+" = texture(MainTex, MR_VertexTexCoord);"
         "}";
 
     IShader* sh[2] { dynamic_cast<MR::IShader*>(Shader::CreateAndCompile(IShader::Type::Vertex, vs)), dynamic_cast<MR::IShader*>(Shader::CreateAndCompile(IShader::Type::Fragment, fs))};

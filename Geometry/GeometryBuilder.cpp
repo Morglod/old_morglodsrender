@@ -66,15 +66,15 @@ ManualGeometry::IndexType ManualGeometry::AddIndexData(IndexType const& index) {
 }
 
 IGeometry* ManualGeometry::Build(IGPUBuffer::Usage const& usage) {
-    VertexFormatCustomFixed* vformat = new VertexFormatCustomFixed();
-    vformat->SetAttributesNum(_vertexAttributes.size());
+    VertexFormatCustomFixed vformat;
+    vformat.SetAttributesNum(_vertexAttributes.size());
 
     for(size_t i = 0; i < _vertexAttributes.size(); ++i) {
-        vformat->AddVertexAttribute(new MR::VertexAttributeCustom(_vertexAttributes[i].elementsNum, &(VertexDataTypeFloat::GetInstance()), _vertexAttributes[i].attributeType));
+        vformat.AddVertexAttribute(MR::VertexAttributeCustom(_vertexAttributes[i].elementsNum, &(VertexDataTypeFloat::GetInstance()), _vertexAttributes[i].attributeType).Cache());
     }
 
-    IndexFormatCustom* iformat = new IndexFormatCustom(new VertexDataTypeCustom(GPUIndexType, sizeof(ManualGeometry::IndexType)));
-    return MR::GeometryManager::GetInstance()->PlaceGeometry(vformat, &_vertexData[0], _vertexes+1, iformat, &_indexData[0], _indexData.size()+1, usage, IGeometryBuffer::DrawModes::Triangles); //GL_TRIANGLES - 0x0004
+    IndexFormatCustom iformat(VertexDataTypeCustom(GPUIndexType, sizeof(ManualGeometry::IndexType)).Cache());
+    return MR::GeometryManager::GetInstance()->PlaceGeometry(vformat.Cache(), &_vertexData[0], _vertexes+1, iformat.Cache(), &_indexData[0], _indexData.size()+1, usage, IGeometryBuffer::DrawModes::Triangles); //GL_TRIANGLES - 0x0004
 }
 
 void ManualGeometry::Clear() {
