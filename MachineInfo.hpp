@@ -39,6 +39,7 @@ class IContext;
 
         int gl_version_major();
         int gl_version_minor();
+        const bool gl_version_over_4_5();
         std::string gl_version_string();
         GLVersion gl_version();
         std::string gpu_vendor_string();

@@ -48,6 +48,11 @@ int MR::MachineInfo::gl_version_minor() {
     return outv;
 }
 
+const bool MR::MachineInfo::gl_version_over_4_5() {
+    const bool b = (gl_version_major() >= 4) && (gl_version_minor() >= 5);
+    return b;
+}
+
 std::string MR::MachineInfo::gl_version_string() {
     static std::string outv = (const char*)glGetString(GL_VERSION);
     return outv;

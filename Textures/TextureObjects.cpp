@@ -214,6 +214,7 @@ bool MR::Texture::Complete(bool mipMaps) {
         return false;
     }
 
+    _mipmaps = mipMaps;
     if(mipMaps) {
 #ifdef MR_CHECK_LARGE_GL_ERRORS
     int gl_er = 0;
@@ -240,38 +241,78 @@ bool MR::Texture::Complete(bool mipMaps) {
 }
 
 void Texture::UpdateInfo() {
-    int w = 0, h = 0, d = 0, fi = 0, rs = 0, gs = 0, bs = 0, ds = 0, as = 0, cm = 0;
-    /*if(MR::MachineInfo::IsDirectStateAccessSupported()) {
-        glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_WIDTH, &w);
-        glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_HEIGHT, &h);
-        glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_DEPTH, &d);
-        glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_INTERNAL_FORMAT, &fi);
-        glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_RED_SIZE, &rs);
-        glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_GREEN_SIZE, &gs);
-        glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_BLUE_SIZE, &bs);
-        glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_DEPTH_SIZE, &ds);
-        glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_ALPHA_SIZE, &as);
-        glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_COMPRESSED, &cm);
-    } else {
-        ITexture* binded = ReBind(0);
+    if(_handle == 0) {
+        _sizes = TStaticArray<TextureSizeInfo>();
+        _bits = TextureBitsInfo(0,0,0,0,0);
+        _mem_size = 0;
+        _compressed = false;
+        return;
+    }
 
-        glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_WIDTH, &w);
-        glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_HEIGHT, &h);
-        glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_DEPTH, &d);
-        glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_INTERNAL_FORMAT, &fi);
-        glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_RED_SIZE, &rs);
-        glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_GREEN_SIZE, &gs);
-        glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_BLUE_SIZE, &bs);
-        glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_DEPTH_SIZE, &ds);
-        glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_ALPHA_SIZE, &as);
-        glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_COMPRESSED, &cm);
+    {
+        ITexture* binded = nullptr;
+        if(MR::MachineInfo::gl_version_over_4_5() == false) binded = ReBind(0);
+
+        int maxW = 0, maxH = 0, maxD = 0;
+        if(MR::MachineInfo::gl_version_over_4_5()) {
+            glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_WIDTH, &maxW);
+            glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_HEIGHT, &maxH);
+            glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_DEPTH, &maxD);
+        }
+        else {
+            glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_WIDTH, &maxW);
+            glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_HEIGHT, &maxH);
+            glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_DEPTH, &maxD);
+        }
+
+        int numMipMaps = (_mipmaps) ? (1 + glm::floor(glm::log2( (double)glm::max(glm::max(maxW, maxH), maxD) ))) : 1;
+        _sizes = TStaticArray<TextureSizeInfo>(numMipMaps);
+        TextureSizeInfo* szAr = _sizes.GetRaw();
+
+        int fi = 0, rs = 0, gs = 0, bs = 0, ds = 0, as = 0, cm = 0;
+        if(MR::MachineInfo::gl_version_over_4_5()) {
+            glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_INTERNAL_FORMAT, &fi);
+            glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_RED_SIZE, &rs);
+            glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_GREEN_SIZE, &gs);
+            glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_BLUE_SIZE, &bs);
+            glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_DEPTH_SIZE, &ds);
+            glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_ALPHA_SIZE, &as);
+            glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_COMPRESSED, &cm);
+        }
+        else {
+            glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_INTERNAL_FORMAT, &fi);
+            glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_RED_SIZE, &rs);
+            glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_GREEN_SIZE, &gs);
+            glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_BLUE_SIZE, &bs);
+            glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_DEPTH_SIZE, &ds);
+            glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_ALPHA_SIZE, &as);
+            glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], 0, GL_TEXTURE_COMPRESSED, &cm);
+        }
+
+        _bits = TextureBitsInfo(rs, gs, bs, ds, as);
+        _compressed = (GL_TRUE == cm);
+        _mem_size = 0;
+
+        for(int i = 0; i < numMipMaps; ++i) {
+            int w = 0, h = 0, d = 0;
+
+            if(MR::MachineInfo::gl_version_over_4_5()) {
+                glGetTextureLevelParameteriv(_handle, i, GL_TEXTURE_WIDTH, &w);
+                glGetTextureLevelParameteriv(_handle, i, GL_TEXTURE_HEIGHT, &h);
+                glGetTextureLevelParameteriv(_handle, i, GL_TEXTURE_DEPTH, &d);
+            }
+            else {
+                glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], i, GL_TEXTURE_WIDTH, &w);
+                glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], i, GL_TEXTURE_HEIGHT, &h);
+                glGetTexLevelParameteriv(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], i, GL_TEXTURE_DEPTH, &d);
+            }
+
+            szAr[i] = TextureSizeInfo(w, h, d);
+            _mem_size += ((rs+gs+bs+ds+as)/8)*w*h*d;
+        }
 
         if(binded) binded->Bind(0);
     }
-    _sizes = TextureSizeInfo(w, h, d);
-    _bits = TextureBitsInfo(rs, gs, bs, ds, as);
-    _mem_size = ((rs+gs+bs+ds+as)/8)*w*h;
-    _compressed = (GL_TRUE == cm);*/
 }
 
 void MR::Texture::Destroy() {
@@ -332,8 +373,8 @@ ITexture* Texture::FromFile(std::string const& path) {
                                SOIL_CREATE_NEW_ID,
                                SOIL_FLAG_MIPMAPS);
 	if(tex->_handle == 0) return nullptr;
-	tex->UpdateInfo();
 	tex->_texture_type = MR::ITexture::Base2D;
+	tex->Complete(true);
 	return dynamic_cast<MR::ITexture*>(tex);
 }
 

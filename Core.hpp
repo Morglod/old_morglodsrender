@@ -6,7 +6,6 @@
 namespace MR {
 
 class IContext;
-class IVertexFormat;
 
 bool Init(IContext* ctx);
 void Shutdown();

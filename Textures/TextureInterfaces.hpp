@@ -207,7 +207,7 @@ public:
     enum Types {
         Base1D = 0,
         Base2D = 1,
-        Base3D
+        Base3D = 2
     };
 
     enum CompressionMode {
@@ -220,7 +220,8 @@ public:
     virtual ITextureSettings* GetSettings() = 0; //May be nullptr
     virtual void SetSettings(ITextureSettings* ts) = 0;
 
-    virtual TextureSizeInfo GetSizesInfo() = 0;
+    virtual int GetMipMapLevelsNum() = 0;
+    virtual TextureSizeInfo GetSizesInfo(int const& mipMapLevel) = 0;
     virtual TextureBitsInfo GetBitsInfo() = 0;
     virtual ITexture::StorageDataFormat GetDataStorageFormat() = 0;
     virtual bool IsCompressed() = 0;
