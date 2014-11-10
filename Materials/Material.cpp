@@ -9,7 +9,7 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 
-MR::MaterialFlag __MR_MATERIAL_FLAG = MR::MaterialFlag::Default();
+MR::MaterialFlag __MR_MATERIAL_FLAG = 0;//MR::MaterialFlag::Default();
 MR::IMaterial* __MR_MATERIAL = nullptr;
 
 namespace MR {

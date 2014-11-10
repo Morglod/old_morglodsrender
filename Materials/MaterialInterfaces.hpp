@@ -5,25 +5,47 @@
 
 #include "../Utils/Containers.hpp"
 
+#include <string>
+
 #ifndef glm_glm
 #   include <glm/glm.hpp>
 #endif
 
 namespace MR {
 
-struct MaterialFlag {
-public:
-    unsigned char flag; //if always==false, use this pass only if this flag is On
-    MaterialFlag() : flag(0) {}
-    MaterialFlag(unsigned char Flag) : flag(Flag) {}
+typedef unsigned int MaterialFlag;
 
-    inline static MaterialFlag Default(){return MaterialFlag(0);} //default rendering state
-    inline static MaterialFlag ShadowMap(){return MaterialFlag(1);} //drawing to shadow map
-    inline static MaterialFlag ToTexture(){return MaterialFlag(2);} //drawing to render target
-    inline static MaterialFlag Postprocess() {return MaterialFlag(3);}
-    inline bool operator == (const MaterialFlag& flag_) {
-        return (flag == flag_.flag);
-    }
+struct MaterialParams {
+    glm::vec3 colorAmbient;
+    glm::vec3 colorDiffuse; // colorDiffuse + colorAmbient
+
+    float reflectivity; // reflectivity * texReflectivity
+    float roughness;
+    float emissive;
+
+    enum SubdivType {
+        SubdivNone = 0,
+        SubdivFlat = 1,
+        SubdivPN
+    };
+
+    SubdivType subdivType;
+    float subdivFactor;
+
+    enum HeightType {
+        None = 0,
+        Bump = 1,
+        Parallax = 2,
+        Displacement
+    };
+
+    HeightType heightType;
+    float heightScale;
+
+    std::string texColor;
+    std::string texHeight;
+    std::string texReflectivion;
+    std::string texEmissiveMask; //R channel
 };
 
 class IMaterial {

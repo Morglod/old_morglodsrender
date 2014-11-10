@@ -23,7 +23,7 @@ public:
     virtual bool ExtensionSupported(const char* ext) = 0;
     virtual ProcFunc GetProcAddress(const char* procname) = 0;
 
-    virtual void GetWindowSizes(int* width, int* height) = 0;
+    virtual void GetWindowSizes(int& width, int& height) = 0;
 
     IContext() {}
     virtual ~IContext() {}

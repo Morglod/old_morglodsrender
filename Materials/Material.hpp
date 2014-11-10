@@ -18,7 +18,7 @@ public:
     void OnMaterialFlagChanged(MaterialFlag const& newFlag) override;
 
     MR::TStaticArray<MaterialFlag> GetAvailableFlags() override {
-        return MR::TStaticArray<MaterialFlag> { MaterialFlag::Default() };
+        //return MR::TStaticArray<MaterialFlag> { MaterialFlag::Default() };
     }
 
     DefaultMaterial();

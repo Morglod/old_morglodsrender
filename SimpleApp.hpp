@@ -6,7 +6,7 @@
 #include "Context.hpp"
 #include "Utils/Exception.hpp"
 //#include "Pipeline.hpp"
-#include "Utils/ConfigClass.hpp"
+#include "mu/ConfigClass.hpp"
 #include "Config.hpp"
 #include "Core.hpp"
 #include "Scene/PerspectiveCamera.hpp"
@@ -72,8 +72,8 @@ public:
         return (ProcFunc)glfwGetProcAddress(procname);
     }
 
-    void GetWindowSizes(int* width, int* height) override {
-        glfwGetWindowSize(window, width, height);
+    void GetWindowSizes(int& width, int& height) override {
+        glfwGetWindowSize(window, &width, &height);
     }
 
     inline GLFWwindow* GetMainWindow() { return window; }
@@ -120,8 +120,8 @@ public:
         opengl_debug_context, //GL_FALSE
         opengl_profile; //GLFW_OPENGL_ANY_PROFILE
 
-    inline void Configure(MR::Config* cfg);
-    inline void SaveConfig(MR::Config* cfg);
+    inline void Configure(mu::Config* cfg);
+    inline void SaveConfig(mu::Config* cfg);
 
     inline WindowHints();
 };
@@ -324,7 +324,7 @@ MR::WindowHints::WindowHints() :
     opengl_profile(GLFW_OPENGL_CORE_PROFILE) {
 }
 
-void MR::WindowHints::Configure(MR::Config* cfg) {
+void MR::WindowHints::Configure(mu::Config* cfg) {
 	if(!cfg) return;
 
     cfg->GetTo("display.srgb_capable", srgb_capable);
@@ -354,7 +354,7 @@ void MR::WindowHints::Configure(MR::Config* cfg) {
     cfg->GetTo("buffers.accum_alpha_bits", accum_alpha_bits);
 }
 
-void MR::WindowHints::SaveConfig(MR::Config* cfg) {
+void MR::WindowHints::SaveConfig(mu::Config* cfg) {
 	if(!cfg) return;
 
     cfg->Set("display.srgb_capable", std::to_string(srgb_capable));

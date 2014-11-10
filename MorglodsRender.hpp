@@ -18,7 +18,6 @@ zlib http://www.zlib.net
 #define _MR_MORGLODS_RENDER_H_
 
 #include "Config.hpp"
-#include "Utils/ConfigClass.hpp"
 #include "Scene/PerspectiveCamera.hpp"
 //#include "Scene/Entity.hpp"
 #include "Utils/Events.hpp"
@@ -38,7 +37,6 @@ zlib http://www.zlib.net
 #include "Textures/TextureInterfaces.hpp"
 #include "Resources/ResourceManager.hpp"
 #include "Scene/Transformation.hpp"
-#include "Utils/Time.hpp"
 #include "Query.hpp"
 
 #endif // _MR_MORGLODS_RENDER_H_

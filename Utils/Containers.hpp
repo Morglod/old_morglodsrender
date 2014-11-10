@@ -3,7 +3,7 @@
 #ifndef _MR_CONTAINERS_H_
 #define _MR_CONTAINERS_H_
 
-#include "Threads.hpp"
+#include "mu/Thread.hpp"
 #include <string.h>
 #include <chrono>
 #include <queue>
@@ -479,7 +479,7 @@ public:
         _mutex.UnLock();
     }
 protected:
-    MR::Mutex _mutex;
+    mu::Mutex _mutex;
     std::queue<elementT> _q;
 };
 

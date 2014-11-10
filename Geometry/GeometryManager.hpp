@@ -4,12 +4,12 @@
 #define _MR_GEOMETRY_MANAGER_H_
 
 #include "GeometryInterfaces.hpp"
-#include "../Utils/Singleton.hpp"
+#include "mu/Singleton.hpp"
 #include "../Buffers/VirtualBuffer.hpp"
 
 namespace MR {
 
-class GeometryManager : public Singleton<GeometryManager> {
+class GeometryManager : public mu::Singleton<GeometryManager> {
 public:
     IGeometry* PlaceGeometry(IVertexFormat* vertexFormat, void* vertexData, const size_t& vertexNum,
                              IIndexFormat* indexFormat, void* indexData, const size_t& indexNum,

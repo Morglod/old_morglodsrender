@@ -6,7 +6,7 @@
 #include "../Types.hpp"
 #include "../Config.hpp"
 #include "GeometryInterfaces.hpp"
-#include "../Utils/Singleton.hpp"
+#include "mu/Singleton.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -18,7 +18,7 @@ namespace MR {
 class VertexFormatCustom;
 class VertexFormatCustomFixed;
 
-class VertexDataTypeInt : public IVertexDataType, public StaticSingleton<VertexDataTypeInt> {
+class VertexDataTypeInt : public IVertexDataType, public mu::StaticSingleton<VertexDataTypeInt> {
 public:
     inline unsigned int GetSize() override { return sizeof(int); }
     inline unsigned int GetDataType() override { return 0x1404; }
@@ -30,7 +30,7 @@ public:
     }
 };
 
-class VertexDataTypeUInt : public IVertexDataType, public StaticSingleton<VertexDataTypeUInt> {
+class VertexDataTypeUInt : public IVertexDataType, public mu::StaticSingleton<VertexDataTypeUInt> {
 public:
     inline unsigned int GetSize() override { return sizeof(unsigned int); }
     inline unsigned int GetDataType() override { return 0x1405; }
@@ -42,7 +42,7 @@ public:
     }
 };
 
-class VertexDataTypeFloat : public IVertexDataType, public StaticSingleton<VertexDataTypeFloat> {
+class VertexDataTypeFloat : public IVertexDataType, public mu::StaticSingleton<VertexDataTypeFloat> {
 public:
     inline unsigned int GetSize() override { return sizeof(float); }
     inline unsigned int GetDataType() override { return 0x1406; }
@@ -75,7 +75,7 @@ protected:
     unsigned int _size;
 };
 
-class VertexAttributePos3F : public IVertexAttribute, public StaticSingleton<VertexAttributePos3F> {
+class VertexAttributePos3F : public IVertexAttribute, public mu::StaticSingleton<VertexAttributePos3F> {
 public:
     inline unsigned int GetSize() override {return ((unsigned int)VertexDataTypeFloat::GetInstance().GetSize()) * ((unsigned int)3);}
     inline unsigned int GetElementsNum() override { return 3; }

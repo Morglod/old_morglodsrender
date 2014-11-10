@@ -36,6 +36,7 @@
 		<Compiler>
 			<Add option="-std=c++11" />
 			<Add directory="C:/Libs/assimp-3.1.1-win-binaries/include" />
+			<Add directory="C:/Libs/Projects/MorglodsUtils/include" />
 		</Compiler>
 		<Linker>
 			<Add library="SOIL" />
@@ -47,6 +48,7 @@
 			<Add library="winmm" />
 			<Add library="pthread" />
 			<Add library="libassimp.dll.a" />
+			<Add library="C:\Libs\Projects\MorglodsUtils\bin\Release\libMorglodsUtils.a" />
 			<Add directory="C:/Libs/assimp-3.1.1-win-binaries/mingw_build" />
 		</Linker>
 		<Unit filename="Anim.cpp" />
@@ -90,7 +92,6 @@
 		<Unit filename="Materials/Material.cpp" />
 		<Unit filename="Materials/Material.hpp" />
 		<Unit filename="Materials/MaterialInterfaces.hpp" />
-		<Unit filename="Materials/MaterialResource.hpp" />
 		<Unit filename="Materials/MaterialsConfig.hpp" />
 		<Unit filename="Models/ModelInterfaces.hpp" />
 		<Unit filename="Models/Models.cpp" />
@@ -131,8 +132,6 @@
 		<Unit filename="Textures/TextureSettings.hpp" />
 		<Unit filename="Types.cpp" />
 		<Unit filename="Types.hpp" />
-		<Unit filename="Utils/ConfigClass.cpp" />
-		<Unit filename="Utils/ConfigClass.hpp" />
 		<Unit filename="Utils/Containers.cpp" />
 		<Unit filename="Utils/Containers.hpp" />
 		<Unit filename="Utils/Debug.hpp" />
@@ -151,11 +150,6 @@
 		<Unit filename="Utils/Pointers.hpp" />
 		<Unit filename="Utils/Serialization.cpp" />
 		<Unit filename="Utils/Serialization.hpp" />
-		<Unit filename="Utils/Singleton.hpp" />
-		<Unit filename="Utils/Text.hpp" />
-		<Unit filename="Utils/Threads.cpp" />
-		<Unit filename="Utils/Threads.hpp" />
-		<Unit filename="Utils/Time.hpp" />
 		<Unit filename="Utils/UIUtil.cpp" />
 		<Unit filename="Utils/UIUtil.hpp" />
 		<Unit filename="Utils/Worker.hpp" />
