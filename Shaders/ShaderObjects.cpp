@@ -11,6 +11,7 @@
 #endif
 
 MR::IShaderProgram* __MR_USED_SHADER_PROGRAM = nullptr;
+MR::TDynamicArray<MR::IShaderProgram*> _MR_REGISTERED_SHADER_PROGRAMS_;
 
 namespace MR {
 
@@ -275,9 +276,11 @@ bool ShaderProgram::Use() {
 }
 
 ShaderProgram::ShaderProgram() : _shaderUniforms(), _linked(false) {
+    _MR_REGISTERED_SHADER_PROGRAMS_.PushBack(dynamic_cast<MR::IShaderProgram*>(this));
 }
 
 ShaderProgram::~ShaderProgram() {
+    _MR_REGISTERED_SHADER_PROGRAMS_.Erase(dynamic_cast<MR::IShaderProgram*>(this));
 }
 
 ShaderProgram* ShaderProgram::CreateAndLink(TStaticArray<IShader*> shaders) {
@@ -501,6 +504,12 @@ ShaderProgram* ShaderProgram::FromCache(ShaderProgramCache cache) {
 void UseNullShaderProgram() {
     __MR_USED_SHADER_PROGRAM = nullptr;
     glUseProgram(0);
+}
+
+void DestroyAllShaderPrograms() {
+    for(size_t i = 0; i < _MR_REGISTERED_SHADER_PROGRAMS_.GetNum(); ++i) {
+        _MR_REGISTERED_SHADER_PROGRAMS_.At(i)->Destroy();
+    }
 }
 
 }

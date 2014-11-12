@@ -36,6 +36,8 @@ size_t _MR_BUFFER_BIND_TARGETS_REMAP_FROM_INDEX_[] {
     GL_UNIFORM_BUFFER
 };
 
+MR::TDynamicArray<MR::IGPUBuffer*> _MR_REGISTERED_BUFFERS_;
+
 /** GPUBuffer class implementation **/
 
 namespace MR {
@@ -184,9 +186,11 @@ void GPUBuffer::Destroy() {
 }
 
 GPUBuffer::GPUBuffer() : _bindedTarget(NotBinded), _size(0), _usage(Static) {
+    _MR_REGISTERED_BUFFERS_.PushBack(dynamic_cast<MR::IGPUBuffer*>(this));
 }
 
 GPUBuffer::~GPUBuffer() {
+    _MR_REGISTERED_BUFFERS_.Erase(dynamic_cast<MR::IGPUBuffer*>(this));
 }
 
 /** GLOBAL **/
@@ -245,6 +249,12 @@ void GPUBufferUnBindAt(const IGPUBuffer::BindTargets& target, const unsigned int
     MR_BUFFERS_CHECK_BIND_ERRORS_CATCH(
     glBindBufferBase(_MR_BUFFER_BIND_TARGETS_REMAP_FROM_INDEX_[(size_t)target], index, 0);
     )
+}
+
+void DestroyAllBuffers() {
+    for(size_t i = 0; i < _MR_REGISTERED_BUFFERS_.GetNum(); ++i) {
+        _MR_REGISTERED_BUFFERS_.At(i)->Destroy();
+    }
 }
 
 }

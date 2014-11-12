@@ -75,6 +75,7 @@ protected:
 };
 
 void UseNullShaderProgram();
+void DestroyAllShaderPrograms();
 
 }
 

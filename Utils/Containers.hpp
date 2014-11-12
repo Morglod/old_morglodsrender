@@ -102,10 +102,12 @@ public:
         if(this == &ar) {
             return *this;
         }
-        _ar = ar._ar;
+        _ar = new T [ar._el_num];
         _delete = ar._delete;
         _el_num = ar._el_num;
-        ar._delete = false;
+        for(size_t i = 0; i < _el_num; ++i){
+            _ar[i] = ar._ar[i];
+        }
         return *this;
     }
 protected:
@@ -119,11 +121,11 @@ class TDynamicArray {
 public:
     class Iterator {
     public:
-        inline T Get() { return _owner->GetRaw()[_el_index]; }
+        inline T& Get() { return _owner->GetRaw()[_el_index]; }
         inline size_t GetIndex() { return _el_index; }
         inline TDynamicArray<T>* GetDArray() { return _owner; }
 
-        inline T* operator -> () { return &(_owner->GetRaw()[_el_index]); }
+        inline T& operator -> () { return _owner->GetRaw()[_el_index]; }
 
         inline Iterator& operator ++() {
             ++_el_index;
@@ -188,7 +190,30 @@ public:
     inline void SetDeleteFlag(bool const& b) { _delete = b; }
     inline bool GetDeleteFlag() { return _delete; }
 
-    inline bool PushBack(T t) {
+    inline bool Find(T const& t, size_t& index) {
+        for(size_t i = 0; i < _el_num; ++i) {
+            if(t == _ar[_el_num]) {
+                index = i;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    inline void Erase(size_t const& i) {
+        _ar[i] = T();
+        memmove(&_ar[i], &_ar[i+1], sizeof(T)*(_el_num-i));
+        --_el_num;
+    }
+
+    inline void Erase(T const& t) {
+        size_t index = 0;
+        if(Find(t, index)) {
+            Erase(index);
+        }
+    }
+
+    inline bool PushBack(T const& t) {
         if(_el_cap == 0) if(!SetCapacity(1)) return false;
         if(_el_num >= _el_cap) {
             if(!SetCapacity(_el_num*2)) return false;
@@ -300,11 +325,18 @@ public:
         if(this == &ar) {
             return *this;
         }
-        _ar = ar._ar;
+        /*_ar = ar._ar;
         _delete = ar._delete;
         _el_num = ar._el_num;
         _el_cap = ar._el_cap;
-        ar._delete = false;
+        ar._delete = false;*/
+        _ar = new T [ar._el_num];
+        _delete = ar._delete;
+        _el_num = ar._el_num;
+        _el_cap = ar._el_cap;
+        for(size_t i = 0; i < _el_num; ++i){
+            _ar[i] = ar._ar[i];
+        }
         return *this;
     }
 protected:

@@ -13,6 +13,8 @@
 MR::TStaticArray<MR::ITexture*> _MR_TEXTURE_BIND_TARGETS_;
 MR::TStaticArray<MR::ITextureSettings*> _MR_TEXTURE_BIND_TARGETS_SAMPLERS_;
 
+MR::TDynamicArray<MR::ITexture*> _MR_REGISTERED_TEXTURES_;
+
 class _MR_TEXTURES_BIND_TARGETS_NULL_ {
 public:
     _MR_TEXTURES_BIND_TARGETS_NULL_() {
@@ -324,10 +326,12 @@ void MR::Texture::Destroy() {
     }
 }
 
-MR::Texture::Texture() /*: _mem_size(0), _internal_format(0), _compressed(false), _settings(nullptr), _compression_mode(NoCompression), _texture_type(Base1D)*/ {
+MR::Texture::Texture() {
+    _MR_REGISTERED_TEXTURES_.PushBack(dynamic_cast<ITexture*>(this));
 }
 
 MR::Texture::~Texture() {
+    _MR_REGISTERED_TEXTURES_.Erase(dynamic_cast<ITexture*>(this));
 }
 
 ITexture* TextureGetBinded(const unsigned short& unit) {
@@ -405,6 +409,12 @@ ITexture* Texture::CreateMipmapChecker() {
     tex->Complete(false);
 
     return tex;
+}
+
+void DestroyAllTextures() {
+    for(size_t i = 0; i < _MR_REGISTERED_TEXTURES_.GetNum(); ++i) {
+        _MR_REGISTERED_TEXTURES_.At(i)->Destroy();
+    }
 }
 
 }

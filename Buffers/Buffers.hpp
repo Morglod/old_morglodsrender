@@ -42,6 +42,8 @@ void GPUBufferUnBindAt(const IGPUBuffer::BindTargets& target, const unsigned int
 /** !! DO NOT USE IT ON VirtualGPUBuffers !! **/
 void GPUBufferCopy(IGPUBuffer* src, IGPUBuffer* dst, const unsigned int& srcOffset, const unsigned int& dstOffset, const unsigned int& size);
 
+void DestroyAllBuffers();
+
 }
 
 #endif // _MR_BUFFERS_H_

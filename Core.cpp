@@ -4,26 +4,14 @@
 #include "Geometry/GeometryFormats.hpp"
 #include "Materials/MaterialInterfaces.hpp"
 #include "Geometry/GeometryManager.hpp"
-//#include "Model.hpp"
+#include "Textures/TextureObjects.hpp"
+#include "Buffers/Buffers.hpp"
+#include "Shaders/ShaderObjects.hpp"
 #include "Utils/FilesIO.hpp"
 #include "Context.hpp"
 #include "Utils/Log.hpp"
 
 #include <GL/glew.h>
-
-void _OutOfMemory(){
-    MR::Log::LogString("Out of memory", MR_LOG_LEVEL_ERROR);
-    throw std::bad_alloc();
-}
-
-typedef void (*OutOfMemPtr)();
-std::vector<OutOfMemPtr> outOfMemPtrs;
-
-void OutOfMemEvent(){
-    for(size_t i = 0; i < outOfMemPtrs.size(); ++i){
-        outOfMemPtrs[i]();
-    }
-}
 
 PFNGLBUFFERSTORAGEPROC __glewBufferStorage;
 PFNGLNAMEDBUFFERSTORAGEEXTPROC __glewNamedBufferStorageEXT;
@@ -34,7 +22,7 @@ bool MR::Init(MR::IContext* ctx) {
         return false;
     }
 
-    outOfMemPtrs.push_back(std::set_new_handler(OutOfMemEvent));
+    MR::IContext::Current = ctx;
 
     {   //glew
         GLenum result = glewInit();
@@ -55,19 +43,9 @@ bool MR::Init(MR::IContext* ctx) {
 }
 
 void MR::Shutdown() {
-    //TODO MR::RenderManager::DestroyInstance();
-
-    /*MR::VertexDataTypeFloat::DestroyInstance();
-    MR::VertexDataTypeInt::DestroyInstance();
-    MR::VertexDataTypeUInt::DestroyInstance();
-    MR::VertexAttributePos3F::DestroyInstance();*/
+    MR::DestroyAllTextures();
+    MR::DestroyAllBuffers();
+    MR::DestroyAllShaderPrograms();
     MR::GeometryManager::DestroyInstance();
-
-    //TODO MR::TextureManager::DestroyInstance();
-
-    //TODO MR::MaterialManager::DestroyInstance();
-
-    //MR::ModelManager::DestroyInstance();
-
     MR::FileUtils::DestroyInstance();
 }

@@ -71,6 +71,8 @@ ITexture* TextureGetBinded(const unsigned short& unit);
 void TextureUnBind(const unsigned short& unit, const bool& fast);
 unsigned short TextureFreeUnit();
 
+void DestroyAllTextures();
+
 }
 
 #endif // _MR_TEXTURE_OBJECTS_H_
