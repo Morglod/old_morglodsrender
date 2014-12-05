@@ -6,7 +6,7 @@
 #include "Containers.hpp"
 #include <string>
 
-namespace MR {
+namespace mr {
 
 template<typename T>
 TStaticArray<unsigned char> Serialize(T* t) {

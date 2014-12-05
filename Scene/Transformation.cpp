@@ -1,7 +1,7 @@
 #include "Transformation.hpp"
 #include <glm/gtx/transform.hpp>
 
-namespace MR {
+namespace mr {
 
 void Transform::Calc() {
     _mat = ( glm::translate(glm::mat4(1.0f), _pos) * ( glm::rotate(glm::mat4(1.0f), _rot.x, glm::vec3(1,0,0)) * glm::rotate(glm::mat4(1.0f), _rot.y, glm::vec3(0,1,0)) * glm::rotate(glm::mat4(1.0f), _rot.z, glm::vec3(0,0,1)) ) * glm::scale(glm::mat4(1.0f), _scale) );

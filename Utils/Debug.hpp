@@ -26,7 +26,7 @@
 #endif
 #ifdef MR_DEBUG_USE_MR_LOG
 #include "Log.hpp"
-#define _MR_ASSERTION_FUNC(x) MR::Log::LogString(x + std::string(" in \"") + std::string(__FILE__) + "\" at " + std::to_string(__LINE__) + " line");
+#define _MR_ASSERTION_FUNC(x) mr::Log::LogString(x + std::string(" in \"") + std::string(__FILE__) + "\" at " + std::to_string(__LINE__) + " line");
 #endif
 #endif
 
@@ -58,12 +58,12 @@
 #endif
 
 #define CheckGLError(_ofLine) \
-    MR::MachineInfo::ClearError(); \
+    mr::MachineInfo::ClearError(); \
     _ofLine \
     { \
         std::string localErrorString = ""; \
         int localGlCode = 0; \
-        if(MR::MachineInfo::CatchError(&localErrorString, &localGlCode)) { \
+        if(mr::MachineInfo::CatchError(&localErrorString, &localGlCode)) { \
             _MR_DEBUG_GL_ERROR_CATCHED_FUNC(localErrorString, localGlCode) \
         } \
     }

@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <fstream>
 
-namespace MR {
+namespace mr {
 
 class IFileUtils;
 

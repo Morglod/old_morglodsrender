@@ -5,7 +5,7 @@
 
 #include "ShaderInterfaces.hpp"
 
-namespace MR {
+namespace mr {
 
 class Shader : public IShader {
 public:
@@ -27,7 +27,7 @@ protected:
 
 class ShaderProgram : public IShaderProgram {
 public:
-    IShaderUniform* CreateUniform(const std::string& name, const MR::IShaderUniform::Type& type, void* value) override;
+    IShaderUniform* CreateUniform(const std::string& name, const mr::IShaderUniform::Type& type, void* value) override;
     inline IShaderUniform* CreateUniform(const std::string& name, int* value);
     inline IShaderUniform* CreateUniform(const std::string& name, float* value);
     inline IShaderUniform* CreateUniform(const std::string& name, glm::vec2* value);
@@ -66,6 +66,7 @@ public:
 
     static ShaderProgram* CreateAndLink(TStaticArray<IShader*> shaders);
     static ShaderProgram* Default();
+    static ShaderProgram* DefaultBase(); //for default material flag
     static ShaderProgram* DefaultWithTexture(); //Texture uniform "MainTex"
     static ShaderProgram* FromCache(ShaderProgramCache cache);
 
@@ -79,28 +80,28 @@ void DestroyAllShaderPrograms();
 
 }
 
-MR::IShaderUniform* MR::ShaderProgram::CreateUniform(const std::string& uniform_name, int* value) {
-    return CreateUniform(uniform_name, MR::IShaderUniform::Int, value);
+mr::IShaderUniform* mr::ShaderProgram::CreateUniform(const std::string& uniform_name, int* value) {
+    return CreateUniform(uniform_name, mr::IShaderUniform::Int, value);
 }
 
-MR::IShaderUniform* MR::ShaderProgram::CreateUniform(const std::string& uniform_name, float* value) {
-    return CreateUniform(uniform_name, MR::IShaderUniform::Float, value);
+mr::IShaderUniform* mr::ShaderProgram::CreateUniform(const std::string& uniform_name, float* value) {
+    return CreateUniform(uniform_name, mr::IShaderUniform::Float, value);
 }
 
-MR::IShaderUniform* MR::ShaderProgram::CreateUniform(const std::string& uniform_name, glm::vec2* value) {
-    return CreateUniform(uniform_name, MR::IShaderUniform::Vec2, value);
+mr::IShaderUniform* mr::ShaderProgram::CreateUniform(const std::string& uniform_name, glm::vec2* value) {
+    return CreateUniform(uniform_name, mr::IShaderUniform::Vec2, value);
 }
 
-MR::IShaderUniform* MR::ShaderProgram::CreateUniform(const std::string& uniform_name, glm::vec3* value) {
-    return CreateUniform(uniform_name, MR::IShaderUniform::Vec3, value);
+mr::IShaderUniform* mr::ShaderProgram::CreateUniform(const std::string& uniform_name, glm::vec3* value) {
+    return CreateUniform(uniform_name, mr::IShaderUniform::Vec3, value);
 }
 
-MR::IShaderUniform* MR::ShaderProgram::CreateUniform(const std::string& uniform_name, glm::vec4* value) {
-    return CreateUniform(uniform_name, MR::IShaderUniform::Vec4, value);
+mr::IShaderUniform* mr::ShaderProgram::CreateUniform(const std::string& uniform_name, glm::vec4* value) {
+    return CreateUniform(uniform_name, mr::IShaderUniform::Vec4, value);
 }
 
-MR::IShaderUniform* MR::ShaderProgram::CreateUniform(const std::string& uniform_name, glm::mat4* value) {
-    return CreateUniform(uniform_name, MR::IShaderUniform::Mat4, value);
+mr::IShaderUniform* mr::ShaderProgram::CreateUniform(const std::string& uniform_name, glm::mat4* value) {
+    return CreateUniform(uniform_name, mr::IShaderUniform::Mat4, value);
 }
 
 #endif

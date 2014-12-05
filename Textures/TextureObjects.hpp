@@ -5,7 +5,7 @@
 
 #include "TextureInterfaces.hpp"
 
-namespace MR {
+namespace mr {
 
 class Texture : public ITexture {
 public:
@@ -30,18 +30,18 @@ public:
     void Create(const ITexture::Types& target) override;
 
     void GetData(const int& mipMapLevel,
-                const ITexture::DataFormat& dformat, const ITexture::DataTypes& dtype, unsigned int const& dstBufferSize,
+                const ITexture::DataFormat& dformat, const ITexture::DataType& dtype, unsigned int const& dstBufferSize,
                 void* dstBuffer) override; //dstBufferSize should be enought for data
 
     void SetData(const int& mipMapLevel,
-                const ITexture::DataFormat& dformat, const ITexture::DataTypes& dtype, const ITexture::StorageDataFormat& sdFormat,
+                const ITexture::DataFormat& dformat, const ITexture::DataType& dtype, const ITexture::StorageDataFormat& sdFormat,
                 const int& width, const int& height, const int& depth,
                 void* data) override;
 
     void UpdateData(const int& mipMapLevel,
                     const int& xOffset, const int& yOffset, const int& zOffset,
                     const int& width, const int& height, const int& depth,
-                    const ITexture::DataFormat& dformat, const ITexture::DataTypes& dtype,
+                    const ITexture::DataFormat& dformat, const ITexture::DataType& dtype,
                     void* data) override;
 
     bool Complete(bool mipMaps) override;
@@ -56,7 +56,7 @@ public:
     static ITexture* CreateMipmapChecker();
 
 protected:
-    MR::TStaticArray<TextureSizeInfo> _sizes;
+    mr::TStaticArray<TextureSizeInfo> _sizes;
     TextureBitsInfo _bits;
     size_t _mem_size;
     unsigned int _data_storage_format = 0;

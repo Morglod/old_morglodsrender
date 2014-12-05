@@ -27,15 +27,15 @@
 
 std::ofstream __simple_app__log_file("log.txt");
 
-namespace MR {
+namespace mr {
     class SimpleApp;
 }
 
-class GLFWContext : public MR::IContext {
-    friend class MR::SimpleApp;
+class GLFWContext : public mr::IContext {
+    friend class mr::SimpleApp;
 public:
     void Destroy() override {
-        MR::Shutdown();
+        mr::Shutdown();
 
         MakeNullCurrent();
         glfwDestroyWindow(window);
@@ -79,18 +79,18 @@ public:
     inline GLFWwindow* GetMainWindow() { return window; }
 
     GLFWContext() {
-        MR::IContext::Current = dynamic_cast<MR::IContext*>(this);
+        mr::IContext::Current = dynamic_cast<mr::IContext*>(this);
     }
 
     virtual ~GLFWContext() {
         Destroy();
-        MR::IContext::Current = nullptr;
+        mr::IContext::Current = nullptr;
     }
 protected:
     GLFWwindow *window = 0, *mt_window = 0;
 };
 
-namespace MR {
+namespace mr {
 
 class WindowHints {
 public:
@@ -153,7 +153,7 @@ public:
     }
 
     static void glfwError(int level, const char* desc) {
-        MR::Log::LogString("glfw error. level " + std::to_string(level) + ". " + std::string(desc), MR_LOG_LEVEL_ERROR);
+        mr::Log::LogString("glfw error. level " + std::to_string(level) + ". " + std::string(desc), MR_LOG_LEVEL_ERROR);
     }
 
     virtual bool Go( const std::string& WindowName = "MorglodsRender", const unsigned short& WindowWidth = 800, const unsigned short& WindowHeight = 600, const WindowHints& hints = WindowHints(), const bool& multithreaded = false) {
@@ -161,11 +161,11 @@ public:
         window_width = WindowWidth;
         window_height = WindowHeight;
 
-        MR::Log::Add(LogString);
+        mr::Log::Add(LogString);
         glfwSetErrorCallback(glfwError);
 
         if(!glfwInit()){
-            MR::Log::LogString("Failed glfwInit in SimpleApp::Go.", MR_LOG_LEVEL_ERROR);
+            mr::Log::LogString("Failed glfwInit in SimpleApp::Go.", MR_LOG_LEVEL_ERROR);
         }
 
         glfwWindowHint(GLFW_OPENGL_PROFILE, hints.opengl_profile);
@@ -181,7 +181,7 @@ public:
             glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
             context.mt_window = glfwCreateWindow(1, 1, (WindowName+" Multithreaded").c_str(), NULL, NULL);
             if(!context.mt_window) {
-                MR::Log::LogString("glfw multithred window creation failed", MR_LOG_LEVEL_ERROR);
+                mr::Log::LogString("glfw multithred window creation failed", MR_LOG_LEVEL_ERROR);
                 glfwTerminate();
                 return false;
             }
@@ -208,20 +208,20 @@ public:
 
         context.window = glfwCreateWindow(window_width, window_height, WindowName.c_str(), 0, context.mt_window);
         if(!context.window) {
-            MR::Log::LogString("Failed window creation in SimpleApp::Go.", MR_LOG_LEVEL_ERROR);
+            mr::Log::LogString("Failed window creation in SimpleApp::Go.", MR_LOG_LEVEL_ERROR);
             return false;
         }
 
         context.MakeCurrent();
 
-        if(!MR::Init(&context)) {
+        if(!mr::Init(&context)) {
             if(ThrowExceptions()) {
-                throw MR::Exception("Failed context initialization SimpleApp::Go. Check log.");
+                throw mr::Exception("Failed context initialization SimpleApp::Go. Check log.");
             }
             return false;
         }
 
-        camera = new MR::PerspectiveCamera( MR::Transform::WorldForwardVector() * 2.0f, glm::vec3(0,0,0), 90.0f, aspect, 0.1f, 500.0f);
+        camera = new mr::PerspectiveCamera( mr::Transform::WorldForwardVector() * 2.0f, glm::vec3(0,0,0), 90.0f, aspect, 0.1f, 500.0f);
         camera->SetAutoRecalc(true);
         //camera->SetCameraMode(MR::Camera::CameraMode::Direction);
         //MR::RenderManager::GetInstance()->UseCamera(camera); //set this camera as default
@@ -241,7 +241,7 @@ public:
 
         if(!Setup()) {
             if(ThrowExceptions()) {
-                throw MR::Exception("Failed SimpleApp::Setup.");
+                throw mr::Exception("Failed SimpleApp::Setup.");
             }
             return false;
         }
@@ -288,7 +288,7 @@ protected:
     unsigned short window_width, window_height;
     float aspect;
 
-    MR::ICamera* camera;
+    mr::ICamera* camera;
     //MR::SceneManager scene;
 
     //MR::IRenderingPipeline* pipeline;
@@ -296,7 +296,7 @@ protected:
 
 }
 
-MR::WindowHints::WindowHints() :
+mr::WindowHints::WindowHints() :
     resizable(GL_FALSE),
     visible(GL_TRUE),
     decorated(GL_TRUE),
@@ -324,7 +324,7 @@ MR::WindowHints::WindowHints() :
     opengl_profile(GLFW_OPENGL_CORE_PROFILE) {
 }
 
-void MR::WindowHints::Configure(mu::Config* cfg) {
+void mr::WindowHints::Configure(mu::Config* cfg) {
 	if(!cfg) return;
 
     cfg->GetTo("display.srgb_capable", srgb_capable);
@@ -354,7 +354,7 @@ void MR::WindowHints::Configure(mu::Config* cfg) {
     cfg->GetTo("buffers.accum_alpha_bits", accum_alpha_bits);
 }
 
-void MR::WindowHints::SaveConfig(mu::Config* cfg) {
+void mr::WindowHints::SaveConfig(mu::Config* cfg) {
 	if(!cfg) return;
 
     cfg->Set("display.srgb_capable", std::to_string(srgb_capable));

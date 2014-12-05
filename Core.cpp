@@ -16,18 +16,18 @@
 PFNGLBUFFERSTORAGEPROC __glewBufferStorage;
 PFNGLNAMEDBUFFERSTORAGEEXTPROC __glewNamedBufferStorageEXT;
 
-bool MR::Init(MR::IContext* ctx) {
+bool mr::Init(mr::IContext* ctx) {
     if(!ctx) {
-        MR::Log::LogString("Failed Init(). ctx is null.", MR_LOG_LEVEL_ERROR);
+        mr::Log::LogString("Failed Init(). ctx is null.", MR_LOG_LEVEL_ERROR);
         return false;
     }
 
-    MR::IContext::Current = ctx;
+    mr::IContext::Current = ctx;
 
     {   //glew
         GLenum result = glewInit();
         if(result != GLEW_OK) {
-            MR::Log::LogString("Failed Init(). glew initialization failed. "+std::string((char*)glewGetErrorString(result)), MR_LOG_LEVEL_ERROR);
+            mr::Log::LogString("Failed Init(). glew initialization failed. "+std::string((char*)glewGetErrorString(result)), MR_LOG_LEVEL_ERROR);
             return false;
         }
 
@@ -35,17 +35,17 @@ bool MR::Init(MR::IContext* ctx) {
         __glewNamedBufferStorageEXT = (PFNGLNAMEDBUFFERSTORAGEEXTPROC)(ctx->GetProcAddress("glNamedBufferStorageEXT"));
     }
 
-    if(MR::MachineInfo::gl_version() == MR::MachineInfo::GLVersion::VNotSupported) {
-        MR::Log::LogString("Current opengl version (\""+MR::MachineInfo::gl_version_string()+"\") is not supported. OpenGL 3.2 will be used.", MR_LOG_LEVEL_WARNING);
+    if(mr::MachineInfo::gl_version() == mr::MachineInfo::GLVersion::VNotSupported) {
+        mr::Log::LogString("Current opengl version (\""+mr::MachineInfo::gl_version_string()+"\") is not supported. OpenGL 3.2 will be used.", MR_LOG_LEVEL_WARNING);
     }
 
     return true;
 }
 
-void MR::Shutdown() {
-    MR::DestroyAllTextures();
-    MR::DestroyAllBuffers();
-    MR::DestroyAllShaderPrograms();
-    MR::GeometryManager::DestroyInstance();
-    MR::FileUtils::DestroyInstance();
+void mr::Shutdown() {
+    mr::DestroyAllTextures();
+    mr::DestroyAllBuffers();
+    mr::DestroyAllShaderPrograms();
+    mr::GeometryManager::DestroyInstance();
+    mr::FileUtils::DestroyInstance();
 }

@@ -13,7 +13,7 @@
 
 #include <vector>
 
-namespace MR {
+namespace mr {
 
 class VertexFormatCustom;
 class VertexFormatCustomFixed;
@@ -79,7 +79,7 @@ class VertexAttributePos3F : public IVertexAttribute, public mu::StaticSingleton
 public:
     inline unsigned int GetSize() override {return ((unsigned int)VertexDataTypeFloat::GetInstance().GetSize()) * ((unsigned int)3);}
     inline unsigned int GetElementsNum() override { return 3; }
-    inline IVertexDataType* GetDataType() override { return dynamic_cast<MR::IVertexDataType*>(&VertexDataTypeFloat::GetInstance()); }
+    inline IVertexDataType* GetDataType() override { return dynamic_cast<mr::IVertexDataType*>(&VertexDataTypeFloat::GetInstance()); }
     inline unsigned int GetShaderIndex() override { return IVertexAttribute::Position; }
 
     inline bool Equal(IVertexAttribute* va) override {

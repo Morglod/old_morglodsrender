@@ -1,36 +1,73 @@
-#include "GeometryLoader.hpp"
+#include "SceneLoader.hpp"
 
 #include "../Utils/Log.hpp"
-#include "GeometryFormats.hpp"
-#include "GeometryManager.hpp"
+
+#include "../Materials/MaterialInterfaces.hpp"
+#include "../Materials/Material.hpp"
+
+#include "../Geometry/GeometryFormats.hpp"
+#include "../Geometry/GeometryManager.hpp"
+
+#include "../Geometry/Mesh.hpp"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <assimp/color4.h>
+#include <assimp/material.h>
 
 #include <glm/glm.hpp>
 
 namespace mr {
 
-class GeometryLoader::Impl {
+
+class SceneLoader::Impl {
 public:
     Assimp::Importer importer;
     mr::TStaticArray<IGeometry*> _geoms;
+    mr::TStaticArray<IMaterial*> _materials;
+    mr::TStaticArray<IMesh*> _meshes;
 
     ~Impl() { importer.FreeScene(); }
 };
 
-bool GeometryLoader::Import(std::string const& file) {
+bool SceneLoader::Import(std::string const& file, bool fast) {
     bool bNoError = true;
 
-    const aiScene* scene = _impl->importer.ReadFile(file, /*aiProcessPreset_TargetRealtime_MaxQuality*/ aiProcess_JoinIdenticalVertices | aiProcess_ImproveCacheLocality | aiProcess_Triangulate | aiProcess_ValidateDataStructure | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_FindDegenerates | aiProcess_FindInvalidData | aiProcess_GenSmoothNormals );
+    const aiScene* scene = _impl->importer.ReadFile(file, (fast) ? 0 : aiProcessPreset_TargetRealtime_MaxQuality);
     if(!scene) {
         mr::Log::LogString("Assimp error: " + std::string(_impl->importer.GetErrorString()), MR_LOG_LEVEL_ERROR);
         return false;
     }
 
-    _impl->_geoms = mr::TStaticArray<IGeometry*>(new IGeometry*[scene->mNumMeshes], scene->mNumMeshes, true);
+    _impl->_materials = mr::TStaticArray<IMaterial*>(scene->mNumMaterials);
+    for(unsigned int i = 0; i < scene->mNumMaterials; ++i) {
+        auto material = scene->mMaterials[i];
+        MaterialDescr matDescr;
+
+        {
+            aiColor4D colA, colD;
+            material->Get(AI_MATKEY_COLOR_AMBIENT, colA);
+            material->Get(AI_MATKEY_COLOR_DIFFUSE, colD);
+            aiString texColor;
+            if(0 != material->Get(AI_MATKEY_TEXTURE_DIFFUSE(0), texColor)) {
+                material->Get(AI_MATKEY_TEXTURE_AMBIENT(0), texColor);
+            }
+
+            float colAlpha = (colA.a + colD.a) / 2.0f;
+            matDescr.texColor = std::string(&texColor.data[0], texColor.length);
+            matDescr.colorAmbient = glm::vec4(colA.r, colA.g, colA.b, colAlpha);
+            matDescr.colorDiffuse = glm::vec3(colD.r, colD.g, colD.b);
+        }
+
+        auto newMat = new mr::DefaultMaterial();
+        newMat->Create(matDescr);
+        _impl->_materials.At(i) = dynamic_cast<IMaterial*>(newMat);
+    }
+
+    _impl->_geoms = mr::TStaticArray<IGeometry*>(scene->mNumMeshes);
+    _impl->_meshes = mr::TStaticArray<IMesh*>(scene->mNumMeshes);
+
     for(unsigned int i = 0; i < scene->mNumMeshes; ++i) {
         auto mesh = scene->mMeshes[i];
         bool bPosA = mesh->HasPositions(), bNormalA = mesh->HasNormals(), bColorA = (mesh->GetNumColorChannels() && mesh->HasVertexColors(0)), bTexCoordA = (mesh->GetNumUVChannels() && mesh->HasTextureCoords(0));
@@ -85,32 +122,41 @@ bool GeometryLoader::Import(std::string const& file) {
 
         ///Make geometry
 
-        IGeometry* geom = mr::GeometryManager::GetInstance()->PlaceGeometry(vf.Cache(), &vertexData[0], mesh->mNumVertices,
-                                                                            fi.Cache(), &indexData[0], mesh->mNumFaces*3,
-                                                                            mr::IGPUBuffer::Usage::Static, mr::IGeometryBuffer::DrawMode::Triangles);
+        _impl->_geoms.At(i) = mr::GeometryManager::GetInstance()->PlaceGeometry(vf.Cache(), &vertexData[0], mesh->mNumVertices,
+                                                                                fi.Cache(), &indexData[0], mesh->mNumFaces*3,
+                                                                                mr::IGPUBuffer::Usage::Static, mr::IGeometryBuffer::DrawMode::Triangles);
 
         delete [] vertexData;
         delete [] indexData;
-        _impl->_geoms.At(i) = geom;
-        if(geom == nullptr) bNoError = false;
+        if(_impl->_geoms.At(i) == nullptr) bNoError = false;
+
+        _impl->_meshes.At(i) = dynamic_cast<mr::IMesh*>(new Mesh(_impl->_geoms.RangeCopy(i,i+1), _impl->_materials.At(mesh->mMaterialIndex)));
     }
 
     return bNoError;
 }
 
-unsigned int GeometryLoader::GetGeometriesNum() {
+unsigned int SceneLoader::GetGeometriesNum() {
     return this->_impl->_geoms.GetNum();
 }
 
-TStaticArray<IGeometry*> GeometryLoader::GetGeometry() {
+TStaticArray<IGeometry*> SceneLoader::GetGeometry() {
     return this->_impl->_geoms;
 }
 
-GeometryLoader::GeometryLoader() : _impl(new GeometryLoader::Impl()) {
+unsigned int SceneLoader::GetMaterialsNum() {
+    return this->_impl->_materials.GetNum();
 }
 
-GeometryLoader::~GeometryLoader() {
+TStaticArray<IMaterial*> SceneLoader::GetMaterials() {
+    return this->_impl->_materials;
 }
 
+SceneLoader::SceneLoader() : _impl(new SceneLoader::Impl()) {
 }
 
+SceneLoader::~SceneLoader() {
+}
+
+
+}

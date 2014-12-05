@@ -3,7 +3,7 @@
 #ifndef _MR_CORE_H_
 #define _MR_CORE_H_
 
-namespace MR {
+namespace mr {
 
 class IContext;
 

@@ -29,7 +29,7 @@ namespace std {
     }
 }
 
-namespace MR {
+namespace mr {
 
 /*class IObject {
 public:
@@ -53,7 +53,7 @@ public:
 
 class ObjectHandle {
 public:
-    MR::EventListener<ObjectHandle*> OnDestroy;
+    mr::EventListener<ObjectHandle*> OnDestroy;
 
     virtual void Destroy() = 0;
 };

@@ -16,7 +16,7 @@
 
 #include <string>
 
-namespace MR {
+namespace mr {
 
 class Exception : public std::exception {
 public:

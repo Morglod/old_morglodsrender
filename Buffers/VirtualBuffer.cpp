@@ -5,31 +5,31 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 
-namespace MR {
+namespace mr {
 
-class VirtualGPUBuffer_DestroyEvent : public MR::EventHandle<ObjectHandle*> {
+class VirtualGPUBuffer_DestroyEvent : public mr::EventHandle<ObjectHandle*> {
 public:
     void Invoke(EventListener<ObjectHandle*>* event, ObjectHandle* o) override {
         if(_vgb) _vgb->Destroy();
     }
 
-    VirtualGPUBuffer_DestroyEvent(MR::VirtualGPUBuffer* vgb) : _vgb(vgb) {}
+    VirtualGPUBuffer_DestroyEvent(mr::VirtualGPUBuffer* vgb) : _vgb(vgb) {}
     virtual ~VirtualGPUBuffer_DestroyEvent() {}
 private:
-    MR::VirtualGPUBuffer* _vgb;
+    mr::VirtualGPUBuffer* _vgb;
 };
 
 void VirtualGPUBuffer::Destroy() {
     if(_realBuffer) {
         if(_eventHandle) {
-            _realBuffer->OnDestroy.UnRegisterHandle((MR::EventHandle<ObjectHandle*>*)_eventHandle);
+            _realBuffer->OnDestroy.UnRegisterHandle((mr::EventHandle<ObjectHandle*>*)_eventHandle);
         }
     }
 
     _size = 0;
     _realBuffer_offset = 0;
     _realBuffer = nullptr;
-    OnDestroy(dynamic_cast<MR::IGPUBuffer*>(this));
+    OnDestroy(dynamic_cast<mr::IGPUBuffer*>(this));
 }
 
 VirtualGPUBuffer::VirtualGPUBuffer(IGPUBuffer* realBuffer, size_t const& offset, size_t const& size) : _realBuffer(realBuffer), _realBuffer_offset(offset), _size(size), _eventHandle(0) {
@@ -38,7 +38,7 @@ VirtualGPUBuffer::VirtualGPUBuffer(IGPUBuffer* realBuffer, size_t const& offset,
     Assert(offset >= _realBuffer->GetGPUMem())
 
     if(_realBuffer->GetGPUMem() == 0) {
-        MR::Log::LogString("VirtualGPUBuffer::ctor. RealBuffer not allocated or allocated with some errors.", MR_LOG_LEVEL_WARNING);
+        mr::Log::LogString("VirtualGPUBuffer::ctor. RealBuffer not allocated or allocated with some errors.", MR_LOG_LEVEL_WARNING);
     }
     _eventHandle = _realBuffer->OnDestroy.RegisterHandle(new VirtualGPUBuffer_DestroyEvent(this));
 }
@@ -53,7 +53,7 @@ VirtualGPUBuffer* VirtualGPUBufferManager::Take(const size_t& size) {
     Assert(size+_offset > _realBuffer->GetGPUMem())
     Assert(_realBuffer->GetGPUHandle() == 0)
 
-    VirtualGPUBuffer* buf = new MR::VirtualGPUBuffer(_realBuffer, _offset, size);
+    VirtualGPUBuffer* buf = new mr::VirtualGPUBuffer(_realBuffer, _offset, size);
     _offset += size;
     _buffers.push_back(buf);
     return buf;

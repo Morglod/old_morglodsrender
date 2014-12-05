@@ -4,7 +4,7 @@
 #define MR_MIN(x,y) ((x>y) ? y : x)
 #define MR_MAX(x,y) ((x<y) ? y : x)
 
-namespace MR {
+namespace mr {
 
 bool Box::TestFastSphere(const glm::vec3& center, const float& radius) {
     if(TestPoint(center)) return true;
@@ -13,17 +13,17 @@ bool Box::TestFastSphere(const glm::vec3& center, const float& radius) {
 }
 
 bool Box::TestFastFrustum(CollisionFrustumInfo const& info, glm::vec3 const& pos) {
-    MR::Log::LogString("Box::TestFastFrustum not yet implemented.");
+    mr::Log::LogString("Box::TestFastFrustum not yet implemented.");
     return false;
 }
 
 bool Box::TestRayFirstPoint(RayInfo const& ray, glm::vec3 * out_Point) {
-    MR::Log::LogString("Box::TestRayFirstPoint not yet implemented.");
+    mr::Log::LogString("Box::TestRayFirstPoint not yet implemented.");
     return false;
 }
 
 bool Box::TestRay(RayInfo const& ray, RayHitInfo<glm::vec3> * out_Points) {
-    MR::Log::LogString("Box::TestRay not yet implemented.");
+    mr::Log::LogString("Box::TestRay not yet implemented.");
     return false;
 }
 

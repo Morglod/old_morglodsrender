@@ -40,6 +40,8 @@
 
 #define MR_SHADER_CAM_POS       "CAM_POS"
 #define MR_SHADER_CAM_DIR       "CAM_DIR"
+
+#define MR_SHADER_COLOR_TEX     "TEX_COLOR"
 /*
 #define MR_SHADER_COLOR_MAP         "ENGINE_COLOR_MAP"
 #define MR_SHADER_NORMAL_MAP        "ENGINE_NORMAL_MAP"

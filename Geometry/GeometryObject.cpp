@@ -14,7 +14,7 @@ unsigned int _MR_DRAW_MODE_FLAG_TO_GL_[4] {
     GL_QUADS
 };
 
-namespace MR {
+namespace mr {
 
 void Geometry::SetGeometryBuffer(IGeometryBuffer* buffer) {
     _buffer = buffer;
@@ -26,8 +26,8 @@ void Geometry::Draw(){
     _buffer->Bind(_draw_params->GetUseIndexBuffer());
 
     if(_buffer->GetIndexBuffer() != nullptr && _draw_params->GetUseIndexBuffer()){
-        MR::IIndexFormat* iformat = _buffer->GetIndexFormat();
-        if(MR::MachineInfo::IsIndirectDrawSupported()) {
+        mr::IIndexFormat* iformat = _buffer->GetIndexFormat();
+        if(mr::MachineInfo::IsIndirectDrawSupported()) {
             glDrawElementsIndirect( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], iformat->GetDataType()->GetDataType(), _draw_params->GetIndirectPtr());
         }
         else {
@@ -39,7 +39,7 @@ void Geometry::Draw(){
         }
     }
     else {
-        if(MR::MachineInfo::IsIndirectDrawSupported()) glDrawArraysIndirect( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], _draw_params->GetIndirectPtr());
+        if(mr::MachineInfo::IsIndirectDrawSupported()) glDrawArraysIndirect( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], _draw_params->GetIndirectPtr());
         else glDrawArrays( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], _draw_params->GetVertexStart(), _draw_params->GetVertexCount());
     }
 }
@@ -53,9 +53,9 @@ Geometry::~Geometry(){
 
 //DEFAULT GEOMETRY SHAPES
 IGeometry* Geometry::MakeTriangle(const float& scale, const glm::vec3& offset) {
-    MR::VertexFormatCustomFixed vformat;
+    mr::VertexFormatCustomFixed vformat;
     vformat.SetAttributesNum(1);
-    vformat.AddVertexAttribute(&(MR::VertexAttributePos3F::GetInstance()));
+    vformat.AddVertexAttribute(&(mr::VertexAttributePos3F::GetInstance()));
 
     float vdata[] {
         offset.x,                   offset.y + 1.0f * scale, offset.z,
@@ -63,18 +63,18 @@ IGeometry* Geometry::MakeTriangle(const float& scale, const glm::vec3& offset) {
         offset.x - 1.0f * scale,    offset.y - 1.0f * scale, offset.z
     };
 
-    return MR::GeometryManager::GetInstance()->PlaceGeometry(vformat.Cache(), &vdata[0], 3,
+    return mr::GeometryManager::GetInstance()->PlaceGeometry(vformat.Cache(), &vdata[0], 3,
                                                                                 nullptr, 0, 0,
-                                                                                IGPUBuffer::Static, IGeometryBuffer::DrawModes::Triangles);
+                                                                                IGPUBuffer::Static, IGeometryBuffer::DrawMode::Triangles);
 }
 
 IGeometry* Geometry::MakeQuad(const glm::vec2& scale, const glm::vec3& offset, const bool& texCoords, const glm::vec2& texCoordsScale) {
-    MR::VertexFormatCustomFixed vformat;
+    mr::VertexFormatCustomFixed vformat;
     vformat.SetAttributesNum((texCoords) ? (2) : (1));
-    vformat.AddVertexAttribute(&(MR::VertexAttributePos3F::GetInstance()));
-    if(texCoords) vformat.AddVertexAttribute(MR::VertexAttributeCustom(2, &(MR::VertexDataTypeFloat::GetInstance()), MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION).Cache());
+    vformat.AddVertexAttribute(&(mr::VertexAttributePos3F::GetInstance()));
+    if(texCoords) vformat.AddVertexAttribute(mr::VertexAttributeCustom(2, &(mr::VertexDataTypeFloat::GetInstance()), MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION).Cache());
 
-    MR::IndexFormatCustom iformat(VertexDataTypeCustom(GL_UNSIGNED_BYTE, 1).Cache());
+    mr::IndexFormatCustom iformat(VertexDataTypeCustom(GL_UNSIGNED_BYTE, 1).Cache());
 
     float vdata_noTexCoords[] {
         offset.x,                   offset.y + scale.y, offset.z,
@@ -105,17 +105,17 @@ IGeometry* Geometry::MakeQuad(const glm::vec2& scale, const glm::vec3& offset, c
     //Geometry* geom = new MR::Geometry(buffer, GeometryDrawParams::DrawElements(0, 6));
     //return geom;
 
-    return MR::GeometryManager::GetInstance()->PlaceGeometry(vformat.Cache(), &vdata[0], 4,
+    return mr::GeometryManager::GetInstance()->PlaceGeometry(vformat.Cache(), &vdata[0], 4,
                                                             iformat.Cache(), &idata[0], 6,
-                                                            IGPUBuffer::Static, IGeometryBuffer::DrawModes::Triangles);
+                                                            IGPUBuffer::Static, IGeometryBuffer::DrawMode::Triangles);
 }
 
 IGeometry* Geometry::MakeBox(const glm::vec3& scale, const glm::vec3& offset, const bool& inside) {
-    MR::VertexFormatCustomFixed vformat;
+    mr::VertexFormatCustomFixed vformat;
     vformat.SetAttributesNum(1);
-    vformat.AddVertexAttribute(&(MR::VertexAttributePos3F::GetInstance()));
+    vformat.AddVertexAttribute(&(mr::VertexAttributePos3F::GetInstance()));
 
-    MR::IndexFormatCustom iformat(VertexDataTypeCustom(GL_UNSIGNED_BYTE, 1).Cache());
+    mr::IndexFormatCustom iformat(VertexDataTypeCustom(GL_UNSIGNED_BYTE, 1).Cache());
 
     float vdata[] {
         //front face
@@ -175,9 +175,9 @@ IGeometry* Geometry::MakeBox(const glm::vec3& scale, const glm::vec3& offset, co
 
     //IGeometryBuffer* buffer = MR::GeometryManager::GetInstance()->PlaceGeometry(vformat, iformat, &vdata[0], sizeof(float) * 24, &idata[0], sizeof(unsigned char) * 36, GL_STATIC_DRAW, GL_READ_ONLY, GL_TRIANGLES, nullptr, nullptr);
     //Geometry* geom = new MR::Geometry(buffer, GeometryDrawParams::DrawElements(0, 36));
-    return MR::GeometryManager::GetInstance()->PlaceGeometry(vformat.Cache(), &vdata[0], 8,
+    return mr::GeometryManager::GetInstance()->PlaceGeometry(vformat.Cache(), &vdata[0], 8,
                                                             iformat.Cache(), &idata[0], 36,
-                                                            IGPUBuffer::Static, IGeometryBuffer::DrawModes::Triangles);
+                                                            IGPUBuffer::Static, IGeometryBuffer::DrawMode::Triangles);
 }
 
 }

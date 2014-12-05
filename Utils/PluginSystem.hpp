@@ -7,7 +7,7 @@
 #include <map>
 #include <string>
 
-namespace MR {
+namespace mr {
 
 class Plugin;
 class PluginMethod;
@@ -58,9 +58,9 @@ protected:
 }
 
 extern "C" {
-MR::Plugin* GetPluginInstance(MR::PluginSystem* sys); //rewrite method for your plugin; should add Initializated new instance to PluginSystem
+mr::Plugin* GetPluginInstance(mr::PluginSystem* sys); //rewrite method for your plugin; should add Initializated new instance to PluginSystem
 }
 
-typedef MR::Plugin* (*GetPluginInstanceProc)(MR::PluginSystem* sys);
+typedef mr::Plugin* (*GetPluginInstanceProc)(mr::PluginSystem* sys);
 
 #endif // _MR_PLUGIN_SYSTEM_H_

@@ -10,7 +10,7 @@
 
 #include <glm/glm.hpp>
 
-namespace MR {
+namespace mr {
 /*
 class IEntity : public Copyable<IEntity*> {
 public:
@@ -21,15 +21,15 @@ public:
 */
 class ICamera {
 public:
-    MR::EventListener<ICamera*, const glm::vec3&> OnPositionChanged;
-    MR::EventListener<ICamera*, const glm::vec3&> OnRotationChanged;
+    mr::EventListener<ICamera*, const glm::vec3&> OnPositionChanged;
+    mr::EventListener<ICamera*, const glm::vec3&> OnRotationChanged;
     //MR::EventListener<ICamera*, const glm::vec3&> OnTargetChanged;
-    MR::EventListener<ICamera*> OnDirectionsChanged;
+    mr::EventListener<ICamera*> OnDirectionsChanged;
 
-    MR::EventListener<ICamera*, glm::mat4*> OnMatUpdated_MVP;
-    MR::EventListener<ICamera*, glm::mat4*> OnMatUpdated_Model;
-    MR::EventListener<ICamera*, glm::mat4*> OnMatUpdated_View;
-    MR::EventListener<ICamera*, glm::mat4*> OnMatUpdated_Projection;
+    mr::EventListener<ICamera*, glm::mat4*> OnMatUpdated_MVP;
+    mr::EventListener<ICamera*, glm::mat4*> OnMatUpdated_Model;
+    mr::EventListener<ICamera*, glm::mat4*> OnMatUpdated_View;
+    mr::EventListener<ICamera*, glm::mat4*> OnMatUpdated_Projection;
 
     virtual void SetAutoRecalc(const bool& state) = 0;
     virtual bool GetAutoRecalc() = 0;

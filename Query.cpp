@@ -5,7 +5,7 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 
-namespace MR {
+namespace mr {
 
 void IQuery::Destroy() {
 }
@@ -38,7 +38,7 @@ void Query::Destroy() {
 
 bool Query::GetResult(void* dst) {
     if(_handle == 0) {
-        MR::Log::LogString("Failed Query::GetResult(...). handle is null.", MR_LOG_LEVEL_WARNING);
+        mr::Log::LogString("Failed Query::GetResult(...). handle is null.", MR_LOG_LEVEL_WARNING);
         return false;
     }
 
@@ -83,12 +83,12 @@ bool Query::GetResult(void* dst) {
         break;
     }
 
-    MR::Log::LogString("Failed Query::GetResult(...). Unknown query target.", MR_LOG_LEVEL_ERROR);
+    mr::Log::LogString("Failed Query::GetResult(...). Unknown query target.", MR_LOG_LEVEL_ERROR);
     return false;
 }
 
 Query::Query(const Query::Target& target) : _handle(0), _target(target), _ended(true) {
-    if(target == Query::Target::AnySamplesPassedConservative && MR::MachineInfo::gl_version_major() < 4) {
+    if(target == Query::Target::AnySamplesPassedConservative && mr::MachineInfo::gl_version_major() < 4) {
         _target = Query::Target::AnySamplesPassed;
     }
 }

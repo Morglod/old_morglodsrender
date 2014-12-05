@@ -5,7 +5,7 @@
 
 #include <stddef.h>
 
-namespace MR {
+namespace mr {
 
 class IMemoryInfo {
 public:

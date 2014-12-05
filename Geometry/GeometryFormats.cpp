@@ -7,21 +7,21 @@
 #define GLEW_STATIC
 #include <GL\glew.h>
 
-MR::IVertexFormat* _MR_BINDED_VERTEX_FORMAT = nullptr;
-MR::IIndexFormat* _MR_BINDED_INDEX_FORMAT = nullptr;
+mr::IVertexFormat* _MR_BINDED_VERTEX_FORMAT = nullptr;
+mr::IIndexFormat* _MR_BINDED_INDEX_FORMAT = nullptr;
 
-void __MR_SET_VERTEX_FORMAT_AS_BINDED_(MR::IVertexFormat* vf) {
+void __MR_SET_VERTEX_FORMAT_AS_BINDED_(mr::IVertexFormat* vf) {
     if(_MR_BINDED_VERTEX_FORMAT != nullptr) _MR_BINDED_VERTEX_FORMAT->UnBind();
     _MR_BINDED_VERTEX_FORMAT = vf;
 }
 
-void __MR_SET_INDEX_FORMAT_AS_BINDED_(MR::IIndexFormat* fi) {
+void __MR_SET_INDEX_FORMAT_AS_BINDED_(mr::IIndexFormat* fi) {
     if(_MR_BINDED_INDEX_FORMAT != nullptr) _MR_BINDED_INDEX_FORMAT->UnBind();
     _MR_BINDED_INDEX_FORMAT = fi;
 }
 
 //Handles std::shared_ptr for safe using with std::vector
-namespace MR {
+namespace mr {
 
 struct __VertexDataTypeCached {
     std::shared_ptr<IVertexDataType> _ptr;
@@ -50,10 +50,10 @@ struct __IndexFormatCached {
 }
 
 //Cached objects
-std::vector<MR::__VertexDataTypeCached> __MR_VERTEX_DATA_TYPE_CACHED_;
-std::vector<MR::__VertexAttributeCached> __MR_VERTEX_ATTRIB_CACHED_;
-std::vector<MR::__VertexFormatCached> __MR_VERTEX_FORMAT_CACHED_;
-std::vector<MR::__IndexFormatCached> __MR_INDEX_FORMAT_CACHED_;
+std::vector<mr::__VertexDataTypeCached> __MR_VERTEX_DATA_TYPE_CACHED_;
+std::vector<mr::__VertexAttributeCached> __MR_VERTEX_ATTRIB_CACHED_;
+std::vector<mr::__VertexFormatCached> __MR_VERTEX_FORMAT_CACHED_;
+std::vector<mr::__IndexFormatCached> __MR_INDEX_FORMAT_CACHED_;
 
 /*
     Cache function
@@ -81,10 +81,10 @@ InterfaceType* __MR_GEOM_FORMAT_CACHE_FUNC_(Type* what, std::vector<CacheType>& 
     return cpy;
 }
 
-namespace MR {
+namespace mr {
 
 IVertexDataType* VertexDataTypeCustom::Cache() {
-    return __MR_GEOM_FORMAT_CACHE_FUNC_<MR::__VertexDataTypeCached, IVertexDataType, VertexDataTypeCustom> (this, __MR_VERTEX_DATA_TYPE_CACHED_);
+    return __MR_GEOM_FORMAT_CACHE_FUNC_<mr::__VertexDataTypeCached, IVertexDataType, VertexDataTypeCustom> (this, __MR_VERTEX_DATA_TYPE_CACHED_);
 }
 
 VertexDataTypeCustom::VertexDataTypeCustom() :
@@ -98,7 +98,7 @@ VertexDataTypeCustom::VertexDataTypeCustom(VertexDataTypeCustom const& cpy) :
 
 
 IVertexAttribute* VertexAttributeCustom::Cache() {
-    return __MR_GEOM_FORMAT_CACHE_FUNC_<MR::__VertexAttributeCached, IVertexAttribute, VertexAttributeCustom>(this, __MR_VERTEX_ATTRIB_CACHED_);
+    return __MR_GEOM_FORMAT_CACHE_FUNC_<mr::__VertexAttributeCached, IVertexAttribute, VertexAttributeCustom>(this, __MR_VERTEX_ATTRIB_CACHED_);
 }
 
 VertexAttributeCustom::VertexAttributeCustom() :
@@ -121,13 +121,13 @@ void VertexFormatCustom::AddVertexAttribute(IVertexAttribute* a) {
 
 bool VertexFormatCustom::Bind() {
     if(_MR_BINDED_VERTEX_FORMAT != nullptr) {
-        if(_MR_BINDED_VERTEX_FORMAT->Equal(dynamic_cast<MR::IVertexFormat*>(this))) {
+        if(_MR_BINDED_VERTEX_FORMAT->Equal(dynamic_cast<mr::IVertexFormat*>(this))) {
             return true;
         }
     }
     VertexFormatUnBind();
 
-    if(MR::MachineInfo::IsNVVBUMSupported()){
+    if(mr::MachineInfo::IsNVVBUMSupported()){
         for(size_t i = 0; i < _attribs.size(); ++i) {
             unsigned int sh_i = _attribs[i]->GetShaderIndex();
             glVertexAttribFormatNV(sh_i, (int)_attribs[i]->GetElementsNum(), _attribs[i]->GetDataType()->GetDataType(), GL_FALSE, this->GetSize());
@@ -144,12 +144,12 @@ bool VertexFormatCustom::Bind() {
         }
     }
 
-    _MR_BINDED_VERTEX_FORMAT = dynamic_cast<MR::IVertexFormat*>(this);
+    _MR_BINDED_VERTEX_FORMAT = dynamic_cast<mr::IVertexFormat*>(this);
     return true;
 }
 
 void VertexFormatCustom::UnBind() {
-    if(MR::MachineInfo::IsNVVBUMSupported()){
+    if(mr::MachineInfo::IsNVVBUMSupported()){
         for(size_t i = 0; i < _attribs.size(); ++i) {
             glDisableVertexAttribArray(_attribs[i]->GetShaderIndex());
         }
@@ -177,7 +177,7 @@ bool VertexFormatCustom::Equal(IVertexFormat* vf){
 }
 
 IVertexFormat* VertexFormatCustom::Cache() {
-    return __MR_GEOM_FORMAT_CACHE_FUNC_<MR::__VertexFormatCached, IVertexFormat, VertexFormatCustom>(this, __MR_VERTEX_FORMAT_CACHED_);
+    return __MR_GEOM_FORMAT_CACHE_FUNC_<mr::__VertexFormatCached, IVertexFormat, VertexFormatCustom>(this, __MR_VERTEX_FORMAT_CACHED_);
 }
 
 VertexFormatCustom::VertexFormatCustom() : _attribs(), _pointers(), _nextPtr(0), _size(0) {
@@ -197,13 +197,13 @@ void VertexFormatCustomFixed::SetVertexAttribute(IVertexAttribute* a, const size
 
 bool VertexFormatCustomFixed::Bind() {
     if(_MR_BINDED_VERTEX_FORMAT != nullptr) {
-        if(_MR_BINDED_VERTEX_FORMAT->Equal(dynamic_cast<MR::IVertexFormat*>(this))) {
+        if(_MR_BINDED_VERTEX_FORMAT->Equal(dynamic_cast<mr::IVertexFormat*>(this))) {
             return true;
         }
     }
     VertexFormatUnBind();
 
-    if(MR::MachineInfo::IsNVVBUMSupported()){
+    if(mr::MachineInfo::IsNVVBUMSupported()){
         for(size_t i = 0; i < _attribsNum; ++i) {
             unsigned int sh_i = _attribs[i]->GetShaderIndex();
             glEnableVertexAttribArray(sh_i);
@@ -220,12 +220,12 @@ bool VertexFormatCustomFixed::Bind() {
         }
     }
 
-    _MR_BINDED_VERTEX_FORMAT = dynamic_cast<MR::IVertexFormat*>(this);
+    _MR_BINDED_VERTEX_FORMAT = dynamic_cast<mr::IVertexFormat*>(this);
     return true;
 }
 
 void VertexFormatCustomFixed::UnBind() {
-    if(MR::MachineInfo::IsNVVBUMSupported()){
+    if(mr::MachineInfo::IsNVVBUMSupported()){
         for(size_t i = 0; i < _attribsNum; ++i) {
             glDisableVertexAttribArray(_attribs[i]->GetShaderIndex());
         }
@@ -272,7 +272,7 @@ void VertexFormatCustomFixed::_RecalcSize() {
 }
 
 IVertexFormat* VertexFormatCustomFixed::Cache() {
-    return __MR_GEOM_FORMAT_CACHE_FUNC_<MR::__VertexFormatCached, IVertexFormat, VertexFormatCustomFixed>(this, __MR_VERTEX_FORMAT_CACHED_);
+    return __MR_GEOM_FORMAT_CACHE_FUNC_<mr::__VertexFormatCached, IVertexFormat, VertexFormatCustomFixed>(this, __MR_VERTEX_FORMAT_CACHED_);
 }
 
 VertexFormatCustomFixed::VertexFormatCustomFixed() : _attribs(nullptr), _pointers(nullptr), _size(0), _nextIndex(0), _attribsNum(0) {}
@@ -297,22 +297,22 @@ VertexFormatCustomFixed::~VertexFormatCustomFixed() {
 
 bool IndexFormatCustom::Bind(){
     if(_MR_BINDED_INDEX_FORMAT != nullptr) {
-        if(_MR_BINDED_INDEX_FORMAT->Equal(dynamic_cast<MR::IIndexFormat*>(this))) {
+        if(_MR_BINDED_INDEX_FORMAT->Equal(dynamic_cast<mr::IIndexFormat*>(this))) {
             return true;
         }
     }
     IndexFormatUnBind();
 
-    if(MR::MachineInfo::IsNVVBUMSupported()){
+    if(mr::MachineInfo::IsNVVBUMSupported()){
         glEnableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
     }
 
-    _MR_BINDED_INDEX_FORMAT = dynamic_cast<MR::IIndexFormat*>(this);
+    _MR_BINDED_INDEX_FORMAT = dynamic_cast<mr::IIndexFormat*>(this);
     return true;
 }
 
 void IndexFormatCustom::UnBind(){
-    if(MR::MachineInfo::IsNVVBUMSupported()){
+    if(mr::MachineInfo::IsNVVBUMSupported()){
         glDisableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
     }
     _MR_BINDED_INDEX_FORMAT = nullptr;

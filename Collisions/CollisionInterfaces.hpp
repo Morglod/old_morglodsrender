@@ -5,7 +5,7 @@
 
 #include <glm/glm.hpp>
 
-namespace MR {
+namespace mr {
 
 class IBox {
 public:

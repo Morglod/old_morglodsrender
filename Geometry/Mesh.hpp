@@ -5,7 +5,7 @@
 
 #include "MeshInterfaces.hpp"
 
-namespace MR {
+namespace mr {
 
 /*
     Only static geometry + material

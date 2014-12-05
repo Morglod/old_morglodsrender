@@ -6,7 +6,7 @@
 #include "CollisionInterfaces.hpp"
 #include "../Utils/Containers.hpp"
 
-namespace MR {
+namespace mr {
 
 /** Compute min and max points when making box **/
 
@@ -40,7 +40,7 @@ public:
     bool TestRay(RayInfo const& ray, RayHitInfo<glm::vec3> * out_Points) override;
 
     Box(glm::vec3 const& p1, glm::vec3 const& p2);
-    Box(MR::TStaticArray<glm::vec3> points);
+    Box(mr::TStaticArray<glm::vec3> points);
 protected:
     glm::vec3 _min, _max;
 };

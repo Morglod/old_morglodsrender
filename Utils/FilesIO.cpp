@@ -2,7 +2,7 @@
 #include "mu/Singleton.hpp"
 #include "Debug.hpp"
 
-namespace MR {
+namespace mr {
 
 bool FileWriter::IsOpen() {
     return _f.is_open();

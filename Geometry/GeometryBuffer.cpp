@@ -6,12 +6,12 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 
-MR::IGeometryBuffer* _MR_BINDED_GEOM_BUFFER_ = nullptr;
+mr::IGeometryBuffer* _MR_BINDED_GEOM_BUFFER_ = nullptr;
 
-void __MR_SET_VERTEX_FORMAT_AS_BINDED_(MR::IVertexFormat* vf);
-void __MR_SET_INDEX_FORMAT_AS_BINDED_(MR::IIndexFormat* fi);
+void __MR_SET_VERTEX_FORMAT_AS_BINDED_(mr::IVertexFormat* vf);
+void __MR_SET_INDEX_FORMAT_AS_BINDED_(mr::IIndexFormat* fi);
 
-namespace MR {
+namespace mr {
 
 bool GeometryBuffer::Create(IGeometryBuffer::CreationParams const& params) {
     if(params.vb == nullptr) return false;
@@ -33,8 +33,8 @@ bool GeometryBuffer::SetVertexBuffer(IGPUBuffer* buf) {
     Assert(buf == nullptr)
     _vb = buf;
 
-    if(MR::MachineInfo::IsNVVBUMSupported()){
-        if(MR::MachineInfo::IsDirectStateAccessSupported()){
+    if(mr::MachineInfo::IsNVVBUMSupported()){
+        if(mr::MachineInfo::IsDirectStateAccessSupported()){
             glGetNamedBufferParameterui64vNV(buf->GetGPUHandle(), GL_BUFFER_GPU_ADDRESS_NV, &_vb_nv_resident_ptr);
             glGetNamedBufferParameterivEXT(buf->GetGPUHandle(), GL_BUFFER_SIZE, &_vb_nv_buffer_size);
         } else {
@@ -50,8 +50,8 @@ bool GeometryBuffer::SetVertexBuffer(IGPUBuffer* buf) {
 bool GeometryBuffer::SetIndexBuffer(IGPUBuffer* buf) {
     _ib = buf;
 
-    if(MR::MachineInfo::IsNVVBUMSupported()){
-        if(MR::MachineInfo::IsDirectStateAccessSupported()){
+    if(mr::MachineInfo::IsNVVBUMSupported()){
+        if(mr::MachineInfo::IsDirectStateAccessSupported()){
             glGetNamedBufferParameterui64vNV(buf->GetGPUHandle(), GL_BUFFER_GPU_ADDRESS_NV, &_ib_nv_resident_ptr);
             glGetNamedBufferParameterivEXT(buf->GetGPUHandle(), GL_BUFFER_SIZE, &_ib_nv_buffer_size);
         } else {
@@ -66,12 +66,12 @@ bool GeometryBuffer::SetIndexBuffer(IGPUBuffer* buf) {
 }
 
 bool GeometryBuffer::Bind(bool useIndexBuffer) {
-    if(_MR_BINDED_GEOM_BUFFER_ == dynamic_cast<MR::IGeometryBuffer*>(this)) return true;
+    if(_MR_BINDED_GEOM_BUFFER_ == dynamic_cast<mr::IGeometryBuffer*>(this)) return true;
 
     if(!_format) return false;
     if(!_vb) return false;
 
-    if(MR::MachineInfo::IsNVVBUMSupported()) {
+    if(mr::MachineInfo::IsNVVBUMSupported()) {
         _format->Bind();//__MR_SET_VERTEX_FORMAT_AS_BINDED_(_format);
 
         TStaticArray<IVertexAttribute*> attrs = _format->_GetAttributes();
@@ -99,7 +99,7 @@ bool GeometryBuffer::Bind(bool useIndexBuffer) {
         }
     }
 
-    _MR_BINDED_GEOM_BUFFER_ = dynamic_cast<MR::IGeometryBuffer*>(this);
+    _MR_BINDED_GEOM_BUFFER_ = dynamic_cast<mr::IGeometryBuffer*>(this);
     return true;
 }
 
@@ -107,7 +107,7 @@ GeometryBuffer::GeometryBuffer() :
     _created(false),
     _vb(nullptr), _ib(nullptr),
     _format(nullptr), _iformat(nullptr),
-    _draw_mode((MR::IGeometryBuffer::DrawModes)0),
+    _draw_mode((mr::IGeometryBuffer::DrawMode)0),
     _vb_nv_resident_ptr(0), _ib_nv_resident_ptr(0),
     _vb_nv_buffer_size(0), _ib_nv_buffer_size(0)
 {  }

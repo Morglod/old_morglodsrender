@@ -6,7 +6,7 @@
 #include "../Utils/Containers.hpp"
 #include "../Utils/Events.hpp"
 
-namespace MR {
+namespace mr {
 
 class IGeometry;
 class IMaterial;
@@ -16,8 +16,8 @@ class IMaterial;
 */
 class IMesh {
 public:
-    MR::EventListener<IMesh*, IMaterial*> OnMaterialChanged;
-    MR::EventListener<IMesh*, const TStaticArray<IGeometry*>&> OnGeometryChanged;
+    mr::EventListener<IMesh*, IMaterial*> OnMaterialChanged;
+    mr::EventListener<IMesh*, const TStaticArray<IGeometry*>&> OnGeometryChanged;
 
     virtual void SetMaterial(IMaterial* m) = 0;
     virtual IMaterial* GetMaterial() = 0;

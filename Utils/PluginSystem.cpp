@@ -1,7 +1,7 @@
 #include "PluginSystem.hpp"
 #include <windows.h>
 
-namespace MR {
+namespace mr {
 
 bool Plugin::Init(PluginSystem* sys) {
     return false;

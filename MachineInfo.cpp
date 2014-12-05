@@ -36,29 +36,41 @@ typedef int (*PROC_wglGetGPUInfoAMD)(unsigned int id, int property, GLenum dataT
 PROC_wglGetGPUIDsAMD wglGetGPUIDsAMD = 0;
 PROC_wglGetGPUInfoAMD wglGetGPUInfoAMD = 0;
 
-int MR::MachineInfo::gl_version_major() {
-    int outv = 0;
-    glGetIntegerv(GL_MAJOR_VERSION, &outv);
+int mr::MachineInfo::gl_version_major() {
+    static int outv = 0;
+    if(outv == 0) glGetIntegerv(GL_MAJOR_VERSION, &outv);
     return outv;
 }
 
-int MR::MachineInfo::gl_version_minor() {
-    int outv = 0;
-    glGetIntegerv(GL_MINOR_VERSION, &outv);
+int mr::MachineInfo::gl_version_minor() {
+    static int outv = 0;
+    if(outv == 0) glGetIntegerv(GL_MINOR_VERSION, &outv);
     return outv;
 }
 
-const bool MR::MachineInfo::gl_version_over_4_5() {
-    const bool b = (gl_version_major() >= 4) && (gl_version_minor() >= 5);
+float mr::MachineInfo::gl_versions_f() {
+    static float f = 0.0f;
+    if(f == 0.0f) {
+        float m = (float)gl_version_minor();
+        while((int)m != 0) {
+            m /= 10.0f;
+        }
+        f = (float)gl_version_major() + m;
+    }
+    return f;
+}
+
+const bool mr::MachineInfo::gl_version_over_4_5() {
+    static bool b = (gl_version_major() >= 4) && (gl_version_minor() >= 5);
     return b;
 }
 
-std::string MR::MachineInfo::gl_version_string() {
+std::string mr::MachineInfo::gl_version_string() {
     static std::string outv = (const char*)glGetString(GL_VERSION);
     return outv;
 }
 
-MR::MachineInfo::GLVersion MR::MachineInfo::gl_version() {
+mr::MachineInfo::GLVersion mr::MachineInfo::gl_version() {
     static int gl_major = gl_version_major();
     static int gl_minor = gl_version_minor();
     static GLVersion ver = GLVersion::VUnknown;
@@ -103,12 +115,12 @@ MR::MachineInfo::GLVersion MR::MachineInfo::gl_version() {
     return ver;
 }
 
-std::string MR::MachineInfo::gpu_vendor_string() {
+std::string mr::MachineInfo::gpu_vendor_string() {
     static std::string outv = (const char*)glGetString(GL_VENDOR);
     return outv;
 }
 
-MR::MachineInfo::GPUVendor MR::MachineInfo::gpu_vendor() {
+mr::MachineInfo::GPUVendor mr::MachineInfo::gpu_vendor() {
     static std::string v = gpu_vendor_string();
     if(v == "NVIDIA Corporation") return GPUVendor::Nvidia;
     else if(v == "ATI Technologies" || v == "ATI Technologies Inc.") return GPUVendor::ATI;
@@ -117,22 +129,22 @@ MR::MachineInfo::GPUVendor MR::MachineInfo::gpu_vendor() {
     else return GPUVendor::Other;
 }
 
-std::string MR::MachineInfo::gpu_name() {
+std::string mr::MachineInfo::gpu_name() {
     static std::string outv = (const char*)glGetString(GL_RENDERER);
     return outv;
 }
 
-std::string MR::MachineInfo::gl_extensions_list() {
+std::string mr::MachineInfo::gl_extensions_list() {
     static std::string outv = (const char*)glGetString(GL_EXTENSIONS);
     return outv;
 }
 
-std::string MR::MachineInfo::gl_version_glsl() {
+std::string mr::MachineInfo::gl_version_glsl() {
     static std::string outv = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
     return outv;
 }
 
-unsigned int MR::MachineInfo::total_memory_kb() {
+unsigned int mr::MachineInfo::total_memory_kb() {
     unsigned int total_mem_kb = 0;
     if(gpu_vendor() == GPUVendor::Nvidia) glGetIntegerv(GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX, (int*)&total_mem_kb);
     else if(gpu_vendor() == GPUVendor::ATI) {
@@ -151,7 +163,7 @@ unsigned int MR::MachineInfo::total_memory_kb() {
 
         wglGetGPUInfoAMD(uGPUIDs[0], WGL_GPU_RAM_AMD, GL_UNSIGNED_INT, sizeof(unsigned int), &total_mem_kb);
         total_mem_kb /= 1024;*/
-        MR::Log::LogString("Failed MR::MachineInfo::total_memory_kb(). AMD is glitchy shit. Sorry", MR_LOG_LEVEL_ERROR);
+        mr::Log::LogString("Failed MR::MachineInfo::total_memory_kb(). AMD is glitchy shit. Sorry", MR_LOG_LEVEL_ERROR);
     }
     else {
         //COPYPASTA
@@ -163,7 +175,7 @@ unsigned int MR::MachineInfo::total_memory_kb() {
         HDC hdc = CreateDC("DISPLAY", 0, 0, 0);
 #endif
         if (hdc == NULL) {
-            MR::Log::LogString("Failed MachineInfo::total_memory_kb. Failed CreateDC", MR_LOG_LEVEL_ERROR);
+            mr::Log::LogString("Failed MachineInfo::total_memory_kb. Failed CreateDC", MR_LOG_LEVEL_ERROR);
             return 0;
         }
 
@@ -172,7 +184,7 @@ unsigned int MR::MachineInfo::total_memory_kb() {
         DeleteDC(hdc);
 
         if (s <= 0) {
-            MR::Log::LogString("Failed MachineInfo::total_memory_kb. Bad Escape code", MR_LOG_LEVEL_ERROR);
+            mr::Log::LogString("Failed MachineInfo::total_memory_kb. Bad Escape code", MR_LOG_LEVEL_ERROR);
             return 0;
         }
 
@@ -181,7 +193,7 @@ unsigned int MR::MachineInfo::total_memory_kb() {
     return total_mem_kb;
 }
 
-unsigned int  MR::MachineInfo::current_memory_kb() {
+unsigned int  mr::MachineInfo::current_memory_kb() {
     unsigned int cur_avail_mem_kb = 0;
     if(gpu_vendor() == GPUVendor::Nvidia) glGetIntegerv(GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX, (int*)&cur_avail_mem_kb);
     else if(gpu_vendor() == GPUVendor::ATI){
@@ -190,51 +202,55 @@ unsigned int  MR::MachineInfo::current_memory_kb() {
     return cur_avail_mem_kb;
 }
 
-void MR::MachineInfo::PrintInfo() {
-    MR::Log::LogString(
+void mr::MachineInfo::PrintInfo() {
+    try {
+    mr::Log::LogString(
             std::string("Machine info:") +
-            std::string("\nVersion: ") + MR::MachineInfo::gl_version_string() +
-            std::string("\nGLSL: ") + MR::MachineInfo::gl_version_glsl() +
-            std::string("\nOpenGL: ") + std::to_string(MR::MachineInfo::gl_version_major()) + std::string(" ") + std::to_string(MR::MachineInfo::gl_version_minor()) +
-            std::string("\nGPU: ") + MR::MachineInfo::gpu_name() + std::string(" from ") + MR::MachineInfo::gpu_vendor_string() +
-            std::string("\nMem Total(kb): ") + std::to_string(MR::MachineInfo::total_memory_kb()) + std::string(" Current free (kb): ") + std::to_string(MR::MachineInfo::current_memory_kb()) + "\n\n"
+            std::string("\nVersion: ") + mr::MachineInfo::gl_version_string() +
+            std::string("\nGLSL: ") + mr::MachineInfo::gl_version_glsl() +
+            std::string("\nOpenGL: ") + std::to_string(mr::MachineInfo::gl_version_major()) + std::string(" ") + std::to_string(mr::MachineInfo::gl_version_minor()) +
+            std::string("\nGPU: ") + mr::MachineInfo::gpu_name() + std::string(" from ") + mr::MachineInfo::gpu_vendor_string() +
+            std::string("\nMem Total(kb): ") + std::to_string(mr::MachineInfo::total_memory_kb()) + std::string(" Current free (kb): ") + std::to_string(mr::MachineInfo::current_memory_kb()) + "\n\n"
         , MR_LOG_LEVEL_INFO);
 
-        MR::Log::LogString("\nNvidia VBUM: " + std::to_string(MR::MachineInfo::IsNVVBUMSupported()));
-        MR::Log::LogString("Direct state access: " + std::to_string(MR::MachineInfo::IsDirectStateAccessSupported()));
-    MR::MachineInfo::ClearError();
+        mr::Log::LogString("\nNvidia VBUM: " + std::to_string(mr::MachineInfo::IsNVVBUMSupported()));
+        mr::Log::LogString("Direct state access: " + std::to_string(mr::MachineInfo::IsDirectStateAccessSupported()));
+    } catch(std::exception& e) {
+        mr::Log::LogString("BUG SHOULDN'T PASS!!!");
+    }
+    mr::MachineInfo::ClearError();
 }
 
-const bool MR::MachineInfo::IsNVVBUMSupported(){
+const bool mr::MachineInfo::IsNVVBUMSupported(){
     static bool support = GLEW_NV_vertex_buffer_unified_memory;
     return support;
 }
 
-const bool MR::MachineInfo::IsIndirectDrawSupported() {
+const bool mr::MachineInfo::IsIndirectDrawSupported() {
     static bool support = GLEW_ARB_draw_indirect;//(__glewDrawArraysIndirect);
     return support;
 }
 
-const bool MR::MachineInfo::IndirectDraw_UseGPUBuffer() {
-    return MR::MachineInfo::IsIndirectDrawSupported();
+const bool mr::MachineInfo::IndirectDraw_UseGPUBuffer() {
+    return mr::MachineInfo::IsIndirectDrawSupported();
 }
 
-const bool MR::MachineInfo::IsDirectStateAccessSupported(){
+const bool mr::MachineInfo::IsDirectStateAccessSupported(){
     static bool state = GLEW_EXT_direct_state_access;//(__glewNamedBufferDataEXT);
     return state;
 }
 
-const bool MR::MachineInfo::IsVertexAttribBindingSupported() {
+const bool mr::MachineInfo::IsVertexAttribBindingSupported() {
     static bool state = GLEW_ARB_vertex_attrib_binding;//ctx->ExtensionSupported("ARB_vertex_attrib_binding");
     return state;
 }
 
-const bool MR::MachineInfo::IsBufferStorageSupported() {
+const bool mr::MachineInfo::IsBufferStorageSupported() {
     static bool state = (__glewBufferStorage);
     return state;
 }
 
-int MR::MachineInfo::GetGeometryStreamsNum() {
+int mr::MachineInfo::GetGeometryStreamsNum() {
     static int num = -10;
     if(num == -10) {
         glGetIntegerv(GL_MAX_VERTEX_ATTRIB_BINDINGS, &num);
@@ -242,16 +258,16 @@ int MR::MachineInfo::GetGeometryStreamsNum() {
     return num;
 }
 
-const bool MR::MachineInfo::IsTextureStorageSupported() {
+const bool mr::MachineInfo::IsTextureStorageSupported() {
     static unsigned char state = 2;
     if(state == 2) {
-        if(MR::MachineInfo::gl_version_major() >= 4 || GLEW_ARB_texture_storage) state = 1;
+        if(mr::MachineInfo::gl_version_major() >= 4 || GLEW_ARB_texture_storage) state = 1;
         else state = 0;
     }
     return (bool)state;
 }
 
-bool MR::MachineInfo::CatchError(std::string* errorOutput, int * glCode){
+bool mr::MachineInfo::CatchError(std::string* errorOutput, int * glCode){
     GLenum er = glGetError();
     if(glCode) *glCode = er;
 
@@ -278,7 +294,7 @@ bool MR::MachineInfo::CatchError(std::string* errorOutput, int * glCode){
             return true;
             break;
         case GL_OUT_OF_MEMORY:
-            MR::Log::LogString("Out of memory", MR_LOG_LEVEL_ERROR);
+            mr::Log::LogString("Out of memory", MR_LOG_LEVEL_ERROR);
             *errorOutput = "Out of memory";
             return true;
             break;
@@ -296,11 +312,11 @@ bool MR::MachineInfo::CatchError(std::string* errorOutput, int * glCode){
     return false;
 }
 
-void MR::MachineInfo::ClearError(){
+void mr::MachineInfo::ClearError(){
     glGetError();
 }
 
-int MR::MachineInfo::MaxTextureSize(){
+int mr::MachineInfo::MaxTextureSize(){
     static int s = -10;
     if(s == -10){
         glGetIntegerv(GL_MAX_TEXTURE_SIZE, &s);
@@ -308,60 +324,60 @@ int MR::MachineInfo::MaxTextureSize(){
     return s;
 }
 
-int MR::MachineInfo::MaxFragmentShaderTextureUnits() {
+int mr::MachineInfo::MaxFragmentShaderTextureUnits() {
     static int s = 0;
     if(s == 0){
         glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &s);
         if(s == 0) {
-            MR::Log::LogString("Failed MachineInfo::MaxFragmentShaderTextureUnits. MaxTextureUnits always 0. 8 will be used.", MR_LOG_LEVEL_ERROR);
+            mr::Log::LogString("Failed MachineInfo::MaxFragmentShaderTextureUnits. MaxTextureUnits always 0. 8 will be used.", MR_LOG_LEVEL_ERROR);
             s = 8;
         }
     }
     return s;
 }
 
-int MR::MachineInfo::MaxVertexShaderTextureUnits() {
+int mr::MachineInfo::MaxVertexShaderTextureUnits() {
     static int s = 0;
     if(s == 0){
         glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &s);
         if(s == 0) {
-            MR::Log::LogString("Failed MachineInfo::MaxVertexShaderTextureUnits. MaxTextureUnits always 0. 8 will be used.", MR_LOG_LEVEL_ERROR);
+            mr::Log::LogString("Failed MachineInfo::MaxVertexShaderTextureUnits. MaxTextureUnits always 0. 8 will be used.", MR_LOG_LEVEL_ERROR);
             s = 8;
         }
     }
     return s;
 }
 
-int MR::MachineInfo::MaxActivedTextureUnits() {
+int mr::MachineInfo::MaxActivedTextureUnits() {
     static int s = 0;
     if(s == 0){
         glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &s);
         if(s == 0) {
-            MR::Log::LogString("Failed MachineInfo::MaxActivedTextureUnits. MaxTextureUnits always 0. 8 will be used.", MR_LOG_LEVEL_ERROR);
+            mr::Log::LogString("Failed MachineInfo::MaxActivedTextureUnits. MaxTextureUnits always 0. 8 will be used.", MR_LOG_LEVEL_ERROR);
             s = 8;
         }
     }
     return s;
 }
 
-std::string MR::MachineInfo::glsl_version_directive() {
+std::string mr::MachineInfo::glsl_version_directive() {
     static std::string s = "";
     if(s == "") {
-        switch(MR::MachineInfo::gl_version()) {
-        case MR::MachineInfo::GLVersion::VUnknown:
-        case MR::MachineInfo::GLVersion::VNotSupported:
-        case MR::MachineInfo::GLVersion::Vx_x:
-        case MR::MachineInfo::GLVersion::V3_2:
+        switch(mr::MachineInfo::gl_version()) {
+        case mr::MachineInfo::GLVersion::VUnknown:
+        case mr::MachineInfo::GLVersion::VNotSupported:
+        case mr::MachineInfo::GLVersion::Vx_x:
+        case mr::MachineInfo::GLVersion::V3_2:
             s = std::string("#version 150 ") + (gl_core_profile() ? "core" : "");
             break;
         default:
-            s = std::string("#version ")+std::to_string(MR::MachineInfo::gl_version_major())+std::to_string(MR::MachineInfo::gl_version_minor())+"0 " + (gl_core_profile() ? "core" : "");
+            s = std::string("#version ")+std::to_string(mr::MachineInfo::gl_version_major())+std::to_string(mr::MachineInfo::gl_version_minor())+"0 " + (gl_core_profile() ? "core" : "");
             break;
         }
     }
     return s;
 }
 
-bool MR::MachineInfo::gl_core_profile() {
+bool mr::MachineInfo::gl_core_profile() {
     return true;
 }

@@ -1,5 +1,5 @@
 #include "PluginSystem.hpp"
 
 extern "C" {
-MR::Plugin* GetPluginInstance(MR::PluginSystem* sys) { return 0; }
+mr::Plugin* GetPluginInstance(mr::PluginSystem* sys) { return 0; }
 }

@@ -4,12 +4,12 @@
 #include "GeometryObject.hpp"
 #include "GeometryDrawParams.hpp"
 
-namespace MR {
+namespace mr {
 
 
 IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* vertexData, const size_t& vertexNum,
                              IIndexFormat* indexFormat, void* indexData, const size_t& indexNum,
-                             const IGPUBuffer::Usage& usage, const IGeometryBuffer::DrawModes& drawMode) {
+                             const IGPUBuffer::Usage& usage, const IGeometryBuffer::DrawMode& drawMode) {
     Assert(!vertexFormat)
     Assert(!vertexData)
     Assert(vertexNum == 0)
@@ -23,18 +23,18 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
     const size_t indexDataSize = (indexFormat) ? (indexNum * indexFormat->GetSize()) : 0;
 
     if(_buffer_per_geom) {
-        GPUBuffer* vertexBuffer = new MR::GPUBuffer();
+        GPUBuffer* vertexBuffer = new mr::GPUBuffer();
         vertexBuffer->Allocate(usage, vertexDataSize);
         vertexBuffer->Write(vertexData, 0, 0, vertexDataSize,  nullptr, nullptr);
 
         GPUBuffer* indexBuffer = nullptr;
         if(indexFormat) {
-            indexBuffer = new MR::GPUBuffer();
+            indexBuffer = new mr::GPUBuffer();
             indexBuffer->Allocate(usage, indexDataSize);
             indexBuffer->Write(indexData, 0, 0, indexDataSize, nullptr, nullptr);
         }
 
-        MR::GeometryBuffer* geomBuffer = new MR::GeometryBuffer();
+        mr::GeometryBuffer* geomBuffer = new mr::GeometryBuffer();
         if(!geomBuffer->Create  (
             IGeometryBuffer::CreationParams(
                 dynamic_cast<IGPUBuffer*>(vertexBuffer), (indexFormat) ? (dynamic_cast<IGPUBuffer*>(indexBuffer)) : nullptr,
@@ -50,21 +50,21 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
             return nullptr;
         }
 
-        return dynamic_cast<MR::IGeometry*>(
-                    new MR::Geometry(
-                        dynamic_cast<MR::IGeometryBuffer*>(geomBuffer), (indexFormat) ? GeometryDrawParams::DrawElements(0, indexDataSize / indexFormat->GetSize(), 0) : GeometryDrawParams::DrawArrays(0, vertexDataSize/vertexFormat->GetSize())
+        return dynamic_cast<mr::IGeometry*>(
+                    new mr::Geometry(
+                        dynamic_cast<mr::IGeometryBuffer*>(geomBuffer), (indexFormat) ? GeometryDrawParams::DrawElements(0, indexDataSize / indexFormat->GetSize(), 0) : GeometryDrawParams::DrawArrays(0, vertexDataSize/vertexFormat->GetSize())
                     )
                 );
     }
 
     FormatBuffer* fbuf = _RequestFormatBuffer(vertexFormat, vertexDataSize, indexFormat, indexDataSize, usage);
     VirtualGPUBuffer* virtualBuffer = fbuf->manager->Take(vertexDataSize+indexDataSize);
-    MR::IGPUBuffer::BufferedDataInfo bufferedVertexDataInfo, bufferedIndexDataInfo;
+    mr::IGPUBuffer::BufferedDataInfo bufferedVertexDataInfo, bufferedIndexDataInfo;
     virtualBuffer->Write(vertexData, 0, 0, vertexDataSize, nullptr, &bufferedVertexDataInfo);
 
     if(indexDataSize) virtualBuffer->Write(indexData, 0, vertexDataSize, indexDataSize, nullptr, &bufferedIndexDataInfo);
 
-    MR::GeometryBuffer* geomBuffer = new MR::GeometryBuffer();
+    mr::GeometryBuffer* geomBuffer = new mr::GeometryBuffer();
     if(!geomBuffer->Create  (
         IGeometryBuffer::CreationParams(
             fbuf->manager->GetRealBuffer(), ((indexFormat) ? (fbuf->manager->GetRealBuffer()) : nullptr),
@@ -76,9 +76,9 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
         return nullptr;
     }
 
-    return dynamic_cast<MR::IGeometry*>(
-                new MR::Geometry(
-                    dynamic_cast<MR::IGeometryBuffer*>(geomBuffer),
+    return dynamic_cast<mr::IGeometry*>(
+                new mr::Geometry(
+                    dynamic_cast<mr::IGeometryBuffer*>(geomBuffer),
                     (indexFormat) ? GeometryDrawParams::DrawElements(bufferedIndexDataInfo.offset / indexFormat->GetSize(), indexNum, bufferedVertexDataInfo.offset / vertexFormat->GetSize()) : GeometryDrawParams::DrawArrays(bufferedVertexDataInfo.offset / vertexFormat->GetSize(), vertexNum)
                 )
             );
@@ -104,12 +104,12 @@ GeometryManager::FormatBuffer* GeometryManager::_RequestFormatBuffer(IVertexForm
     }
 
     FormatBuffer formatBuf;
-    formatBuf.buffer = new MR::GPUBuffer();
+    formatBuf.buffer = new mr::GPUBuffer();
     formatBuf.buffer->Allocate(usage, std::max(vertexDataSize+indexDataSize, _max_buffer_size));
     formatBuf.iFormat = indexFormat;
     formatBuf.vFormat = vertexFormat;
     formatBuf.usage = usage;
-    formatBuf.manager = new MR::VirtualGPUBufferManager(formatBuf.buffer, 0);
+    formatBuf.manager = new mr::VirtualGPUBufferManager(formatBuf.buffer, 0);
     _buffers.push_back(formatBuf);
 
     return &_buffers[_buffers.size()-1];

@@ -3,7 +3,7 @@
 #ifndef _MR_POINTERS_H_
 #define _MR_POINTERS_H_
 
-namespace MR {
+namespace mr {
 
 template < typename T , typename CounterT = size_t >
 class HandlePtr {

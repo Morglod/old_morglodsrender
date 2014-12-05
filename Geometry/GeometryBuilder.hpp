@@ -11,7 +11,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-namespace MR {
+namespace mr {
 
 class IGeometry;
 class ManualGeometry {
@@ -19,7 +19,7 @@ public:
     typedef unsigned int IndexType;
     const unsigned int GPUIndexType = 0x1405; //GL_UNSIGNED_INT
 
-    enum VertexDataAttributeTypes {
+    enum VertexDataAttributeType {
         Position = MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION,
         Normal = MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION,
         Color = MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION,

@@ -8,7 +8,7 @@
 #define MINIMAL_GL_VERSION_MAJOR 3
 #define MINIMAL_GL_VERSION_MINOR 2
 
-namespace MR{
+namespace mr{
 class IContext;
 
     namespace MachineInfo{
@@ -39,6 +39,7 @@ class IContext;
 
         int gl_version_major();
         int gl_version_minor();
+        float gl_versions_f();
         const bool gl_version_over_4_5();
         std::string gl_version_string();
         GLVersion gl_version();

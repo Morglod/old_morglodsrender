@@ -15,7 +15,7 @@
 
 #include "Exception.hpp"
 
-namespace MR{
+namespace mr{
 
 class Log final {
 public:
@@ -30,7 +30,7 @@ public:
         }
     }
 
-    static void LogException(MR::Exception & e){
+    static void LogException(mr::Exception & e){
         for(size_t i = 0; i < _callbacks.size(); ++i){
             _callbacks[i](e.what(), MR_LOG_LEVEL_EXCEPTION);
         }

@@ -1,6 +1,6 @@
 #include "Anim.hpp"
 
-namespace MR{
+namespace mr{
 
 template<typename T>
 void AnimDesc<T>::SetAnimTime(const MR_ANIM_TIME_TYPE& v){

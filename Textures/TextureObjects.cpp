@@ -10,18 +10,18 @@
 #   include <GL\glew.h>
 #endif
 
-MR::TStaticArray<MR::ITexture*> _MR_TEXTURE_BIND_TARGETS_;
-MR::TStaticArray<MR::ITextureSettings*> _MR_TEXTURE_BIND_TARGETS_SAMPLERS_;
+mr::TStaticArray<mr::ITexture*> _MR_TEXTURE_BIND_TARGETS_;
+mr::TStaticArray<mr::ITextureSettings*> _MR_TEXTURE_BIND_TARGETS_SAMPLERS_;
 
-MR::TDynamicArray<MR::ITexture*> _MR_REGISTERED_TEXTURES_;
+mr::TDynamicArray<mr::ITexture*> _MR_REGISTERED_TEXTURES_;
 
 class _MR_TEXTURES_BIND_TARGETS_NULL_ {
 public:
     _MR_TEXTURES_BIND_TARGETS_NULL_() {
-        int units = MR::MachineInfo::MaxActivedTextureUnits();
+        int units = mr::MachineInfo::MaxActivedTextureUnits();
         Assert(units < 4)
-        _MR_TEXTURE_BIND_TARGETS_ = MR::TStaticArray<MR::ITexture*>(new MR::ITexture*[units], units, true);
-        _MR_TEXTURE_BIND_TARGETS_SAMPLERS_ = MR::TStaticArray<MR::ITextureSettings*>(new MR::ITextureSettings*[units], units, true);
+        _MR_TEXTURE_BIND_TARGETS_ = mr::TStaticArray<mr::ITexture*>(new mr::ITexture*[units], units, true);
+        _MR_TEXTURE_BIND_TARGETS_SAMPLERS_ = mr::TStaticArray<mr::ITextureSettings*>(new mr::ITextureSettings*[units], units, true);
         for(size_t i = 0; i < _MR_TEXTURE_BIND_TARGETS_.GetNum(); ++i){
             _MR_TEXTURE_BIND_TARGETS_.GetRaw()[i] = nullptr;
             _MR_TEXTURE_BIND_TARGETS_SAMPLERS_.GetRaw()[i] = nullptr;
@@ -36,14 +36,14 @@ unsigned int _MR_TEXTURE_TYPE_TO_GL_TARGET_[]{
     GL_TEXTURE_3D
 };
 
-namespace MR {
+namespace mr {
 
 void Texture::Bind(unsigned short const& unit) {
     Assert(GetGPUHandle() == 0)
     Assert(unit >= _MR_TEXTURE_BIND_TARGETS_.GetNum())
 
-    if(_MR_TEXTURE_BIND_TARGETS_.GetRaw()[unit] == dynamic_cast<MR::ITexture*>(this)) return;
-    if(MR::MachineInfo::IsDirectStateAccessSupported()) {
+    if(_MR_TEXTURE_BIND_TARGETS_.GetRaw()[unit] == dynamic_cast<mr::ITexture*>(this)) return;
+    if(mr::MachineInfo::IsDirectStateAccessSupported()) {
         glBindMultiTextureEXT(GL_TEXTURE0+unit, _MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], _handle);
     } else {
         int actived_tex = 0;
@@ -53,8 +53,8 @@ void Texture::Bind(unsigned short const& unit) {
         glActiveTexture(actived_tex);
     }
 
-    MR::ITextureSettings* ts = GetSettings();
-    _MR_TEXTURE_BIND_TARGETS_.GetRaw()[unit] = dynamic_cast<MR::ITexture*>(this);
+    mr::ITextureSettings* ts = GetSettings();
+    _MR_TEXTURE_BIND_TARGETS_.GetRaw()[unit] = dynamic_cast<mr::ITexture*>(this);
     _MR_TEXTURE_BIND_TARGETS_SAMPLERS_.GetRaw()[unit] = ts;
     glBindSampler(unit, (ts) ? ts->GetGPUHandle() : 0);
 }
@@ -101,7 +101,7 @@ void Texture::Create(ITexture::Types const& type) {
 }
 
 void Texture::GetData(const int& mipMapLevel,
-                const ITexture::DataFormat& dformat, const ITexture::DataTypes& dtype, unsigned int const& dstBufferSize,
+                const ITexture::DataFormat& dformat, const ITexture::DataType& dtype, unsigned int const& dstBufferSize,
                 void* dstBuffer) {
     Assert(_handle == 0)
     Assert(dstBufferSize == 0)
@@ -120,15 +120,15 @@ void Texture::GetData(const int& mipMapLevel,
     //}
 }
 
-void MR::Texture::SetData(const int& mipMapLevel,
-                         const ITexture::DataFormat& dformat, const ITexture::DataTypes& dtype, const ITexture::StorageDataFormat& sdFormat,
+void mr::Texture::SetData(const int& mipMapLevel,
+                         const ITexture::DataFormat& dformat, const ITexture::DataType& dtype, const ITexture::StorageDataFormat& sdFormat,
                          const int& width, const int& height, const int& depth,
                          void* data) {
     Assert(_handle == 0)
     Assert(width <= 0)
     Assert(!data)
 
-    if(MR::MachineInfo::IsDirectStateAccessSupported()) {
+    if(mr::MachineInfo::IsDirectStateAccessSupported()) {
         glPushClientAttribDefaultEXT(GL_CLIENT_PIXEL_STORE_BIT);
         switch(_texture_type) {
         case Base1D:
@@ -168,14 +168,14 @@ void MR::Texture::SetData(const int& mipMapLevel,
 void Texture::UpdateData(const int& mipMapLevel,
                             const int& xOffset, const int& yOffset, const int& zOffset,
                             const int& width, const int& height, const int& depth,
-                            const ITexture::DataFormat& dformat, const ITexture::DataTypes& dtype,
+                            const ITexture::DataFormat& dformat, const ITexture::DataType& dtype,
                             void* data) {
     Assert(_handle == 0)
     Assert(width <= 0)
     Assert(xOffset <= 0)
     Assert(!data)
 
-    /*if(MR::MachineInfo::IsDirectStateAccessSupported()) {
+    if(mr::MachineInfo::gl_version_over_4_5()) {
         switch(_texture_type) {
         case Base1D:
             glTextureSubImage1D(_handle, mipMapLevel, xOffset, width, (unsigned int)dformat, (unsigned int)dtype, data);
@@ -187,7 +187,7 @@ void Texture::UpdateData(const int& mipMapLevel,
             glTextureSubImage3D(_handle, mipMapLevel, xOffset, yOffset, zOffset, width, height, depth, (unsigned int)dformat, (unsigned int)dtype, data);
             break;
         }
-    } else {*/
+    } else {
         unsigned short fu = TextureFreeUnit();
         ITexture* binded = nullptr;
         if(fu == 0) binded = ReBind(0);
@@ -207,12 +207,12 @@ void Texture::UpdateData(const int& mipMapLevel,
 
         if(fu == 0) binded->Bind(0);
         else TextureUnBind(fu, false);
-    //}
+    }
 }
 
-bool MR::Texture::Complete(bool mipMaps) {
+bool mr::Texture::Complete(bool mipMaps) {
     if(_handle == 0) {
-        MR::Log::LogString("Failed Texture::Complete. Handle is null.", MR_LOG_LEVEL_ERROR);
+        mr::Log::LogString("Failed Texture::Complete. Handle is null.", MR_LOG_LEVEL_ERROR);
         return false;
     }
 
@@ -220,18 +220,18 @@ bool MR::Texture::Complete(bool mipMaps) {
     if(mipMaps) {
 #ifdef MR_CHECK_LARGE_GL_ERRORS
     int gl_er = 0;
-    MR::MachineInfo::ClearError();
+    mr::MachineInfo::ClearError();
 #endif
-        /*if(MR::MachineInfo::IsDirectStateAccessSupported()) {
+        if(mr::MachineInfo::gl_version_over_4_5()) {
             glGenerateTextureMipmap(_handle);
-        } else {*/
+        } else {
             ITexture* tex = ReBind(0);
             glGenerateMipmap(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type]);
             if(tex) tex->Bind(0);
-        //}
+        }
 #ifdef MR_CHECK_LARGE_GL_ERRORS
-    if(MR::MachineInfo::CatchError(0, &gl_er)) {
-        MR::Log::LogString("Error in Texture::Complete : glGenerateMipmap() ended with \"" + std::to_string(gl_er) + "\" code. ", MR_LOG_LEVEL_ERROR);
+    if(mr::MachineInfo::CatchError(0, &gl_er)) {
+        mr::Log::LogString("Error in Texture::Complete : glGenerateMipmap() ended with \"" + std::to_string(gl_er) + "\" code. ", MR_LOG_LEVEL_ERROR);
         return false;
     }
 #endif
@@ -253,10 +253,10 @@ void Texture::UpdateInfo() {
 
     {
         ITexture* binded = nullptr;
-        if(MR::MachineInfo::gl_version_over_4_5() == false) binded = ReBind(0);
+        if(mr::MachineInfo::gl_version_over_4_5() == false) binded = ReBind(0);
 
         int maxW = 0, maxH = 0, maxD = 0;
-        if(MR::MachineInfo::gl_version_over_4_5()) {
+        if(mr::MachineInfo::gl_version_over_4_5()) {
             glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_WIDTH, &maxW);
             glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_HEIGHT, &maxH);
             glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_DEPTH, &maxD);
@@ -272,7 +272,7 @@ void Texture::UpdateInfo() {
         TextureSizeInfo* szAr = _sizes.GetRaw();
 
         int fi = 0, rs = 0, gs = 0, bs = 0, ds = 0, as = 0, cm = 0;
-        if(MR::MachineInfo::gl_version_over_4_5()) {
+        if(mr::MachineInfo::gl_version_over_4_5()) {
             glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_INTERNAL_FORMAT, &fi);
             glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_RED_SIZE, &rs);
             glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_GREEN_SIZE, &gs);
@@ -298,7 +298,7 @@ void Texture::UpdateInfo() {
         for(int i = 0; i < numMipMaps; ++i) {
             int w = 0, h = 0, d = 0;
 
-            if(MR::MachineInfo::gl_version_over_4_5()) {
+            if(mr::MachineInfo::gl_version_over_4_5()) {
                 glGetTextureLevelParameteriv(_handle, i, GL_TEXTURE_WIDTH, &w);
                 glGetTextureLevelParameteriv(_handle, i, GL_TEXTURE_HEIGHT, &h);
                 glGetTextureLevelParameteriv(_handle, i, GL_TEXTURE_DEPTH, &d);
@@ -317,20 +317,20 @@ void Texture::UpdateInfo() {
     }
 }
 
-void MR::Texture::Destroy() {
+void mr::Texture::Destroy() {
     if(_handle != 0) {
         glDeleteTextures(1, &_handle);
         _handle = 0;
-        OnGPUHandleChanged(dynamic_cast<MR::GPUObjectHandle*>(this), 0);
-        OnDestroy(dynamic_cast<MR::ObjectHandle*>(this));
+        OnGPUHandleChanged(dynamic_cast<mr::GPUObjectHandle*>(this), 0);
+        OnDestroy(dynamic_cast<mr::ObjectHandle*>(this));
     }
 }
 
-MR::Texture::Texture() {
+mr::Texture::Texture() {
     _MR_REGISTERED_TEXTURES_.PushBack(dynamic_cast<ITexture*>(this));
 }
 
-MR::Texture::~Texture() {
+mr::Texture::~Texture() {
     _MR_REGISTERED_TEXTURES_.Erase(dynamic_cast<ITexture*>(this));
 }
 
@@ -344,7 +344,7 @@ void TextureUnBind(const unsigned short& unit, const bool& fast) {
     if(_MR_TEXTURE_BIND_TARGETS_.GetRaw()[unit] == nullptr) return;
 
     if(!fast) {
-        if(MR::MachineInfo::IsDirectStateAccessSupported()) {
+        if(mr::MachineInfo::IsDirectStateAccessSupported()) {
             glBindMultiTextureEXT(GL_TEXTURE0+unit, _MR_TEXTURE_TYPE_TO_GL_TARGET_[_MR_TEXTURE_BIND_TARGETS_.GetRaw()[unit]->GetType()], 0);
         } else {
             int actived_tex = 0;
@@ -377,9 +377,9 @@ ITexture* Texture::FromFile(std::string const& path) {
                                SOIL_CREATE_NEW_ID,
                                SOIL_FLAG_MIPMAPS);
 	if(tex->_handle == 0) return nullptr;
-	tex->_texture_type = MR::ITexture::Base2D;
+	tex->_texture_type = mr::ITexture::Base2D;
 	tex->Complete(true);
-	return dynamic_cast<MR::ITexture*>(tex);
+	return dynamic_cast<mr::ITexture*>(tex);
 }
 
 float * __MR_CHECKER_NEW_IMAGE_(size_t const& sizes, float c) {
@@ -391,7 +391,7 @@ float * __MR_CHECKER_NEW_IMAGE_(size_t const& sizes, float c) {
 }
 
 ITexture* Texture::CreateMipmapChecker() {
-    ITexture* tex = dynamic_cast<ITexture*>(new MR::Texture());
+    ITexture* tex = dynamic_cast<ITexture*>(new mr::Texture());
     tex->Create(Base2D);
 
     if(!tex->Good()) {
@@ -401,7 +401,7 @@ ITexture* Texture::CreateMipmapChecker() {
     for(int i = 0; i < 10; ++i) {
         int sz = glm::pow(2, 10-i);
         float* data = __MR_CHECKER_NEW_IMAGE_(sz, (float)(10-i) * 0.1f);
-        MR::Log::LogString(std::to_string((float)(10-i) * 0.1f));
+        mr::Log::LogString(std::to_string((float)(10-i) * 0.1f));
         tex->SetData(i, ITexture::DF_RED, ITexture::DT_FLOAT, ITexture::SDF_RGB, sz, sz, 0, &data[0]);
         delete [] data;
     }

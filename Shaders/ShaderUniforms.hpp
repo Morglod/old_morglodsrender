@@ -9,7 +9,7 @@
 #   include <glm/glm.hpp>
 #endif
 
-namespace MR {
+namespace mr {
 
 /** Named uniform of shader
  *  After shader recompilation, call ShaderUniform::ResetLocation method

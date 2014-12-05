@@ -5,26 +5,31 @@
 
 #include "MaterialInterfaces.hpp"
 
-namespace MR {
+namespace mr {
 
 class IShaderProgram;
 
 class DefaultMaterial : public IMaterial {
 public:
+    void Create(MaterialDescr const& descr) override;
+
     bool Use() override;
     bool IsTwoSided() override { return false; }
     bool IsDebugOnly() override { return false; }
 
     void OnMaterialFlagChanged(MaterialFlag const& newFlag) override;
 
-    MR::TStaticArray<MaterialFlag> GetAvailableFlags() override {
-        //return MR::TStaticArray<MaterialFlag> { MaterialFlag::Default() };
-    }
+    inline mr::TStaticArray<MaterialFlag> GetAvailableFlags() override { return mr::TStaticArray<MaterialFlag> { MaterialFlag_Default }; }
+
+    inline MaterialDescr GetDescription() override { return _descr; }
+    inline MaterialShaderParams GetShaderParams() override { return _shader_descr; }
 
     DefaultMaterial();
     virtual ~DefaultMaterial();
 protected:
     IShaderProgram* _program;
+    MaterialDescr _descr;
+    MaterialShaderParams _shader_descr;
 };
 
 MaterialFlag MaterialFlagGetUsed();

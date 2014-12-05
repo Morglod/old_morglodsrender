@@ -8,11 +8,11 @@
 #include "../Shaders/ShaderConfig.hpp"
 #include "../Buffers/BuffersInterfaces.hpp"
 
-namespace MR {
+namespace mr {
 
 class IVertexDataType : public Comparable<IVertexDataType*> {
 public:
-    enum DefaultDataTypes {
+    enum DefaultDataType {
         Int = 0x1404,
         UInt = 0x1405,
         Float = 0x1406
@@ -100,7 +100,7 @@ public:
 
 class IGeometryBuffer {
 public:
-    enum DrawModes {
+    enum DrawMode {
         Points = 0,
         Lines = 1,
         Triangles,
@@ -112,10 +112,10 @@ public:
         IGPUBuffer* vb = nullptr,* ib = nullptr;
         IVertexFormat* fv = nullptr;
         IIndexFormat* fi = nullptr;
-        IGeometryBuffer::DrawModes drawMode = DrawModes::Triangles;
+        IGeometryBuffer::DrawMode drawMode = DrawMode::Triangles;
 
         CreationParams() {}
-        CreationParams(IGPUBuffer* vb_, IGPUBuffer* ib_, IVertexFormat* fv_, IIndexFormat* fi_, IGeometryBuffer::DrawModes drawMode_) :
+        CreationParams(IGPUBuffer* vb_, IGPUBuffer* ib_, IVertexFormat* fv_, IIndexFormat* fi_, IGeometryBuffer::DrawMode drawMode_) :
             vb(vb_), ib(ib_), fv(fv_), fi(fi_), drawMode(drawMode_) {}
     };
 
@@ -134,8 +134,8 @@ public:
 
     virtual bool Good() = 0;
 
-    virtual void SetDrawMode(const DrawModes& dm) = 0;
-    virtual DrawModes GetDrawMode() = 0;
+    virtual void SetDrawMode(const DrawMode& dm) = 0;
+    virtual DrawMode GetDrawMode() = 0;
 
     virtual void SetFormat(IVertexFormat* f, IIndexFormat* fi) = 0;
     virtual IVertexFormat* GetVertexFormat() = 0;

@@ -5,7 +5,7 @@
 
 #include "TextureInterfaces.hpp"
 
-namespace MR {
+namespace mr {
 
 class TextureSettings : public ITextureSettings {
 public:

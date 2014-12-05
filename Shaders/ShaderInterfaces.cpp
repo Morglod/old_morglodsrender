@@ -1,6 +1,6 @@
 #include "ShaderInterfaces.hpp"
 
-namespace MR {
+namespace mr {
 
 const std::string __MR_SHADER_UNIFORM_TYPE_NAMES[] {
     std::string("float"),
@@ -34,6 +34,6 @@ ShaderProgramCache& ShaderProgramCache::operator = (ShaderProgramCache& c) {
 }
 
 ShaderProgramCache::ShaderProgramCache() : format(0), data() {}
-ShaderProgramCache::ShaderProgramCache(unsigned int const& f, MR::TStaticArray<unsigned char> d) : format(f), data(d) {}
+ShaderProgramCache::ShaderProgramCache(unsigned int const& f, mr::TStaticArray<unsigned char> d) : format(f), data(d) {}
 
 }

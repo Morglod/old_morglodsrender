@@ -4,4 +4,4 @@
 
 #include "Log.hpp"
 
-std::vector<MR::Log::LogStringPtr> MR::Log::_callbacks;
+std::vector<mr::Log::LogStringPtr> mr::Log::_callbacks;

@@ -107,11 +107,11 @@
 		<Unit filename="Resources/ResourceManager.hpp" />
 		<Unit filename="Resources/ResourceType.cpp" />
 		<Unit filename="Resources/ResourceType.hpp" />
-		<Unit filename="Scene/Entity.hpp" />
-		<Unit filename="Scene/Light.hpp" />
 		<Unit filename="Scene/PerspectiveCamera.cpp" />
 		<Unit filename="Scene/PerspectiveCamera.hpp" />
 		<Unit filename="Scene/SceneInterfaces.hpp" />
+		<Unit filename="Scene/SceneLoader.cpp" />
+		<Unit filename="Scene/SceneLoader.hpp" />
 		<Unit filename="Scene/Transformation.cpp" />
 		<Unit filename="Scene/Transformation.hpp" />
 		<Unit filename="Shaders/ShaderCompiler.cpp" />

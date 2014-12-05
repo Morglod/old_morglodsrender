@@ -5,7 +5,7 @@
 
 #include "ViewportInterfaces.hpp"
 
-namespace MR {
+namespace mr {
 
 class Viewport : public IViewport {
 public:

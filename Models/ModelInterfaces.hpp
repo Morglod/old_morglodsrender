@@ -6,7 +6,7 @@
 #include "../Utils/Containers.hpp"
 #include "../Scene/Transformation.hpp"
 
-namespace MR {
+namespace mr {
 
 class IMesh;
 
@@ -15,8 +15,8 @@ class IMesh;
 */
 class ISubModel {
 public:
-    virtual MR::TStaticArray<IMesh*> GetMeshes() = 0;
-    virtual void SetMeshes(MR::TStaticArray<IMesh*>) = 0;
+    virtual mr::TStaticArray<IMesh*> GetMeshes() = 0;
+    virtual void SetMeshes(mr::TStaticArray<IMesh*>) = 0;
 
     virtual IMaterial* GetMaterial() = 0; //may be nullptr
     virtual void SetMaterial(IMaterial*) = 0; //override all meshes materials
@@ -27,8 +27,8 @@ public:
 class IModel {
 public:
     //LOD
-    virtual MR::TStaticArray<ISubModel*> GetLevels() = 0;
-    virtual void SetLevels(MR::TStaticArray<ISubModel*>) = 0;
+    virtual mr::TStaticArray<ISubModel*> GetLevels() = 0;
+    virtual void SetLevels(mr::TStaticArray<ISubModel*>) = 0;
 
     virtual float GetLodBias() = 0;
     virtual void SetLodBias(float const& bias) = 0;

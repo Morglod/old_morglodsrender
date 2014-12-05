@@ -8,14 +8,14 @@
 
 #include <glm/glm.hpp>
 
-namespace MR {
+namespace mr {
 
 class IViewport : public Usable {
 public:
-    static MR::EventListener<IViewport*> OnAnyUsed;
+    static mr::EventListener<IViewport*> OnAnyUsed;
 
-    MR::EventListener<IViewport*, const glm::ivec4&> OnRectChanged;
-    MR::EventListener<IViewport*> OnUsed;
+    mr::EventListener<IViewport*, const glm::ivec4&> OnRectChanged;
+    mr::EventListener<IViewport*> OnUsed;
 
     virtual glm::ivec4 GetRect() = 0;
     virtual void SetRect(const glm::ivec4& r) = 0;

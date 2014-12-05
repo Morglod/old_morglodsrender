@@ -5,7 +5,7 @@
 
 #include "GeometryInterfaces.hpp"
 
-namespace MR {
+namespace mr {
 
 class Geometry : public IGeometry {
 public:

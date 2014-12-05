@@ -6,7 +6,7 @@
 
 #define MR_MIN(x,y) ((x>y) ? y : x)
 
-namespace MR {
+namespace mr {
 
 ManualGeometry::VertexDataAttribute::VertexDataAttribute() : attributeType(0), elementsNum(0) {
 }
@@ -70,11 +70,11 @@ IGeometry* ManualGeometry::Build(IGPUBuffer::Usage const& usage) {
     vformat.SetAttributesNum(_vertexAttributes.size());
 
     for(size_t i = 0; i < _vertexAttributes.size(); ++i) {
-        vformat.AddVertexAttribute(MR::VertexAttributeCustom(_vertexAttributes[i].elementsNum, &(VertexDataTypeFloat::GetInstance()), _vertexAttributes[i].attributeType).Cache());
+        vformat.AddVertexAttribute(mr::VertexAttributeCustom(_vertexAttributes[i].elementsNum, &(VertexDataTypeFloat::GetInstance()), _vertexAttributes[i].attributeType).Cache());
     }
 
     IndexFormatCustom iformat(VertexDataTypeCustom(GPUIndexType, sizeof(ManualGeometry::IndexType)).Cache());
-    return MR::GeometryManager::GetInstance()->PlaceGeometry(vformat.Cache(), &_vertexData[0], _vertexes+1, iformat.Cache(), &_indexData[0], _indexData.size()+1, usage, IGeometryBuffer::DrawModes::Triangles); //GL_TRIANGLES - 0x0004
+    return mr::GeometryManager::GetInstance()->PlaceGeometry(vformat.Cache(), &_vertexData[0], _vertexes+1, iformat.Cache(), &_indexData[0], _indexData.size()+1, usage, IGeometryBuffer::DrawMode::Triangles); //GL_TRIANGLES - 0x0004
 }
 
 void ManualGeometry::Clear() {

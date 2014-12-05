@@ -5,11 +5,11 @@
 
 #include "ResourceType.hpp"
 
-namespace MR {
+namespace mr {
 
 class IResource {
 public:
-    virtual ResourceType* GetType() = 0;
+    virtual ResourceTypePtr GetType() = 0;
     virtual std::string GetName() = 0;
     virtual size_t GetHash() { return 0; }
     virtual bool Equal(IResource* res) { return GetHash() == res->GetHash(); }

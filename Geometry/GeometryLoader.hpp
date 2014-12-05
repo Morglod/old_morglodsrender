@@ -8,7 +8,7 @@
 
 #include "../Utils/Containers.hpp"
 
-namespace MR {
+namespace mr {
 
 class IGeometry;
 

@@ -6,7 +6,7 @@
 //#define MR_DEBUG_LOG_CAMERA
 
 #ifdef MR_DEBUG_LOG_CAMERA
-#define __MR_DEBUG_LOG(x) MR::Log::LogString(std::string("In PerspectiveCamera ") + x);
+#define __MR_DEBUG_LOG(x) mr::Log::LogString(std::string("In PerspectiveCamera ") + x);
 #else
 #define __MR_DEBUG_LOG(x)
 #endif
@@ -14,7 +14,7 @@
 #define MR_DEBUG_LOG_CAM(x) __MR_DEBUG_LOG(x);
 #define glmV3_ToString(_x_) ("(" + std::to_string(_x_.x) + ", " + std::to_string(_x_.y) + ", " + std::to_string(_x_.z) + ")")
 
-namespace MR {
+namespace mr {
 
 void PerspectiveCamera::MoveForward(const float& v) {
     if(v == 0.0f) return;
@@ -144,9 +144,9 @@ void PerspectiveCamera::Calc()  {
 }
 
 void PerspectiveCamera::_CalcDirectionsFromRot() {
-    _dir_forward = MR::Transform::NormalizedDirection(_rot.x, _rot.y, _rot.z);
-    _dir_up = MR::Transform::NormalizedDirection(_rot.x, _rot.y+90.0f, _rot.z);
-    _dir_left = MR::Transform::NormalizedDirection(_rot.x+90.0f, 0.0f, _rot.z);
+    _dir_forward = mr::Transform::NormalizedDirection(_rot.x, _rot.y, _rot.z);
+    _dir_up = mr::Transform::NormalizedDirection(_rot.x, _rot.y+90.0f, _rot.z);
+    _dir_left = mr::Transform::NormalizedDirection(_rot.x+90.0f, 0.0f, _rot.z);
     OnDirectionsChanged(this);
 }
 

@@ -5,7 +5,7 @@
 
 #include "GeometryInterfaces.hpp"
 
-namespace MR {
+namespace mr {
 
 class GeometryDrawParams : public IGeometryDrawParams {
 public:

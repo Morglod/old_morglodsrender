@@ -12,7 +12,7 @@
 #   include <glm/glm.hpp>
 #endif
 
-namespace MR{
+namespace mr{
 
 template<typename T>
 struct AnimValue {

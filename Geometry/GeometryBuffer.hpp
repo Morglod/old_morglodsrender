@@ -6,7 +6,7 @@
 #include "../Config.hpp"
 #include "GeometryInterfaces.hpp"
 
-namespace MR {
+namespace mr {
 
 class GeometryBuffer : public IGeometryBuffer {
 public:
@@ -16,8 +16,8 @@ public:
     bool SetIndexBuffer(IGPUBuffer* buf) override;
     inline IGPUBuffer* GetIndexBuffer() override { return _ib; }
 
-    inline IGeometryBuffer::DrawModes GetDrawMode() override { return _draw_mode; }
-    inline void SetDrawMode(const IGeometryBuffer::DrawModes& dm) override { _draw_mode = dm; }
+    inline IGeometryBuffer::DrawMode GetDrawMode() override { return _draw_mode; }
+    inline void SetDrawMode(const IGeometryBuffer::DrawMode& dm) override { _draw_mode = dm; }
 
     inline void SetFormat(IVertexFormat* f, IIndexFormat* fi) override { _format = f; _iformat = fi; }
     inline IVertexFormat* GetVertexFormat() override { return _format; }
@@ -58,7 +58,7 @@ protected:
     IGPUBuffer* _ib;
     IVertexFormat* _format;
     IIndexFormat* _iformat;
-    IGeometryBuffer::DrawModes _draw_mode;
+    IGeometryBuffer::DrawMode _draw_mode;
 
     uint64_t _vb_nv_resident_ptr, _ib_nv_resident_ptr;
     int _vb_nv_buffer_size, _ib_nv_buffer_size;

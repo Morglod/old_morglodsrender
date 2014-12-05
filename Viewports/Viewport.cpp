@@ -3,9 +3,9 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 
-MR::Viewport * usedViewport = nullptr;
+mr::Viewport * usedViewport = nullptr;
 
-namespace MR {
+namespace mr {
 
 void Viewport::SetRect(const glm::ivec4& r){
     if(_rect != r){
@@ -24,7 +24,7 @@ bool Viewport::Use() {
         usedViewport = this;
         glViewport(_rect.x, _rect.y, _rect.z, _rect.w);
 
-        MR::Viewport::OnAnyUsed(dynamic_cast<IViewport*>(this));
+        mr::Viewport::OnAnyUsed(dynamic_cast<IViewport*>(this));
         OnUsed(dynamic_cast<IViewport*>(this));
     }
     return true;

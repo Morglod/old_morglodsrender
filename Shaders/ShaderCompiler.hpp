@@ -11,7 +11,7 @@
     Class used to compile shader's code, optimization and errors processing.
 */
 
-namespace MR {
+namespace mr {
 
 struct ShaderCompilationMessage {
 public:
@@ -69,6 +69,8 @@ public:
         TypesNum = 8
     };
 
+    virtual void Release() = 0;
+
     /// Should call IShaderCompiler::_Optimize
     /// gpu_handle is OpenGL shader object id
     virtual ShaderCompilationOutput Compile(const std::string& code, const ShaderType& type, const unsigned int& gpu_handle) = 0;
@@ -81,15 +83,19 @@ public:
 
     /// IShaderCompiler::Compile calls this method before compilation
     virtual std::string _Optimize(const std::string& code, const ShaderType& type) = 0;
+
+    virtual ~IShaderCompiler() {}
 };
 
 class ShaderCompiler : public IShaderCompiler {
 public:
+    void Release() override;
     ShaderCompilationOutput Compile(const std::string& code, const ShaderType& type, const unsigned int& gpu_handle) override;
     ShaderCompilationOutput Link(TStaticArray<unsigned int> gpu_handles, const unsigned int& gpu_program_handle) override;
     ShaderCompilationOutput LinkToByteCode(TStaticArray<unsigned int> gpu_handles, const unsigned int& gpu_program_handle, int* outLength, unsigned int* outFromat, void** outData, bool* byteCode) override;
     std::string _Optimize(const std::string& code, const ShaderType& type) override;
     bool debug_log = true;
+    virtual ~ShaderCompiler();
 };
 
 }

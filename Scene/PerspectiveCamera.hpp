@@ -5,7 +5,7 @@
 
 #include "SceneInterfaces.hpp"
 
-namespace MR {
+namespace mr {
 
 class PerspectiveCamera : public ICamera {
 public:
@@ -72,8 +72,6 @@ protected:
     float _fovy, _near_z, _far_z, _aspectr;
     glm::mat4 _mat_view, _mat_proj, _mat_mvp;
     glm::mat4* _mat_model_ptr;
-
-    bool _fixed_target; ///TODO (Third person camera)
 };
 
 }

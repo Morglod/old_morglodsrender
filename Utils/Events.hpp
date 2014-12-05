@@ -8,7 +8,7 @@
 #include <vector>
 #include <algorithm>
 
-namespace MR {
+namespace mr {
 
 template<typename... Args>
 class Event {

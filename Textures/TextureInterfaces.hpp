@@ -7,7 +7,7 @@
 #include "../Types.hpp"
 #include "../CoreObjects.hpp"
 
-namespace MR {
+namespace mr {
 
 class ITextureSettings : public Copyable<ITextureSettings*>, public GPUObjectHandle {
 public:
@@ -49,17 +49,17 @@ public:
     };
 
     /* SENDER - TextureSettings pointer */
-    MR::EventListener<ITextureSettings*, const float&> OnLodBiasChanged;
-    MR::EventListener<ITextureSettings*, float*> OnBorderColorChanged; //as param used pointer to _border_color
-    MR::EventListener<ITextureSettings*, const MinFilter&> OnMinFilterChanged;
-    MR::EventListener<ITextureSettings*, const MagFilter&> OnMagFilterChanged;
-    MR::EventListener<ITextureSettings*, const int&> OnMinLodChanged;
-    MR::EventListener<ITextureSettings*, const int&> OnMaxLodChanged;
-    MR::EventListener<ITextureSettings*, const Wrap&> OnWrapSChanged;
-    MR::EventListener<ITextureSettings*, const Wrap&> OnWrapRChanged;
-    MR::EventListener<ITextureSettings*, const Wrap&> OnWrapTChanged;
-    MR::EventListener<ITextureSettings*, const CompareMode&> OnCompareModeChanged;
-    MR::EventListener<ITextureSettings*, const CompareFunc&> OnCompareFuncChanged;
+    mr::EventListener<ITextureSettings*, const float&> OnLodBiasChanged;
+    mr::EventListener<ITextureSettings*, float*> OnBorderColorChanged; //as param used pointer to _border_color
+    mr::EventListener<ITextureSettings*, const MinFilter&> OnMinFilterChanged;
+    mr::EventListener<ITextureSettings*, const MagFilter&> OnMagFilterChanged;
+    mr::EventListener<ITextureSettings*, const int&> OnMinLodChanged;
+    mr::EventListener<ITextureSettings*, const int&> OnMaxLodChanged;
+    mr::EventListener<ITextureSettings*, const Wrap&> OnWrapSChanged;
+    mr::EventListener<ITextureSettings*, const Wrap&> OnWrapRChanged;
+    mr::EventListener<ITextureSettings*, const Wrap&> OnWrapTChanged;
+    mr::EventListener<ITextureSettings*, const CompareMode&> OnCompareModeChanged;
+    mr::EventListener<ITextureSettings*, const CompareFunc&> OnCompareFuncChanged;
 
     virtual void SetLodBias(const float& v) = 0;
     virtual void SetBorderColor(float* rgba) = 0;
@@ -182,7 +182,7 @@ public:
         DF_LUMINANCE_ALPHA = 0x190A
     };
 
-    enum DataTypes {
+    enum DataType {
         DT_UNSIGNED_BYTE = 0x1401,
         DT_BYTE = 0x1400,
         DT_UNSIGNED_SHORT = 0x1403,
@@ -236,18 +236,18 @@ public:
     virtual void Create(const ITexture::Types& type) = 0;
 
     virtual void GetData(const int& mipMapLevel,
-                         const ITexture::DataFormat& dformat, const ITexture::DataTypes& dtype, unsigned int const& dstBufferSize,
+                         const ITexture::DataFormat& dformat, const ITexture::DataType& dtype, unsigned int const& dstBufferSize,
                          void* dstBuffer) = 0; //dstBufferSize should be enought for data
 
     virtual void SetData(const int& mipMapLevel,
-                         const ITexture::DataFormat& dformat, const ITexture::DataTypes& dtype, const ITexture::StorageDataFormat& sdFormat,
+                         const ITexture::DataFormat& dformat, const ITexture::DataType& dtype, const ITexture::StorageDataFormat& sdFormat,
                          const int& width, const int& height, const int& depth,
                          void* data) = 0;
 
     virtual void UpdateData(const int& mipMapLevel,
                             const int& xOffset, const int& yOffset, const int& zOffset,
                             const int& width, const int& height, const int& depth,
-                            const ITexture::DataFormat& dformat, const ITexture::DataTypes& dtype,
+                            const ITexture::DataFormat& dformat, const ITexture::DataType& dtype,
                             void* data) = 0;
 
     virtual bool Complete(bool mipMaps) = 0;

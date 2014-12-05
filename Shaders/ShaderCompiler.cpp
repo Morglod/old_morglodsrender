@@ -2,12 +2,13 @@
 #include "../MachineInfo.hpp"
 #include "../Config.hpp"
 #include "../Utils/Log.hpp"
+#include "../Context.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
 #endif
 
-namespace MR {
+namespace mr {
 
 std::string ShaderCompilationMessage::MessageTypeNames[3] { std::string("Info"), std::string("Warning"), std::string("Error") };
 
@@ -36,10 +37,10 @@ ShaderCompilationOutput::ShaderCompilationOutput(const TStaticArray<ShaderCompil
     COMPILE
 **/
 
-ShaderCompilationOutput ShaderCompiler::Compile(const std::string& code, const MR::ShaderCompiler::ShaderType& type, const unsigned int& gpu_handle) {
+ShaderCompilationOutput ShaderCompiler::Compile(const std::string& code, const mr::ShaderCompiler::ShaderType& type, const unsigned int& gpu_handle) {
     if((code.size() == 0 ) || (gpu_handle == 0)) {
-        return MR::ShaderCompilationOutput (
-                                new MR::ShaderCompilationMessage[1]{ ShaderCompilationMessage( ShaderCompilationMessage::MT_Error, 0, 0, "(code.size() == 0) || (gpu_handle == 0)" ) },
+        return mr::ShaderCompilationOutput (
+                                new mr::ShaderCompilationMessage[1]{ ShaderCompilationMessage( ShaderCompilationMessage::MT_Error, 0, 0, "(code.size() == 0) || (gpu_handle == 0)" ) },
                                 1,
                                 false
                                 );
@@ -49,15 +50,17 @@ ShaderCompilationOutput ShaderCompiler::Compile(const std::string& code, const M
     const char* c = _Optimize(code, type).c_str();
 
     //for gl error handling
+#ifdef MR_CHECK_LARGE_GL_ERRORS
     int gl_er = 0;
-    MR::MachineInfo::ClearError();
+    mr::MachineInfo::ClearError();
+#endif
 
     int str_size = str.size();
     glShaderSource(gpu_handle, 1, &c, &str_size);
 
     //if glShaderSource is failed
 #ifdef MR_CHECK_LARGE_GL_ERRORS
-    if(MR::MachineInfo::CatchError(0, &gl_er)){
+    if(mr::MachineInfo::CatchError(0, &gl_er)){
         std::string err_str = "Error in ShaderCompiler::Compile : glShaderSource ended with \"" + std::to_string(gl_er) + "\" code. ";
         switch(gl_er) {
         case GL_INVALID_VALUE:
@@ -67,7 +70,7 @@ ShaderCompilationOutput ShaderCompiler::Compile(const std::string& code, const M
         default:
             err_str += "Unknow code."; break;
         }
-        if(debug_log) MR::Log::LogString(err_str, MR_LOG_LEVEL_ERROR);
+        if(debug_log) mr::Log::LogString(err_str, MR_LOG_LEVEL_ERROR);
 
         return ShaderCompilationOutput(
                                 new ShaderCompilationMessage[1]{ ShaderCompilationMessage( ShaderCompilationMessage::MT_Error, gl_er, 0, err_str ) },
@@ -86,19 +89,19 @@ ShaderCompilationOutput ShaderCompiler::Compile(const std::string& code, const M
     if(bufflen > 1) {
         logString.resize((size_t)bufflen + 1);
         glGetShaderInfoLog(gpu_handle, bufflen, 0, &logString[0]);
-        if(debug_log) MR::Log::LogString("Shader compilation output: "+logString, MR_LOG_LEVEL_INFO);
+        if(debug_log) mr::Log::LogString("Shader compilation output: "+logString, MR_LOG_LEVEL_INFO);
     }
 
     //get result
     int compile_status = -1;
     glGetShaderiv(gpu_handle, GL_COMPILE_STATUS, &compile_status);
     if(compile_status != GL_TRUE){
-        MR::Log::LogString("Shader compilation failed", MR_LOG_LEVEL_ERROR);
+        mr::Log::LogString("Shader compilation failed", MR_LOG_LEVEL_ERROR);
     }
 
     //if glCompileShader is failed
 #ifdef MR_CHECK_LARGE_GL_ERRORS
-    if(MR::MachineInfo::CatchError(0, &gl_er)){
+    if(mr::MachineInfo::CatchError(0, &gl_er)){
         std::string err_str = "Error in ShaderCompiler::Compile : glCompileShader ended with \"" + std::to_string(gl_er) + "\" code. ";
         switch(gl_er) {
         case GL_INVALID_VALUE:
@@ -108,7 +111,7 @@ ShaderCompilationOutput ShaderCompiler::Compile(const std::string& code, const M
         default:
             err_str += "Unknow code."; break;
         }
-        if(debug_log) MR::Log::LogString(err_str, MR_LOG_LEVEL_ERROR);
+        if(debug_log) mr::Log::LogString(err_str, MR_LOG_LEVEL_ERROR);
 
         return ShaderCompilationOutput( new ShaderCompilationMessage [2] { ShaderCompilationMessage( ShaderCompilationMessage::MT_Error, gl_er, 0, err_str ),
                                                                             ShaderCompilationMessage( ShaderCompilationMessage::MT_Info, 0, 0, logString ) },
@@ -139,8 +142,10 @@ ShaderCompilationOutput ShaderCompiler::Link(TStaticArray<unsigned int> gpu_hand
     }
 
     //for gl error handling
+#ifdef MR_CHECK_LARGE_GL_ERRORS
     int gl_er = 0;
-    MR::MachineInfo::ClearError();
+    mr::MachineInfo::ClearError();
+#endif
 
     //Attach only not attached shaders
     unsigned int attached_shaders[32];
@@ -158,7 +163,7 @@ ShaderCompilationOutput ShaderCompiler::Link(TStaticArray<unsigned int> gpu_hand
 
     //if glAttachShader is failed
 #ifdef MR_CHECK_LARGE_GL_ERRORS
-    if(MR::MachineInfo::CatchError(0, &gl_er)){
+    if(mr::MachineInfo::CatchError(0, &gl_er)){
         std::string err_str = "Error in ShaderCompiler::Link : glAttachShader ended with \"" + std::to_string(gl_er) + "\" code. ";
         switch(gl_er) {
         case GL_INVALID_VALUE:
@@ -168,7 +173,7 @@ ShaderCompilationOutput ShaderCompiler::Link(TStaticArray<unsigned int> gpu_hand
         default:
             err_str += "Unknow code."; break;
         }
-        if(debug_log) MR::Log::LogString(err_str, MR_LOG_LEVEL_ERROR);
+        if(debug_log) mr::Log::LogString(err_str, MR_LOG_LEVEL_ERROR);
 
         return ShaderCompilationOutput(
                                 new ShaderCompilationMessage[1]{ ShaderCompilationMessage( ShaderCompilationMessage::MT_Error, gl_er, 0, err_str ) },
@@ -188,18 +193,18 @@ ShaderCompilationOutput ShaderCompiler::Link(TStaticArray<unsigned int> gpu_hand
     if(bufflen > 1) {
         logString.resize(bufflen + 1);
         glGetProgramInfoLog(gpu_program_handle, bufflen, 0, &logString[0]);
-        if(debug_log) MR::Log::LogString("Shader program linking output: "+logString, MR_LOG_LEVEL_INFO);
+        if(debug_log) mr::Log::LogString("Shader program linking output: "+logString, MR_LOG_LEVEL_INFO);
     }
 
     int link_status = -1;
     glGetProgramiv(gpu_program_handle, GL_LINK_STATUS, &link_status);
     if(link_status != GL_TRUE){
-        if(debug_log) MR::Log::LogString("Shader program linking failed", MR_LOG_LEVEL_ERROR);
+        if(debug_log) mr::Log::LogString("Shader program linking failed", MR_LOG_LEVEL_ERROR);
     }
 
     //if glLinkProgram is failed
 #ifdef MR_CHECK_LARGE_GL_ERRORS
-    if(MR::MachineInfo::CatchError(0, &gl_er)){
+    if(mr::MachineInfo::CatchError(0, &gl_er)){
         std::string err_str = "Error in ShaderCompiler::Link : glLinkProgram ended with \"" + std::to_string(gl_er) + "\" code. ";
         switch(gl_er) {
         case GL_INVALID_VALUE:
@@ -209,7 +214,7 @@ ShaderCompilationOutput ShaderCompiler::Link(TStaticArray<unsigned int> gpu_hand
         default:
             err_str += "Unknow code."; break;
         }
-        if(debug_log) MR::Log::LogString(err_str, MR_LOG_LEVEL_ERROR);
+        if(debug_log) mr::Log::LogString(err_str, MR_LOG_LEVEL_ERROR);
 
         return ShaderCompilationOutput(
                                 new ShaderCompilationMessage[2]{ ShaderCompilationMessage( ShaderCompilationMessage::MT_Error, gl_er, 0, err_str ),
@@ -258,8 +263,10 @@ ShaderCompilationOutput ShaderCompiler::LinkToByteCode(TStaticArray<unsigned int
     if(!out.Good()) return out;
 
     //for gl error handling
+#ifdef MR_CHECK_LARGE_GL_ERRORS
     int gl_er = 0;
-    MR::MachineInfo::ClearError();
+    mr::MachineInfo::ClearError();
+#endif
 
     int bin_length = 0;
     glGetProgramiv(gpu_program_handle, GL_PROGRAM_BINARY_LENGTH, &bin_length);
@@ -270,7 +277,7 @@ ShaderCompilationOutput ShaderCompiler::LinkToByteCode(TStaticArray<unsigned int
 
     //if glGetProgramBinary is failed
 #ifdef MR_CHECK_LARGE_GL_ERRORS
-    if(MR::MachineInfo::CatchError(0, &gl_er)) {
+    if(mr::MachineInfo::CatchError(0, &gl_er)) {
         std::string err_str = "Error in ShaderCompiler::LinkToByteCode : glGetProgramBinary ended with \"" + std::to_string(gl_er) + "\" code. ";
         switch(gl_er) {
         case GL_INVALID_OPERATION:
@@ -278,7 +285,7 @@ ShaderCompilationOutput ShaderCompiler::LinkToByteCode(TStaticArray<unsigned int
         default:
             err_str += "Unknow code."; break;
         }
-        if(debug_log) MR::Log::LogString(err_str, MR_LOG_LEVEL_ERROR);
+        if(debug_log) mr::Log::LogString(err_str, MR_LOG_LEVEL_ERROR);
         *byteCode = false;
         return out;
     }
@@ -294,6 +301,14 @@ ShaderCompilationOutput ShaderCompiler::LinkToByteCode(TStaticArray<unsigned int
 
 std::string ShaderCompiler::_Optimize(const std::string& code, const ShaderType& type) {
     return code;
+}
+
+void ShaderCompiler::Release() {
+    if(mr::MachineInfo::gl_versions_f() >= 4.1f)
+        glReleaseShaderCompiler();
+}
+
+ShaderCompiler::~ShaderCompiler() {
 }
 
 }

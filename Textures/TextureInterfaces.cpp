@@ -1,6 +1,6 @@
 #include "TextureInterfaces.hpp"
 
-namespace MR {
+namespace mr {
 
 TextureSizeInfo::TextureSizeInfo() : width(0), height(0), depth(0) {}
 TextureSizeInfo::TextureSizeInfo(unsigned short const& w, unsigned short const& h, unsigned short const& d)

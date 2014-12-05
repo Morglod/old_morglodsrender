@@ -1,7 +1,7 @@
 #include "Types.hpp"
 #include <iostream>
 
-namespace MR {
+namespace mr {
 
 template<typename flag_t>
 void Flags<flag_t>::Add(const flag_t& f){

@@ -1,6 +1,6 @@
 #include "CoreObjects.hpp"
 
-namespace MR {
+namespace mr {
 
 size_t GPUObjectHandle::GetGPUMem() {
     return 0;

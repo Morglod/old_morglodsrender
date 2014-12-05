@@ -11,52 +11,66 @@
 #   include <glm/glm.hpp>
 #endif
 
-namespace MR {
+namespace mr {
 
 typedef unsigned int MaterialFlag;
+const MaterialFlag MaterialFlag_Default = 0;
 
-struct MaterialParams {
-    glm::vec3 colorAmbient;
+struct MaterialDescr {
+	enum SubdivType {
+		SubdivNone = 0,
+		SubdivFlat = 1,
+		SubdivPN
+	};
+
+	enum HeightType {
+		None = 0,
+		Bump = 1,
+		Parallax = 2,
+		Displacement
+	};
+
+	glm::vec4 colorAmbient; //rgba
+	glm::vec3 colorDiffuse;
+
+	std::string texColor;
+};
+
+struct MaterialShaderParams {
+	struct TextureHandle {
+		unsigned int handle;
+    };
+
+    glm::vec4 colorAmbient; //rgba
     glm::vec3 colorDiffuse; // colorDiffuse + colorAmbient
 
-    float reflectivity; // reflectivity * texReflectivity
+    TextureHandle texColor;
+
+    /*float reflectivity; // reflectivity * texReflectivity
     float roughness;
     float emissive;
 
-    enum SubdivType {
-        SubdivNone = 0,
-        SubdivFlat = 1,
-        SubdivPN
-    };
-
-    SubdivType subdivType;
+    char subdivType;
     float subdivFactor;
 
-    enum HeightType {
-        None = 0,
-        Bump = 1,
-        Parallax = 2,
-        Displacement
-    };
-
-    HeightType heightType;
-    float heightScale;
-
-    std::string texColor;
-    std::string texHeight;
-    std::string texReflectivion;
-    std::string texEmissiveMask; //R channel
+    char heightType;
+    float heightScale;*/
 };
 
 class IMaterial {
 public:
+    virtual void Create(MaterialDescr const& descr) = 0;
+
     virtual bool Use() = 0;
     virtual bool IsTwoSided() = 0;
     virtual bool IsDebugOnly() = 0;
 
     virtual void OnMaterialFlagChanged(MaterialFlag const& newFlag) = 0;
 
-    virtual MR::TStaticArray<MaterialFlag> GetAvailableFlags() = 0;
+    virtual mr::TStaticArray<MaterialFlag> GetAvailableFlags() = 0;
+
+    virtual MaterialShaderParams GetShaderParams() = 0;
+    virtual MaterialDescr GetDescription() = 0;
 
     virtual ~IMaterial() {}
 };

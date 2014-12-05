@@ -5,7 +5,7 @@
 
 #include "Containers.hpp"
 
-namespace MR {
+namespace mr {
 
 class Worker {
 public:
@@ -30,7 +30,7 @@ public:
     Worker() : _queue() {}
     virtual ~Worker() {}
 protected:
-    MR::ThreadSafeQueue<WorkerCommand> _queue;
+    mr::ThreadSafeQueue<WorkerCommand> _queue;
 };
 
 }

@@ -1,6 +1,6 @@
 #include "UIUtil.hpp"
 
-namespace MR {
+namespace mr {
 
 
 

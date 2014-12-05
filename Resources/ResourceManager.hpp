@@ -5,7 +5,7 @@
 
 #include <functional>
 
-namespace MR {
+namespace mr {
 
 class ResourcesRequest {
 public:

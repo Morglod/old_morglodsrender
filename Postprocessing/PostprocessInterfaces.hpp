@@ -5,7 +5,7 @@
 
 #include "../Utils/Containers.hpp"
 
-namespace MR {
+namespace mr {
 
 class IShaderProgram;
 
@@ -23,8 +23,8 @@ public:
 
 class IPostprocessChain {
 public:
-    virtual MR::TStaticArray<IPostprocessStep*> GetSteps() = 0;
-    virtual void SetSteps(const MR::TStaticArray<IPostprocessStep*>& steps) = 0;
+    virtual mr::TStaticArray<IPostprocessStep*> GetSteps() = 0;
+    virtual void SetSteps(const mr::TStaticArray<IPostprocessStep*>& steps) = 0;
 };
 
 }

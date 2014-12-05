@@ -5,7 +5,7 @@
 
 #include "BuffersInterfaces.hpp"
 
-namespace MR {
+namespace mr {
 
 class VirtualGPUBuffer_DestroyEvent;
 
@@ -16,10 +16,10 @@ class VirtualGPUBuffer : public IGPUBuffer {
     friend class VirtualGPUBuffer_DestroyEvent;
 public:
     /* IGPUBuffer */
-    inline void Bind(const BindTargets& target) override { _realBuffer->Bind(target); }
-    inline void BindAt(const BindTargets& target, const unsigned int& index) override { _realBuffer->BindAt(target, index); }
-    inline IGPUBuffer* ReBind(const BindTargets& target) override { return _realBuffer->ReBind(target); }
-    inline BindTargets GetTarget() override { return _realBuffer->GetTarget(); }
+    inline void Bind(const BindTarget& target) override { _realBuffer->Bind(target); }
+    inline void BindAt(const BindTarget& target, const unsigned int& index) override { _realBuffer->BindAt(target, index); }
+    inline IGPUBuffer* ReBind(const BindTarget& target) override { return _realBuffer->ReBind(target); }
+    inline BindTarget GetTarget() override { return _realBuffer->GetTarget(); }
     inline bool Write(void* srcData, const size_t& srcOffset, const size_t& dstOffset, const size_t& size, size_t* out_realOffset, BufferedDataInfo* out_info) override { return _realBuffer->Write(srcData, srcOffset, dstOffset+GetRealOffset(), size, out_realOffset, out_info); }
     inline bool Read(void* dstData, const size_t& dstOffset, const size_t& srcOffset, const size_t& size) override { return _realBuffer->Read(dstData, dstOffset, srcOffset+GetRealOffset(), size); }
     inline Usage GetUsage() override { return _realBuffer->GetUsage(); }
@@ -48,14 +48,14 @@ protected:
 
 class VirtualGPUBufferManager {
 public:
-    MR::EventListener<VirtualGPUBufferManager*> OnDelete; //before deletion
+    mr::EventListener<VirtualGPUBufferManager*> OnDelete; //before deletion
 
     inline virtual size_t GetFreeMemorySize() { return _realBuffer->GetGPUMem() - _offset; }
     inline virtual size_t GetOffset() { return _offset; }
 
     virtual VirtualGPUBuffer* Take(const size_t& size);
     virtual VirtualGPUBuffer* TakeAll() { return Take(GetFreeMemorySize()); }
-    inline virtual MR::TStaticArray<VirtualGPUBuffer*> GetAllBuffers() { return MR::TStaticArray<VirtualGPUBuffer*>(&_buffers[0], _buffers.size(), false); }
+    inline virtual mr::TStaticArray<VirtualGPUBuffer*> GetAllBuffers() { return mr::TStaticArray<VirtualGPUBuffer*>(&_buffers[0], _buffers.size(), false); }
 
     inline virtual IGPUBuffer* GetRealBuffer() { return _realBuffer; }
 

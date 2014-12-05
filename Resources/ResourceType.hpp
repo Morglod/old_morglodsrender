@@ -6,7 +6,7 @@
 #include <string>
 #include "../Utils/Pointers.hpp"
 
-namespace MR {
+namespace mr {
 
 class ResourceType {
 public:
@@ -16,6 +16,7 @@ public:
     bool operator == (ResourceType const& t) { return _hash == t._hash; }
     ResourceType& operator = (ResourceType const& rt);
 
+    ResourceType();
     ResourceType(std::string const& name, std::string const& descr = "");
     ResourceType(ResourceType const& copy_type);
     virtual ~ResourceType();

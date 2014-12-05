@@ -12,15 +12,22 @@
 
 #define MR_CONTAINERS_LOOP_INDEX 0
 
-namespace MR {
+namespace mr {
 
 template < typename T >
-class TStaticArray {
+class ITArray {
+public:
+    virtual T& At(size_t const& i) = 0;
+    virtual size_t GetNum() = 0;
+};
+
+template < typename T >
+class TStaticArray : public ITArray<T> {
 public:
     inline T* GetRaw() { return _ar; }
-    inline size_t GetNum() { return _el_num; }
+    inline size_t GetNum() override { return _el_num; }
 #if MR_CONTAINERS_LOOP_INDEX == 0
-    inline T& At(size_t const& i) { return _ar[i]; }
+    inline T& At(size_t const& i) override { return _ar[i]; }
     inline T* AtPtr(const size_t& i) { return &_ar[i]; }
 #else
     inline T& At(size_t i) {
@@ -40,10 +47,21 @@ public:
     inline TStaticArray<T> Combine(TStaticArray<T> a) {
         size_t sz = a.GetNum()+GetNum();
         TStaticArray<T> ra = TStaticArray<T>(new T[sz], sz, GetDeleteFlag());
-        size_t sz1 = sizeof(T) * GetNum();
-        memcpy(ra.GetRaw(), GetRaw(), sz1);
-        memcpy((void*)((size_t)ra.GetRaw() + sz1), a.GetRaw(), sizeof(T) * a.GetNum());
+        for(size_t i = 0; i < GetNum(); ++i) ra.At(i) = At(i);
+        for(size_t i = 0; i < a.GetNum(); ++i) ra.At(i+GetNum()) = a.At(i);
+
         return ra;
+    }
+
+    TStaticArray<T> Union(TStaticArray<T> a);
+    TStaticArray<T> EraseDublicates();
+
+    typedef bool (*ForEachFunc)(TStaticArray<T> const* staticArray, size_t const& index, T* element);
+    inline bool ForEach(ForEachFunc func) {
+        for(size_t i = 0; i < GetNum(); ++i) {
+            if(!func(this, i, AtPtr(i))) return false;
+        }
+        return true;
     }
 
     inline TStaticArray<T> RangeRef(size_t const& begin_index, size_t const& end_index) {
@@ -52,7 +70,7 @@ public:
 
     inline TStaticArray<T> RangeCopy(size_t const& begin_index, size_t const& end_index) {
         T* _ar_cpy = new T[end_index - begin_index];
-        memcpy(_ar_cpy, &_ar[begin_index], end_index - begin_index);
+        for(size_t i = 0; i < (end_index - begin_index); ++i) _ar_cpy[i] = _ar[begin_index+i];
         return TStaticArray<T>(_ar_cpy, end_index - begin_index, true);
     }
 
@@ -85,7 +103,7 @@ public:
         }
     }
 
-    inline MR::TStaticArray<T>& operator = (MR::TStaticArray<T> const& ar) {
+    inline mr::TStaticArray<T>& operator = (mr::TStaticArray<T> const& ar) {
         if(this == &ar) {
             return *this;
         }
@@ -98,7 +116,7 @@ public:
         return *this;
     }
 
-    inline MR::TStaticArray<T>& operator = (MR::TStaticArray<T> & ar) {
+    inline mr::TStaticArray<T>& operator = (mr::TStaticArray<T> & ar) {
         if(this == &ar) {
             return *this;
         }
@@ -117,7 +135,7 @@ protected:
 };
 
 template < typename T >
-class TDynamicArray {
+class TDynamicArray : public ITArray<T> {
 public:
     class Iterator {
     public:
@@ -170,10 +188,10 @@ public:
     typedef Iterator It;
 
     inline T* GetRaw() { return _ar; }
-    inline size_t GetNum() { return _el_num; }
+    inline size_t GetNum() override { return _el_num; }
     inline size_t GetCapacity() { return _el_cap; }
-    inline T& At(size_t const& i) { return _ar[i]; }
-    inline T* AtPtr(size_t const& i) { return &_ar[0]; }
+    inline T& At(size_t const& i) override { return _ar[i]; }
+    inline T* AtPtr(size_t const& i) { return &_ar[i]; }
 
     inline TDynamicArray<T>::Iterator GetFirst() {
         return TDynamicArray<T>::Iterator(this, 0);
@@ -190,10 +208,10 @@ public:
     inline void SetDeleteFlag(bool const& b) { _delete = b; }
     inline bool GetDeleteFlag() { return _delete; }
 
-    inline bool Find(T const& t, size_t& index) {
+    inline bool Find(T const& t, size_t* index) {
         for(size_t i = 0; i < _el_num; ++i) {
             if(t == _ar[_el_num]) {
-                index = i;
+                if(index) *index = i;
                 return true;
             }
         }
@@ -208,7 +226,7 @@ public:
 
     inline void Erase(T const& t) {
         size_t index = 0;
-        if(Find(t, index)) {
+        if(Find(t, &index)) {
             Erase(index);
         }
     }
@@ -245,7 +263,7 @@ public:
 
     inline void Free() {
         Clear();
-        free(_ar);
+        delete [] _ar;
         _ar = 0;
         _el_cap = 0;
     }
@@ -269,6 +287,45 @@ public:
         return true;
     }
 
+    TDynamicArray<T> Union(TStaticArray<T> a);
+    TDynamicArray<T> Union(TDynamicArray<T> a);
+    TDynamicArray<T> EraseDublicates();
+    TDynamicArray<T>& EraseDublicatesInThis();
+
+    inline TDynamicArray<T> Combine(TStaticArray<T> a) {
+        size_t sz = a.GetNum()+GetNum();
+        TDynamicArray<T> ra = TDynamicArray<T>(sz);
+        for(size_t i = 0; i < GetNum(); ++i) ra.PushBack(At(i));
+        for(size_t i = 0; i < a.GetNum(); ++i) ra.PushBack(a.At(i));
+        return ra;
+    }
+
+    inline TDynamicArray<T>& Append(TStaticArray<T> a) {
+        for(size_t i = 0; i < a.GetNum(); ++i) PushBack(a.At(i));
+        return *this;
+    }
+
+    inline TDynamicArray<T> Combine(TDynamicArray<T> a) {
+        size_t sz = a.GetNum()+GetNum();
+        TDynamicArray<T> ra = TDynamicArray<T>(sz);
+        for(size_t i = 0; i < GetNum(); ++i) ra.PushBack(At(i));
+        for(size_t i = 0; i < a.GetNum(); ++i) ra.PushBack(a.At(i));
+        return ra;
+    }
+
+    inline TDynamicArray<T>& Append(TDynamicArray<T> a) {
+        for(size_t i = 0; i < a.GetNum(); ++i) PushBack(a.At(i));
+        return *this;
+    }
+
+    typedef bool (*ForEachFunc)(TDynamicArray<T> const* dynamicArray, size_t const& index, T* element);
+    inline bool ForEach(ForEachFunc func) {
+        for(size_t i = 0; i < GetNum(); ++i) {
+            if(!func(this, i, AtPtr(i))) return false;
+        }
+        return true;
+    }
+
     inline TStaticArray<T> GetStaticArray() {
         return TStaticArray<T>(_ar, _el_num, false);
     }
@@ -283,6 +340,7 @@ public:
     TDynamicArray(size_t const& el_num) : _ar(new T[el_num]), _el_num(el_num), _el_cap(el_num), _delete(true) {}
     TDynamicArray(T* ar, size_t const& el_num) : _ar(ar), _el_num(el_num), _el_cap(el_num), _delete(false) {}
     TDynamicArray(T* ar, size_t const& el_num, bool const& del) : _ar(ar), _el_num(el_num), _el_cap(el_num), _delete(del) {}
+    TDynamicArray(TStaticArray<T> ar) : _ar(new T[ar.GetNum()]), _el_num(ar.GetNum()), _el_cap(ar.GetNum()), _delete(true) {}
 
     TDynamicArray(const std::initializer_list<T>& il) : _ar(0), _el_num(0), _el_cap(0), _delete(true) {
         SetCapacity(il.size());
@@ -307,7 +365,7 @@ public:
         }
     }
 
-    inline MR::TDynamicArray<T>& operator = (MR::TDynamicArray<T> const& ar) {
+    inline mr::TDynamicArray<T>& operator = (mr::TDynamicArray<T> const& ar) {
         if(this == &ar) {
             return *this;
         }
@@ -321,15 +379,10 @@ public:
         return *this;
     }
 
-    inline MR::TDynamicArray<T>& operator = (MR::TDynamicArray<T> & ar) {
+    inline mr::TDynamicArray<T>& operator = (mr::TDynamicArray<T> & ar) {
         if(this == &ar) {
             return *this;
         }
-        /*_ar = ar._ar;
-        _delete = ar._delete;
-        _el_num = ar._el_num;
-        _el_cap = ar._el_cap;
-        ar._delete = false;*/
         _ar = new T [ar._el_num];
         _delete = ar._delete;
         _el_num = ar._el_num;
@@ -344,6 +397,71 @@ protected:
     size_t _el_num = 0, _el_cap = 0;
     bool _delete = false;
 };
+
+template< typename T >
+TStaticArray<T> TStaticArray<T>::Union(TStaticArray<T> a) {
+    TDynamicArray<T> d = a;
+    for(size_t i = 0; i < GetNum(); ++i) {
+        if(!d.Find(At(i), nullptr)) {
+            d.PushBack(At(i));
+        }
+    }
+    return d.ConvertToStaticArray();
+}
+
+template< typename T >
+TStaticArray<T> TStaticArray<T>::EraseDublicates() {
+    TDynamicArray<T> d;
+    for(size_t i = 0; i < GetNum(); ++i) {
+        if(!d.Find(At(i), nullptr)) {
+            d.PushBack(At(i));
+        }
+    }
+    return d.ConvertToStaticArray();
+}
+
+template< typename T >
+TDynamicArray<T> TDynamicArray<T>::Union(TStaticArray<T> a) {
+    TDynamicArray<T> d = a;
+    for(size_t i = 0; i < GetNum(); ++i) {
+        if(!d.Find(At(i), nullptr)) {
+            d.PushBack(At(i));
+        }
+    }
+    return d;
+}
+
+template< typename T >
+TDynamicArray<T> TDynamicArray<T>::Union(TDynamicArray<T> d) {
+    for(size_t i = 0; i < GetNum(); ++i) {
+        if(!d.Find(At(i), nullptr)) {
+            d.PushBack(At(i));
+        }
+    }
+    return d;
+}
+
+template< typename T >
+TDynamicArray<T> TDynamicArray<T>::EraseDublicates() {
+    TDynamicArray<T> d;
+    for(size_t i = 0; i < GetNum(); ++i) {
+        if(!d.Find(At(i), nullptr)) {
+            d.PushBack(At(i));
+        }
+    }
+    return d;
+}
+
+template< typename T >
+TDynamicArray<T>& TDynamicArray<T>::EraseDublicatesInThis() {
+    for(size_t i = 0; i < GetNum(); ++i) {
+        for(size_t i2 = 0; i2 < GetNum(); ++i2) {
+            if(i == i2) continue;
+            if(At(i) == At(i2)) Erase(i2);
+        }
+    }
+    return *this;
+}
 
 /*
 template < typename T >

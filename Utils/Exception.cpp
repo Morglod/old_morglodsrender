@@ -3,7 +3,7 @@
 bool throwExceptions = false;
 bool throwCritExceptions = false;
 
-namespace MR {
+namespace mr {
     void ThrowExceptions(const bool& state){
         throwExceptions = state;
     }

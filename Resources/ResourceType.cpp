@@ -3,13 +3,16 @@
 
 std::hash<std::string> __MR_RES_TYPE_HASH_MAP_STR_;
 
-namespace MR {
+namespace mr {
 
 ResourceType& ResourceType::operator = (ResourceType const& rt) {
     _name = rt._name;
     _description = rt._description;
     _hash = rt._hash;
     return *this;
+}
+
+ResourceType::ResourceType() : _name("UnknowName"), _description("UnknowResourceType"), _hash(__MR_RES_TYPE_HASH_MAP_STR_(_name)) {
 }
 
 ResourceType::ResourceType(std::string const& name, std::string const& descr) : _name(name), _description(descr), _hash(__MR_RES_TYPE_HASH_MAP_STR_(name)) {

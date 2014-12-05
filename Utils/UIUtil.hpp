@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 #include <string>
 
-namespace MR {
+namespace mr {
 
 class UIUtil {
 public:

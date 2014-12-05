@@ -5,15 +5,15 @@
 
 #include "BuffersInterfaces.hpp"
 
-namespace MR {
+namespace mr {
 
 class GPUBuffer : public IGPUBuffer {
 public:
     /* IGPUBuffer */
-    void Bind(const BindTargets& target) override;
-    void BindAt(const BindTargets& target, const unsigned int& index) override;
-    IGPUBuffer* ReBind(const BindTargets& target) override;
-    BindTargets GetTarget() override;
+    void Bind(const BindTarget& target) override;
+    void BindAt(const BindTarget& target, const unsigned int& index) override;
+    IGPUBuffer* ReBind(const BindTarget& target) override;
+    BindTarget GetTarget() override;
 
     void Allocate(const Usage& usage, const size_t& size) override;
     inline Usage GetUsage() override { return _usage; }
@@ -30,14 +30,14 @@ public:
     GPUBuffer();
     virtual ~GPUBuffer();
 protected:
-    BindTargets _bindedTarget;
+    BindTarget _bindedTarget;
     size_t _size;
     Usage _usage;
 };
 
-IGPUBuffer* GPUBufferGetBinded(const IGPUBuffer::BindTargets& target);
-void GPUBufferUnBind(const IGPUBuffer::BindTargets& target); //BindBuffer(0)
-void GPUBufferUnBindAt(const IGPUBuffer::BindTargets& target, const unsigned int& index); //BindBufferBase(0)
+IGPUBuffer* GPUBufferGetBinded(const IGPUBuffer::BindTarget& target);
+void GPUBufferUnBind(const IGPUBuffer::BindTarget& target); //BindBuffer(0)
+void GPUBufferUnBindAt(const IGPUBuffer::BindTarget& target, const unsigned int& index); //BindBufferBase(0)
 
 /** !! DO NOT USE IT ON VirtualGPUBuffers !! **/
 void GPUBufferCopy(IGPUBuffer* src, IGPUBuffer* dst, const unsigned int& srcOffset, const unsigned int& dstOffset, const unsigned int& size);

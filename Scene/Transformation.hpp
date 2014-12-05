@@ -9,7 +9,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 
-namespace MR{
+namespace mr{
 
 class ITransformable {
 public:
@@ -55,7 +55,7 @@ private:
 
 class Transform {
 public:
-    MR::EventListener<Transform*, const glm::mat4&> OnChanged;
+    mr::EventListener<Transform*, const glm::mat4&> OnChanged;
 
     void Calc();
 

@@ -7,20 +7,20 @@
 #   include <GL\glew.h>
 #endif
 
-namespace MR {
+namespace mr {
 
 bool ShaderUniform::ResetLocation() {
-    AssertExec(!_owner, MR::Log::LogString("Error in ShaderUniform::ResetLocation : program == nullptr.", MR_LOG_LEVEL_ERROR))
+    AssertExec(!_owner, mr::Log::LogString("Error in ShaderUniform::ResetLocation : program == nullptr.", MR_LOG_LEVEL_ERROR))
 
 #ifdef MR_CHECK_SMALL_GL_ERRORS
     int gl_er = 0;
-    MR::MachineInfo::ClearError();
+    mr::MachineInfo::ClearError();
 #endif
 
     _gpu_location = glGetUniformLocation(_owner->GetGPUHandle(), _name.c_str());
 
 #ifdef MR_CHECK_SMALL_GL_ERRORS
-    if(MR::MachineInfo::CatchError(0, &gl_er)) {
+    if(mr::MachineInfo::CatchError(0, &gl_er)) {
         std::string err_str = "Error in ShaderUniform::ResetLocation : glGetUniformLocation("+std::to_string(_owner->GetGPUHandle())+", \""+_name+"\") ended with \"" + std::to_string(gl_er) + "\" code. ";
         switch(gl_er) {
         case GL_INVALID_VALUE:
@@ -30,14 +30,14 @@ bool ShaderUniform::ResetLocation() {
         default:
             err_str += "Unknow code."; break;
         }
-        MR::Log::LogString(err_str, MR_LOG_LEVEL_ERROR);
+        mr::Log::LogString(err_str, MR_LOG_LEVEL_ERROR);
         return false;
     }
 #endif
 
     if(_gpu_location == -1) {
 #ifdef MR_CHECK_SMALL_GL_ERRORS
-        MR::Log::LogString("Error in ShaderUniform::ResetLocation : glGetUniformLocation("+std::to_string(_owner->GetGPUHandle())+", \""+_name+"\") == -1.", MR_LOG_LEVEL_ERROR);
+        mr::Log::LogString("Error in ShaderUniform::ResetLocation : glGetUniformLocation("+std::to_string(_owner->GetGPUHandle())+", \""+_name+"\") == -1.", MR_LOG_LEVEL_ERROR);
 #endif
         return false;
     }
@@ -51,9 +51,9 @@ void ShaderUniform::Update() {
     if(_value) {
 #ifdef MR_CHECK_SMALL_GL_ERRORS
     int gl_er = 0;
-    MR::MachineInfo::ClearError();
+    mr::MachineInfo::ClearError();
 #endif
-        if(MR::MachineInfo::IsDirectStateAccessSupported()) {
+        if(mr::MachineInfo::IsDirectStateAccessSupported()) {
             switch(_type){
             case IShaderUniform::Type::Float:
                 glProgramUniform1f(_owner->GetGPUHandle(), _gpu_location, *((float*)_value));
@@ -103,7 +103,7 @@ void ShaderUniform::Update() {
             }
         }
 #ifdef MR_CHECK_SMALL_GL_ERRORS
-    if(MR::MachineInfo::CatchError(0, &gl_er)) {
+    if(mr::MachineInfo::CatchError(0, &gl_er)) {
         std::string err_str = "Error in ShaderUniform::Update GL \""+ std::to_string(gl_er) + "\" code. ";
         switch(gl_er) {
         case GL_INVALID_VALUE:
@@ -113,7 +113,7 @@ void ShaderUniform::Update() {
         default:
             err_str += "Unknow code."; break;
         }
-        MR::Log::LogString(err_str, MR_LOG_LEVEL_ERROR);
+        mr::Log::LogString(err_str, MR_LOG_LEVEL_ERROR);
     }
 #endif
     }

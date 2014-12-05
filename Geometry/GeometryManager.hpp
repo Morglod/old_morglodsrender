@@ -7,13 +7,13 @@
 #include "mu/Singleton.hpp"
 #include "../Buffers/VirtualBuffer.hpp"
 
-namespace MR {
+namespace mr {
 
 class GeometryManager : public mu::Singleton<GeometryManager> {
 public:
     IGeometry* PlaceGeometry(IVertexFormat* vertexFormat, void* vertexData, const size_t& vertexNum,
                              IIndexFormat* indexFormat, void* indexData, const size_t& indexNum,
-                             const IGPUBuffer::Usage& usage, const IGeometryBuffer::DrawModes& drawMode);
+                             const IGPUBuffer::Usage& usage, const IGeometryBuffer::DrawMode& drawMode);
 
     inline bool GetBufferPerGeometry() { return _buffer_per_geom; }
     inline void SetBufferPerGeometry(bool const& b) { _buffer_per_geom = b; }
@@ -38,9 +38,9 @@ protected:
     public:
         IVertexFormat* vFormat;
         IIndexFormat* iFormat;
-        MR::IGPUBuffer::Usage usage;
-        MR::VirtualGPUBufferManager* manager; //when memory is totally used, manager will be deleted.
-        MR::IGPUBuffer* buffer; //ptr to real buffer
+        mr::IGPUBuffer::Usage usage;
+        mr::VirtualGPUBufferManager* manager; //when memory is totally used, manager will be deleted.
+        mr::IGPUBuffer* buffer; //ptr to real buffer
     };
 
     std::vector<FormatBuffer> _buffers;

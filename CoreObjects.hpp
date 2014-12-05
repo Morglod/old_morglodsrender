@@ -6,11 +6,11 @@
 #include "Types.hpp"
 #include "stddef.h"
 
-namespace MR {
+namespace mr {
 
 class GPUObjectHandle : public ObjectHandle {
 public:
-    MR::EventListener<GPUObjectHandle*, unsigned int const&> OnGPUHandleChanged;
+    mr::EventListener<GPUObjectHandle*, unsigned int const&> OnGPUHandleChanged;
 
     virtual bool Good() { return (_handle != 0); }
     virtual unsigned int GetGPUHandle() { return _handle; }
