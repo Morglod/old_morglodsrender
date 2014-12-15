@@ -6,7 +6,7 @@
 #include "Context.hpp"
 #include "Utils/Exception.hpp"
 //#include "Pipeline.hpp"
-#include "mu/ConfigClass.hpp"
+#include "ConfigClass.hpp"
 #include "Config.hpp"
 #include "Core.hpp"
 #include "Scene/PerspectiveCamera.hpp"

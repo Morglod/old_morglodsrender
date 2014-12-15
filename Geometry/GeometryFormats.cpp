@@ -27,24 +27,32 @@ struct __VertexDataTypeCached {
     std::shared_ptr<IVertexDataType> _ptr;
     __VertexDataTypeCached() : _ptr(nullptr) {}
     __VertexDataTypeCached(IVertexDataType* vdt) : _ptr(vdt) {}
+    __VertexDataTypeCached(__VertexDataTypeCached& cpy) : _ptr(cpy._ptr) {}
+    __VertexDataTypeCached(__VertexDataTypeCached const& cpy) : _ptr(cpy._ptr) {}
 };
 
 struct __VertexAttributeCached {
     std::shared_ptr<IVertexAttribute> _ptr;
     __VertexAttributeCached() : _ptr(nullptr) {}
     __VertexAttributeCached(IVertexAttribute* va) : _ptr(va) {}
+    __VertexAttributeCached(__VertexAttributeCached& cpy) : _ptr(cpy._ptr) {}
+    __VertexAttributeCached(__VertexAttributeCached const& cpy) : _ptr(cpy._ptr) {}
 };
 
 struct __VertexFormatCached {
     std::shared_ptr<IVertexFormat> _ptr;
     __VertexFormatCached() : _ptr(nullptr) {}
     __VertexFormatCached(IVertexFormat* va) : _ptr(va) {}
+    __VertexFormatCached(__VertexFormatCached& cpy) : _ptr(cpy._ptr) {}
+    __VertexFormatCached(__VertexFormatCached const& cpy) : _ptr(cpy._ptr) {}
 };
 
 struct __IndexFormatCached {
     std::shared_ptr<IIndexFormat> _ptr;
     __IndexFormatCached() : _ptr(nullptr) {}
     __IndexFormatCached(IIndexFormat* va) : _ptr(va) {}
+    __IndexFormatCached(__IndexFormatCached& cpy) : _ptr(cpy._ptr) {}
+    __IndexFormatCached(__IndexFormatCached const& cpy) : _ptr(cpy._ptr) {}
 };
 
 }
@@ -280,10 +288,10 @@ VertexFormatCustomFixed::VertexFormatCustomFixed() : _attribs(nullptr), _pointer
 VertexFormatCustomFixed::VertexFormatCustomFixed(VertexFormatCustomFixed const& cpy)
     : _attribs(nullptr), _pointers(nullptr), _size(cpy._size), _nextIndex(cpy._nextIndex), _attribsNum(cpy._attribsNum)
 {
-    if(_size != 0) {
-        _attribs = new IVertexAttribute*[_size];
-        _pointers = new uint64_t[_size];
-        for(unsigned int i = 0; i < _size; ++i) {
+    if(_attribsNum != 0) {
+        _attribs = new IVertexAttribute*[_attribsNum];
+        _pointers = new uint64_t[_attribsNum];
+        for(unsigned int i = 0; i < _attribsNum; ++i) {
             _attribs[i] = cpy._attribs[i];
             _pointers[i] = cpy._pointers[i];
         }

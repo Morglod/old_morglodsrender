@@ -4,7 +4,7 @@
 #define _MR_GEOMETRY_MANAGER_H_
 
 #include "GeometryInterfaces.hpp"
-#include "mu/Singleton.hpp"
+#include "Singleton.hpp"
 #include "../Buffers/VirtualBuffer.hpp"
 
 namespace mr {

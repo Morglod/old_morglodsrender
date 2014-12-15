@@ -80,13 +80,13 @@ bool SceneLoader::Import(std::string const& file, bool fast) {
         if(bColorA) ++attr_num;
         if(bTexCoordA) ++attr_num;
 
-        VertexFormatCustomFixed vf;
-        vf.SetAttributesNum(attr_num);
+        VertexFormatCustomFixed vertexFormat;
+        vertexFormat.SetAttributesNum(attr_num);
 
-        /*if(bPosA)*/   vf.AddVertexAttribute(VertexAttributeCustom(3, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION).Cache());
-        if(bNormalA)    vf.AddVertexAttribute(VertexAttributeCustom(3, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION).Cache());
-        if(bColorA)     vf.AddVertexAttribute(VertexAttributeCustom(4, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION).Cache());
-        if(bTexCoordA)  vf.AddVertexAttribute(VertexAttributeCustom(2, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION).Cache());
+        /*if(bPosA)*/   vertexFormat.AddVertexAttribute(VertexAttributeCustom(3, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION).Cache());
+        if(bNormalA)    vertexFormat.AddVertexAttribute(VertexAttributeCustom(3, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION).Cache());
+        if(bColorA)     vertexFormat.AddVertexAttribute(VertexAttributeCustom(4, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION).Cache());
+        if(bTexCoordA)  vertexFormat.AddVertexAttribute(VertexAttributeCustom(2, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION).Cache());
 
         ///Create index format
         IndexFormatCustom fi(&VertexDataTypeUInt::GetInstance());
@@ -100,10 +100,10 @@ bool SceneLoader::Import(std::string const& file, bool fast) {
         if(bColorA)     colorOffset = ((size_t)bPosA * sizeof(float) * 3) + ((size_t)bNormalA * + sizeof(float) * 3);
         if(bTexCoordA)  texcoordOffset = ((size_t)bPosA * sizeof(float) * 3) + ((size_t)bNormalA * + sizeof(float) * 3) + (size_t)bColorA * sizeof(float) * 4;
 
-        size_t vertexDataSize = mesh->mNumVertices * vf.GetSize();
+        size_t vertexDataSize = mesh->mNumVertices * vertexFormat.GetSize();
         unsigned char * vertexData = new unsigned char [vertexDataSize];
         for(size_t it = 0; it < mesh->mNumVertices; ++it) {
-            size_t offset = vf.GetSize() * it;
+            size_t offset = vertexFormat.GetSize() * it;
             *((aiVector3D*)&vertexData[offset + posOffset]) = mesh->mVertices[it];
             if(bNormalA) *((aiVector3D*)&vertexData[offset + normalOffset]) = mesh->mNormals[it];
             if(bColorA) *((aiColor4D*)&vertexData[offset + colorOffset]) = mesh->mColors[0][it];
@@ -122,7 +122,7 @@ bool SceneLoader::Import(std::string const& file, bool fast) {
 
         ///Make geometry
 
-        _impl->_geoms.At(i) = mr::GeometryManager::GetInstance()->PlaceGeometry(vf.Cache(), &vertexData[0], mesh->mNumVertices,
+        _impl->_geoms.At(i) = mr::GeometryManager::GetInstance()->PlaceGeometry(vertexFormat.Cache(), &vertexData[0], mesh->mNumVertices,
                                                                                 fi.Cache(), &indexData[0], mesh->mNumFaces*3,
                                                                                 mr::IGPUBuffer::Usage::Static, mr::IGeometryBuffer::DrawMode::Triangles);
 

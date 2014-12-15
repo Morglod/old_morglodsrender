@@ -359,15 +359,13 @@ ShaderProgram* ShaderProgram::Default() {
         "uniform mat4 "+std::string(MR_SHADER_VIEW_MAT4)+";\n"
         "uniform mat4 "+std::string(MR_SHADER_PROJ_MAT4)+";\n"
 
-        "uniform sampler2D "+std::string(MR_SHADER_ALBEDO_TEX)+";\n"
-        "uniform vec4 "+std::string(MR_SHADER_ALBEDO_COLOR)+";\n"
-
-        "uniform vec4 "+std::string(MR_SHADER_EMISSION_COLOR)+";\n"
+        "uniform sampler2D "+std::string(MR_SHADER_COLOR_TEX)+";\n"
+        "uniform vec4 "+std::string(MR_SHADER_COLOR_V)+";\n"
 
         "out vec4 "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+";\n"
 
         "void main() {"
-        "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+" = (texture("+std::string(MR_SHADER_ALBEDO_TEX)+", MR_VertexTexCoord) * "+std::string(MR_SHADER_ALBEDO_COLOR)+") + "+std::string(MR_SHADER_EMISSION_COLOR)+";\n"
+        "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+" = (texture("+std::string(MR_SHADER_COLOR_TEX)+", MR_VertexTexCoord) * "+std::string(MR_SHADER_COLOR_V)+");\n"
         "}";
 
     IShader* sh[2] { dynamic_cast<mr::IShader*>(Shader::CreateAndCompile(IShader::Type::Vertex, vs)), dynamic_cast<mr::IShader*>(Shader::CreateAndCompile(IShader::Type::Fragment, fs))};
@@ -442,13 +440,13 @@ ShaderProgram* ShaderProgram::DefaultWithTexture() {
         "uniform mat4 "+std::string(MR_SHADER_VIEW_MAT4)+";\n"
         "uniform mat4 "+std::string(MR_SHADER_PROJ_MAT4)+";\n"
 
-        "uniform sampler2D MainTex;\n"
-        "uniform vec4 "+std::string(MR_SHADER_ALBEDO_COLOR)+";\n"
+        "uniform sampler2D "+std::string(MR_SHADER_COLOR_TEX)+";\n"
+        "uniform vec4 "+std::string(MR_SHADER_COLOR_V)+";\n"
 
         "out vec4 "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+";\n"
 
         "void main() {"
-        "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+" = texture(MainTex, MR_VertexTexCoord);"
+        "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+" = texture("+std::string(MR_SHADER_COLOR_TEX)+", MR_VertexTexCoord);"
         "}";
 
     IShader* sh[2] { dynamic_cast<mr::IShader*>(Shader::CreateAndCompile(IShader::Type::Vertex, vs)), dynamic_cast<mr::IShader*>(Shader::CreateAndCompile(IShader::Type::Fragment, fs))};
@@ -524,12 +522,12 @@ ShaderProgram* ShaderProgram::DefaultBase() {
         "uniform mat4 "+std::string(MR_SHADER_PROJ_MAT4)+";\n"
 
         "uniform sampler2D "+std::string(MR_SHADER_COLOR_TEX)+";\n"
-        "uniform vec4 "+std::string(MR_SHADER_ALBEDO_COLOR)+";\n"
+        "uniform vec4 "+std::string(MR_SHADER_COLOR_V)+";\n"
 
         "out vec4 "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+";\n"
 
         "void main() {"
-        "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+" = texture(MainTex, MR_VertexTexCoord);"
+        "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+" = texture("+std::string(MR_SHADER_COLOR_TEX)+", MR_VertexTexCoord);"
         "}";
 
     IShader* sh[2] { dynamic_cast<mr::IShader*>(Shader::CreateAndCompile(IShader::Type::Vertex, vs)), dynamic_cast<mr::IShader*>(Shader::CreateAndCompile(IShader::Type::Fragment, fs))};

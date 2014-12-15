@@ -67,7 +67,7 @@ public:
     static ShaderProgram* CreateAndLink(TStaticArray<IShader*> shaders);
     static ShaderProgram* Default();
     static ShaderProgram* DefaultBase(); //for default material flag
-    static ShaderProgram* DefaultWithTexture(); //Texture uniform "MainTex"
+    static ShaderProgram* DefaultWithTexture(); //Texture uniform "MR_SHADER_COLOR_TEX"
     static ShaderProgram* FromCache(ShaderProgramCache cache);
 
 protected:
