@@ -5,9 +5,8 @@
 
 namespace mr {
 
-class IContext;
-
-bool Init(IContext* ctx);
+bool Init(class IContextManager* contextManager);
+bool Init(class IContext* context);
 void Shutdown();
 
 }

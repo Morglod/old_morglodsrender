@@ -43,7 +43,7 @@ protected:
 
 #ifdef _MR_CORE_OBJECTS_H_
 
-#include "../Context.hpp"
+#include "../ContextManager.hpp"
 
 template < typename T , typename CounterT = size_t >
 class GPUObjectHandlePtr : public HandlePtr<T, CounterT> {

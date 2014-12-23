@@ -64,8 +64,9 @@
 		<Unit filename="Collisions/CollisionBoxes.hpp" />
 		<Unit filename="Collisions/CollisionInterfaces.hpp" />
 		<Unit filename="Config.hpp" />
-		<Unit filename="Context.cpp" />
-		<Unit filename="Context.hpp" />
+		<Unit filename="ContextGLFW.hpp" />
+		<Unit filename="ContextManager.cpp" />
+		<Unit filename="ContextManager.hpp" />
 		<Unit filename="Core.cpp" />
 		<Unit filename="Core.hpp" />
 		<Unit filename="CoreObjects.cpp" />
