@@ -2,7 +2,7 @@
 #include "../MachineInfo.hpp"
 #include "../Config.hpp"
 #include "../Utils/Log.hpp"
-#include "../Context.hpp"
+#include "../ContextManager.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>

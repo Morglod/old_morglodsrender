@@ -46,7 +46,7 @@ bool mr::Init(mr::IContextManager* ctxMgr) {
         return false;
     }
 
-    mr::IContextManager::Current = ctxMgr;
+    mr::IContextManager::SetCurrent(ctxMgr);
 
     for(size_t i = 0; i < ctxMgr->GetContextsNum(); ++i) {
         if(! mr::Init(ctxMgr->GetContext(i)) ) {

@@ -44,10 +44,7 @@ public:
     inline GLFWWindowHints();
 };
 
-class ContextManagerGLFW;
-
 class ContextGLFW : public IContext {
-    friend class ContextManagerGLFW;
 public:
 
     void MakeCurrent() override { glfwMakeContextCurrent(_window); }
@@ -56,33 +53,37 @@ public:
     inline GLFWwindow* GetWindow() { return _window; }
 
     void Destroy() override {
-        mr::IContextManager::Current->MakeNullContextCurrent();
         glfwDestroyWindow(_window);
     }
+
+    ContextGLFW() : _window(nullptr) {}
+    ContextGLFW(GLFWwindow* wnd) : _window(wnd) {}
+    virtual ~ContextGLFW();
 protected:
     GLFWwindow* _window;
 };
 
 typedef std::shared_ptr<ContextGLFW> ContextGLFWPtr;
 
-class ContextManagerGLFW : public IContextManager {
+class ContextManagerGLFW : public virtual mr::IContextManager {
 public:
     inline ContextGLFWPtr CreateWindow(unsigned short windowWidth, unsigned short windowHeight, std::string const& windowName, ContextGLFWPtr parentWindow = nullptr) {
         auto wnd = glfwCreateWindow(windowWidth, windowHeight, windowName.c_str(), 0, (parentWindow != nullptr) ? parentWindow.get()->GetWindow() : 0);
         if(!wnd) return nullptr;
-        auto glfwContext = new ContextGLFW(); glfwContext->_window = wnd;
+        auto glfwContext = new ContextGLFW(wnd);
         _ctx.push_back(dynamic_cast<IContext*>(glfwContext));
         return ContextGLFWPtr(glfwContext);
     }
 
-    IContext* GetDefaultContext() override { return _ctx[_defaultCtxIndex]; }
+    IContext* GetDefaultContext() { return _ctx[_defaultCtxIndex]; }
     unsigned int GetContextsNum() { return _ctx.size(); }
-    IContext* GetContext(unsigned int const& contextIndex) override { return _ctx[contextIndex]; }
-    void MakeNullContextCurrent() override { glfwMakeContextCurrent(0); }
+    IContext* GetContext(unsigned int const& contextIndex) { return _ctx[contextIndex]; }
+    void MakeNullContextCurrent() { glfwMakeContextCurrent(0); }
 
     inline void SetDefaultContext(unsigned int const& contextIndex) { _defaultCtxIndex = contextIndex; }
 
-    void Destroy() override {
+    void Destroy() {
+        MakeNullContextCurrent();
         for(unsigned int i = 0; i < GetContextsNum(); ++i) {
             if(! _ctx[i]) continue;
             _ctx[i]->Destroy();
@@ -92,22 +93,26 @@ public:
         glfwTerminate();
     }
 
-    bool IsMultithread() override { return (GetContextsNum() > 1); }
+    bool IsMultithread() { return (GetContextsNum() > 1); }
 
-    bool ExtensionSupported(const char* ext) override { return glfwExtensionSupported(ext); }
-    ProcFunc GetProcAddress(const char* procname) override { return (ProcFunc)glfwGetProcAddress(procname); }
+    bool ExtensionSupported(const char* ext) { return glfwExtensionSupported(ext); }
+    ProcFunc GetProcAddress(const char* procname) { return (ProcFunc)glfwGetProcAddress(procname); }
+
+    virtual ~ContextManagerGLFW();
 private:
     unsigned int _defaultCtxIndex = 0;
     std::vector<IContext*> _ctx;
 };
-
-typedef std::shared_ptr<ContextManagerGLFW> ContextManagerGLFWPtr;
 
 bool Init(ContextGLFWPtr glfwContext) {
     return Init(dynamic_cast<mr::IContext*>(glfwContext.get()));
 }
 
 }
+
+//mr::ContextManagerGLFW::ContextManagerGLFW() {}
+mr::ContextManagerGLFW::~ContextManagerGLFW() {}
+mr::ContextGLFW::~ContextGLFW() {}
 
 void mr::GLFWWindowHints::Setup(bool invisibleWindow) const {
     glfwWindowHint(GLFW_OPENGL_PROFILE, opengl_profile);

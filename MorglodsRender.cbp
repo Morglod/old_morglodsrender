@@ -109,6 +109,8 @@
 		<Unit filename="Resources/ResourceManager.hpp" />
 		<Unit filename="Resources/ResourceType.cpp" />
 		<Unit filename="Resources/ResourceType.hpp" />
+		<Unit filename="Scene/Node.cpp" />
+		<Unit filename="Scene/Node.hpp" />
 		<Unit filename="Scene/PerspectiveCamera.cpp" />
 		<Unit filename="Scene/PerspectiveCamera.hpp" />
 		<Unit filename="Scene/SceneInterfaces.hpp" />

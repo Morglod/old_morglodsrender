@@ -218,6 +218,13 @@ public:
         return false;
     }
 
+    template< typename FuncT, typename... Args >
+    inline void ForEach(FuncT func, Args... args) {
+        for(size_t i = 0; i < GetNum(); ++i) {
+            if(!func(AtPtr(i), args...)) return;
+        }
+    }
+
     inline void Erase(size_t const& i) {
         _ar[i] = T();
         memmove(&_ar[i], &_ar[i+1], sizeof(T)*(_el_num-i));
@@ -319,7 +326,7 @@ public:
     }
 
     typedef bool (*ForEachFunc)(TDynamicArray<T> const* dynamicArray, size_t const& index, T* element);
-    inline bool ForEach(ForEachFunc func) {
+    inline bool ForEachF(ForEachFunc func) {
         for(size_t i = 0; i < GetNum(); ++i) {
             if(!func(this, i, AtPtr(i))) return false;
         }

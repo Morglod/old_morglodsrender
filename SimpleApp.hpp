@@ -5,7 +5,6 @@
 
 #include "ContextManager.hpp"
 #include "Utils/Exception.hpp"
-//#include "Pipeline.hpp"
 #include "ConfigClass.hpp"
 #include "Config.hpp"
 #include "Core.hpp"
@@ -23,7 +22,6 @@
 #include <fstream>
 #include <windows.h>
 
-#undef CreateWindowA //FUCKING WINDOWS SDK, BURN IN HELL
 #undef CreateWindow //FUCKING WINDOWS SDK, BURN IN HELL
 
 std::ofstream __simple_app__log_file("log.txt");
@@ -73,21 +71,20 @@ public:
         }
 
         mr::ContextGLFWPtr mtCtx = nullptr;
-        ctxMgr = mr::ContextManagerGLFWPtr(new mr::ContextManagerGLFW());
         if(multithreaded) {
             hints.Setup(true);
-            if((mtCtx = ctxMgr->CreateWindow(1, 1, WindowName.c_str())) == nullptr) {
+            if((mtCtx = ctxMgr.CreateWindow(1, 1, WindowName.c_str())) == nullptr) {
                 mr::Log::LogString("Failed glfw multithred window creation failed in SimpleApp::Go.", MR_LOG_LEVEL_ERROR);
-                ctxMgr->Destroy();
+                ctxMgr.Destroy();
                 return false;
             }
         }
 
         context = nullptr;
         hints.Setup(false);
-        if((context = ctxMgr->CreateWindow(window_width, window_height, WindowName.c_str(), mtCtx)) == nullptr) {
+        if((context = ctxMgr.CreateWindow(window_width, window_height, WindowName.c_str(), mtCtx)) == nullptr) {
             mr::Log::LogString("Failed glfw main window creation failed in SimpleApp::Go.", MR_LOG_LEVEL_ERROR);
-            ctxMgr->Destroy();
+            ctxMgr.Destroy();
             return false;
         }
 
@@ -127,10 +124,9 @@ public:
         }
 
         Free();
-        //pipeline->Shutdown();
 
         delete camera;
-        //delete pipeline;
+        ctxMgr.Destroy();
 
         return true;
     }
@@ -150,7 +146,7 @@ public:
     virtual ~SimpleApp() {}
 
     mr::ContextGLFWPtr context = nullptr;
-    mr::ContextManagerGLFWPtr ctxMgr = nullptr;
+    mr::ContextManagerGLFW ctxMgr;
 protected:
     unsigned short window_width, window_height;
     float aspect;
