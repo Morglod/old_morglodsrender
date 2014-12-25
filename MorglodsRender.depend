@@ -152,7 +152,7 @@
 1416802604 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderinterfaces.hpp
 	"../CoreObjects.hpp"
 
-1419372417 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\containers.hpp
+1419461704 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\containers.hpp
 	"Thread.hpp"
 	<string.h>
 	<chrono>
@@ -213,14 +213,8 @@
 	"Entity.hpp"
 	"Light.hpp"
 
-1404021987 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\scene\entity.hpp
-	"../Config.hpp"
-	"Transformation.hpp"
-	"../Utils/Events.hpp"
-	"../Types.hpp"
-	"../Boxes.hpp"
-	"SceneInterfaces.hpp"
-	<string>
+1419531669 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\scene\entity.hpp
+	"Node.hpp"
 
 1416802604 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\scene\transformation.hpp
 	"../Utils/Events.hpp"
@@ -325,9 +319,9 @@
 	<GL\glew.h>
 	<glm/gtc/matrix_transform.hpp>
 
-1404028883 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\scene\entity.cpp
+1419531840 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\scene\entity.cpp
 	"Entity.hpp"
-	"../Model.hpp"
+	"../Models/ModelInterfaces.hpp"
 
 1402610274 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\scene\light.cpp
 	"Light.hpp"
@@ -1341,7 +1335,7 @@
 1418656303 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderconfig.hpp
 	"../Config.hpp"
 
-1416802604 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\materials\materialinterfaces.hpp
+1419531375 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\materials\materialinterfaces.hpp
 	"../Utils/Containers.hpp"
 	<string>
 	<glm/glm.hpp>
@@ -1791,5 +1785,15 @@
 
 1419376802 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\contextmanager.hpp
 
-1419369300 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\scene\node.cpp
+1419464103 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrender\scene\node.cpp
+	"Node.hpp"
+	<glm/gtx/transform.hpp>
+
+1419465044 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\scene\node.hpp
+	"../Utils/Containers.hpp"
+	<glm/glm.hpp>
+
+1419531620 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\models\modelinterfaces.hpp
+	"../Utils/Containers.hpp"
+	"../Scene/Transformation.hpp"
 

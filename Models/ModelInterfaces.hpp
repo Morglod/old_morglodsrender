@@ -8,21 +8,30 @@
 
 namespace mr {
 
+
+class IMaterial;
+typedef std::weak_ptr<IMaterial> MaterialWeakPtr;
+
 class IMesh;
+typedef std::weak_ptr<IMesh> MeshWeakPtr;
 
 /*
     Mesh + Dynamic content (Anim, etc)
 */
 class ISubModel {
 public:
-    virtual mr::TStaticArray<IMesh*> GetMeshes() = 0;
-    virtual void SetMeshes(mr::TStaticArray<IMesh*>) = 0;
+    virtual mr::TStaticArray<MeshWeakPtr> GetMeshes() const = 0;
+    virtual void SetMeshes(mr::TStaticArray<MeshWeakPtr>) = 0;
 
-    virtual IMaterial* GetMaterial() = 0; //may be nullptr
-    virtual void SetMaterial(IMaterial*) = 0; //override all meshes materials
+    virtual MaterialWeakPtr GetMaterial() const = 0; //may be nullptr
+    virtual void SetMaterial(MaterialWeakPtr) = 0; //override all meshes materials
 
-    virtual void Draw() = 0;
+    virtual void Draw(glm::mat4* modelMatrix) const = 0;
+
+    virtual ~ISubModel() {}
 };
+
+typedef std::shared_ptr<ISubModel> SubModelPtr;
 
 class IModel {
 public:
@@ -37,7 +46,11 @@ public:
     virtual size_t GetLodIndexAtDistance(float const& dist) = 0;
     virtual ISubModel* GetLodAtDistance(float const& dist) = 0;
     //
+
+    virtual ~IModel() {}
 };
+
+typedef std::weak_ptr<IModel> ModelWeakPtr;
 
 }
 

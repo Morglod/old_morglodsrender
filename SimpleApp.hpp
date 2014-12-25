@@ -73,18 +73,18 @@ public:
         mr::ContextGLFWPtr mtCtx = nullptr;
         if(multithreaded) {
             hints.Setup(true);
-            if((mtCtx = ctxMgr.CreateWindow(1, 1, WindowName.c_str())) == nullptr) {
+            if((mtCtx = contextMgr.CreateWindow(1, 1, WindowName.c_str())) == nullptr) {
                 mr::Log::LogString("Failed glfw multithred window creation failed in SimpleApp::Go.", MR_LOG_LEVEL_ERROR);
-                ctxMgr.Destroy();
+                contextMgr.Destroy();
                 return false;
             }
         }
 
         context = nullptr;
         hints.Setup(false);
-        if((context = ctxMgr.CreateWindow(window_width, window_height, WindowName.c_str(), mtCtx)) == nullptr) {
+        if((context = contextMgr.CreateWindow(window_width, window_height, WindowName.c_str(), mtCtx)) == nullptr) {
             mr::Log::LogString("Failed glfw main window creation failed in SimpleApp::Go.", MR_LOG_LEVEL_ERROR);
-            ctxMgr.Destroy();
+            contextMgr.Destroy();
             return false;
         }
 
@@ -126,7 +126,7 @@ public:
         Free();
 
         delete camera;
-        ctxMgr.Destroy();
+        contextMgr.Destroy();
 
         return true;
     }
@@ -146,7 +146,7 @@ public:
     virtual ~SimpleApp() {}
 
     mr::ContextGLFWPtr context = nullptr;
-    mr::ContextManagerGLFW ctxMgr;
+    mr::ContextManagerGLFW contextMgr;
 protected:
     unsigned short window_width, window_height;
     float aspect;

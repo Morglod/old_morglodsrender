@@ -109,6 +109,8 @@
 		<Unit filename="Resources/ResourceManager.hpp" />
 		<Unit filename="Resources/ResourceType.cpp" />
 		<Unit filename="Resources/ResourceType.hpp" />
+		<Unit filename="Scene/Entity.cpp" />
+		<Unit filename="Scene/Entity.hpp" />
 		<Unit filename="Scene/Node.cpp" />
 		<Unit filename="Scene/Node.hpp" />
 		<Unit filename="Scene/PerspectiveCamera.cpp" />
@@ -116,6 +118,9 @@
 		<Unit filename="Scene/SceneInterfaces.hpp" />
 		<Unit filename="Scene/SceneLoader.cpp" />
 		<Unit filename="Scene/SceneLoader.hpp" />
+		<Unit filename="Scene/SceneManager.cpp" />
+		<Unit filename="Scene/SceneManager.hpp" />
+		<Unit filename="Scene/SceneManagerInterfaces.hpp" />
 		<Unit filename="Scene/Transformation.cpp" />
 		<Unit filename="Scene/Transformation.hpp" />
 		<Unit filename="Shaders/ShaderCompiler.cpp" />

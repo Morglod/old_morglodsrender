@@ -75,6 +75,8 @@ public:
     virtual ~IMaterial() {}
 };
 
+typedef std::weak_ptr<IMaterial> MaterialWeakPtr;
+
 }
 
 #endif // _MR_MATERIAL_INTERFACES_H_
