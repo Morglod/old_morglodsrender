@@ -4,7 +4,8 @@
 #include "../Shaders/ShaderObjects.hpp"
 #include "MaterialsConfig.hpp"
 #include "../Utils/Debug.hpp"
-#include "../Textures/TextureInterfaces.hpp"
+#include "../Textures/TextureObjects.hpp"
+#include "../Textures/TextureSettings.hpp"
 
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -16,7 +17,22 @@ namespace mr {
 
 void DefaultMaterial::Create(MaterialDescr const& descr) {
     _descr = descr;
-    _program = mr::ShaderProgram::DefaultBase();
+    _program = mr::ShaderProgram::Default();
+    _shader_descr.colorAmbient = _descr.colorAmbient;
+    _shader_descr.colorDiffuse = _descr.colorDiffuse;
+
+    if((!_descr.texColor.empty()) && _descr.texColor != "") {
+        auto tex = mr::Texture::FromFile(_descr.texColor);
+
+        if(tex) {
+            mr::ITextureSettings* texSettings = new mr::TextureSettings();
+            texSettings->Create();
+            tex->SetSettings(texSettings);
+            tex->Bind(0);
+        }
+
+        _shader_descr.texColor.handle = tex->GetGPUHandle();
+    }
 }
 
 bool DefaultMaterial::Use() {

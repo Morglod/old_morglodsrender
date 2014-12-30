@@ -6,6 +6,8 @@
 #include "../Utils/Containers.hpp"
 #include "../Utils/Events.hpp"
 
+#include <glm/glm.hpp>
+
 namespace mr {
 
 class IGeometry;
@@ -25,10 +27,13 @@ public:
     virtual void SetGeometry(TStaticArray<IGeometry*>& geom) = 0;
     virtual TStaticArray<IGeometry*> GetGeometry() = 0;
 
-    virtual void Draw() = 0;
+    virtual void Draw(glm::mat4* modelMat) = 0;
 
     virtual ~IMesh() {}
 };
+
+typedef std::shared_ptr<IMesh> MeshPtr;
+typedef std::weak_ptr<IMesh> MeshWeakPtr;
 
 }
 

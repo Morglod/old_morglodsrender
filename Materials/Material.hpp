@@ -23,6 +23,7 @@ public:
 
     inline MaterialDescr GetDescription() override { return _descr; }
     inline MaterialShaderParams GetShaderParams() override { return _shader_descr; }
+    inline IShaderProgram* GetShaderProgram() const override { return _program; }
 
     DefaultMaterial();
     virtual ~DefaultMaterial();

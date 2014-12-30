@@ -325,7 +325,7 @@ ShaderProgram* ShaderProgram::Default() {
         "out vec2 MR_VertexTexCoord;\n"
 
         "void main() {\n"
-        "	vec4 pos = "+std::string(MR_SHADER_MVP_MAT4)+" * vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
+        "	vec4 pos = "+std::string(MR_SHADER_MVP_MAT4)+" * "+std::string(MR_SHADER_MODEL_MAT4)+" * vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
         "	MR_VertexPos = pos;\n"
         "   MR_LocalVertexPos = vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
         "   MR_VertexNormal = "+std::string(MR_SHADER_VERTEX_NORMAL_ATTRIB_NAME)+";\n"
@@ -406,7 +406,7 @@ ShaderProgram* ShaderProgram::DefaultWithTexture() {
         "out vec2 MR_VertexTexCoord;\n"
 
         "void main() {\n"
-        "	vec4 pos = "+std::string(MR_SHADER_MVP_MAT4)+" * vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
+        "	vec4 pos = "+std::string(MR_SHADER_MVP_MAT4)+" * "+std::string(MR_SHADER_MODEL_MAT4)+" * vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
         "	MR_VertexPos = pos;\n"
         "   MR_LocalVertexPos = vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
         "   MR_VertexNormal = "+std::string(MR_SHADER_VERTEX_NORMAL_ATTRIB_NAME)+";\n"
@@ -487,7 +487,7 @@ ShaderProgram* ShaderProgram::DefaultBase() {
         "out vec2 MR_VertexTexCoord;\n"
 
         "void main() {\n"
-        "	vec4 pos = "+std::string(MR_SHADER_MVP_MAT4)+" * vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
+        "	vec4 pos = "+std::string(MR_SHADER_MVP_MAT4)+" * "+std::string(MR_SHADER_MODEL_MAT4)+"* vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
         "	MR_VertexPos = pos;\n"
         "   MR_LocalVertexPos = vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
         "   MR_VertexNormal = "+std::string(MR_SHADER_VERTEX_NORMAL_ATTRIB_NAME)+";\n"
@@ -591,6 +591,10 @@ void DestroyAllShaderPrograms() {
     for(size_t i = 0; i < _MR_REGISTERED_SHADER_PROGRAMS_.GetNum(); ++i) {
         _MR_REGISTERED_SHADER_PROGRAMS_.At(i)->Destroy();
     }
+}
+
+IShaderProgram* GetUsedShaderProgram() {
+    return __MR_USED_SHADER_PROGRAM;
 }
 
 }

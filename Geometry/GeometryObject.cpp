@@ -34,7 +34,7 @@ void Geometry::Draw(){
             glDrawElementsBaseVertex(  _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()],
                                         _draw_params->GetIndexCount(),
                                         iformat->GetDataType()->GetDataType(),
-                                        (void*)(iformat->GetSize() * _draw_params->GetIndexStart()),
+                                        (void*)(size_t)(iformat->GetSize() * _draw_params->GetIndexStart()),
                                         _draw_params->GetVertexStart());
         }
     }

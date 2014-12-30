@@ -83,6 +83,7 @@ public:
     inline void SetDefaultContext(unsigned int const& contextIndex) { _defaultCtxIndex = contextIndex; }
 
     void Destroy() {
+        mr::Shutdown();
         MakeNullContextCurrent();
         for(unsigned int i = 0; i < GetContextsNum(); ++i) {
             if(! _ctx[i]) continue;

@@ -9,8 +9,8 @@ void Entity::Draw() {
     }
 }
 
-Entity::Entity() : _model() {  }
-Entity::Entity(ModelWeakPtr modelPtr) : _model(modelPtr) {  }
+Entity::Entity() : _model(), _name("noname") {  }
+Entity::Entity(ModelWeakPtr modelPtr, std::string const& name) : _model(modelPtr), _name(name) {  }
 Entity::~Entity() {  }
 
 }

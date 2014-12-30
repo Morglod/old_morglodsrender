@@ -18,6 +18,7 @@ public:
     SceneNodePtr GetChild(size_t const& childIndex) const;
     size_t GetChildrenNum() const;
 
+    virtual SceneNodePtr CreateChild();
     virtual SceneNodePtr AddChild(SceneNodePtr newChild);
     virtual SceneNodePtr RemoveChild(SceneNodePtr childToRemove);
     virtual SceneNodePtr RemoveChild(SceneNode* childToRemove);
@@ -55,7 +56,7 @@ protected:
     virtual void UpdateChildrenMat();
 
     SceneNodePtr _parent;
-    mr::TDynamicArray<SceneNodePtr> _children;
+    std::deque<SceneNodePtr> _children;
 
     glm::mat4 _mat, _localMat;
     glm::vec3 _pos, _rot, _scale;

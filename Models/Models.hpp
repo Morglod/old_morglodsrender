@@ -6,7 +6,7 @@ namespace mr {
 
 class SubModel : public ISubModel {
 public:
-    mr::TStaticArray<MeshWeakPtr> GetMeshes() const override { return _Meshes; }
+    mr::TStaticArray<MeshWeakPtr> GetMeshes() const override { return _meshes; }
     void SetMeshes(mr::TStaticArray<MeshWeakPtr> newMeshes) override { _meshes = newMeshes; }
 
     //may be nullptr
@@ -17,25 +17,34 @@ public:
 
     void Draw(glm::mat4* modelMatrix) const override;
 
-    virtual ~SubModel() {}
+    float GetMinDist() const override { return _dist; }
+    void SetMinDist(float dist) override { _dist = dist; }
+
+    SubModel();
+    virtual ~SubModel();
 protected:
     mr::TStaticArray<MeshWeakPtr> _meshes;
     MaterialWeakPtr _material;
+    float _dist = 1.0f;
 };
 
 class Model : public IModel {
 public:
-    mr::TStaticArray<SubModelPtr> GetLevels() override;
-    void SetLevels(mr::TStaticArray<SubModelPtr>) override;
+    mr::TStaticArray<SubModelPtr> GetLods() const override { return _lods; }
+    void SetLods(mr::TStaticArray<SubModelPtr> newLods) override { _lods = newLods; }
 
-    float GetLodBias() override;
-    void SetLodBias(float const& bias) override;
+    float GetLodBias() const override { return _bias; }
+    void SetLodBias(float const& bias) override { _bias = bias; }
 
-    SubModelPtr GetLod(size_t const& lodIndex) override;
-    size_t GetLodIndexAtDistance(float const& dist) override;
-    SubModelPtr GetLodAtDistance(float const& dist) override;
+    SubModelPtr GetLod(size_t const& lodIndex) const override { return _lods[lodIndex]; }
+    size_t GetLodIndexAtDistance(float dist) const override;
+    SubModelPtr GetLodAtDistance(float const& dist) const override { return _lods[GetLodIndexAtDistance(dist)]; }
+    bool IsVisibleAtDist(float dist) const override;
 
     virtual ~Model() {}
+protected:
+    float _bias = 1.0f;
+    mr::TStaticArray<SubModelPtr> _lods;
 };
 
 }

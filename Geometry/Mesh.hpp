@@ -18,12 +18,12 @@ public:
     void SetMaterial(IMaterial* m) override { _mat = m; OnMaterialChanged(this, m); }
     inline IMaterial* GetMaterial() override { return _mat; }
 
-    void Draw() override;
+    void Draw(glm::mat4* modelMat) override;
 
-    Mesh(const TStaticArray<IGeometry*>& geom, IMaterial* mat);
+    Mesh(TStaticArray<IGeometry*> geom, IMaterial* mat);
     virtual ~Mesh();
 
-    static IMesh* Create(const TStaticArray<IGeometry*>& geom, IMaterial* mat);
+    static IMesh* Create(TStaticArray<IGeometry*> geom, IMaterial* mat);
 protected:
     TStaticArray<IGeometry*> _geom;
     IMaterial* _mat;

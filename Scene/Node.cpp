@@ -1,5 +1,6 @@
 #include "Node.hpp"
 
+#include <algorithm>
 #include <glm/gtx/transform.hpp>
 
 namespace mr {
@@ -19,17 +20,21 @@ SceneNodePtr SceneNode::GetChild(size_t const& childIndex) const {
 }
 
 size_t SceneNode::GetChildrenNum() const {
-    return _children.GetNum();
+    return _children.size();
+}
+
+SceneNodePtr SceneNode::CreateChild() {
+    return AddChild(SceneNodePtr(new SceneNode()));
 }
 
 SceneNodePtr SceneNode::AddChild(SceneNodePtr newChild) {
-    _children.PushBack(newChild);
+    _children.push_back(newChild);
     newChild->Update();
     return newChild;
 }
 
 SceneNodePtr SceneNode::RemoveChild(SceneNodePtr childToRemove) {
-    _children.Erase(childToRemove);
+    _children.erase(std::find(_children.begin(), _children.end(), childToRemove));
     childToRemove->Update();
     return childToRemove;
 }
@@ -37,10 +42,10 @@ SceneNodePtr SceneNode::RemoveChild(SceneNodePtr childToRemove) {
 SceneNodePtr SceneNode::RemoveChild(SceneNode* childToRemove) {
     SceneNodePtr finded = nullptr;
 
-    _children.ForEach(
-        [childToRemove, &finded](SceneNodePtr* elementPtr) -> bool {
-            if((*elementPtr).get() == childToRemove) {
-                finded = *elementPtr;
+    std::for_each(_children.begin(), _children.end(),
+        [childToRemove, &finded](SceneNodePtr& elementPtr) {
+            if((elementPtr).get() == childToRemove) {
+                finded = elementPtr;
                 return false;
             }
             return true;
@@ -64,7 +69,7 @@ void SceneNode::CalcMat(glm::mat4 const& parentMat) {
 }
 
 void SceneNode::UpdateChildrenMat() {
-    for(size_t i = 0; i < _children.GetNum(); ++i) {
+    for(size_t i = 0; i < _children.size(); ++i) {
         _children[i]->CalcMat(_mat);
     }
 }

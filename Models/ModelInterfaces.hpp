@@ -28,28 +28,33 @@ public:
 
     virtual void Draw(glm::mat4* modelMatrix) const = 0;
 
-    virtual ~ISubModel() {}
+    virtual float GetMinDist() const = 0;
+    virtual void SetMinDist(float dist) = 0;
+
+    virtual ~ISubModel() {  }
 };
 
 typedef std::shared_ptr<ISubModel> SubModelPtr;
 
 class IModel {
 public:
-    //LOD
-    virtual mr::TStaticArray<ISubModel*> GetLevels() = 0;
-    virtual void SetLevels(mr::TStaticArray<ISubModel*>) = 0;
+    virtual mr::TStaticArray<SubModelPtr> GetLods() const = 0;
+    virtual void SetLods(mr::TStaticArray<SubModelPtr>) = 0;
 
-    virtual float GetLodBias() = 0;
+    virtual float GetLodBias() const = 0;
     virtual void SetLodBias(float const& bias) = 0;
 
-    virtual ISubModel* GetLod(size_t const& lodIndex) = 0;
-    virtual size_t GetLodIndexAtDistance(float const& dist) = 0;
-    virtual ISubModel* GetLodAtDistance(float const& dist) = 0;
-    //
+    virtual SubModelPtr GetLod(size_t const& lodIndex) const = 0;
+    virtual size_t GetLodIndexAtDistance(float dist) const = 0;
+    virtual SubModelPtr GetLodAtDistance(float const& dist) const = 0;
+
+    //Is any lod visible at this dist.
+    virtual bool IsVisibleAtDist(float dist) const = 0;
 
     virtual ~IModel() {}
 };
 
+typedef std::shared_ptr<IModel> ModelPtr;
 typedef std::weak_ptr<IModel> ModelWeakPtr;
 
 }

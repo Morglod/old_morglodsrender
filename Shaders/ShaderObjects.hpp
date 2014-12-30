@@ -77,6 +77,7 @@ protected:
 
 void UseNullShaderProgram();
 void DestroyAllShaderPrograms();
+IShaderProgram* GetUsedShaderProgram();
 
 }
 
