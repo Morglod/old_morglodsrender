@@ -7,22 +7,10 @@
 
 namespace mr {
 
-class VirtualGPUBuffer_DestroyEvent : public mr::EventHandle<ObjectHandle*> {
-public:
-    void Invoke(EventListener<ObjectHandle*>* event, ObjectHandle* o) override {
-        if(_vgb) _vgb->Destroy();
-    }
-
-    VirtualGPUBuffer_DestroyEvent(mr::VirtualGPUBuffer* vgb) : _vgb(vgb) {}
-    virtual ~VirtualGPUBuffer_DestroyEvent() {}
-private:
-    mr::VirtualGPUBuffer* _vgb;
-};
-
 void VirtualGPUBuffer::Destroy() {
     if(_realBuffer) {
         if(_eventHandle) {
-            _realBuffer->OnDestroy.UnRegisterHandle((mr::EventHandle<ObjectHandle*>*)_eventHandle);
+            _realBuffer->OnDestroy -= _eventHandle;
         }
     }
 
@@ -40,7 +28,11 @@ VirtualGPUBuffer::VirtualGPUBuffer(IGPUBuffer* realBuffer, size_t const& offset,
     if(_realBuffer->GetGPUMem() == 0) {
         mr::Log::LogString("VirtualGPUBuffer::ctor. RealBuffer not allocated or allocated with some errors.", MR_LOG_LEVEL_WARNING);
     }
-    _eventHandle = _realBuffer->OnDestroy.RegisterHandle(new VirtualGPUBuffer_DestroyEvent(this));
+
+    _eventHandle = _realBuffer->OnDestroy +=
+    [this](ObjectHandle* oh) {
+        this->Destroy();
+    };
 }
 
 VirtualGPUBuffer::~VirtualGPUBuffer() {

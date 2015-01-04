@@ -10,7 +10,7 @@ namespace mr {
 
 class GPUObjectHandle : public ObjectHandle {
 public:
-    mr::EventListener<GPUObjectHandle*, unsigned int const&> OnGPUHandleChanged;
+    mu::Event<GPUObjectHandle*, unsigned int const&> OnGPUHandleChanged;
 
     virtual bool Good() { return (_handle != 0); }
     virtual unsigned int GetGPUHandle() { return _handle; }

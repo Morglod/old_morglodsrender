@@ -145,7 +145,6 @@
 		<Unit filename="Utils/Containers.hpp" />
 		<Unit filename="Utils/Debug.hpp" />
 		<Unit filename="Utils/EmptyPlugin.cpp" />
-		<Unit filename="Utils/Events.hpp" />
 		<Unit filename="Utils/Exception.cpp" />
 		<Unit filename="Utils/Exception.hpp" />
 		<Unit filename="Utils/FilesIO.cpp" />

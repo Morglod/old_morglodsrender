@@ -3,7 +3,7 @@
 #ifndef _MR_TRANSFORMATION_H_
 #define _MR_TRANSFORMATION_H_
 
-#include "../Utils/Events.hpp"
+#include <Events.hpp>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -55,7 +55,7 @@ private:
 
 class Transform {
 public:
-    mr::EventListener<Transform*, const glm::mat4&> OnChanged;
+    mu::Event<Transform*, const glm::mat4&> OnChanged;
 
     void Calc();
 

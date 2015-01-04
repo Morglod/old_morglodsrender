@@ -47,10 +47,10 @@ public:
     /** sender - Resource object
      *  arg1 - new state
      */
-    MR::EventListener<Resource*, const bool&> OnResourceFreeStateChanged;
+    mu::Event<Resource*, const bool&> OnResourceFreeStateChanged;
 
-    MR::EventListener<Resource*> OnLoad;
-    MR::EventListener<Resource*> OnUnLoad;
+    mu::Event<Resource*> OnLoad;
+    mu::Event<Resource*> OnUnLoad;
 
     /** If true, resource data will be destroyed after unloading/deleting resource
      *  For example geometry buffers after unloading/deleting Mesh resource
@@ -120,7 +120,7 @@ public:
     /** sender - Resource object
      *  arg1 - new state
      */
-    MR::EventListener<ResourceManager*, const bool&> OnDebugMessagesStateChanged;
+    mu::Event<ResourceManager*, const bool&> OnDebugMessagesStateChanged;
 
     /** Turn on/off debug messages
      *  False by default

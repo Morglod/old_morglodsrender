@@ -26,8 +26,8 @@ public:
 
     static std::string TypeToString(const IShaderUniform::Type& t);
 
-    mr::EventListener<IShaderUniform*, void*> OnNewValuePtr;
-    mr::EventListener<IShaderUniform*, IShaderProgram*, const int&> OnNewLocation; //as args (shader program, new uniform location)
+    mu::Event<IShaderUniform*, void*> OnNewValuePtr;
+    mu::Event<IShaderUniform*, IShaderProgram*, const int&> OnNewLocation; //as args (shader program, new uniform location)
 
     virtual std::string GetName() = 0;
     virtual IShaderUniform::Type GetType() = 0;
@@ -89,7 +89,7 @@ public:
         TypesNum = 8
     };
 
-    mr::EventListener<IShader*, const std::string&, const IShader::Type&> OnCompiled; //as args(new code, new shader type)
+    mu::Event<IShader*, const std::string&, const IShader::Type&> OnCompiled; //as args(new code, new shader type)
 
     //virtual const unsigned int& GetGPUHandle() = 0; GPUObjectHandle
     virtual IShader::Type GetType() = 0;

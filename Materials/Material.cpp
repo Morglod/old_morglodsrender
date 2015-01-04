@@ -17,7 +17,7 @@ namespace mr {
 
 void DefaultMaterial::Create(MaterialDescr const& descr) {
     _descr = descr;
-    _program = mr::ShaderProgram::Default();
+    //_program = mr::ShaderProgram::Default();
     _shader_descr.colorAmbient = _descr.colorAmbient;
     _shader_descr.colorDiffuse = _descr.colorDiffuse;
 

@@ -20,7 +20,6 @@ zlib http://www.zlib.net
 #include "Config.hpp"
 #include "Scene/PerspectiveCamera.hpp"
 //#include "Scene/Entity.hpp"
-#include "Utils/Events.hpp"
 #include "Geometry/GeometryBuffer.hpp"
 #include "Utils/Log.hpp"
 //#include "Scene/Light.hpp"

@@ -4,7 +4,7 @@
 #define _MR_MESH_INTERFACES_H_
 
 #include "../Utils/Containers.hpp"
-#include "../Utils/Events.hpp"
+#include <Events.hpp>
 
 #include <glm/glm.hpp>
 
@@ -18,8 +18,8 @@ class IMaterial;
 */
 class IMesh {
 public:
-    mr::EventListener<IMesh*, IMaterial*> OnMaterialChanged;
-    mr::EventListener<IMesh*, const TStaticArray<IGeometry*>&> OnGeometryChanged;
+    mu::Event<IMesh*, IMaterial*> OnMaterialChanged;
+    mu::Event<IMesh*, const TStaticArray<IGeometry*>&> OnGeometryChanged;
 
     virtual void SetMaterial(IMaterial* m) = 0;
     virtual IMaterial* GetMaterial() = 0;

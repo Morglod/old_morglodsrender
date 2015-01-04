@@ -4,7 +4,8 @@
 #define _MR_TYPES_H_
 
 #include "Utils/Containers.hpp"
-#include "Utils/Events.hpp"
+
+#include <Events.hpp>
 
 #include <vector>
 #include <algorithm>
@@ -53,7 +54,7 @@ public:
 
 class ObjectHandle {
 public:
-    mr::EventListener<ObjectHandle*> OnDestroy;
+    mu::Event<ObjectHandle*> OnDestroy;
 
     virtual void Destroy() = 0;
 };

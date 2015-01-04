@@ -30,13 +30,13 @@ public:
         Ortho = 1
     };
 
-    MR::EventListener<ICamera*, const CameraMode&> OnModeChanged;
-    MR::EventListener<ICamera*, const CameraProjection&> OnProjectionChanged;
-    MR::EventListener<ICamera*, const glm::vec3&> OnPositionChanged;
-    MR::EventListener<ICamera*, const glm::vec3&> OnTargetChanged;
-    MR::EventListener<ICamera*, const glm::vec3&> OnDirectionChanged;
-    MR::EventListener<ICamera*, RenderTarget*> OnRenderTargetChanged;
-    MR::EventListener<ICamera*, glm::mat4*> OnMVPRecalc;
+    mu::Event<ICamera*, const CameraMode&> OnModeChanged;
+    mu::Event<ICamera*, const CameraProjection&> OnProjectionChanged;
+    mu::Event<ICamera*, const glm::vec3&> OnPositionChanged;
+    mu::Event<ICamera*, const glm::vec3&> OnTargetChanged;
+    mu::Event<ICamera*, const glm::vec3&> OnDirectionChanged;
+    mu::Event<ICamera*, RenderTarget*> OnRenderTargetChanged;
+    mu::Event<ICamera*, glm::mat4*> OnMVPRecalc;
 
     virtual void AttachToShader(IShaderProgram* shader) = 0;
     virtual void UpdateShader(IShaderProgram* shader) = 0;

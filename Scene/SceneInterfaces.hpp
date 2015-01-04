@@ -3,9 +3,7 @@
 #ifndef _MR_SCENE_INTERFACES_H_
 #define _MR_SCENE_INTERFACES_H_
 
-#include "../Utils/Events.hpp"
 #include "../Types.hpp"
-//#include "../Boxes.hpp"
 #include "Transformation.hpp"
 
 #include <glm/glm.hpp>
@@ -21,15 +19,15 @@ public:
 */
 class ICamera {
 public:
-    mr::EventListener<ICamera*, const glm::vec3&> OnPositionChanged;
-    mr::EventListener<ICamera*, const glm::vec3&> OnRotationChanged;
-    //MR::EventListener<ICamera*, const glm::vec3&> OnTargetChanged;
-    mr::EventListener<ICamera*> OnDirectionsChanged;
+    mu::Event<ICamera*, const glm::vec3&> OnPositionChanged;
+    mu::Event<ICamera*, const glm::vec3&> OnRotationChanged;
+    //mu::Event<ICamera*, const glm::vec3&> OnTargetChanged;
+    mu::Event<ICamera*> OnDirectionsChanged;
 
-    mr::EventListener<ICamera*, glm::mat4*> OnMatUpdated_MVP;
-    mr::EventListener<ICamera*, glm::mat4*> OnMatUpdated_Model;
-    mr::EventListener<ICamera*, glm::mat4*> OnMatUpdated_View;
-    mr::EventListener<ICamera*, glm::mat4*> OnMatUpdated_Projection;
+    mu::Event<ICamera*, glm::mat4*> OnMatUpdated_MVP;
+    mu::Event<ICamera*, glm::mat4*> OnMatUpdated_Model;
+    mu::Event<ICamera*, glm::mat4*> OnMatUpdated_View;
+    mu::Event<ICamera*, glm::mat4*> OnMatUpdated_Projection;
 
     virtual void SetAutoRecalc(const bool& state) = 0;
     virtual bool GetAutoRecalc() = 0;

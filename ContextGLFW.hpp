@@ -34,7 +34,8 @@ public:
         context_robustness, //GLFW_NO_ROBUSTNESS
         opengl_forward_compat, //GL_FALSE
         opengl_debug_context, //GL_FALSE
-        opengl_profile; //GLFW_OPENGL_ANY_PROFILE
+        opengl_profile, //GLFW_OPENGL_ANY_PROFILE
+        useConfig; //use config (except window sizes and visibility)
 
     inline void Setup(bool invisibleWindow = false) const;
 
@@ -116,13 +117,15 @@ mr::ContextManagerGLFW::~ContextManagerGLFW() {}
 mr::ContextGLFW::~ContextGLFW() {}
 
 void mr::GLFWWindowHints::Setup(bool invisibleWindow) const {
-    glfwWindowHint(GLFW_OPENGL_PROFILE, opengl_profile);
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, opengl_debug_context);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, opengl_forward_compat);
-    glfwWindowHint(GLFW_CLIENT_API, client_api);
-    glfwWindowHint(GLFW_CONTEXT_ROBUSTNESS, context_robustness);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, context_version_major);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, context_version_minor);
+    if(useConfig) {
+        glfwWindowHint(GLFW_OPENGL_PROFILE, opengl_profile);
+        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, opengl_debug_context);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, opengl_forward_compat);
+        glfwWindowHint(GLFW_CLIENT_API, client_api);
+        glfwWindowHint(GLFW_CONTEXT_ROBUSTNESS, context_robustness);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, context_version_major);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, context_version_minor);
+    }
 
     if(invisibleWindow) {
         glfwWindowHint(GLFW_RESIZABLE, 0);
@@ -132,22 +135,24 @@ void mr::GLFWWindowHints::Setup(bool invisibleWindow) const {
         glfwWindowHint(GLFW_VISIBLE, visible);
     }
 
-    glfwWindowHint(GLFW_ACCUM_ALPHA_BITS, accum_alpha_bits);
-    glfwWindowHint(GLFW_ACCUM_BLUE_BITS, accum_blue_bits);
-    glfwWindowHint(GLFW_ACCUM_GREEN_BITS, accum_green_bits);
-    glfwWindowHint(GLFW_ACCUM_RED_BITS, accum_red_bits);
-    glfwWindowHint(GLFW_ALPHA_BITS, alpha_bits);
-    glfwWindowHint(GLFW_AUX_BUFFERS, aux_buffers);
-    glfwWindowHint(GLFW_BLUE_BITS, blue_bits);
-    glfwWindowHint(GLFW_DECORATED, decorated);
-    glfwWindowHint(GLFW_DEPTH_BITS, depth_bits);
-    glfwWindowHint(GLFW_GREEN_BITS, green_bits);
-    glfwWindowHint(GLFW_RED_BITS, red_bits);
-    glfwWindowHint(GLFW_REFRESH_RATE, refresh_rate);
-    glfwWindowHint(GLFW_SAMPLES, samples);
-    glfwWindowHint(GLFW_SRGB_CAPABLE, srgb_capable);
-    glfwWindowHint(GLFW_STENCIL_BITS, stencil_bits);
-    glfwWindowHint(GLFW_STEREO, stereo);
+    if(useConfig) {
+        glfwWindowHint(GLFW_ACCUM_ALPHA_BITS, accum_alpha_bits);
+        glfwWindowHint(GLFW_ACCUM_BLUE_BITS, accum_blue_bits);
+        glfwWindowHint(GLFW_ACCUM_GREEN_BITS, accum_green_bits);
+        glfwWindowHint(GLFW_ACCUM_RED_BITS, accum_red_bits);
+        glfwWindowHint(GLFW_ALPHA_BITS, alpha_bits);
+        glfwWindowHint(GLFW_AUX_BUFFERS, aux_buffers);
+        glfwWindowHint(GLFW_BLUE_BITS, blue_bits);
+        glfwWindowHint(GLFW_DECORATED, decorated);
+        glfwWindowHint(GLFW_DEPTH_BITS, depth_bits);
+        glfwWindowHint(GLFW_GREEN_BITS, green_bits);
+        glfwWindowHint(GLFW_RED_BITS, red_bits);
+        glfwWindowHint(GLFW_REFRESH_RATE, refresh_rate);
+        glfwWindowHint(GLFW_SAMPLES, samples);
+        glfwWindowHint(GLFW_SRGB_CAPABLE, srgb_capable);
+        glfwWindowHint(GLFW_STENCIL_BITS, stencil_bits);
+        glfwWindowHint(GLFW_STEREO, stereo);
+    }
 }
 
 mr::GLFWWindowHints::GLFWWindowHints() :
@@ -175,7 +180,8 @@ mr::GLFWWindowHints::GLFWWindowHints() :
     context_robustness(GLFW_NO_ROBUSTNESS),
     opengl_forward_compat(GL_TRUE),
     opengl_debug_context(GL_FALSE),
-    opengl_profile(GLFW_OPENGL_CORE_PROFILE) {
+    opengl_profile(GLFW_OPENGL_CORE_PROFILE),
+    useConfig(1) {
 }
 
 void mr::GLFWWindowHints::Configure(mu::Config* cfg) {
@@ -206,6 +212,7 @@ void mr::GLFWWindowHints::Configure(mu::Config* cfg) {
     cfg->GetTo("buffers.accum_green_bits", accum_green_bits);
     cfg->GetTo("buffers.accum_blue_bits", accum_blue_bits);
     cfg->GetTo("buffers.accum_alpha_bits", accum_alpha_bits);
+    cfg->GetTo("config.use", useConfig);
 }
 
 void mr::GLFWWindowHints::SaveConfig(mu::Config* cfg) {
@@ -236,4 +243,5 @@ void mr::GLFWWindowHints::SaveConfig(mu::Config* cfg) {
     cfg->Set("buffers.accum_green_bits", std::to_string(accum_green_bits));
     cfg->Set("buffers.accum_blue_bits", std::to_string(accum_blue_bits));
     cfg->Set("buffers.accum_alpha_bits", std::to_string(accum_alpha_bits));
+    cfg->Set("config.use", std::to_string(useConfig));
 }

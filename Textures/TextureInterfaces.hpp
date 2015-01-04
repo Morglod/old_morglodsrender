@@ -3,7 +3,6 @@
 #ifndef _MR_TEXTURE_INTERFACES_H_
 #define _MR_TEXTURE_INTERFACES_H_
 
-#include "../Utils/Events.hpp"
 #include "../Types.hpp"
 #include "../CoreObjects.hpp"
 
@@ -49,17 +48,17 @@ public:
     };
 
     /* SENDER - TextureSettings pointer */
-    mr::EventListener<ITextureSettings*, const float&> OnLodBiasChanged;
-    mr::EventListener<ITextureSettings*, float*> OnBorderColorChanged; //as param used pointer to _border_color
-    mr::EventListener<ITextureSettings*, const MinFilter&> OnMinFilterChanged;
-    mr::EventListener<ITextureSettings*, const MagFilter&> OnMagFilterChanged;
-    mr::EventListener<ITextureSettings*, const int&> OnMinLodChanged;
-    mr::EventListener<ITextureSettings*, const int&> OnMaxLodChanged;
-    mr::EventListener<ITextureSettings*, const Wrap&> OnWrapSChanged;
-    mr::EventListener<ITextureSettings*, const Wrap&> OnWrapRChanged;
-    mr::EventListener<ITextureSettings*, const Wrap&> OnWrapTChanged;
-    mr::EventListener<ITextureSettings*, const CompareMode&> OnCompareModeChanged;
-    mr::EventListener<ITextureSettings*, const CompareFunc&> OnCompareFuncChanged;
+    mu::Event<ITextureSettings*, const float&> OnLodBiasChanged;
+    mu::Event<ITextureSettings*, float*> OnBorderColorChanged; //as param used pointer to _border_color
+    mu::Event<ITextureSettings*, const MinFilter&> OnMinFilterChanged;
+    mu::Event<ITextureSettings*, const MagFilter&> OnMagFilterChanged;
+    mu::Event<ITextureSettings*, const int&> OnMinLodChanged;
+    mu::Event<ITextureSettings*, const int&> OnMaxLodChanged;
+    mu::Event<ITextureSettings*, const Wrap&> OnWrapSChanged;
+    mu::Event<ITextureSettings*, const Wrap&> OnWrapRChanged;
+    mu::Event<ITextureSettings*, const Wrap&> OnWrapTChanged;
+    mu::Event<ITextureSettings*, const CompareMode&> OnCompareModeChanged;
+    mu::Event<ITextureSettings*, const CompareFunc&> OnCompareFuncChanged;
 
     virtual void SetLodBias(const float& v) = 0;
     virtual void SetBorderColor(float* rgba) = 0;

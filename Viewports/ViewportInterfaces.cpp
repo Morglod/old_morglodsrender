@@ -1,3 +1,3 @@
 #include "ViewportInterfaces.hpp"
 
-mr::EventListener<mr::IViewport*> mr::IViewport::OnAnyUsed;
+mu::Event<mr::IViewport*> mr::IViewport::OnAnyUsed;

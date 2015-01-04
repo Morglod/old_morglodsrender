@@ -43,12 +43,12 @@ protected:
     IGPUBuffer* _realBuffer;
     size_t _realBuffer_offset;
     size_t _size;
-    void* _eventHandle;
+    size_t _eventHandle;
 };
 
 class VirtualGPUBufferManager {
 public:
-    mr::EventListener<VirtualGPUBufferManager*> OnDelete; //before deletion
+    mu::Event<VirtualGPUBufferManager*> OnDelete; //before deletion
 
     inline virtual size_t GetFreeMemorySize() { return _realBuffer->GetGPUMem() - _offset; }
     inline virtual size_t GetOffset() { return _offset; }

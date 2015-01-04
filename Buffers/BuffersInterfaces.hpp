@@ -7,7 +7,6 @@
 
 #include "../Utils/Memory.hpp"
 #include "../CoreObjects.hpp"
-#include "../Utils/Events.hpp"
 
 #include <memory>
 
@@ -39,7 +38,7 @@ public:
         FastChange
     };
 
-    mr::EventListener<IGPUBuffer*, const IGPUBuffer::Usage&, const size_t&> OnAllocated;
+    mu::Event<IGPUBuffer*, const IGPUBuffer::Usage&, const size_t&> OnAllocated;
 
     struct BufferedDataInfo {
     public:
