@@ -14,15 +14,15 @@ public:
     void SetIndexCount(const unsigned int& i) override;
     void SetVertexCount(const unsigned int& i) override;
 
-    unsigned int GetIndexStart() override { return _istart; }
-    unsigned int GetVertexStart() override { return _vstart; }
-    unsigned int GetIndexCount() override { return _icount; }
-    unsigned int GetVertexCount() override { return _vcount; }
+    unsigned int GetIndexStart() const override { return _istart; }
+    unsigned int GetVertexStart() const override { return _vstart; }
+    unsigned int GetIndexCount() const override { return _icount; }
+    unsigned int GetVertexCount() const override { return _vcount; }
 
-    void* GetIndirectPtr() override { return drawCmd; }
+    void* GetIndirectPtr() const override { return drawCmd; }
 
     void SetUseIndexBuffer(const bool& state) override;
-    bool GetUseIndexBuffer() override;
+    bool GetUseIndexBuffer() const override;
 
     static IGeometryDrawParamsPtr DrawArrays(const unsigned int& vstart, const unsigned int& vcount);
     static IGeometryDrawParamsPtr DrawElements(const unsigned int& vstart, const unsigned int& istart, const unsigned int& icount);

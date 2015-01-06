@@ -11,21 +11,21 @@ namespace mr {
 class GeometryBuffer : public IGeometryBuffer {
 public:
     bool SetVertexBuffer(IGPUBuffer* buf) override;
-    inline IGPUBuffer* GetVertexBuffer() override { return _vb; }
+    inline IGPUBuffer* GetVertexBuffer() const override { return _vb; }
 
     bool SetIndexBuffer(IGPUBuffer* buf) override;
-    inline IGPUBuffer* GetIndexBuffer() override { return _ib; }
+    inline IGPUBuffer* GetIndexBuffer() const override { return _ib; }
 
-    inline IGeometryBuffer::DrawMode GetDrawMode() override { return _draw_mode; }
+    inline IGeometryBuffer::DrawMode GetDrawMode() const override { return _draw_mode; }
     inline void SetDrawMode(const IGeometryBuffer::DrawMode& dm) override { _draw_mode = dm; }
 
     inline void SetFormat(IVertexFormat* f, IIndexFormat* fi) override { _format = f; _iformat = fi; }
-    inline IVertexFormat* GetVertexFormat() override { return _format; }
-    inline IIndexFormat* GetIndexFormat() override { return _iformat; }
+    inline IVertexFormat* GetVertexFormat() const override { return _format; }
+    inline IIndexFormat* GetIndexFormat() const override { return _iformat; }
 
-    inline bool Good() override { return _created && (_vb != nullptr) && (_format != nullptr); }
+    inline bool Good() const override { return _created && (_vb != nullptr) && (_format != nullptr); }
 
-    bool Bind(bool useIndexBuffer) override;
+    bool Bind(bool useIndexBuffer) const override;
 
     bool Create(IGeometryBuffer::CreationParams const& params) override;
 

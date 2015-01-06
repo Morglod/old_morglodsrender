@@ -39,8 +39,8 @@ public:
 
     inline void Setup(bool invisibleWindow = false) const;
 
-    inline void Configure(mu::Config* cfg);
-    inline void SaveConfig(mu::Config* cfg);
+    inline void ConfigureFrom(mu::Config* cfg);
+    inline void SaveToConfig(mu::Config* cfg) const;
 
     inline GLFWWindowHints();
 };
@@ -184,7 +184,7 @@ mr::GLFWWindowHints::GLFWWindowHints() :
     useConfig(1) {
 }
 
-void mr::GLFWWindowHints::Configure(mu::Config* cfg) {
+void mr::GLFWWindowHints::ConfigureFrom(mu::Config* cfg) {
 	if(!cfg) return;
 
     cfg->GetTo("display.srgb_capable", srgb_capable);
@@ -215,7 +215,7 @@ void mr::GLFWWindowHints::Configure(mu::Config* cfg) {
     cfg->GetTo("config.use", useConfig);
 }
 
-void mr::GLFWWindowHints::SaveConfig(mu::Config* cfg) {
+void mr::GLFWWindowHints::SaveToConfig(mu::Config* cfg) const {
 	if(!cfg) return;
 
     cfg->Set("display.srgb_capable", std::to_string(srgb_capable));

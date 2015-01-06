@@ -65,8 +65,8 @@ bool GeometryBuffer::SetIndexBuffer(IGPUBuffer* buf) {
     return true;
 }
 
-bool GeometryBuffer::Bind(bool useIndexBuffer) {
-    if(_MR_BINDED_GEOM_BUFFER_ == dynamic_cast<mr::IGeometryBuffer*>(this)) return true;
+bool GeometryBuffer::Bind(bool useIndexBuffer) const {
+    if(_MR_BINDED_GEOM_BUFFER_ == dynamic_cast<const mr::IGeometryBuffer*>(this)) return true;
 
     if(!_format) return false;
     if(!_vb) return false;
@@ -74,8 +74,8 @@ bool GeometryBuffer::Bind(bool useIndexBuffer) {
     if(mr::MachineInfo::IsNVVBUMSupported()) {
         _format->Bind();//__MR_SET_VERTEX_FORMAT_AS_BINDED_(_format);
 
-        TStaticArray<IVertexAttribute*> attrs = _format->_GetAttributes();
-        TStaticArray<uint64_t> ptrs = _format->_GetOffsets();
+        TStaticArray<IVertexAttribute*> attrs = _format->GetAttributes();
+        TStaticArray<uint64_t> ptrs = _format->GetOffsets();
 
         for(size_t i = 0; i < attrs.GetNum(); ++i) {
             glBufferAddressRangeNV(GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV,
@@ -99,7 +99,7 @@ bool GeometryBuffer::Bind(bool useIndexBuffer) {
         }
     }
 
-    _MR_BINDED_GEOM_BUFFER_ = dynamic_cast<mr::IGeometryBuffer*>(this);
+    _MR_BINDED_GEOM_BUFFER_ = (mr::IGeometryBuffer*)dynamic_cast<const mr::IGeometryBuffer*>(this);
     return true;
 }
 

@@ -58,7 +58,7 @@ public:
         mr::Log::LogString("glfw error. level " + std::to_string(level) + ". " + std::string(desc), MR_LOG_LEVEL_ERROR);
     }
 
-    virtual bool Go( const std::string& WindowName = "MorglodsRender", const unsigned short& WindowWidth = 800, const unsigned short& WindowHeight = 600, const GLFWWindowHints& hints = GLFWWindowHints(), const bool& multithreaded = false) {
+    virtual bool Go(std::string const& WindowName = "MorglodsRender", unsigned short const& WindowWidth = 800, unsigned short const& WindowHeight = 600, GLFWWindowHints const& hints = GLFWWindowHints(), bool const& multithreaded = false) {
         aspect = (float)WindowWidth / (float)WindowHeight;
         window_width = WindowWidth;
         window_height = WindowHeight;

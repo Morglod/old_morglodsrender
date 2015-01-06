@@ -28,7 +28,7 @@ void GeometryDrawParams::SetUseIndexBuffer(const bool& state) {
     if(mr::MachineInfo::IsIndirectDrawSupported()) _MakeDrawCmd();
 }
 
-bool GeometryDrawParams::GetUseIndexBuffer() {
+bool GeometryDrawParams::GetUseIndexBuffer() const {
     return _index_buffer;
 }
 

@@ -202,6 +202,20 @@ unsigned int  mr::MachineInfo::current_memory_kb() {
     return cur_avail_mem_kb;
 }
 
+const bool mr::MachineInfo::OpenGL45() {
+    static char sup = -1;
+    if(sup == -1) {
+        if(gl_version_major() == 4) {
+            if(gl_version_minor() >= 5) {
+                sup = 1;
+            } else sup = 0;
+        } else if(gl_version_major() > 4) {
+            sup = 1;
+        }
+    }
+    return (bool)sup;
+}
+
 void mr::MachineInfo::PrintInfo() {
     try {
     mr::Log::LogString(

@@ -20,7 +20,7 @@ void Geometry::SetGeometryBuffer(IGeometryBuffer* buffer) {
     _buffer = buffer;
 }
 
-void Geometry::Draw(){
+void Geometry::Draw() const {
     if(!_buffer || !_draw_params) return;
 
     _buffer->Bind(_draw_params->GetUseIndexBuffer());

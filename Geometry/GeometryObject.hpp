@@ -9,13 +9,13 @@ namespace mr {
 
 class Geometry : public IGeometry {
 public:
-    IGeometryBuffer* GetGeometryBuffer() override { return _buffer; }
+    IGeometryBuffer* GetGeometryBuffer() const override { return _buffer; }
     void SetGeometryBuffer(IGeometryBuffer* buffer) override;
 
-    IGeometryDrawParamsPtr GetDrawParams() override { return _draw_params; }
+    IGeometryDrawParamsPtr GetDrawParams() const override { return _draw_params; }
     void SetDrawParams(IGeometryDrawParamsPtr params) override { _draw_params = params; }
 
-    void Draw() override;
+    void Draw() const override;
 
     Geometry(IGeometryBuffer* buffer, IGeometryDrawParamsPtr params);
     virtual ~Geometry();

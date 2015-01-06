@@ -48,7 +48,7 @@ public:
 template<typename T>
 class Comparable {
 public:
-    virtual bool Equal(T) = 0;
+    virtual bool Equal(T) const = 0;
     virtual ~Comparable() {}
 };
 

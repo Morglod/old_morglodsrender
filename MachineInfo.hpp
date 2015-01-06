@@ -51,6 +51,8 @@ class IContext;
         unsigned int total_memory_kb();
         unsigned int current_memory_kb(); //free mem
 
+        const bool OpenGL45(); //OpenGL 4.5 supported?
+
         void PrintInfo();
 
         /** EXTENSIONS **/

@@ -110,13 +110,13 @@ IVertexAttribute* VertexAttributeCustom::Cache() {
 }
 
 VertexAttributeCustom::VertexAttributeCustom() :
-    _el_num(0), _data_type(nullptr), _size(0), _shaderIndex(0) {}
+    _el_num(0), _data_type(nullptr), _size(0), _shaderIndex(0), _divisor(0) {}
 
-VertexAttributeCustom::VertexAttributeCustom(const unsigned int& elementsNum, IVertexDataType* dataType, const unsigned int& shaderIndex) :
-    _el_num(elementsNum), _data_type(dataType), _size( ((uint64_t)_el_num) * ((uint64_t)_data_type->GetSize()) ), _shaderIndex(shaderIndex) {}
+VertexAttributeCustom::VertexAttributeCustom(const unsigned int& elementsNum, IVertexDataType* dataType, const unsigned int& shaderIndex, unsigned const& divisor) :
+    _el_num(elementsNum), _data_type(dataType), _size( ((uint64_t)_el_num) * ((uint64_t)_data_type->GetSize()) ), _shaderIndex(shaderIndex), _divisor(divisor) {}
 
 VertexAttributeCustom::VertexAttributeCustom(VertexAttributeCustom const& cpy) :
-    _el_num(cpy._el_num), _data_type(cpy._data_type), _size(cpy._size), _shaderIndex(cpy._shaderIndex) {}
+    _el_num(cpy._el_num), _data_type(cpy._data_type), _size(cpy._size), _shaderIndex(cpy._shaderIndex), _divisor(cpy._divisor) {}
 
 
 void VertexFormatCustom::AddVertexAttribute(IVertexAttribute* a) {
@@ -127,9 +127,9 @@ void VertexFormatCustom::AddVertexAttribute(IVertexAttribute* a) {
     _nextPtr = (uint64_t)_size;
 }
 
-bool VertexFormatCustom::Bind() {
+bool VertexFormatCustom::Bind() const {
     if(_MR_BINDED_VERTEX_FORMAT != nullptr) {
-        if(_MR_BINDED_VERTEX_FORMAT->Equal(dynamic_cast<mr::IVertexFormat*>(this))) {
+        if(_MR_BINDED_VERTEX_FORMAT->Equal((mr::IVertexFormat*)dynamic_cast<const mr::IVertexFormat*>(this))) {
             return true;
         }
     }
@@ -140,6 +140,7 @@ bool VertexFormatCustom::Bind() {
             unsigned int sh_i = _attribs[i]->GetShaderIndex();
             glVertexAttribFormatNV(sh_i, (int)_attribs[i]->GetElementsNum(), _attribs[i]->GetDataType()->GetDataType(), GL_FALSE, this->GetSize());
             glEnableVertexAttribArray(sh_i);
+            glVertexAttribDivisor(sh_i, _attribs[i]->GetDivisor());
         }
 
         glEnableClientState(GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
@@ -149,14 +150,15 @@ bool VertexFormatCustom::Bind() {
             unsigned int sh_i = _attribs[i]->GetShaderIndex();
             glVertexAttribPointer(sh_i, (int)_attribs[i]->GetElementsNum(), _attribs[i]->GetDataType()->GetDataType(), GL_FALSE, this->GetSize(), (void*)_pointers[i]);
             glEnableVertexAttribArray(sh_i);
+            glVertexAttribDivisor(sh_i, _attribs[i]->GetDivisor());
         }
     }
 
-    _MR_BINDED_VERTEX_FORMAT = dynamic_cast<mr::IVertexFormat*>(this);
+    _MR_BINDED_VERTEX_FORMAT = (mr::IVertexFormat*)dynamic_cast<const mr::IVertexFormat*>(this);
     return true;
 }
 
-void VertexFormatCustom::UnBind() {
+void VertexFormatCustom::UnBind() const {
     if(mr::MachineInfo::IsNVVBUMSupported()){
         for(size_t i = 0; i < _attribs.size(); ++i) {
             glDisableVertexAttribArray(_attribs[i]->GetShaderIndex());
@@ -171,10 +173,10 @@ void VertexFormatCustom::UnBind() {
     _MR_BINDED_VERTEX_FORMAT = nullptr;
 }
 
-bool VertexFormatCustom::Equal(IVertexFormat* vf){
+bool VertexFormatCustom::Equal(IVertexFormat* vf) const {
     if(GetSize() != vf->GetSize()) return false;
 
-    TStaticArray<IVertexAttribute*> attrArray = vf->_GetAttributes();
+    TStaticArray<IVertexAttribute*> attrArray = vf->GetAttributes();
 
     size_t i2 = 0;
     for(size_t i = 0; i < attrArray.GetNum(); ++i){
@@ -203,9 +205,9 @@ void VertexFormatCustomFixed::SetVertexAttribute(IVertexAttribute* a, const size
     this->_RecalcSize();
 }
 
-bool VertexFormatCustomFixed::Bind() {
+bool VertexFormatCustomFixed::Bind() const {
     if(_MR_BINDED_VERTEX_FORMAT != nullptr) {
-        if(_MR_BINDED_VERTEX_FORMAT->Equal(dynamic_cast<mr::IVertexFormat*>(this))) {
+        if(_MR_BINDED_VERTEX_FORMAT->Equal((mr::IVertexFormat*)dynamic_cast<const mr::IVertexFormat*>(this))) {
             return true;
         }
     }
@@ -216,6 +218,7 @@ bool VertexFormatCustomFixed::Bind() {
             unsigned int sh_i = _attribs[i]->GetShaderIndex();
             glEnableVertexAttribArray(sh_i);
             glVertexAttribFormatNV(sh_i, (int)_attribs[i]->GetElementsNum(), _attribs[i]->GetDataType()->GetDataType(), GL_FALSE, this->GetSize());
+            glVertexAttribDivisor(sh_i, _attribs[i]->GetDivisor());
         }
 
         glEnableClientState(GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
@@ -225,14 +228,15 @@ bool VertexFormatCustomFixed::Bind() {
             unsigned int sh_i = _attribs[i]->GetShaderIndex();
             glEnableVertexAttribArray(sh_i);
             glVertexAttribPointer(sh_i, (int)_attribs[i]->GetElementsNum(), _attribs[i]->GetDataType()->GetDataType(), GL_FALSE, this->GetSize(), (void*)_pointers[i]);
+            glVertexAttribDivisor(sh_i, _attribs[i]->GetDivisor());
         }
     }
 
-    _MR_BINDED_VERTEX_FORMAT = dynamic_cast<mr::IVertexFormat*>(this);
+    _MR_BINDED_VERTEX_FORMAT = (mr::IVertexFormat*)dynamic_cast<const mr::IVertexFormat*>(this);
     return true;
 }
 
-void VertexFormatCustomFixed::UnBind() {
+void VertexFormatCustomFixed::UnBind() const {
     if(mr::MachineInfo::IsNVVBUMSupported()){
         for(size_t i = 0; i < _attribsNum; ++i) {
             glDisableVertexAttribArray(_attribs[i]->GetShaderIndex());
@@ -247,10 +251,10 @@ void VertexFormatCustomFixed::UnBind() {
     _MR_BINDED_VERTEX_FORMAT = nullptr;
 }
 
-bool VertexFormatCustomFixed::Equal(IVertexFormat* vf) {
+bool VertexFormatCustomFixed::Equal(IVertexFormat* vf) const {
     if(_size != vf->GetSize()) return false;
 
-    TStaticArray<IVertexAttribute*> attrArray = vf->_GetAttributes();
+    TStaticArray<IVertexAttribute*> attrArray = vf->GetAttributes();
 
     size_t i2 = 0;
     for(size_t i = 0; i < attrArray.GetNum(); ++i){
@@ -303,9 +307,9 @@ VertexFormatCustomFixed::~VertexFormatCustomFixed() {
     if(_pointers) delete [] _pointers;
 }
 
-bool IndexFormatCustom::Bind(){
+bool IndexFormatCustom::Bind() const {
     if(_MR_BINDED_INDEX_FORMAT != nullptr) {
-        if(_MR_BINDED_INDEX_FORMAT->Equal(dynamic_cast<mr::IIndexFormat*>(this))) {
+        if(_MR_BINDED_INDEX_FORMAT->Equal((mr::IIndexFormat*)dynamic_cast<const mr::IIndexFormat*>(this))) {
             return true;
         }
     }
@@ -315,18 +319,18 @@ bool IndexFormatCustom::Bind(){
         glEnableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
     }
 
-    _MR_BINDED_INDEX_FORMAT = dynamic_cast<mr::IIndexFormat*>(this);
+    _MR_BINDED_INDEX_FORMAT = (mr::IIndexFormat*)dynamic_cast<const mr::IIndexFormat*>(this);
     return true;
 }
 
-void IndexFormatCustom::UnBind(){
+void IndexFormatCustom::UnBind() const {
     if(mr::MachineInfo::IsNVVBUMSupported()){
         glDisableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
     }
     _MR_BINDED_INDEX_FORMAT = nullptr;
 }
 
-bool IndexFormatCustom::Equal(IIndexFormat* ifo) {
+bool IndexFormatCustom::Equal(IIndexFormat* ifo) const {
     if(ifo->GetSize() != this->GetSize()) return false;
     return (ifo->GetDataType()->Equal(this->GetDataType()));
 }

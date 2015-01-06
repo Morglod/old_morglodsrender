@@ -18,8 +18,8 @@ public:
         Float = 0x1406
     };
 
-    virtual unsigned int GetSize() = 0; //one element of this data type size in bytes
-    virtual unsigned int GetDataType() = 0; //opengl data type
+    virtual unsigned int GetSize() const = 0; //one element of this data type size in bytes
+    virtual unsigned int GetDataType() const = 0; //opengl data type
 
     virtual ~IVertexDataType() {}
 };
@@ -33,47 +33,52 @@ public:
         TexCoord = MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION
     };
 
-    virtual unsigned int GetSize() = 0; //one attrib size in bytes
-    virtual unsigned int GetElementsNum() = 0; //num of elements used in attribute
-    virtual IVertexDataType* GetDataType() = 0;
-    virtual unsigned int GetShaderIndex() = 0;
+    virtual unsigned int GetSize() const = 0; //one attrib size in bytes
+    virtual unsigned int GetElementsNum() const = 0; //num of elements used in attribute
+    virtual IVertexDataType* GetDataType() const  = 0;
+    virtual unsigned int GetShaderIndex() const = 0;
+
+    //Instancing
+    //Update this attribute in shader every (GetDivisor) instance
+    virtual unsigned int GetDivisor() const = 0;
+    virtual void SetDivisor(unsigned int const& divisor) = 0;
 
     virtual ~IVertexAttribute() {}
 };
 
 class IVertexFormat : public Comparable<IVertexFormat*> {
 public:
-    virtual unsigned int GetSize() = 0; //one vertex size in bytes
+    virtual unsigned int GetSize() const = 0; //one vertex size in bytes
     virtual void AddVertexAttribute(IVertexAttribute* a) = 0;
-    virtual bool Bind() = 0;
-    virtual void UnBind() = 0;
+    virtual bool Bind() const = 0;
+    virtual void UnBind() const = 0;
 
-    virtual TStaticArray<IVertexAttribute*> _GetAttributes() = 0;
-    virtual TStaticArray<uint64_t> _GetOffsets() = 0; //offsets of each attributes from starting point of vertex in bytes
+    virtual TStaticArray<IVertexAttribute*> GetAttributes() = 0;
+    virtual TStaticArray<uint64_t> GetOffsets() = 0; //offsets of each attributes from starting point of vertex in bytes
 
     virtual ~IVertexFormat() {}
 };
 
 class IInstancedDataFormat : public Comparable<IInstancedDataFormat*> {
 public:
-    virtual unsigned int GetSize() = 0; //one instance data size in byte
+    virtual unsigned int GetSize() const = 0; //one instance data size in byte
     virtual void AddAttribute(IVertexAttribute* a) = 0;
-    virtual bool Bind() = 0;
-    virtual void UnBind() = 0;
+    virtual bool Bind() const = 0;
+    virtual void UnBind() const = 0;
 
-    virtual TStaticArray<IVertexAttribute*> _GetAttributes() = 0;
-    virtual TStaticArray<uint64_t> _GetOffsets() = 0;
+    virtual TStaticArray<IVertexAttribute*> GetAttributes() = 0;
+    virtual TStaticArray<uint64_t> GetOffsets() = 0;
 
     virtual ~IInstancedDataFormat() {}
 };
 
 class IIndexFormat : public Comparable<IIndexFormat*> {
 public:
-    virtual unsigned int GetSize() = 0; //one index size in bytes
+    virtual unsigned int GetSize() const = 0; //one index size in bytes
     virtual void SetDataType(IVertexDataType* dataType) = 0;
-    virtual IVertexDataType* GetDataType() = 0;
-    virtual bool Bind() = 0;
-    virtual void UnBind() = 0;
+    virtual IVertexDataType* GetDataType() const = 0;
+    virtual bool Bind() const = 0;
+    virtual void UnBind() const = 0;
 
     virtual ~IIndexFormat() {}
 };
@@ -122,24 +127,24 @@ public:
     virtual bool Create(CreationParams const& params) = 0;
 
     virtual bool SetVertexBuffer(IGPUBuffer* buf) = 0;
-    virtual IGPUBuffer* GetVertexBuffer() = 0;
+    virtual IGPUBuffer* GetVertexBuffer() const = 0;
 
     virtual bool SetIndexBuffer(IGPUBuffer* buf) = 0;
-    virtual IGPUBuffer* GetIndexBuffer() = 0;
+    virtual IGPUBuffer* GetIndexBuffer() const = 0;
 
     virtual bool GetVertexBuffer_NVGPUPTR(uint64_t* nv_resident_ptr, int* nv_buffer_size) = 0;
     virtual bool GetIndexBuffer_NVGPUPTR(uint64_t* nv_resident_ptr, int* nv_buffer_size) = 0;
 
-    virtual bool Bind(bool useIndexBuffer) = 0;
+    virtual bool Bind(bool useIndexBuffer) const = 0;
 
-    virtual bool Good() = 0;
+    virtual bool Good() const = 0;
 
     virtual void SetDrawMode(const DrawMode& dm) = 0;
-    virtual DrawMode GetDrawMode() = 0;
+    virtual DrawMode GetDrawMode() const = 0;
 
     virtual void SetFormat(IVertexFormat* f, IIndexFormat* fi) = 0;
-    virtual IVertexFormat* GetVertexFormat() = 0;
-    virtual IIndexFormat* GetIndexFormat() = 0;
+    virtual IVertexFormat* GetVertexFormat() const = 0;
+    virtual IIndexFormat* GetIndexFormat() const = 0;
 };
 
 class IGeometryDrawParams {
@@ -164,15 +169,15 @@ public:
     virtual void SetIndexCount(const unsigned int& i) = 0;
     virtual void SetVertexCount(const unsigned int& i) = 0;
 
-    virtual unsigned int GetIndexStart() = 0;
-    virtual unsigned int GetVertexStart() = 0;
-    virtual unsigned int GetIndexCount() = 0;
-    virtual unsigned int GetVertexCount() = 0;
+    virtual unsigned int GetIndexStart() const = 0;
+    virtual unsigned int GetVertexStart() const = 0;
+    virtual unsigned int GetIndexCount() const = 0;
+    virtual unsigned int GetVertexCount() const = 0;
 
-    virtual void* GetIndirectPtr() = 0;
+    virtual void* GetIndirectPtr() const = 0;
 
     virtual void SetUseIndexBuffer(const bool& state) = 0;
-    virtual bool GetUseIndexBuffer() = 0;
+    virtual bool GetUseIndexBuffer() const = 0;
 
     virtual ~IGeometryDrawParams() {}
 };
@@ -181,13 +186,13 @@ typedef std::shared_ptr<IGeometryDrawParams> IGeometryDrawParamsPtr;
 
 class IGeometry {
 public:
-    virtual IGeometryBuffer* GetGeometryBuffer() = 0;
+    virtual IGeometryBuffer* GetGeometryBuffer() const = 0;
     virtual void SetGeometryBuffer(IGeometryBuffer* buffer) = 0;
 
-    virtual IGeometryDrawParamsPtr GetDrawParams() = 0;
+    virtual IGeometryDrawParamsPtr GetDrawParams() const = 0;
     virtual void SetDrawParams(IGeometryDrawParamsPtr params) = 0;
 
-    virtual void Draw() = 0;
+    virtual void Draw() const = 0;
     virtual ~IGeometry() {}
 };
 
