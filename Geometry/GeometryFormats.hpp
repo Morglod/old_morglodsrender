@@ -142,8 +142,8 @@ public:
     VertexFormatCustom(VertexFormatCustom const& cpy);
     virtual ~VertexFormatCustom();
 
-    inline TStaticArray<IVertexAttribute*> GetAttributes() override { return TStaticArray<IVertexAttribute*>(&_attribs[0], _attribs.size(), false); }
-    inline TStaticArray<uint64_t> GetOffsets() override { return TStaticArray<uint64_t>(&_pointers[0], _pointers.size(), false); }
+    inline TArrayRef<IVertexAttribute*> GetAttributes() override { return TArrayRef<IVertexAttribute*>(&_attribs[0], _attribs.size()); }
+    inline TArrayRef<uint64_t> GetOffsets() override { return TArrayRef<uint64_t>(&_pointers[0], _pointers.size()); }
 protected:
     std::vector<IVertexAttribute*> _attribs;
     std::vector<uint64_t> _pointers;
@@ -169,8 +169,8 @@ public:
     VertexFormatCustomFixed(VertexFormatCustomFixed const& cpy);
     virtual ~VertexFormatCustomFixed();
 
-    inline TStaticArray<IVertexAttribute*> GetAttributes() override { return TStaticArray<IVertexAttribute*>(&_attribs[0], _attribsNum, false); }
-    inline TStaticArray<uint64_t> GetOffsets() override { return TStaticArray<uint64_t>(&_pointers[0], _attribsNum, false); }
+    inline TArrayRef<IVertexAttribute*> GetAttributes() override { return TArrayRef<IVertexAttribute*>(&_attribs[0], _attribsNum); }
+    inline TArrayRef<uint64_t> GetOffsets() override { return TArrayRef<uint64_t>(&_pointers[0], _attribsNum); }
 protected:
     void _RecalcSize(); //SetVertexAttribute calls it automatically
     void SetVertexAttribute(IVertexAttribute* a, const size_t& index);

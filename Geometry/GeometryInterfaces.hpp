@@ -53,23 +53,10 @@ public:
     virtual bool Bind() const = 0;
     virtual void UnBind() const = 0;
 
-    virtual TStaticArray<IVertexAttribute*> GetAttributes() = 0;
-    virtual TStaticArray<uint64_t> GetOffsets() = 0; //offsets of each attributes from starting point of vertex in bytes
+    virtual TArrayRef<IVertexAttribute*> GetAttributes() = 0;
+    virtual TArrayRef<uint64_t> GetOffsets() = 0; //offsets of each attributes from starting point of vertex in bytes
 
     virtual ~IVertexFormat() {}
-};
-
-class IInstancedDataFormat : public Comparable<IInstancedDataFormat*> {
-public:
-    virtual unsigned int GetSize() const = 0; //one instance data size in byte
-    virtual void AddAttribute(IVertexAttribute* a) = 0;
-    virtual bool Bind() const = 0;
-    virtual void UnBind() const = 0;
-
-    virtual TStaticArray<IVertexAttribute*> GetAttributes() = 0;
-    virtual TStaticArray<uint64_t> GetOffsets() = 0;
-
-    virtual ~IInstancedDataFormat() {}
 };
 
 class IIndexFormat : public Comparable<IIndexFormat*> {

@@ -74,13 +74,13 @@ bool GeometryBuffer::Bind(bool useIndexBuffer) const {
     if(mr::gl::IsNVVBUMSupported()) {
         _format->Bind();//__MR_SET_VERTEX_FORMAT_AS_BINDED_(_format);
 
-        TStaticArray<IVertexAttribute*> attrs = _format->GetAttributes();
-        TStaticArray<uint64_t> ptrs = _format->GetOffsets();
+        TArrayRef<IVertexAttribute*> attrs = _format->GetAttributes();
+        TArrayRef<uint64_t> ptrs = _format->GetOffsets();
 
-        for(size_t i = 0; i < attrs.GetNum(); ++i) {
+        for(size_t i = 0; i < attrs.num; ++i) {
             glBufferAddressRangeNV(GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV,
-                                   attrs.At(i)->GetShaderIndex(),
-                                   _vb_nv_resident_ptr + ptrs.At(i),
+                                   attrs.ptr[i]->GetShaderIndex(),
+                                   _vb_nv_resident_ptr + ptrs.ptr[i],
                                    _vb_nv_buffer_size
                                    );
         }

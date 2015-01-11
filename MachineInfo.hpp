@@ -11,7 +11,8 @@
 namespace mr {
 namespace machine {
 
-    enum class GPUVendor : unsigned char {
+    enum class GPUVendor : char {
+        Null = -1,
         Other = 0,
         Nvidia = 1,
         ATI = 2,

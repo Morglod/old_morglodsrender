@@ -48,7 +48,9 @@ std::map<std::string, GPUVendor> __MR__StringToGpuVendor {
 };
 
 const GPUVendor GetGpuVendor() {
-    static GPUVendor vendor = (__MR__StringToGpuVendor.count(GetGpuVendorAsString()) != 0) ? __MR__StringToGpuVendor[GetGpuVendorAsString()] : GPUVendor::Other;
+    static GPUVendor vendor = GPUVendor::Null;
+    if(vendor == GPUVendor::Null)
+        vendor = (__MR__StringToGpuVendor.count(GetGpuVendorAsString()) != 0) ? (GPUVendor)__MR__StringToGpuVendor[GetGpuVendorAsString()] : GPUVendor::Other;
     return vendor;
 }
 

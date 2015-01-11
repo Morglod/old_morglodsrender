@@ -176,11 +176,11 @@ void VertexFormatCustom::UnBind() const {
 bool VertexFormatCustom::Equal(IVertexFormat* vf) const {
     if(GetSize() != vf->GetSize()) return false;
 
-    TStaticArray<IVertexAttribute*> attrArray = vf->GetAttributes();
+    TArrayRef<IVertexAttribute*> attrArray = vf->GetAttributes();
 
     size_t i2 = 0;
-    for(size_t i = 0; i < attrArray.GetNum(); ++i){
-        if( !(_attribs[i]->Equal(attrArray.At(i2))) ) return false;
+    for(size_t i = 0; i < attrArray.num; ++i){
+        if( !(_attribs[i]->Equal(attrArray.ptr[i2])) ) return false;
         ++i2;
     }
     return true;
@@ -254,11 +254,11 @@ void VertexFormatCustomFixed::UnBind() const {
 bool VertexFormatCustomFixed::Equal(IVertexFormat* vf) const {
     if(_size != vf->GetSize()) return false;
 
-    TStaticArray<IVertexAttribute*> attrArray = vf->GetAttributes();
+    TArrayRef<IVertexAttribute*> attrArray = vf->GetAttributes();
 
     size_t i2 = 0;
-    for(size_t i = 0; i < attrArray.GetNum(); ++i){
-        if( !(_attribs[i]->Equal(attrArray.At(i2))) ) return false;
+    for(size_t i = 0; i < attrArray.num; ++i){
+        if( !(_attribs[i]->Equal(attrArray.ptr[i2])) ) return false;
         ++i2;
     }
     return true;
