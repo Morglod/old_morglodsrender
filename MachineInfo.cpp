@@ -37,7 +37,7 @@ PROC_wglGetGPUIDsAMD wglGetGPUIDsAMD = 0;
 PROC_wglGetGPUInfoAMD wglGetGPUInfoAMD = 0;
 
 namespace mr {
-namespace machineInfo {
+namespace machine {
 
 std::map<std::string, GPUVendor> __MR__StringToGpuVendor {
     std::pair<std::string, GPUVendor>("NVIDIA Corporation", GPUVendor::Nvidia),
@@ -71,19 +71,19 @@ void PrintInfo() {
     try {
     mr::Log::LogString(
             std::string("Machine info:") +
-            std::string("\nVersion: ") + glInfo::GetVersionAsString() +
-            std::string("\nGLSL: ") + glInfo::GetGlslVersionAsString() +
-            std::string("\nOpenGL: ") + std::to_string(glInfo::GetMajorVersion()) + std::string(" ") + std::to_string(glInfo::GetMinorVersion()) +
+            std::string("\nVersion: ") + gl::GetVersionAsString() +
+            std::string("\nGLSL: ") + gl::GetGlslVersionAsString() +
+            std::string("\nOpenGL: ") + std::to_string(gl::GetMajorVersion()) + std::string(" ") + std::to_string(gl::GetMinorVersion()) +
             std::string("\nGPU: ") + GetGpuName() + std::string(" from ") + GetGpuVendorAsString() +
             std::string("\nMem Total(kb): ") + std::to_string(GetGpuTotalMemoryKb()) + std::string(" Current free (kb): ") + std::to_string(GetGpuCurrentFreeMemoryKb()) + "\n\n"
         , MR_LOG_LEVEL_INFO);
 
-        mr::Log::LogString("\nNvidia VBUM: " + std::to_string(glInfo::IsNVVBUMSupported()));
-        mr::Log::LogString("Direct state access: " + std::to_string(glInfo::IsDirectStateAccessSupported()));
+        mr::Log::LogString("\nNvidia VBUM: " + std::to_string(gl::IsNVVBUMSupported()));
+        mr::Log::LogString("Direct state access: " + std::to_string(gl::IsDirectStateAccessSupported()));
     } catch(std::exception& e) {
         mr::Log::LogString("Exception cathed, while printing machine info.");
     }
-    glInfo::ClearError();
+    gl::ClearError();
 }
 
 
@@ -134,7 +134,7 @@ const unsigned int GetGpuCurrentFreeMemoryKb() {
 }
 
 }
-namespace glInfo {
+namespace gl {
 
 const int GetMajorVersion() {
     static int outv = 0;
@@ -352,12 +352,12 @@ const int GetMaxTextureSize(){
     return s;
 }
 
-const int MaxFragmentShaderTextureUnits() {
-    static int s = 0;
-    if(s == 0){
+const int GetMaxFragmentShaderTextureUnits() {
+    static int s = -1;
+    if(s == -1){
         glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &s);
         if(s == 0) {
-            mr::Log::LogString("Failed MachineInfo::MaxFragmentShaderTextureUnits. MaxTextureUnits always 0. 8 will be used.", MR_LOG_LEVEL_ERROR);
+            mr::Log::LogString("Failed machine::GetMaxFragmentShaderTextureUnits. Max texture units is 0. 8 will be used.", MR_LOG_LEVEL_ERROR);
             s = 8;
         }
     }
@@ -365,11 +365,11 @@ const int MaxFragmentShaderTextureUnits() {
 }
 
 const int GetMaxVertexShaderTextureUnits() {
-    static int s = 0;
-    if(s == 0){
+    static int s = -1;
+    if(s == -1){
         glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &s);
         if(s == 0) {
-            mr::Log::LogString("Failed MachineInfo::MaxVertexShaderTextureUnits. MaxTextureUnits always 0. 8 will be used.", MR_LOG_LEVEL_ERROR);
+            mr::Log::LogString("Failed machine::GetMaxVertexShaderTextureUnits. Max vertex texture units is 0. 8 will be used.", MR_LOG_LEVEL_ERROR);
             s = 8;
         }
     }
@@ -377,12 +377,24 @@ const int GetMaxVertexShaderTextureUnits() {
 }
 
 const int GetMaxTextureUnits() {
-    static int s = 0;
-    if(s == 0){
+    static int s = -1;
+    if(s == -1){
         glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &s);
         if(s == 0) {
-            mr::Log::LogString("Failed MachineInfo::MaxActivedTextureUnits. MaxTextureUnits always 0. 8 will be used.", MR_LOG_LEVEL_ERROR);
+            mr::Log::LogString("Failed machine::GetMaxTextureUnits. Max combined texture units is 0. 8 will be used.", MR_LOG_LEVEL_ERROR);
             s = 8;
+        }
+    }
+    return s;
+}
+
+const int GetMaxVertexAttribsNum() {
+    static int s = -1;
+    if(s == -1){
+        glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &s);
+        if(s == 0) {
+            mr::Log::LogString("Failed machine::GetMaxVertexAttribsNum. Max vertex attribs is 0. 16 will be used.", MR_LOG_LEVEL_ERROR);
+            s = 16;
         }
     }
     return s;

@@ -18,7 +18,7 @@ mr::TDynamicArray<mr::ITexture*> _MR_REGISTERED_TEXTURES_;
 class _MR_TEXTURES_BIND_TARGETS_NULL_ {
 public:
     _MR_TEXTURES_BIND_TARGETS_NULL_() {
-        int units = mr::glInfo::GetMaxTextureUnits();
+        int units = mr::gl::GetMaxTextureUnits();
         Assert(units < 4)
         _MR_TEXTURE_BIND_TARGETS_ = mr::TStaticArray<mr::ITexture*>(new mr::ITexture*[units], units, true);
         _MR_TEXTURE_BIND_TARGETS_SAMPLERS_ = mr::TStaticArray<mr::ITextureSettings*>(new mr::ITextureSettings*[units], units, true);
@@ -44,10 +44,10 @@ void Texture::Bind(unsigned short const& unit) {
 
     if(_MR_TEXTURE_BIND_TARGETS_.GetRaw()[unit] == dynamic_cast<mr::ITexture*>(this)) return;
 
-    if(mr::glInfo::IsOpenGL45()) {
+    if(mr::gl::IsOpenGL45()) {
         glBindTextureUnit(unit, _handle);
     }
-    else if(mr::glInfo::IsDirectStateAccessSupported()) {
+    else if(mr::gl::IsDirectStateAccessSupported()) {
         glBindMultiTextureEXT(GL_TEXTURE0+unit, _MR_TEXTURE_TYPE_TO_GL_TARGET_[_texture_type], _handle);
     } else {
         int actived_tex = 0;
@@ -84,12 +84,12 @@ void Texture::Create(ITexture::Types const& type) {
         Destroy();
     }
 
-    if(mr::glInfo::IsOpenGL45()) glCreateTextures(type, 1, &_handle);
+    if(mr::gl::IsOpenGL45()) glCreateTextures(type, 1, &_handle);
     else glGenTextures(1, &_handle);
     _texture_type = type;
 
 
-    if(mr::glInfo::IsOpenGL45()) {
+    if(mr::gl::IsOpenGL45()) {
         glTextureParameteri(_handle, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTextureParameteri(_handle, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTextureParameteri(_handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -111,7 +111,7 @@ void Texture::GetData(const int& mipMapLevel,
     Assert(dstBufferSize == 0)
     Assert(!dstBuffer)
 
-    if(mr::glInfo::IsOpenGL45()) {
+    if(mr::gl::IsOpenGL45()) {
         glGetTextureImage(_handle, mipMapLevel, (int)dformat, (int)dtype, dstBufferSize, dstBuffer);
     } else {
         unsigned short fu = TextureFreeUnit();
@@ -132,7 +132,7 @@ void mr::Texture::SetData(const int& mipMapLevel,
     Assert(width <= 0)
     Assert(!data)
 
-    if(mr::glInfo::IsDirectStateAccessSupported()) {
+    if(mr::gl::IsDirectStateAccessSupported()) {
         glPushClientAttribDefaultEXT(GL_CLIENT_PIXEL_STORE_BIT);
         switch(_texture_type) {
         case Base1D:
@@ -179,7 +179,7 @@ void Texture::UpdateData(const int& mipMapLevel,
     Assert(xOffset <= 0)
     Assert(!data)
 
-    if(mr::glInfo::IsOpenGL45()) {
+    if(mr::gl::IsOpenGL45()) {
         switch(_texture_type) {
         case Base1D:
             glTextureSubImage1D(_handle, mipMapLevel, xOffset, width, (unsigned int)dformat, (unsigned int)dtype, data);
@@ -226,7 +226,7 @@ bool mr::Texture::Complete(bool mipMaps) {
     int gl_er = 0;
     mr::MachineInfo::ClearError();
 #endif
-        if(mr::glInfo::IsOpenGL45()) {
+        if(mr::gl::IsOpenGL45()) {
             glGenerateTextureMipmap(_handle);
         } else {
             ITexture* tex = ReBind(0);
@@ -257,10 +257,10 @@ void Texture::UpdateInfo() {
 
     {
         ITexture* binded = nullptr;
-        if(mr::glInfo::IsOpenGL45() == false) binded = ReBind(0);
+        if(mr::gl::IsOpenGL45() == false) binded = ReBind(0);
 
         int maxW = 0, maxH = 0, maxD = 0;
-        if(mr::glInfo::IsOpenGL45()) {
+        if(mr::gl::IsOpenGL45()) {
             glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_WIDTH, &maxW);
             glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_HEIGHT, &maxH);
             glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_DEPTH, &maxD);
@@ -276,7 +276,7 @@ void Texture::UpdateInfo() {
         TextureSizeInfo* szAr = _sizes.GetRaw();
 
         int fi = 0, rs = 0, gs = 0, bs = 0, ds = 0, as = 0, cm = 0;
-        if(mr::glInfo::IsOpenGL45()) {
+        if(mr::gl::IsOpenGL45()) {
             glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_INTERNAL_FORMAT, &fi);
             glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_RED_SIZE, &rs);
             glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_GREEN_SIZE, &gs);
@@ -302,7 +302,7 @@ void Texture::UpdateInfo() {
         for(int i = 0; i < numMipMaps; ++i) {
             int w = 0, h = 0, d = 0;
 
-            if(mr::glInfo::IsOpenGL45()) {
+            if(mr::gl::IsOpenGL45()) {
                 glGetTextureLevelParameteriv(_handle, i, GL_TEXTURE_WIDTH, &w);
                 glGetTextureLevelParameteriv(_handle, i, GL_TEXTURE_HEIGHT, &h);
                 glGetTextureLevelParameteriv(_handle, i, GL_TEXTURE_DEPTH, &d);
@@ -348,10 +348,10 @@ void TextureUnBind(const unsigned short& unit, const bool& fast) {
     if(_MR_TEXTURE_BIND_TARGETS_.GetRaw()[unit] == nullptr) return;
 
     if(!fast) {
-        if(mr::glInfo::IsOpenGL45()) {
+        if(mr::gl::IsOpenGL45()) {
             glBindTextureUnit(unit, 0);
         }
-        else if(mr::glInfo::IsDirectStateAccessSupported()) {
+        else if(mr::gl::IsDirectStateAccessSupported()) {
             glBindMultiTextureEXT(GL_TEXTURE0+unit, _MR_TEXTURE_TYPE_TO_GL_TARGET_[_MR_TEXTURE_BIND_TARGETS_.GetRaw()[unit]->GetType()], 0);
         } else {
             int actived_tex = 0;

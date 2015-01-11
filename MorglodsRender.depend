@@ -65,7 +65,7 @@
 1399872494 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\gl\globject.hpp
 	<string>
 
-1420949825 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\machineinfo.hpp
+1420957804 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\machineinfo.hpp
 	"Config.hpp"
 	<string>
 
@@ -372,7 +372,7 @@
 	"ShaderCompiler.hpp"
 	<GL\glew.h>
 
-1420950642 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\debug.hpp
+1420957749 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\debug.hpp
 	<iostream>
 	"Log.hpp"
 

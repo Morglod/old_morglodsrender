@@ -16,7 +16,7 @@ IQuery::~IQuery() {
 
 void Query::Begin() {
     if(_handle == 0) {
-        if(mr::glInfo::IsOpenGL45()) glCreateQueries(_target, 1, &_handle);
+        if(mr::gl::IsOpenGL45()) glCreateQueries(_target, 1, &_handle);
         else glGenQueries(1, &_handle);
     }
     if(_target == Query::Target::TimeStamp) glQueryCounter(_handle, _target);
@@ -90,10 +90,10 @@ bool Query::GetResult(void* dst) {
 
 Query::Query(const Query::Target& target) : _handle(0), _target(target), _ended(true) {
     if(target == Query::Target::AnySamplesPassedConservative) {
-        if(mr::glInfo::GetMajorVersion() == 4)
-            if(mr::glInfo::GetMinorVersion() < 3)
+        if(mr::gl::GetMajorVersion() == 4)
+            if(mr::gl::GetMinorVersion() < 3)
                 _target = Query::Target::AnySamplesPassed;
-        if(mr::glInfo::GetMajorVersion() < 4)
+        if(mr::gl::GetMajorVersion() < 4)
             _target = Query::Target::AnySamplesPassed;
     }
 }

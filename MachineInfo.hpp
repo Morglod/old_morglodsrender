@@ -9,7 +9,7 @@
 #define MR_MINIMAL_GL_VERSION_MINOR 0
 
 namespace mr {
-namespace machineInfo {
+namespace machine {
 
     enum class GPUVendor : unsigned char {
         Other = 0,
@@ -31,7 +31,7 @@ namespace machineInfo {
     void PrintInfo();
 }
 
-namespace glInfo {
+namespace gl {
 
     enum class GLVersion : unsigned char {
         VUnknown = 255,
@@ -62,6 +62,7 @@ namespace glInfo {
     const int GetMaxVertexShaderTextureUnits();
     const int GetMaxTextureUnits();
     const int GetMaxGeometryStreamsNum();
+    const int GetMaxVertexAttribsNum();
 
     //const bool IsCoreProfile();
 

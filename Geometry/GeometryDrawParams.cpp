@@ -5,27 +5,27 @@ namespace mr {
 
 void GeometryDrawParams::SetIndexStart(const unsigned int& i) {
     _istart = i;
-    if(mr::glInfo::IsIndirectDrawSupported()) _MakeDrawCmd();
+    if(mr::gl::IsIndirectDrawSupported()) _MakeDrawCmd();
 }
 
 void GeometryDrawParams::SetVertexStart(const unsigned int& v) {
     _vstart = v;
-    if(mr::glInfo::IsIndirectDrawSupported()) _MakeDrawCmd();
+    if(mr::gl::IsIndirectDrawSupported()) _MakeDrawCmd();
 }
 
 void GeometryDrawParams::SetIndexCount(const unsigned int& i) {
     _icount = i;
-    if(mr::glInfo::IsIndirectDrawSupported()) _MakeDrawCmd();
+    if(mr::gl::IsIndirectDrawSupported()) _MakeDrawCmd();
 }
 
 void GeometryDrawParams::SetVertexCount(const unsigned int& i) {
     _vcount = i;
-    if(mr::glInfo::IsIndirectDrawSupported()) _MakeDrawCmd();
+    if(mr::gl::IsIndirectDrawSupported()) _MakeDrawCmd();
 }
 
 void GeometryDrawParams::SetUseIndexBuffer(const bool& state) {
     _index_buffer = state;
-    if(mr::glInfo::IsIndirectDrawSupported()) _MakeDrawCmd();
+    if(mr::gl::IsIndirectDrawSupported()) _MakeDrawCmd();
 }
 
 bool GeometryDrawParams::GetUseIndexBuffer() const {
@@ -48,7 +48,7 @@ void GeometryDrawParams::_MakeDrawCmd() {
 
 GeometryDrawParams::GeometryDrawParams(const bool& indexBuffer, const unsigned int& istart, const unsigned int& vstart, const unsigned int& icount, const unsigned int& vcount)
  : drawCmd(0), _istart(istart), _vstart(vstart), _icount(icount), _vcount(vcount), _index_buffer(indexBuffer) {
-     if(mr::glInfo::IsIndirectDrawSupported()) _MakeDrawCmd();
+     if(mr::gl::IsIndirectDrawSupported()) _MakeDrawCmd();
 }
 
 GeometryDrawParams::~GeometryDrawParams() {

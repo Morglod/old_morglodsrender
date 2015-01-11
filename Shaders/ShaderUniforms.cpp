@@ -51,9 +51,9 @@ void ShaderUniform::Update() {
     if(_value) {
 #ifdef MR_CHECK_SMALL_GL_ERRORS
     int gl_er = 0;
-    mr::glInfo::ClearError();
+    mr::gl::ClearError();
 #endif
-        if(mr::glInfo::IsDirectStateAccessSupported()) {
+        if(mr::gl::IsDirectStateAccessSupported()) {
             switch(_type){
             case IShaderUniform::Type::Float:
                 glProgramUniform1f(_owner->GetGPUHandle(), _gpu_location, *((float*)_value));

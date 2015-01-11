@@ -33,8 +33,8 @@ bool mr::Init(mr::IContext* ctx) {
         }
     }
 
-    if(mr::glInfo::GetVersion() == mr::glInfo::GLVersion::VNotSupported) {
-        mr::Log::LogString("Current opengl version (\""+mr::glInfo::GetVersionAsString()+"\") is not supported. OpenGL 4.0 will be used.", MR_LOG_LEVEL_WARNING);
+    if(mr::gl::GetVersion() == mr::gl::GLVersion::VNotSupported) {
+        mr::Log::LogString("Current opengl version (\""+mr::gl::GetVersionAsString()+"\") is not supported. OpenGL 4.0 will be used.", MR_LOG_LEVEL_WARNING);
     }
 
     return true;

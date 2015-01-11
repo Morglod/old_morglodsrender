@@ -142,42 +142,42 @@ IShaderUniform* ShaderProgram::CreateUniform(const std::string& name, const mr::
 
 void ShaderProgram::SetUniform(const std::string& name, const int& value) {
     if(_handle) {
-        if(mr::glInfo::IsDirectStateAccessSupported()) glProgramUniform1i(_handle, glGetUniformLocation(_handle, name.c_str()), value);
+        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniform1i(_handle, glGetUniformLocation(_handle, name.c_str()), value);
         else glUniform1i(glGetUniformLocation(_handle, name.c_str()), value);
     }
 }
 
 void ShaderProgram::SetUniform(const std::string& name, const float& value) {
     if(_handle) {
-        if(mr::glInfo::IsDirectStateAccessSupported()) glProgramUniform1f(_handle, glGetUniformLocation(_handle, name.c_str()), value);
+        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniform1f(_handle, glGetUniformLocation(_handle, name.c_str()), value);
         else glUniform1f(glGetUniformLocation(_handle, name.c_str()), value);
     }
 }
 
 void ShaderProgram::SetUniform(const std::string& name, const glm::vec2& value) {
     if(_handle) {
-        if(mr::glInfo::IsDirectStateAccessSupported()) glProgramUniform2fv(_handle, glGetUniformLocation(_handle, name.c_str()), 2, &value.x);
+        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniform2fv(_handle, glGetUniformLocation(_handle, name.c_str()), 2, &value.x);
         else glUniform2fv(glGetUniformLocation(_handle, name.c_str()), 2, &value.x);
     }
 }
 
 void ShaderProgram::SetUniform(const std::string& name, const glm::vec3& value) {
     if(_handle) {
-        if(mr::glInfo::IsDirectStateAccessSupported()) glProgramUniform3fv(_handle, glGetUniformLocation(_handle, name.c_str()), 3, &value.x);
+        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniform3fv(_handle, glGetUniformLocation(_handle, name.c_str()), 3, &value.x);
         else glUniform3fv(glGetUniformLocation(_handle, name.c_str()), 3, &value.x);
     }
 }
 
 void ShaderProgram::SetUniform(const std::string& name, const glm::vec4& value) {
     if(_handle) {
-        if(mr::glInfo::IsDirectStateAccessSupported()) glProgramUniform4fv(_handle, glGetUniformLocation(_handle, name.c_str()), 4, &value.x);
+        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniform4fv(_handle, glGetUniformLocation(_handle, name.c_str()), 4, &value.x);
         else glUniform4fv(glGetUniformLocation(_handle, name.c_str()), 4, &value.x);
     }
 }
 
 void ShaderProgram::SetUniform(const std::string& name, const glm::mat4& value) {
     if(_handle) {
-        if(mr::glInfo::IsDirectStateAccessSupported()) glProgramUniformMatrix4fv(_handle, glGetUniformLocation(_handle, name.c_str()), 1,  GL_FALSE, &value[0][0]);
+        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniformMatrix4fv(_handle, glGetUniformLocation(_handle, name.c_str()), 1,  GL_FALSE, &value[0][0]);
         else glUniformMatrix4fv(glGetUniformLocation(_handle, name.c_str()), 1,  GL_FALSE, &value[0][0]);
     }
 }
