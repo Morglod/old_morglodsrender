@@ -85,7 +85,7 @@ public:
     virtual bool SplitPath(const std::string& fullPathToFile, std::string& path, std::string& fileName) = 0;
 };
 
-class FileUtils : public IFileUtils, public mu::Singleton<FileUtils> {
+class FileUtils : public IFileUtils, public mu::StaticSingleton<FileUtils> {
 public:
     inline void AddSearchPath(const std::string& path) override { _searchPaths.push_back(path); }
     inline void RemoveSearchPath(const std::string& path) override{ auto it = std::find(_searchPaths.begin(), _searchPaths.end(), path); if(it==_searchPaths.end()) return; _searchPaths.erase(it); }

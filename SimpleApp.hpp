@@ -88,6 +88,7 @@ public:
             return false;
         }
 
+        mr::IContextManager::SetCurrent(&contextMgr);
         context->MakeCurrent();
 
         if(!mr::Init(context)) {

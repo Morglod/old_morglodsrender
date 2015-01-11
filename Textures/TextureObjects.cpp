@@ -15,21 +15,6 @@ mr::TStaticArray<mr::ITextureSettings*> _MR_TEXTURE_BIND_TARGETS_SAMPLERS_;
 
 mr::TDynamicArray<mr::ITexture*> _MR_REGISTERED_TEXTURES_;
 
-class _MR_TEXTURES_BIND_TARGETS_NULL_ {
-public:
-    _MR_TEXTURES_BIND_TARGETS_NULL_() {
-        int units = mr::gl::GetMaxTextureUnits();
-        Assert(units < 4)
-        _MR_TEXTURE_BIND_TARGETS_ = mr::TStaticArray<mr::ITexture*>(new mr::ITexture*[units], units, true);
-        _MR_TEXTURE_BIND_TARGETS_SAMPLERS_ = mr::TStaticArray<mr::ITextureSettings*>(new mr::ITextureSettings*[units], units, true);
-        for(size_t i = 0; i < _MR_TEXTURE_BIND_TARGETS_.GetNum(); ++i){
-            _MR_TEXTURE_BIND_TARGETS_.GetRaw()[i] = nullptr;
-            _MR_TEXTURE_BIND_TARGETS_SAMPLERS_.GetRaw()[i] = nullptr;
-        }
-    }
-};
-_MR_TEXTURES_BIND_TARGETS_NULL_ _MR_TEXTURES_BIND_TARGETS_NULL_DEF_;
-
 unsigned int _MR_TEXTURE_TYPE_TO_GL_TARGET_[]{
     GL_TEXTURE_1D,
     GL_TEXTURE_2D,
@@ -37,6 +22,17 @@ unsigned int _MR_TEXTURE_TYPE_TO_GL_TARGET_[]{
 };
 
 namespace mr {
+
+void _MR_InitTextures() {
+    int units = mr::gl::GetMaxTextureUnits();
+    Assert(units < 4)
+    _MR_TEXTURE_BIND_TARGETS_ = mr::TStaticArray<mr::ITexture*>(new mr::ITexture*[units], units, true);
+    _MR_TEXTURE_BIND_TARGETS_SAMPLERS_ = mr::TStaticArray<mr::ITextureSettings*>(new mr::ITextureSettings*[units], units, true);
+    for(size_t i = 0; i < _MR_TEXTURE_BIND_TARGETS_.GetNum(); ++i){
+        _MR_TEXTURE_BIND_TARGETS_.GetRaw()[i] = nullptr;
+        _MR_TEXTURE_BIND_TARGETS_SAMPLERS_.GetRaw()[i] = nullptr;
+    }
+}
 
 void Texture::Bind(unsigned short const& unit) {
     Assert(GetGPUHandle() == 0)

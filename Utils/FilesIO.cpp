@@ -31,7 +31,7 @@ FileWriter::~FileWriter() {
 FileWriter* FileWriter::Open(const std::string& fileName) {
     FileWriter* fw = new FileWriter();
     fw->_f.open(fileName);
-    if(!FileUtils::GetInstance()->SplitPath(fileName, fw->_path, fw->_name)) {
+    if(!FileUtils::GetInstance().SplitPath(fileName, fw->_path, fw->_name)) {
         delete fw;
         return nullptr;
     }
@@ -77,7 +77,7 @@ FileReader* FileReader::Open(const std::string& fileName, IFileUtils* fu) {
 }
 
 FileReader* FileReader::Open(const std::string& fileName) {
-    return FileReader::Open(fileName, FileUtils::GetInstance());
+    return FileReader::Open(fileName, &FileUtils::GetInstance());
 }
 
 std::string FileUtils::FindFile(const std::string& fileName) {

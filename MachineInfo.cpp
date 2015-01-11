@@ -39,13 +39,13 @@ PROC_wglGetGPUInfoAMD wglGetGPUInfoAMD = 0;
 namespace mr {
 namespace machine {
 
-std::map<std::string, GPUVendor> __MR__StringToGpuVendor {
-    std::pair<std::string, GPUVendor>("NVIDIA Corporation", GPUVendor::Nvidia),
-    std::pair<std::string, GPUVendor>("ATI Technologies", GPUVendor::ATI),
-    std::pair<std::string, GPUVendor>("ATI Technologies Inc.", GPUVendor::ATI),
-    std::pair<std::string, GPUVendor>("INTEL", GPUVendor::Intel),
-    std::pair<std::string, GPUVendor>("Microsoft", GPUVendor::Microsoft_DirectX_Wrapper)
-};
+std::map<std::string, GPUVendor> __MR__StringToGpuVendor({
+    {"NVIDIA Corporation", GPUVendor::Nvidia},
+    {"ATI Technologies", GPUVendor::ATI},
+    {"ATI Technologies Inc.", GPUVendor::ATI},
+    {"INTEL", GPUVendor::Intel},
+    {"Microsoft", GPUVendor::Microsoft_DirectX_Wrapper}
+});
 
 const GPUVendor GetGpuVendor() {
     static GPUVendor vendor = GPUVendor::Null;
