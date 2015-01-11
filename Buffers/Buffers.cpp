@@ -99,7 +99,8 @@ IGPUBuffer::BindTarget GPUBuffer::GetTarget() {
 void GPUBuffer::Allocate(const Usage& usage, const size_t& size) {
     Assert(size == 0)
     if(_handle == 0) {
-        glGenBuffers(1, &_handle);
+        if(mr::glInfo::IsOpenGL45()) glCreateBuffers(1, &_handle);
+        else glGenBuffers(1, &_handle);
         OnGPUHandleChanged(dynamic_cast<mr::GPUObjectHandle*>(this), _handle);
     }
 
@@ -121,10 +122,10 @@ void GPUBuffer::Allocate(const Usage& usage, const size_t& size) {
     }
 
     IGPUBuffer* binded = 0;
-    if(!mr::MachineInfo::IsDirectStateAccessSupported()) binded = ReBind(ArrayBuffer);
+    if(!mr::glInfo::IsDirectStateAccessSupported()) binded = ReBind(ArrayBuffer);
 
     MR_BUFFERS_CHECK_BUFFER_DATA_ERRORS_CATCH(
-        if(mr::MachineInfo::IsDirectStateAccessSupported()) {
+        if(mr::glInfo::IsDirectStateAccessSupported()) {
             glNamedBufferDataEXT(_handle, _size, 0, usageFlags);
         } else {
             glBufferData(_MR_BUFFER_BIND_TARGETS_REMAP_FROM_INDEX_[(size_t)ArrayBuffer], _size, 0, usageFlags);
@@ -142,7 +143,7 @@ bool GPUBuffer::Write(void* srcData, const size_t& srcOffset, const size_t& dstO
     Assert(GetGPUHandle() == 0)
 
     MR_BUFFERS_CHECK_BUFFER_DATA_ERRORS_CATCH(
-        if(mr::MachineInfo::IsDirectStateAccessSupported()) {
+        if(mr::glInfo::IsDirectStateAccessSupported()) {
             glNamedBufferSubDataEXT(GetGPUHandle(), dstOffset, size, (void*)((size_t)srcData+srcOffset));
         } else {
 
@@ -210,7 +211,7 @@ void GPUBufferCopy(IGPUBuffer* src, IGPUBuffer* dst, const unsigned int& srcOffs
     Assert(srcOffset+size > src->GetGPUMem())
     Assert(dstOffset+size > dst->GetGPUMem())
 
-    if(mr::MachineInfo::IsDirectStateAccessSupported()) {
+    if(mr::glInfo::IsDirectStateAccessSupported()) {
         MR_BUFFERS_CHECK_BUFFER_DATA_ERRORS_CATCH(
             glNamedCopyBufferSubDataEXT(src->GetGPUHandle(), dst->GetGPUHandle(), srcOffset, dstOffset, size);
         )

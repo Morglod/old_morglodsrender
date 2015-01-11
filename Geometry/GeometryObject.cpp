@@ -27,7 +27,7 @@ void Geometry::Draw() const {
 
     if(_buffer->GetIndexBuffer() != nullptr && _draw_params->GetUseIndexBuffer()){
         mr::IIndexFormat* iformat = _buffer->GetIndexFormat();
-        if(mr::MachineInfo::IsIndirectDrawSupported()) {
+        if(mr::glInfo::IsIndirectDrawSupported()) {
             glDrawElementsIndirect( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], iformat->GetDataType()->GetDataType(), _draw_params->GetIndirectPtr());
         }
         else {
@@ -39,7 +39,7 @@ void Geometry::Draw() const {
         }
     }
     else {
-        if(mr::MachineInfo::IsIndirectDrawSupported()) glDrawArraysIndirect( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], _draw_params->GetIndirectPtr());
+        if(mr::glInfo::IsIndirectDrawSupported()) glDrawArraysIndirect( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], _draw_params->GetIndirectPtr());
         else glDrawArrays( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], _draw_params->GetVertexStart(), _draw_params->GetVertexCount());
     }
 }

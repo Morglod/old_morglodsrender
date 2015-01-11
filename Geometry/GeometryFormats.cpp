@@ -135,7 +135,7 @@ bool VertexFormatCustom::Bind() const {
     }
     VertexFormatUnBind();
 
-    if(mr::MachineInfo::IsNVVBUMSupported()){
+    if(mr::glInfo::IsNVVBUMSupported()){
         for(size_t i = 0; i < _attribs.size(); ++i) {
             unsigned int sh_i = _attribs[i]->GetShaderIndex();
             glVertexAttribFormatNV(sh_i, (int)_attribs[i]->GetElementsNum(), _attribs[i]->GetDataType()->GetDataType(), GL_FALSE, this->GetSize());
@@ -159,7 +159,7 @@ bool VertexFormatCustom::Bind() const {
 }
 
 void VertexFormatCustom::UnBind() const {
-    if(mr::MachineInfo::IsNVVBUMSupported()){
+    if(mr::glInfo::IsNVVBUMSupported()){
         for(size_t i = 0; i < _attribs.size(); ++i) {
             glDisableVertexAttribArray(_attribs[i]->GetShaderIndex());
         }
@@ -213,7 +213,7 @@ bool VertexFormatCustomFixed::Bind() const {
     }
     VertexFormatUnBind();
 
-    if(mr::MachineInfo::IsNVVBUMSupported()){
+    if(mr::glInfo::IsNVVBUMSupported()){
         for(size_t i = 0; i < _attribsNum; ++i) {
             unsigned int sh_i = _attribs[i]->GetShaderIndex();
             glEnableVertexAttribArray(sh_i);
@@ -237,7 +237,7 @@ bool VertexFormatCustomFixed::Bind() const {
 }
 
 void VertexFormatCustomFixed::UnBind() const {
-    if(mr::MachineInfo::IsNVVBUMSupported()){
+    if(mr::glInfo::IsNVVBUMSupported()){
         for(size_t i = 0; i < _attribsNum; ++i) {
             glDisableVertexAttribArray(_attribs[i]->GetShaderIndex());
         }
@@ -315,7 +315,7 @@ bool IndexFormatCustom::Bind() const {
     }
     IndexFormatUnBind();
 
-    if(mr::MachineInfo::IsNVVBUMSupported()){
+    if(mr::glInfo::IsNVVBUMSupported()){
         glEnableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
     }
 
@@ -324,7 +324,7 @@ bool IndexFormatCustom::Bind() const {
 }
 
 void IndexFormatCustom::UnBind() const {
-    if(mr::MachineInfo::IsNVVBUMSupported()){
+    if(mr::glInfo::IsNVVBUMSupported()){
         glDisableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
     }
     _MR_BINDED_INDEX_FORMAT = nullptr;

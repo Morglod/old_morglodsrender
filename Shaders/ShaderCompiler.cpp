@@ -304,7 +304,7 @@ std::string ShaderCompiler::_Optimize(const std::string& code, const ShaderType&
 }
 
 void ShaderCompiler::Release() {
-    if(mr::MachineInfo::gl_versions_f() >= 4.1f)
+    if(mr::glInfo::GetVersionAsFloat() >= 4.1f)
         glReleaseShaderCompiler();
 }
 

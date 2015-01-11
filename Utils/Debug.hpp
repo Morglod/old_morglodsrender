@@ -58,12 +58,12 @@
 #endif
 
 #define CheckGLError(_ofLine) \
-    mr::MachineInfo::ClearError(); \
+    mr::glInfo::ClearError(); \
     _ofLine \
     { \
         std::string localErrorString = ""; \
         int localGlCode = 0; \
-        if(mr::MachineInfo::CatchError(&localErrorString, &localGlCode)) { \
+        if(mr::glInfo::CheckError(&localErrorString, &localGlCode)) { \
             _MR_DEBUG_GL_ERROR_CATCHED_FUNC(localErrorString, localGlCode) \
         } \
     }

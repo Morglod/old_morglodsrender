@@ -1,6 +1,7 @@
 #include "TextureSettings.hpp"
 #include "../Config.hpp"
 #include "../Utils/Debug.hpp"
+#include "../MachineInfo.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
@@ -8,7 +9,8 @@
 
 void mr::TextureSettings::Create() {
     if(_handle != 0) return;
-    glGenSamplers(1, &_handle);
+    if(mr::glInfo::IsOpenGL45()) glCreateSamplers(1, &_handle);
+    else glGenSamplers(1, &_handle);
     glSamplerParameterf(_handle, GL_TEXTURE_LOD_BIAS, _lod_bias);
     glSamplerParameteri(_handle, GL_TEXTURE_MAG_FILTER, (int)_mag_filter);
     glSamplerParameteri(_handle, GL_TEXTURE_MIN_FILTER, (int)_min_filter);

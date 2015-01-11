@@ -33,8 +33,8 @@ bool GeometryBuffer::SetVertexBuffer(IGPUBuffer* buf) {
     Assert(buf == nullptr)
     _vb = buf;
 
-    if(mr::MachineInfo::IsNVVBUMSupported()){
-        if(mr::MachineInfo::IsDirectStateAccessSupported()){
+    if(mr::glInfo::IsNVVBUMSupported()){
+        if(mr::glInfo::IsDirectStateAccessSupported()){
             glGetNamedBufferParameterui64vNV(buf->GetGPUHandle(), GL_BUFFER_GPU_ADDRESS_NV, &_vb_nv_resident_ptr);
             glGetNamedBufferParameterivEXT(buf->GetGPUHandle(), GL_BUFFER_SIZE, &_vb_nv_buffer_size);
         } else {
@@ -50,8 +50,8 @@ bool GeometryBuffer::SetVertexBuffer(IGPUBuffer* buf) {
 bool GeometryBuffer::SetIndexBuffer(IGPUBuffer* buf) {
     _ib = buf;
 
-    if(mr::MachineInfo::IsNVVBUMSupported()){
-        if(mr::MachineInfo::IsDirectStateAccessSupported()){
+    if(mr::glInfo::IsNVVBUMSupported()){
+        if(mr::glInfo::IsDirectStateAccessSupported()){
             glGetNamedBufferParameterui64vNV(buf->GetGPUHandle(), GL_BUFFER_GPU_ADDRESS_NV, &_ib_nv_resident_ptr);
             glGetNamedBufferParameterivEXT(buf->GetGPUHandle(), GL_BUFFER_SIZE, &_ib_nv_buffer_size);
         } else {
@@ -71,7 +71,7 @@ bool GeometryBuffer::Bind(bool useIndexBuffer) const {
     if(!_format) return false;
     if(!_vb) return false;
 
-    if(mr::MachineInfo::IsNVVBUMSupported()) {
+    if(mr::glInfo::IsNVVBUMSupported()) {
         _format->Bind();//__MR_SET_VERTEX_FORMAT_AS_BINDED_(_format);
 
         TStaticArray<IVertexAttribute*> attrs = _format->GetAttributes();
