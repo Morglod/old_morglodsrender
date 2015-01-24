@@ -80,7 +80,7 @@ InterfaceType* __MR_GEOM_FORMAT_CACHE_FUNC_(Type* what, std::vector<CacheType>& 
     CacheType * ar = &where[0];
     InterfaceType* inter = dynamic_cast<InterfaceType*>(what);
     for(size_t i = 0; i < where.size(); ++i) {
-        if(ar[i]._ptr->Equal(inter)) {
+        if(ar[i]._ptr->IsEqual(inter)) {
             return ar[i]._ptr.get();
         }
     }
@@ -129,7 +129,7 @@ void VertexFormatCustom::AddVertexAttribute(IVertexAttribute* a) {
 
 bool VertexFormatCustom::Bind() const {
     if(_MR_BINDED_VERTEX_FORMAT != nullptr) {
-        if(_MR_BINDED_VERTEX_FORMAT->Equal((mr::IVertexFormat*)dynamic_cast<const mr::IVertexFormat*>(this))) {
+        if(_MR_BINDED_VERTEX_FORMAT->IsEqual((mr::IVertexFormat*)dynamic_cast<const mr::IVertexFormat*>(this))) {
             return true;
         }
     }
@@ -173,14 +173,14 @@ void VertexFormatCustom::UnBind() const {
     _MR_BINDED_VERTEX_FORMAT = nullptr;
 }
 
-bool VertexFormatCustom::Equal(IVertexFormat* vf) const {
+bool VertexFormatCustom::IsEqual(IVertexFormat* vf) const {
     if(GetSize() != vf->GetSize()) return false;
 
-    TArrayRef<IVertexAttribute*> attrArray = vf->GetAttributes();
+    mu::ArrayRef<IVertexAttribute*> attrArray = vf->GetAttributes();
 
     size_t i2 = 0;
     for(size_t i = 0; i < attrArray.num; ++i){
-        if( !(_attribs[i]->Equal(attrArray.ptr[i2])) ) return false;
+        if( !(_attribs[i]->IsEqual(attrArray.elements[i2])) ) return false;
         ++i2;
     }
     return true;
@@ -207,7 +207,7 @@ void VertexFormatCustomFixed::SetVertexAttribute(IVertexAttribute* a, const size
 
 bool VertexFormatCustomFixed::Bind() const {
     if(_MR_BINDED_VERTEX_FORMAT != nullptr) {
-        if(_MR_BINDED_VERTEX_FORMAT->Equal((mr::IVertexFormat*)dynamic_cast<const mr::IVertexFormat*>(this))) {
+        if(_MR_BINDED_VERTEX_FORMAT->IsEqual((mr::IVertexFormat*)dynamic_cast<const mr::IVertexFormat*>(this))) {
             return true;
         }
     }
@@ -251,14 +251,14 @@ void VertexFormatCustomFixed::UnBind() const {
     _MR_BINDED_VERTEX_FORMAT = nullptr;
 }
 
-bool VertexFormatCustomFixed::Equal(IVertexFormat* vf) const {
+bool VertexFormatCustomFixed::IsEqual(IVertexFormat* vf) const {
     if(_size != vf->GetSize()) return false;
 
-    TArrayRef<IVertexAttribute*> attrArray = vf->GetAttributes();
+    mu::ArrayRef<IVertexAttribute*> attrArray = vf->GetAttributes();
 
     size_t i2 = 0;
     for(size_t i = 0; i < attrArray.num; ++i){
-        if( !(_attribs[i]->Equal(attrArray.ptr[i2])) ) return false;
+        if( !(_attribs[i]->IsEqual(attrArray.elements[i2])) ) return false;
         ++i2;
     }
     return true;
@@ -309,7 +309,7 @@ VertexFormatCustomFixed::~VertexFormatCustomFixed() {
 
 bool IndexFormatCustom::Bind() const {
     if(_MR_BINDED_INDEX_FORMAT != nullptr) {
-        if(_MR_BINDED_INDEX_FORMAT->Equal((mr::IIndexFormat*)dynamic_cast<const mr::IIndexFormat*>(this))) {
+        if(_MR_BINDED_INDEX_FORMAT->IsEqual((mr::IIndexFormat*)dynamic_cast<const mr::IIndexFormat*>(this))) {
             return true;
         }
     }
@@ -330,9 +330,9 @@ void IndexFormatCustom::UnBind() const {
     _MR_BINDED_INDEX_FORMAT = nullptr;
 }
 
-bool IndexFormatCustom::Equal(IIndexFormat* ifo) const {
+bool IndexFormatCustom::IsEqual(IIndexFormat* ifo) const {
     if(ifo->GetSize() != this->GetSize()) return false;
-    return (ifo->GetDataType()->Equal(this->GetDataType()));
+    return (ifo->GetDataType()->IsEqual(this->GetDataType()));
 }
 
 IIndexFormat* IndexFormatCustom::Cache() {

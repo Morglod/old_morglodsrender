@@ -34,7 +34,7 @@ TStaticArray<unsigned char> SerializeMRTypes::ShaderProgramToBytes(IShaderProgra
 
     mr::TStaticArray<unsigned char> bytes = mr::TStaticArray<unsigned char>(new unsigned char[sizeof(unsigned int)+cache.data.GetNum()], sizeof(unsigned int)+cache.data.GetNum(), true);
     memcpy(bytes.GetRaw(), &cache.format, sizeof(unsigned int));
-    memcpy(&bytes.GetRaw()[sizeof(unsigned int)], cache.data.GetRaw(), cache.data.GetNum());
+    memcpy(&bytes.GetRaw()[sizeof(unsigned int)], cache.data.GetArray(), cache.data.GetNum());
     return bytes;
 }
 
@@ -46,7 +46,7 @@ IShaderProgram* SerializeMRTypes::ShaderProgramFromBytes(TStaticArray<unsigned c
     memcpy(&format, bytes.GetRaw(), sizeof(unsigned int));
     memcpy(data, &bytes.GetRaw()[sizeof(unsigned int)], bytes.GetNum());
 
-    ShaderProgramCache cache = ShaderProgramCache(format, mr::TStaticArray<unsigned char>(data, bytes.GetNum() - sizeof(unsigned int), true));
+    ShaderProgramCache cache = ShaderProgramCache(format, mu::ArrayHandle<unsigned char>(data, bytes.GetNum() - sizeof(unsigned int), true));
     return dynamic_cast<mr::IShaderProgram*>(mr::ShaderProgram::FromCache(cache));
 }
 

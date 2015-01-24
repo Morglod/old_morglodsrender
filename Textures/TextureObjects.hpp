@@ -10,7 +10,7 @@ namespace mr {
 class Texture : public ITexture {
 public:
     inline int GetMipMapLevelsNum() override { return _sizes.GetNum(); }
-    inline TextureSizeInfo GetSizesInfo(int const& mipMapLevel) override { return _sizes.At(mipMapLevel); }
+    inline TextureSizeInfo GetSizesInfo(int const& mipMapLevel) override { return _sizes.GetArray()[mipMapLevel]; }
     inline TextureBitsInfo GetBitsInfo() override { return _bits; }
     inline StorageDataFormat GetDataStorageFormat() override { return (StorageDataFormat)_data_storage_format; }
     inline bool IsCompressed() override { return _compressed; }
@@ -56,7 +56,7 @@ public:
     static ITexture* CreateMipmapChecker();
 
 protected:
-    mr::TStaticArray<TextureSizeInfo> _sizes;
+    mu::ArrayHandle<TextureSizeInfo> _sizes;
     TextureBitsInfo _bits;
     size_t _mem_size;
     unsigned int _data_storage_format = 0;

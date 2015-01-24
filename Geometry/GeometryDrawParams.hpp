@@ -19,21 +19,24 @@ public:
     unsigned int GetIndexCount() const override { return _icount; }
     unsigned int GetVertexCount() const override { return _vcount; }
 
+    void SetInstancesNum(unsigned int const& num) override;
+    inline unsigned int GetInstancesNum() const override { return _instNum; }
+
     void* GetIndirectPtr() const override { return drawCmd; }
 
-    void SetUseIndexBuffer(const bool& state) override;
-    bool GetUseIndexBuffer() const override;
+    void SetUsingIndexBuffer(const bool& state) override;
+    bool GetUsingIndexBuffer() const override;
 
-    static IGeometryDrawParamsPtr DrawArrays(const unsigned int& vstart, const unsigned int& vcount);
-    static IGeometryDrawParamsPtr DrawElements(const unsigned int& vstart, const unsigned int& istart, const unsigned int& icount);
+    static IGeometryDrawParamsPtr DrawArrays(const unsigned int& vstart, const unsigned int& vcount, unsigned int const& instancesNum = 1);
+    static IGeometryDrawParamsPtr DrawElements(const unsigned int& vstart, const unsigned int& istart, const unsigned int& icount, unsigned int const& instancesNum = 1);
 
-    GeometryDrawParams(const bool& indexBuffer, const unsigned int& istart, const unsigned int& vstart, const unsigned int& icount, const unsigned int& vcount);
+    GeometryDrawParams(const bool& indexBuffer, const unsigned int& istart, const unsigned int& vstart, const unsigned int& icount, const unsigned int& vcount, unsigned int const& instancesNum);
     virtual ~GeometryDrawParams();
 protected:
     void _MakeDrawCmd();
 
     void* drawCmd;
-    unsigned int _istart, _vstart, _icount, _vcount;
+    unsigned int _istart, _vstart, _icount, _vcount, _instNum;
     bool _index_buffer;
 };
 

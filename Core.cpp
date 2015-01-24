@@ -16,7 +16,6 @@ namespace mr {
 void DestroyAllTextures();
 void DestroyAllBuffers();
 void DestroyAllShaderPrograms();
-void _MR_InitTextures();
 
 }
 
@@ -26,7 +25,6 @@ void _MR_OneTimeInit() {
     b = true;
     __glewBufferStorage = (PFNGLBUFFERSTORAGEPROC)(mr::IContextManager::GetCurrent()->GetProcAddress("glBufferStorage"));
     __glewNamedBufferStorageEXT = (PFNGLNAMEDBUFFERSTORAGEEXTPROC)(mr::IContextManager::GetCurrent()->GetProcAddress("glNamedBufferStorageEXT"));
-    mr::_MR_InitTextures();
 }
 
 bool mr::Init(mr::IContext* ctx) {

@@ -7,13 +7,6 @@
 
 namespace mr {
 
-void IQuery::Destroy() {
-}
-
-IQuery::~IQuery() {
-    Destroy();
-}
-
 void Query::Begin() {
     if(_handle == 0) {
         if(mr::gl::IsOpenGL45()) glCreateQueries(_target, 1, &_handle);
@@ -88,7 +81,7 @@ bool Query::GetResult(void* dst) {
     return false;
 }
 
-Query::Query(const Query::Target& target) : _handle(0), _target(target), _ended(true) {
+Query::Query(const Query::Target& target) : _target(target), _ended(true) {
     if(target == Query::Target::AnySamplesPassedConservative) {
         if(mr::gl::GetMajorVersion() == 4)
             if(mr::gl::GetMinorVersion() < 3)

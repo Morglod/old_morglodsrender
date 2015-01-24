@@ -5,15 +5,34 @@
 #include "../Utils/Debug.hpp"
 #include "../MachineInfo.hpp"
 
+#include "../Utils/Containers.hpp"
+
 #include <SOIL.h>
 #ifndef __glew_h__
 #   include <GL\glew.h>
 #endif
 
-mr::TStaticArray<mr::ITexture*> _MR_TEXTURE_BIND_TARGETS_;
-mr::TStaticArray<mr::ITextureSettings*> _MR_TEXTURE_BIND_TARGETS_SAMPLERS_;
+mu::ArrayHandle<mr::ITexture*> _MR_TEXTURE_BIND_TARGETS_;
+mu::ArrayHandle<mr::ITextureSettings*> _MR_TEXTURE_BIND_TARGETS_SAMPLERS_;
 
 mr::TDynamicArray<mr::ITexture*> _MR_REGISTERED_TEXTURES_;
+
+bool __mr_TexturesIsInit = false;
+void __mr_TexturesInit() {
+    if(__mr_TexturesIsInit) return;
+    int units = mr::gl::GetMaxTextureUnits();
+    Assert(units < 4)
+    _MR_TEXTURE_BIND_TARGETS_ = mu::ArrayHandle<mr::ITexture*>(new mr::ITexture*[units], units, true);
+    _MR_TEXTURE_BIND_TARGETS_SAMPLERS_ = mu::ArrayHandle<mr::ITextureSettings*>(new mr::ITextureSettings*[units], units, true);
+    for(size_t i = 0; i < _MR_TEXTURE_BIND_TARGETS_.GetNum(); ++i){
+        _MR_TEXTURE_BIND_TARGETS_.GetArray()[i] = nullptr;
+        _MR_TEXTURE_BIND_TARGETS_SAMPLERS_.GetArray()[i] = nullptr;
+    }
+    __mr_TexturesIsInit = true;
+}
+
+#define __MR_REQUEST_TEXTURE_INIT() \
+if(!__mr_TexturesIsInit) __mr_TexturesInit()
 
 unsigned int _MR_TEXTURE_TYPE_TO_GL_TARGET_[]{
     GL_TEXTURE_1D,
@@ -23,22 +42,12 @@ unsigned int _MR_TEXTURE_TYPE_TO_GL_TARGET_[]{
 
 namespace mr {
 
-void _MR_InitTextures() {
-    int units = mr::gl::GetMaxTextureUnits();
-    Assert(units < 4)
-    _MR_TEXTURE_BIND_TARGETS_ = mr::TStaticArray<mr::ITexture*>(new mr::ITexture*[units], units, true);
-    _MR_TEXTURE_BIND_TARGETS_SAMPLERS_ = mr::TStaticArray<mr::ITextureSettings*>(new mr::ITextureSettings*[units], units, true);
-    for(size_t i = 0; i < _MR_TEXTURE_BIND_TARGETS_.GetNum(); ++i){
-        _MR_TEXTURE_BIND_TARGETS_.GetRaw()[i] = nullptr;
-        _MR_TEXTURE_BIND_TARGETS_SAMPLERS_.GetRaw()[i] = nullptr;
-    }
-}
-
 void Texture::Bind(unsigned short const& unit) {
+    __MR_REQUEST_TEXTURE_INIT();
     Assert(GetGPUHandle() == 0)
     Assert(unit >= _MR_TEXTURE_BIND_TARGETS_.GetNum())
 
-    if(_MR_TEXTURE_BIND_TARGETS_.GetRaw()[unit] == dynamic_cast<mr::ITexture*>(this)) return;
+    if(_MR_TEXTURE_BIND_TARGETS_.GetArray()[unit] == dynamic_cast<mr::ITexture*>(this)) return;
 
     if(mr::gl::IsOpenGL45()) {
         glBindTextureUnit(unit, _handle);
@@ -54,14 +63,15 @@ void Texture::Bind(unsigned short const& unit) {
     }
 
     mr::ITextureSettings* ts = GetSettings();
-    _MR_TEXTURE_BIND_TARGETS_.GetRaw()[unit] = dynamic_cast<mr::ITexture*>(this);
-    _MR_TEXTURE_BIND_TARGETS_SAMPLERS_.GetRaw()[unit] = ts;
+    _MR_TEXTURE_BIND_TARGETS_.GetArray()[unit] = dynamic_cast<mr::ITexture*>(this);
+    _MR_TEXTURE_BIND_TARGETS_SAMPLERS_.GetArray()[unit] = ts;
     glBindSampler(unit, (ts) ? ts->GetGPUHandle() : 0);
 }
 
 unsigned short Texture::Bind() {
+    __MR_REQUEST_TEXTURE_INIT();
     for(unsigned short i = 0; i < _MR_TEXTURE_BIND_TARGETS_.GetNum(); ++i){
-        if(_MR_TEXTURE_BIND_TARGETS_.GetRaw()[i] == nullptr) {
+        if(_MR_TEXTURE_BIND_TARGETS_.GetArray()[i] == nullptr) {
             Bind((unsigned short)i);
             return i;
         }
@@ -244,7 +254,7 @@ bool mr::Texture::Complete(bool mipMaps) {
 
 void Texture::UpdateInfo() {
     if(_handle == 0) {
-        _sizes = TStaticArray<TextureSizeInfo>();
+        _sizes = mu::ArrayHandle<TextureSizeInfo>();
         _bits = TextureBitsInfo(0,0,0,0,0);
         _mem_size = 0;
         _compressed = false;
@@ -268,8 +278,8 @@ void Texture::UpdateInfo() {
         }
 
         int numMipMaps = (_mipmaps) ? (1 + glm::floor(glm::log2( (double)glm::max(glm::max(maxW, maxH), maxD) ))) : 1;
-        _sizes = TStaticArray<TextureSizeInfo>(numMipMaps);
-        TextureSizeInfo* szAr = _sizes.GetRaw();
+        _sizes = mu::ArrayHandle<TextureSizeInfo>(new TextureSizeInfo[numMipMaps], numMipMaps, true);
+        TextureSizeInfo* szAr = _sizes.GetArray();
 
         int fi = 0, rs = 0, gs = 0, bs = 0, ds = 0, as = 0, cm = 0;
         if(mr::gl::IsOpenGL45()) {
@@ -321,8 +331,8 @@ void mr::Texture::Destroy() {
     if(_handle != 0) {
         glDeleteTextures(1, &_handle);
         _handle = 0;
-        OnGPUHandleChanged(dynamic_cast<mr::GPUObjectHandle*>(this), 0);
-        OnDestroy(dynamic_cast<mr::ObjectHandle*>(this));
+        OnGPUHandleChanged(dynamic_cast<mr::IGPUObjectHandle*>(this), 0);
+        OnDestroy(dynamic_cast<mr::IObjectHandle*>(this));
     }
 }
 
@@ -335,37 +345,40 @@ mr::Texture::~Texture() {
 }
 
 ITexture* TextureGetBinded(const unsigned short& unit) {
+    __MR_REQUEST_TEXTURE_INIT();
     Assert(unit >= _MR_TEXTURE_BIND_TARGETS_.GetNum())
-    return _MR_TEXTURE_BIND_TARGETS_.GetRaw()[unit];
+    return _MR_TEXTURE_BIND_TARGETS_.GetArray()[unit];
 }
 
 void TextureUnBind(const unsigned short& unit, const bool& fast) {
+    __MR_REQUEST_TEXTURE_INIT();
     Assert(unit >= _MR_TEXTURE_BIND_TARGETS_.GetNum())
-    if(_MR_TEXTURE_BIND_TARGETS_.GetRaw()[unit] == nullptr) return;
+    if(_MR_TEXTURE_BIND_TARGETS_.GetArray()[unit] == nullptr) return;
 
     if(!fast) {
         if(mr::gl::IsOpenGL45()) {
             glBindTextureUnit(unit, 0);
         }
         else if(mr::gl::IsDirectStateAccessSupported()) {
-            glBindMultiTextureEXT(GL_TEXTURE0+unit, _MR_TEXTURE_TYPE_TO_GL_TARGET_[_MR_TEXTURE_BIND_TARGETS_.GetRaw()[unit]->GetType()], 0);
+            glBindMultiTextureEXT(GL_TEXTURE0+unit, _MR_TEXTURE_TYPE_TO_GL_TARGET_[_MR_TEXTURE_BIND_TARGETS_.GetArray()[unit]->GetType()], 0);
         } else {
             int actived_tex = 0;
             glGetIntegerv(GL_ACTIVE_TEXTURE, &actived_tex);
             glActiveTexture(GL_TEXTURE0+unit);
-            glBindTexture(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_MR_TEXTURE_BIND_TARGETS_.GetRaw()[unit]->GetType()], 0);
+            glBindTexture(_MR_TEXTURE_TYPE_TO_GL_TARGET_[_MR_TEXTURE_BIND_TARGETS_.GetArray()[unit]->GetType()], 0);
             glActiveTexture(actived_tex);
         }
         glBindSampler(unit, 0);
     }
 
-    _MR_TEXTURE_BIND_TARGETS_.GetRaw()[unit] = nullptr;
-    _MR_TEXTURE_BIND_TARGETS_SAMPLERS_.GetRaw()[unit] = nullptr;
+    _MR_TEXTURE_BIND_TARGETS_.GetArray()[unit] = nullptr;
+    _MR_TEXTURE_BIND_TARGETS_SAMPLERS_.GetArray()[unit] = nullptr;
 }
 
 unsigned short TextureFreeUnit() {
+    __MR_REQUEST_TEXTURE_INIT();
     for(unsigned short i = 0; i < _MR_TEXTURE_BIND_TARGETS_.GetNum(); ++i){
-        if(_MR_TEXTURE_BIND_TARGETS_.GetRaw()[i] == nullptr) {
+        if(_MR_TEXTURE_BIND_TARGETS_.GetArray()[i] == nullptr) {
             return i;
         }
     }
@@ -397,10 +410,11 @@ ITexture* Texture::CreateMipmapChecker() {
     ITexture* tex = dynamic_cast<ITexture*>(new mr::Texture());
     tex->Create(Base2D);
 
-    if(!tex->Good()) {
+    if(!tex->IsGood()) {
         delete tex;
         return nullptr;
     }
+
     for(int i = 0; i < 10; ++i) {
         int sz = glm::pow(2, 10-i);
         float* data = __MR_CHECKER_NEW_IMAGE_(sz, (float)(10-i) * 0.1f);

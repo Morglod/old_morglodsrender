@@ -23,7 +23,7 @@ public:
     inline unsigned int GetSize() const override { return sizeof(int); }
     inline unsigned int GetDataType() const override { return 0x1404; }
 
-    inline bool Equal(IVertexDataType* dt) const override {
+    inline bool IsEqual(IVertexDataType* dt) const override {
         if(sizeof(int) != dt->GetSize()) return false;
         if(0x1404 != dt->GetDataType()) return false;
         return true;
@@ -35,7 +35,7 @@ public:
     inline unsigned int GetSize() const override { return sizeof(unsigned int); }
     inline unsigned int GetDataType() const override { return 0x1405; }
 
-    inline bool Equal(IVertexDataType* dt) const override {
+    inline bool IsEqual(IVertexDataType* dt) const override {
         if(sizeof(unsigned int) != dt->GetSize()) return false;
         if(0x1405 != dt->GetDataType()) return false;
         return true;
@@ -47,7 +47,7 @@ public:
     inline unsigned int GetSize() const override { return sizeof(float); }
     inline unsigned int GetDataType() const override { return 0x1406; }
 
-    inline bool Equal(IVertexDataType* dt) const override {
+    inline bool IsEqual(IVertexDataType* dt) const override {
         if(sizeof(float) != dt->GetSize()) return false;
         if(0x1406 != dt->GetDataType()) return false;
         return true;
@@ -59,7 +59,7 @@ public:
     inline unsigned int GetSize() const override {return _size;}
     inline unsigned int GetDataType() const override {return _data_type;}
 
-    inline bool Equal(IVertexDataType* dt) const override {
+    inline bool IsEqual(IVertexDataType* dt) const override {
         if(_size != dt->GetSize()) return false;
         if(_data_type != dt->GetDataType()) return false;
         return true;
@@ -85,13 +85,13 @@ public:
     inline unsigned int GetDivisor() const { return _divisor; }
     inline void SetDivisor(unsigned int const& divisor) override { _divisor = divisor; }
 
-    inline bool Equal(IVertexAttribute* va) const override {
+    inline bool IsEqual(IVertexAttribute* va) const override {
         if((VertexDataTypeFloat::GetInstance().GetSize() * 3) != va->GetSize()) return false;
         if(3 != va->GetElementsNum()) return false;
         if(IVertexAttribute::Position != va->GetShaderIndex()) return false;
         if(_divisor != va->GetDivisor()) return false;
 
-        return VertexDataTypeFloat::GetInstance().Equal(va->GetDataType());
+        return VertexDataTypeFloat::GetInstance().IsEqual(va->GetDataType());
     }
 protected:
     unsigned int _divisor = 0;
@@ -107,12 +107,12 @@ public:
     inline unsigned int GetDivisor() const override { return _divisor; }
     inline void SetDivisor(unsigned int const& divisor) override { _divisor = divisor; }
 
-    inline bool Equal(IVertexAttribute* va) const override {
+    inline bool IsEqual(IVertexAttribute* va) const override {
         if(_size != va->GetSize()) return false;
         if(_el_num != va->GetElementsNum()) return false;
         if(_shaderIndex != va->GetShaderIndex()) return false;
         if(_divisor != va->GetDivisor()) return false;
-        return _data_type->Equal(va->GetDataType());
+        return _data_type->IsEqual(va->GetDataType());
     }
 
     IVertexAttribute* Cache();
@@ -134,7 +134,7 @@ public:
     void AddVertexAttribute(IVertexAttribute* a) override;
     bool Bind() const override;
     void UnBind() const override;
-    bool Equal(IVertexFormat* vf) const override;
+    bool IsEqual(IVertexFormat* vf) const override;
 
     IVertexFormat* Cache();
 
@@ -142,8 +142,8 @@ public:
     VertexFormatCustom(VertexFormatCustom const& cpy);
     virtual ~VertexFormatCustom();
 
-    inline TArrayRef<IVertexAttribute*> GetAttributes() override { return TArrayRef<IVertexAttribute*>(&_attribs[0], _attribs.size()); }
-    inline TArrayRef<uint64_t> GetOffsets() override { return TArrayRef<uint64_t>(&_pointers[0], _pointers.size()); }
+    inline mu::ArrayRef<IVertexAttribute*> GetAttributes() override { return mu::ArrayRef<IVertexAttribute*>(&_attribs[0], _attribs.size()); }
+    inline mu::ArrayRef<uint64_t> GetOffsets() override { return mu::ArrayRef<uint64_t>(&_pointers[0], _pointers.size()); }
 protected:
     std::vector<IVertexAttribute*> _attribs;
     std::vector<uint64_t> _pointers;
@@ -157,7 +157,7 @@ public:
     inline void AddVertexAttribute(IVertexAttribute* a) override { SetVertexAttribute(a, _nextIndex); ++_nextIndex; }
     bool Bind() const override;
     void UnBind() const override;
-    bool Equal(IVertexFormat* vf) const override;
+    bool IsEqual(IVertexFormat* vf) const override;
 
     /// call this after creating new object of this type
     /// resets all data
@@ -169,8 +169,8 @@ public:
     VertexFormatCustomFixed(VertexFormatCustomFixed const& cpy);
     virtual ~VertexFormatCustomFixed();
 
-    inline TArrayRef<IVertexAttribute*> GetAttributes() override { return TArrayRef<IVertexAttribute*>(&_attribs[0], _attribsNum); }
-    inline TArrayRef<uint64_t> GetOffsets() override { return TArrayRef<uint64_t>(&_pointers[0], _attribsNum); }
+    inline mu::ArrayRef<IVertexAttribute*> GetAttributes() override { return mu::ArrayRef<IVertexAttribute*>(&_attribs[0], _attribsNum); }
+    inline mu::ArrayRef<uint64_t> GetOffsets() override { return mu::ArrayRef<uint64_t>(&_pointers[0], _attribsNum); }
 protected:
     void _RecalcSize(); //SetVertexAttribute calls it automatically
     void SetVertexAttribute(IVertexAttribute* a, const size_t& index);
@@ -189,7 +189,7 @@ public:
     inline IVertexDataType* GetDataType() const override { return _dataType; }
     bool Bind() const override;
     void UnBind() const override;
-    bool Equal(IIndexFormat* ifo) const override;
+    bool IsEqual(IIndexFormat* ifo) const override;
 
     IIndexFormat* Cache();
 

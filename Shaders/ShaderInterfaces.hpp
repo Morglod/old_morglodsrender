@@ -4,6 +4,7 @@
 #define _MR_SHADER_INTERFACES_H_
 
 #include "../CoreObjects.hpp"
+#include <Containers.hpp>
 
 namespace mr {
 
@@ -54,29 +55,28 @@ public:
 
 class ShaderUniformsList {
 public:
-    inline mr::TStaticArray<IShaderUniform*> GetList() { return _uniforms; }
-    inline void SetList(mr::TStaticArray<IShaderUniform*> const& uniforms) { _uniforms = uniforms; }
+    inline mu::ArrayRef<IShaderUniform*> GetList() { return mu::ArrayRef<IShaderUniform*>(_uniforms.GetArray(), _uniforms.GetSize()); }
+    inline void SetList(mu::ArrayHandle<IShaderUniform*> const& uniforms) { _uniforms = uniforms; }
 
     inline void Update() {
-        IShaderUniform** ptr = _uniforms.GetRaw();
-        for(size_t i = 0; i < _uniforms.GetNum(); ++i){
+        IShaderUniform** ptr = _uniforms.GetArray();
+        for(size_t i = 0; i < _uniforms.GetSize(); ++i){
             ptr[i]->Update();
         }
     }
 
     ShaderUniformsList();
-    ShaderUniformsList(mr::TStaticArray<IShaderUniform*> const& uniforms);
-    ShaderUniformsList(mr::TDynamicArray<IShaderUniform*> const& uniforms);
+    ShaderUniformsList(mu::ArrayRef<IShaderUniform*> const& uniforms);
     virtual ~ShaderUniformsList();
 protected:
-    mr::TStaticArray<IShaderUniform*> _uniforms;
+    mu::ArrayHandle<IShaderUniform*> _uniforms;
 };
 
 /**
     For shader compilation, use ShaderCompiler
 **/
 
-class IShader : public GPUObjectHandle {
+class IShader : public IGPUObjectHandle {
 public:
     enum Type {
         None = 0,
@@ -102,15 +102,15 @@ public:
 struct ShaderProgramCache {
 public:
     unsigned int format;
-    mr::TStaticArray<unsigned char> data;
+    mu::ArrayHandle<unsigned char> data;
 
     ShaderProgramCache& operator = (ShaderProgramCache& c);
 
     ShaderProgramCache();
-    ShaderProgramCache(unsigned int const& f, mr::TStaticArray<unsigned char> d);
+    ShaderProgramCache(unsigned int const& f, mu::ArrayHandle<unsigned char> d);
 };
 
-class IShaderProgram : public GPUObjectHandle, public Usable {
+class IShaderProgram : public IGPUObjectHandle {
 public:
     /** Handle uniforms **/
     virtual IShaderUniform* CreateUniform(const std::string& name, const mr::IShaderUniform::Type& type, void* value) = 0;
@@ -127,15 +127,16 @@ public:
 
     virtual void UpdateUniforms() = 0; //update all attached uniform values
 
-    virtual TStaticArray<IShaderUniform*> GetShaderUniforms() = 0; //get all uniform handles
-    virtual TStaticArray<ShaderUniformInfo> GetCompiledUniforms() = 0; //returns used in shaders uniforms. don't forget to free this array manually
+    virtual mu::ArrayHandle<IShaderUniform*> GetShaderUniforms() = 0; //get all uniform handles
+    virtual mu::ArrayHandle<ShaderUniformInfo> GetCompiledUniforms() = 0; //returns used in shaders uniforms. don't forget to free this array manually
     virtual bool IsUniform(std::string const& uniformName) = 0;
 
-    virtual bool Link(TStaticArray<IShader*> shaders) = 0;
+    virtual bool Link(mu::ArrayHandle<IShader*> shaders) = 0;
     virtual bool IsLinked() = 0;
 
     virtual ShaderProgramCache GetCache() = 0;
 
+    virtual bool Use() = 0;
     //virtual unsigned int GetGPUHandle() = 0; GPUObjectHandle
 
     virtual ~IShaderProgram() {}
@@ -152,13 +153,13 @@ public:
     void SetUniform(const std::string& name, const glm::vec3& value) override { _program->SetUniform(name, value); }
     void SetUniform(const std::string& name, const glm::vec4& value) override { _program->SetUniform(name, value); }
     void SetUniform(const std::string& name, const glm::mat4& value) override { _program->SetUniform(name, value); }
-    TStaticArray<ShaderUniformInfo> GetCompiledUniforms() override { return _program->GetCompiledUniforms(); }
+    mu::ArrayHandle<ShaderUniformInfo> GetCompiledUniforms() override { return _program->GetCompiledUniforms(); }
     bool IsUniform(std::string const& uniformName) override { return _program->IsUniform(uniformName); }
-    bool Link(TStaticArray<IShader*> shaders) override { return _program->Link(shaders); }
+    bool Link(mu::ArrayHandle<IShader*> shaders) override { return _program->Link(shaders); }
     bool IsLinked() override { return _program->IsLinked(); }
     ShaderProgramCache GetCache() override { return _program->GetCache(); }
 
-    TStaticArray<IShaderUniform*> GetShaderUniforms() override { return _program->GetShaderUniforms().Combine(_uniforms.GetList()); }
+    mu::ArrayHandle<IShaderUniform*> GetShaderUniforms() override { return mu::Combine(_program->GetShaderUniforms(), mu::ArrayHandle<IShaderUniform*>(_uniforms.GetList())); }
     void UpdateUniforms() override { _program->UpdateUniforms(); _uniforms.Update(); }
 
     inline bool Use() override {

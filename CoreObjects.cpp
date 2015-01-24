@@ -2,7 +2,7 @@
 
 namespace mr {
 
-size_t GPUObjectHandle::GetGPUMem() {
+size_t IGPUObjectHandle::GetGPUMem() {
     return 0;
 }
 

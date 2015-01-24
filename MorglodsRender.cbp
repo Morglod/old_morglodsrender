@@ -17,6 +17,9 @@
 					<Add option="-Wall" />
 					<Add option="-g" />
 				</Compiler>
+				<Linker>
+					<Add library="C:\Libs\Projects\MorglodsUtils\bin\Debug\libMorglodsUtils.a" />
+				</Linker>
 			</Target>
 			<Target title="Release">
 				<Option output="BUILD/MorglodsRender" prefix_auto="1" extension_auto="1" />
@@ -31,6 +34,9 @@
 					<Add option="-O3" />
 					<Add option="-Wall" />
 				</Compiler>
+				<Linker>
+					<Add library="C:\Libs\Projects\MorglodsUtils\bin\Release\libMorglodsUtils.a" />
+				</Linker>
 			</Target>
 		</Build>
 		<Compiler>
@@ -48,12 +54,9 @@
 			<Add library="winmm" />
 			<Add library="pthread" />
 			<Add library="libassimp.dll.a" />
-			<Add library="C:\Libs\Projects\MorglodsUtils\bin\Release\libMorglodsUtils.a" />
 			<Add directory="C:/Libs/assimp-3.1.1-win-binaries/mingw_build" />
 			<Add directory="C:/TDM-GCC-64/lib" />
 		</Linker>
-		<Unit filename="Anim.cpp" />
-		<Unit filename="Anim.hpp" />
 		<Unit filename="Buffers/Buffers.cpp" />
 		<Unit filename="Buffers/Buffers.hpp" />
 		<Unit filename="Buffers/BuffersConfig.hpp" />
@@ -165,6 +168,8 @@
 		<Unit filename="Viewports/Viewport.hpp" />
 		<Unit filename="Viewports/ViewportInterfaces.cpp" />
 		<Unit filename="Viewports/ViewportInterfaces.hpp" />
+		<Unit filename="_Anim.cpp" />
+		<Unit filename="_Anim.hpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />

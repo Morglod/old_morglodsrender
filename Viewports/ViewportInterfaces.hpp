@@ -9,7 +9,7 @@
 
 namespace mr {
 
-class IViewport : public Usable {
+class IViewport {
 public:
     static mu::Event<IViewport*> OnAnyUsed;
 
@@ -18,6 +18,7 @@ public:
 
     virtual glm::ivec4 GetRect() = 0;
     virtual void SetRect(const glm::ivec4& r) = 0;
+    virtual bool Use() = 0;
 
     virtual ~IViewport() {}
 };

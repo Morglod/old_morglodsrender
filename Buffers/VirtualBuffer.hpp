@@ -3,6 +3,7 @@
 #ifndef _MR_VIRTUAL_BUFFER_H_
 #define _MR_VIRTUAL_BUFFER_H_
 
+#include <Containers.hpp>
 #include "BuffersInterfaces.hpp"
 
 namespace mr {
@@ -55,7 +56,7 @@ public:
 
     virtual VirtualGPUBuffer* Take(const size_t& size);
     virtual VirtualGPUBuffer* TakeAll() { return Take(GetFreeMemorySize()); }
-    inline virtual mr::TStaticArray<VirtualGPUBuffer*> GetAllBuffers() { return mr::TStaticArray<VirtualGPUBuffer*>(&_buffers[0], _buffers.size(), false); }
+    inline virtual mu::ArrayRef<VirtualGPUBuffer*> GetAllBuffers() { return mu::ArrayRef<VirtualGPUBuffer*>(&_buffers[0], _buffers.size()); }
 
     inline virtual IGPUBuffer* GetRealBuffer() { return _realBuffer; }
 

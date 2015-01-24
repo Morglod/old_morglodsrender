@@ -44,13 +44,13 @@ public:
 
     void DeleteUniform(IShaderUniform* su) override;
     IShaderUniform* FindShaderUniform(const std::string& name) override;
-    TStaticArray<IShaderUniform*> GetShaderUniforms() override;
-    TStaticArray<ShaderUniformInfo> GetCompiledUniforms() override;
+    mu::ArrayHandle<IShaderUniform*> GetShaderUniforms() override;
+    mu::ArrayHandle<ShaderUniformInfo> GetCompiledUniforms() override;
     bool IsUniform(std::string const& uniformName) override;
 
     void UpdateUniforms() override;
 
-    bool Link(TStaticArray<IShader*> shaders) override;
+    bool Link(mu::ArrayHandle<IShader*> shaders) override;
     inline bool IsLinked() override { return _linked; }
 
     ShaderProgramCache GetCache() override;
@@ -64,7 +64,7 @@ public:
     ShaderProgram();
     virtual ~ShaderProgram();
 
-    static ShaderProgram* CreateAndLink(TStaticArray<IShader*> shaders);
+    static ShaderProgram* CreateAndLink(mu::ArrayHandle<IShader*> shaders);
     static ShaderProgram* Default();
     static ShaderProgram* DefaultBase(); //for default material flag
     static ShaderProgram* DefaultWithTexture(); //Texture uniform "MR_SHADER_COLOR_TEX"

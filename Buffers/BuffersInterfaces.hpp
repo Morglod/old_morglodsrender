@@ -12,7 +12,7 @@
 
 namespace mr {
 
-class IGPUBuffer : public GPUObjectHandle {
+class IGPUBuffer : public IGPUObjectHandle {
 public:
     enum BindTarget {
         ArrayBuffer = 0,

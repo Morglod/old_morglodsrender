@@ -1,12 +1,7 @@
-#ifndef _MR_MACHINE_INFO_H_
-#define _MR_MACHINE_INFO_H_
+#pragma once
 
 #include "Config.hpp"
-
 #include <string>
-
-#define MR_MINIMAL_GL_VERSION_MAJOR 4
-#define MR_MINIMAL_GL_VERSION_MINOR 0
 
 namespace mr {
 namespace machine {
@@ -79,5 +74,3 @@ namespace gl {
     void ClearError(); //set error status to no_error
 }
 }
-
-#endif

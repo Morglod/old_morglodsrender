@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef _MR_CONTEXT_H_
-#define _MR_CONTEXT_H_
-
 namespace mr{
 
 class IContext {
@@ -40,5 +37,3 @@ public:
 inline bool AnyContextAlive() { return (IContextManager::GetCurrent() != nullptr); }
 
 }
-
-#endif // _MR_GL_CONTEXT_H_

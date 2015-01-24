@@ -1,21 +1,22 @@
 #pragma once
 
-#ifndef _MR_QUERY_H_
-#define _MR_QUERY_H_
+#include "CoreObjects.hpp"
 
 namespace mr {
 
-class IQuery {
+class IQuery : public IGPUObjectHandle {
 public:
     virtual void Begin() = 0;
     virtual void End() = 0;
     virtual unsigned int GetTarget() = 0;
-    virtual unsigned int GetGPUHandle() = 0;
     virtual bool GetResult(void* resultDst) = 0;
-    virtual void Destroy();
     virtual bool IsEnded() = 0;
-    virtual ~IQuery();
+    virtual ~IQuery(){}
+    //virtual unsigned int GetGPUHandle() = 0;
+    //virtual void Destroy();
 };
+
+typedef std::shared_ptr<IQuery> QueryPtr;
 
 class Query : public IQuery {
 public:
@@ -32,7 +33,6 @@ public:
     void Begin() override;
     void End() override;
     unsigned int GetTarget() override { return _target; }
-    unsigned int GetGPUHandle() override { return _handle; }
     bool GetResult(void* resultDst) override;
     void Destroy() override;
     bool IsEnded() override { return _ended; }
@@ -42,11 +42,8 @@ public:
 
     static Query GetQuery(const Query::Target& target);
 protected:
-    unsigned int _handle;
     unsigned int _target;
     bool _ended;
 };
 
 }
-
-#endif // _MR_QUERY_H_

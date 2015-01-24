@@ -133,8 +133,8 @@ void mr::TextureSettings::Destroy() {
     if(_handle != 0) {
         glDeleteBuffers(1, &_handle);
         _handle = 0;
-        OnGPUHandleChanged(dynamic_cast<mr::GPUObjectHandle*>(this), 0);
-        OnDestroy(dynamic_cast<mr::ObjectHandle*>(this));
+        OnGPUHandleChanged(dynamic_cast<mr::IGPUObjectHandle*>(this), 0);
+        OnDestroy(dynamic_cast<mr::IObjectHandle*>(this));
     }
 }
 

@@ -6,9 +6,11 @@
 #include "../Types.hpp"
 #include "../CoreObjects.hpp"
 
+#include <Containers.hpp>
+
 namespace mr {
 
-class ITextureSettings : public Copyable<ITextureSettings*>, public GPUObjectHandle {
+class ITextureSettings : public IGPUObjectHandle {
 public:
     enum MinFilter {
         MinFilter_NEAREST_MIPMAP_NEAREST = 0x2700,
@@ -93,6 +95,8 @@ public:
     /* ObjectHandle */
     //void Destroy();
 
+    virtual ITextureSettings* Copy() = 0;
+
     virtual ~ITextureSettings() {}
 };
 
@@ -124,7 +128,7 @@ public:
     TextureBitsInfo(unsigned char r_, unsigned char g_, unsigned char b_, unsigned char d_, unsigned char a_);
 };
 
-class ITexture : public GPUObjectHandle {
+class ITexture : public IGPUObjectHandle {
 public:
     enum StorageDataFormat {
         SDF_ALPHA = 0x1906,

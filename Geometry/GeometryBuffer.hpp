@@ -6,6 +6,8 @@
 #include "../Config.hpp"
 #include "GeometryInterfaces.hpp"
 
+#include <map>
+
 namespace mr {
 
 class GeometryBuffer : public IGeometryBuffer {
@@ -22,6 +24,9 @@ public:
     inline void SetFormat(IVertexFormat* f, IIndexFormat* fi) override { _format = f; _iformat = fi; }
     inline IVertexFormat* GetVertexFormat() const override { return _format; }
     inline IIndexFormat* GetIndexFormat() const override { return _iformat; }
+
+    inline void SetAttribute(IVertexAttribute* attrib, IGPUBuffer* buf) override;
+    inline IGPUBuffer* GetAttribute(IVertexAttribute* attrib) override { if(_customAttribs.count(attrib) == 0) return nullptr; else return _customAttribs[attrib]; }
 
     inline bool Good() const override { return _created && (_vb != nullptr) && (_format != nullptr); }
 
@@ -62,6 +67,14 @@ protected:
 
     uint64_t _vb_nv_resident_ptr, _ib_nv_resident_ptr;
     int _vb_nv_buffer_size, _ib_nv_buffer_size;
+
+    std::map<IVertexAttribute*, IGPUBuffer*> _customAttribs;
+
+    struct BufferResidentPtr {
+        uint64_t ptr;
+        int size;
+    };
+    std::map<IVertexAttribute*, BufferResidentPtr> _customAttribNVPtr;
 };
 
 IGeometryBuffer* GeometryBufferGetBinded();

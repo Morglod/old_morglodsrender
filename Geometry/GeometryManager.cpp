@@ -90,8 +90,8 @@ GeometryManager::FormatBuffer* GeometryManager::_RequestFormatBuffer(IVertexForm
 
     for(size_t i = 0; i < _buffers.size(); ++i) {
         if(_split_by_data_formats) {
-            if(_buffers[i].vFormat && !_buffers[i].vFormat->Equal(vertexFormat)) continue;
-            if(_buffers[i].iFormat && !_buffers[i].iFormat->Equal(indexFormat)) continue;
+            if(_buffers[i].vFormat && !_buffers[i].vFormat->IsEqual(vertexFormat)) continue;
+            if(_buffers[i].iFormat && !_buffers[i].iFormat->IsEqual(indexFormat)) continue;
         }
 
         if((_buffers[i].usage == usage) &&

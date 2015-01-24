@@ -26,7 +26,7 @@ bool Shader::Compile(IShader::Type const& type, std::string const& code) {
         mr::MachineInfo::ClearError();
 #endif
          _handle = glCreateShader(type);
-         OnGPUHandleChanged(dynamic_cast<GPUObjectHandle*>(this), _handle);
+         OnGPUHandleChanged(dynamic_cast<IGPUObjectHandle*>(this), _handle);
 #ifdef MR_CHECK_LARGE_GL_ERRORS
         if(mr::MachineInfo::CatchError(0, &gl_er)) {
             std::string err_str = "Error in Shader::Compile : glCreateShader ended with \"" + std::to_string(gl_er) + "\" code. ";
@@ -68,8 +68,8 @@ void Shader::Destroy() {
     if(_handle != 0) {
         glDeleteShader(_handle);
         _handle = 0;
-        OnGPUHandleChanged(dynamic_cast<GPUObjectHandle*>(this), _handle);
-        OnDestroy(dynamic_cast<ObjectHandle*>(this));
+        OnGPUHandleChanged(dynamic_cast<IGPUObjectHandle*>(this), _handle);
+        OnDestroy(dynamic_cast<IObjectHandle*>(this));
     }
 }
 
@@ -91,7 +91,7 @@ Shader* Shader::CreateAndCompile(const IShader::Type& type, const std::string& c
 
 /** SHADER PROGRAM **/
 
-bool ShaderProgram::Link(TStaticArray<IShader*> shaders) {
+bool ShaderProgram::Link(mu::ArrayHandle<IShader*> shaders) {
     _linked = false;
     Assert(shaders.GetNum() == 0)
 
@@ -101,7 +101,7 @@ bool ShaderProgram::Link(TStaticArray<IShader*> shaders) {
         mr::MachineInfo::ClearError();
 #endif
         _handle = glCreateProgram();
-        OnGPUHandleChanged(dynamic_cast<GPUObjectHandle*>(this), _handle);
+        OnGPUHandleChanged(dynamic_cast<IGPUObjectHandle*>(this), _handle);
 #ifdef MR_CHECK_LARGE_GL_ERRORS
         if(mr::MachineInfo::CatchError(&gl_str, 0)) {
             mr::Log::LogString("Failed ShaderProgram::Link(). Failed creating OpenGL shader program. " + gl_str, MR_LOG_LEVEL_ERROR);
@@ -113,7 +113,7 @@ bool ShaderProgram::Link(TStaticArray<IShader*> shaders) {
     mr::TStaticArray<unsigned int> shadersHandles(new unsigned int [shaders.GetNum()], shaders.GetNum(), true);
     unsigned int* handlesPtr = shadersHandles.GetRaw();
     for(size_t i = 0; i < shaders.GetNum(); ++i){
-        handlesPtr[i] = shaders.At(i)->GetGPUHandle();
+        handlesPtr[i] = shaders.GetArray()[i]->GetGPUHandle();
     }
 
     mr::ShaderCompiler compiler;
@@ -196,14 +196,14 @@ IShaderUniform* ShaderProgram::FindShaderUniform(const std::string& name) {
     return nullptr;
 }
 
-TStaticArray<IShaderUniform*> ShaderProgram::GetShaderUniforms() {
-    return TStaticArray<IShaderUniform*>(&_shaderUniforms[0], _shaderUniforms.size(), false);
+mu::ArrayHandle<IShaderUniform*> ShaderProgram::GetShaderUniforms() {
+    return mu::ArrayHandle<IShaderUniform*>(&_shaderUniforms[0], _shaderUniforms.size(), false);
 }
 
-TStaticArray<ShaderUniformInfo> ShaderProgram::GetCompiledUniforms() {
+mu::ArrayHandle<ShaderUniformInfo> ShaderProgram::GetCompiledUniforms() {
     int act_uniforms = 0;
     glGetProgramiv(_handle, GL_ACTIVE_UNIFORMS, &act_uniforms);
-    if(act_uniforms == 0) return TStaticArray<ShaderUniformInfo>();
+    if(act_uniforms == 0) return mu::ArrayHandle<ShaderUniformInfo>();
 
     ShaderUniformInfo* uni = new ShaderUniformInfo[act_uniforms];
 
@@ -216,7 +216,7 @@ TStaticArray<ShaderUniformInfo> ShaderProgram::GetCompiledUniforms() {
         uni[iu] = ShaderUniformInfo(dynamic_cast<IShaderProgram*>(this), std::string(namebuffer), unif_size, uni_type);
     }
 
-    return TStaticArray<ShaderUniformInfo>(&uni[0], act_uniforms, false);
+    return mu::ArrayHandle<ShaderUniformInfo>(&uni[0], act_uniforms, false);
 }
 
 bool ShaderProgram::IsUniform(std::string const& uniformName) {
@@ -242,7 +242,7 @@ ShaderProgramCache ShaderProgram::GetCache() {
     unsigned char * buf = new unsigned char[bin_length];
 
     glGetProgramBinary(_handle, bin_length, &_a, &form, &buf[0]);
-    return ShaderProgramCache(form, mr::TStaticArray<unsigned char>(&buf[0], bin_length, true));
+    return ShaderProgramCache(form, mu::ArrayHandle<unsigned char>(&buf[0], bin_length, true));
 }
 
 void ShaderProgram::Destroy() {
@@ -250,8 +250,8 @@ void ShaderProgram::Destroy() {
         glDeleteProgram(_handle);
         _handle = 0;
 
-        OnGPUHandleChanged(dynamic_cast<GPUObjectHandle*>(this), _handle);
-        OnDestroy(dynamic_cast<ObjectHandle*>(this));
+        OnGPUHandleChanged(dynamic_cast<IGPUObjectHandle*>(this), _handle);
+        OnDestroy(dynamic_cast<IObjectHandle*>(this));
     }
 }
 
@@ -285,7 +285,7 @@ ShaderProgram::~ShaderProgram() {
     _MR_REGISTERED_SHADER_PROGRAMS_.Erase(dynamic_cast<mr::IShaderProgram*>(this));
 }
 
-ShaderProgram* ShaderProgram::CreateAndLink(TStaticArray<IShader*> shaders) {
+ShaderProgram* ShaderProgram::CreateAndLink(mu::ArrayHandle<IShader*> shaders) {
     ShaderProgram* sp = new mr::ShaderProgram();
     if(!sp->Link(shaders)) {
         sp->Destroy();
@@ -370,7 +370,7 @@ ShaderProgram* ShaderProgram::Default() {
 
     IShader* sh[2] { dynamic_cast<mr::IShader*>(Shader::CreateAndCompile(IShader::Type::Vertex, vs)), dynamic_cast<mr::IShader*>(Shader::CreateAndCompile(IShader::Type::Fragment, fs))};
     if(sh[0] == nullptr || sh[1] == nullptr) return nullptr;
-    ShaderProgram* sp = ShaderProgram::CreateAndLink(TStaticArray<IShader*>(&sh[0], 2, true));
+    ShaderProgram* sp = ShaderProgram::CreateAndLink(mu::ArrayHandle<IShader*>(&sh[0], 2, false));
     sh[0]->Destroy(); sh[1]->Destroy();
     delete sh[0]; delete sh[1];
     return sp;
@@ -378,7 +378,7 @@ ShaderProgram* ShaderProgram::Default() {
 
 ShaderProgram* ShaderProgram::DefaultWithTexture() {
     std::string vs =
-        "#version 150 core\n"
+        "#version 330 \n"
         "#extension GL_ARB_separate_shader_objects : enable\n"
         "#pragma optimize (on)\n"
         "#pragma optionNV(fastmath on)\n"
@@ -393,6 +393,8 @@ ShaderProgram* ShaderProgram::DefaultWithTexture() {
         "layout (location = "+std::to_string(MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION)+") in vec3 "+std::string(MR_SHADER_VERTEX_NORMAL_ATTRIB_NAME)+";\n"
         "layout (location = "+std::to_string(MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION)+") in vec4 "+std::string(MR_SHADER_VERTEX_COLOR_ATTRIB_NAME)+";\n"
         "layout (location = "+std::to_string(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION)+") in vec2 "+std::string(MR_SHADER_VERTEX_TEXCOORD_ATTRIB_NAME)+";\n"
+        //TODO
+        "layout (location = 4) in vec3 _TEST_INST;\n"
 
         "uniform mat4 "+std::string(MR_SHADER_MVP_MAT4)+";\n"
         "uniform mat4 "+std::string(MR_SHADER_MODEL_MAT4)+";\n"
@@ -406,7 +408,8 @@ ShaderProgram* ShaderProgram::DefaultWithTexture() {
         "out vec2 MR_VertexTexCoord;\n"
 
         "void main() {\n"
-        "	vec4 pos = "+std::string(MR_SHADER_MVP_MAT4)+" * "+std::string(MR_SHADER_MODEL_MAT4)+" * vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
+        //TODO
+        "	vec4 pos = "+std::string(MR_SHADER_MVP_MAT4)+" * "+std::string(MR_SHADER_MODEL_MAT4)+" * vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+" + _TEST_INST, 1);\n"
         "	MR_VertexPos = pos;\n"
         "   MR_LocalVertexPos = vec4("+std::string(MR_SHADER_VERTEX_POSITION_ATTRIB_NAME)+",1);\n"
         "   MR_VertexNormal = "+std::string(MR_SHADER_VERTEX_NORMAL_ATTRIB_NAME)+";\n"
@@ -415,7 +418,7 @@ ShaderProgram* ShaderProgram::DefaultWithTexture() {
         "	gl_Position = pos;\n"
         "}";
     std::string fs =
-        "#version 150 core\n"
+        "#version 330 \n"
         "#extension GL_ARB_separate_shader_objects : enable\n"
         "#pragma optimize (on)\n"
         "#pragma optionNV(fastmath on)\n"
@@ -446,12 +449,12 @@ ShaderProgram* ShaderProgram::DefaultWithTexture() {
         "out vec4 "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+";\n"
 
         "void main() {"
-        "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+" = texture("+std::string(MR_SHADER_COLOR_TEX)+", MR_VertexTexCoord);"
+        "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+" = texture("+std::string(MR_SHADER_COLOR_TEX)+", MR_VertexTexCoord) * vec4(MR_VertexNormal, 1);"
         "}";
 
     IShader* sh[2] { dynamic_cast<mr::IShader*>(Shader::CreateAndCompile(IShader::Type::Vertex, vs)), dynamic_cast<mr::IShader*>(Shader::CreateAndCompile(IShader::Type::Fragment, fs))};
     if(sh[0] == nullptr || sh[1] == nullptr) return nullptr;
-    ShaderProgram* sp = ShaderProgram::CreateAndLink(TStaticArray<IShader*>(&sh[0], 2, false));
+    ShaderProgram* sp = ShaderProgram::CreateAndLink(mu::ArrayHandle<IShader*>(&sh[0], 2, false));
     sh[0]->Destroy(); sh[1]->Destroy();
     delete sh[0]; delete sh[1];
     return sp;
@@ -532,7 +535,7 @@ ShaderProgram* ShaderProgram::DefaultBase() {
 
     IShader* sh[2] { dynamic_cast<mr::IShader*>(Shader::CreateAndCompile(IShader::Type::Vertex, vs)), dynamic_cast<mr::IShader*>(Shader::CreateAndCompile(IShader::Type::Fragment, fs))};
     if(sh[0] == nullptr || sh[1] == nullptr) return nullptr;
-    ShaderProgram* sp = ShaderProgram::CreateAndLink(TStaticArray<IShader*>(&sh[0], 2, false));
+    ShaderProgram* sp = ShaderProgram::CreateAndLink(mu::ArrayHandle<IShader*>(&sh[0], 2, false));
     sh[0]->Destroy(); sh[1]->Destroy();
     delete sh[0]; delete sh[1];
     return sp;
@@ -558,7 +561,7 @@ ShaderProgram* ShaderProgram::FromCache(ShaderProgramCache cache) {
     std::string gl_str = "";
     mr::MachineInfo::ClearError();
 #endif
-     glProgramBinary(sp_handle, cache.format, cache.data.GetRaw(), cache.data.GetNum());
+     glProgramBinary(sp_handle, cache.format, cache.data.GetArray(), cache.data.GetNum());
 #ifdef MR_CHECK_LARGE_GL_ERRORS
     if(mr::MachineInfo::CatchError(&gl_str, 0)) {
         mr::Log::LogString("Failed ShaderProgram::FromCache. Failed loading shader program binary. " + gl_str, MR_LOG_LEVEL_ERROR);

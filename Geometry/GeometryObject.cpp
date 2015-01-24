@@ -23,24 +23,31 @@ void Geometry::SetGeometryBuffer(IGeometryBuffer* buffer) {
 void Geometry::Draw() const {
     if(!_buffer || !_draw_params) return;
 
-    _buffer->Bind(_draw_params->GetUseIndexBuffer());
+    _buffer->Bind(_draw_params->GetUsingIndexBuffer());
 
-    if(_buffer->GetIndexBuffer() != nullptr && _draw_params->GetUseIndexBuffer()){
+    if(_buffer->GetIndexBuffer() != nullptr && _draw_params->GetUsingIndexBuffer()){
         mr::IIndexFormat* iformat = _buffer->GetIndexFormat();
         if(mr::gl::IsIndirectDrawSupported()) {
             glDrawElementsIndirect( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], iformat->GetDataType()->GetDataType(), _draw_params->GetIndirectPtr());
         }
         else {
-            glDrawElementsBaseVertex(  _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()],
+            /*glDrawElementsBaseVertex(  _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()],
                                         _draw_params->GetIndexCount(),
                                         iformat->GetDataType()->GetDataType(),
                                         (void*)(size_t)(iformat->GetSize() * _draw_params->GetIndexStart()),
+                                        _draw_params->GetVertexStart());*/
+            glDrawElementsInstancedBaseVertex(_MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()],
+                                        _draw_params->GetIndexCount(),
+                                        iformat->GetDataType()->GetDataType(),
+                                        (void*)(size_t)(iformat->GetSize() * _draw_params->GetIndexStart()),
+                                        _draw_params->GetInstancesNum(),
                                         _draw_params->GetVertexStart());
         }
     }
     else {
         if(mr::gl::IsIndirectDrawSupported()) glDrawArraysIndirect( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], _draw_params->GetIndirectPtr());
-        else glDrawArrays( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], _draw_params->GetVertexStart(), _draw_params->GetVertexCount());
+        else //glDrawArrays( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], _draw_params->GetVertexStart(), _draw_params->GetVertexCount());
+            glDrawArraysInstanced(_MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], _draw_params->GetVertexStart(), _draw_params->GetVertexCount(), _draw_params->GetInstancesNum());
     }
 }
 

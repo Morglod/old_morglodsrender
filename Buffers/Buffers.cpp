@@ -101,7 +101,7 @@ void GPUBuffer::Allocate(const Usage& usage, const size_t& size) {
     if(_handle == 0) {
         if(mr::gl::IsOpenGL45()) glCreateBuffers(1, &_handle);
         else glGenBuffers(1, &_handle);
-        OnGPUHandleChanged(dynamic_cast<mr::GPUObjectHandle*>(this), _handle);
+        OnGPUHandleChanged(dynamic_cast<mr::IGPUObjectHandle*>(this), _handle);
     }
 
     if(_size > size) return; //Current size is enough
@@ -181,8 +181,8 @@ void GPUBuffer::Destroy() {
     if(_handle != 0) {
         glDeleteBuffers(1, &_handle);
         _handle = 0;
-        OnGPUHandleChanged(dynamic_cast<mr::GPUObjectHandle*>(this), 0);
-        OnDestroy(dynamic_cast<mr::ObjectHandle*>(this));
+        OnGPUHandleChanged(dynamic_cast<mr::IGPUObjectHandle*>(this), 0);
+        OnDestroy(dynamic_cast<mr::IObjectHandle*>(this));
     }
 }
 

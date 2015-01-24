@@ -34,6 +34,6 @@ ShaderProgramCache& ShaderProgramCache::operator = (ShaderProgramCache& c) {
 }
 
 ShaderProgramCache::ShaderProgramCache() : format(0), data() {}
-ShaderProgramCache::ShaderProgramCache(unsigned int const& f, mr::TStaticArray<unsigned char> d) : format(f), data(d) {}
+ShaderProgramCache::ShaderProgramCache(unsigned int const& f, mu::ArrayHandle<unsigned char> d) : format(f), data(d) {}
 
 }

@@ -4,13 +4,14 @@
 #define _MR_GEOMETRY_INTERFACES_
 
 #include "../Types.hpp"
-#include "../Utils/Containers.hpp"
 #include "../Shaders/ShaderConfig.hpp"
 #include "../Buffers/BuffersInterfaces.hpp"
 
+#include <Containers.hpp>
+
 namespace mr {
 
-class IVertexDataType : public Comparable<IVertexDataType*> {
+class IVertexDataType {
 public:
     enum DefaultDataType {
         Int = 0x1404,
@@ -18,13 +19,14 @@ public:
         Float = 0x1406
     };
 
+    virtual bool IsEqual(IVertexDataType*) const = 0;
     virtual unsigned int GetSize() const = 0; //one element of this data type size in bytes
     virtual unsigned int GetDataType() const = 0; //opengl data type
 
     virtual ~IVertexDataType() {}
 };
 
-class IVertexAttribute : public Comparable<IVertexAttribute*> {
+class IVertexAttribute {
 public:
     enum DefaultShaderIndex {
         Position = MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION,
@@ -33,6 +35,7 @@ public:
         TexCoord = MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION
     };
 
+    virtual bool IsEqual(IVertexAttribute*) const = 0;
     virtual unsigned int GetSize() const = 0; //one attrib size in bytes
     virtual unsigned int GetElementsNum() const = 0; //num of elements used in attribute
     virtual IVertexDataType* GetDataType() const  = 0;
@@ -46,21 +49,23 @@ public:
     virtual ~IVertexAttribute() {}
 };
 
-class IVertexFormat : public Comparable<IVertexFormat*> {
+class IVertexFormat {
 public:
+    virtual bool IsEqual(IVertexFormat*) const = 0;
     virtual unsigned int GetSize() const = 0; //one vertex size in bytes
     virtual void AddVertexAttribute(IVertexAttribute* a) = 0;
     virtual bool Bind() const = 0;
     virtual void UnBind() const = 0;
 
-    virtual TArrayRef<IVertexAttribute*> GetAttributes() = 0;
-    virtual TArrayRef<uint64_t> GetOffsets() = 0; //offsets of each attributes from starting point of vertex in bytes
+    virtual mu::ArrayRef<IVertexAttribute*> GetAttributes() = 0;
+    virtual mu::ArrayRef<uint64_t> GetOffsets() = 0; //offsets of each attributes from starting point of vertex in bytes
 
     virtual ~IVertexFormat() {}
 };
 
-class IIndexFormat : public Comparable<IIndexFormat*> {
+class IIndexFormat {
 public:
+    virtual bool IsEqual(IIndexFormat*) const = 0;
     virtual unsigned int GetSize() const = 0; //one index size in bytes
     virtual void SetDataType(IVertexDataType* dataType) = 0;
     virtual IVertexDataType* GetDataType() const = 0;
@@ -132,6 +137,9 @@ public:
     virtual void SetFormat(IVertexFormat* f, IIndexFormat* fi) = 0;
     virtual IVertexFormat* GetVertexFormat() const = 0;
     virtual IIndexFormat* GetIndexFormat() const = 0;
+
+    virtual void SetAttribute(IVertexAttribute* attrib, IGPUBuffer* buf) = 0;
+    virtual IGPUBuffer* GetAttribute(IVertexAttribute* attrib) = 0;
 };
 
 class IGeometryDrawParams {
@@ -161,10 +169,15 @@ public:
     virtual unsigned int GetIndexCount() const = 0;
     virtual unsigned int GetVertexCount() const = 0;
 
+
+    //By default should be 1
+    virtual void SetInstancesNum(unsigned int const& num) = 0;
+    virtual unsigned int GetInstancesNum() const = 0;
+
     virtual void* GetIndirectPtr() const = 0;
 
-    virtual void SetUseIndexBuffer(const bool& state) = 0;
-    virtual bool GetUseIndexBuffer() const = 0;
+    virtual void SetUsingIndexBuffer(const bool& state) = 0;
+    virtual bool GetUsingIndexBuffer() const = 0;
 
     virtual ~IGeometryDrawParams() {}
 };

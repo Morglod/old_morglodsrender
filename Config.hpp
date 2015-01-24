@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef _MR_CONFIG_H_
-#define _MR_CONFIG_H_
-
 /** COMPILE TIME CONFIG **/
 #define GLEW_STATIC
 #define GLM_FORCE_CXX11
@@ -32,4 +29,5 @@
 #define MR_DEFAULT_TEXTURE_SETTINGS_COMPARE_FUNC    CompareFunc_LEQUAL
 #define MR_TEXTURE_DIFFUSE_STAGE                    GL_TEXTURE0
 
-#endif // _MR_CONFIG_H_
+#define MR_MINIMAL_GL_VERSION_MAJOR 4
+#define MR_MINIMAL_GL_VERSION_MINOR 0

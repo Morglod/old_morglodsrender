@@ -15,15 +15,6 @@
 namespace mr {
 
 template < typename T >
-struct TArrayRef {
-    T* ptr;
-    size_t num;
-    TArrayRef() : ptr(nullptr), num(0) {}
-    TArrayRef(T* ptr_, size_t const& num_) : ptr(ptr_), num(num_) {}
-    TArrayRef(TArrayRef const& cpy) : ptr(cpy.ptr), num(cpy.num) {}
-};
-
-template < typename T >
 class ITArray {
 public:
     virtual T& At(size_t const& i) const = 0;
