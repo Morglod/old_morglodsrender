@@ -402,5 +402,17 @@ const int GetMaxVertexAttribsNum() {
     return s;
 }
 
+const int GetMaxFramebufferColorSlots() {
+    static int s = -1;
+    if(s == -1){
+        glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &s);
+        if(s == 0) {
+            mr::Log::LogString("Failed machine::GetMaxFramebufferColorSlots. Max framebuffer color attachments is 0. 15 will be used.", MR_LOG_LEVEL_ERROR);
+            s = 15;
+        }
+    }
+    return s;
+}
+
 }
 }

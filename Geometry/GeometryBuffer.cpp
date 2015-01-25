@@ -83,8 +83,8 @@ void GeometryBuffer::SetAttribute(IVertexAttribute* attr, IGPUBuffer* buf) {
     if(buf == nullptr) {
         auto it = _customAttribs.find(attr);
         _customAttribs.erase(it);
-        auto it = _customAttribNVPtr.find(attr);
-        _customAttribNVPtr.erase(it);
+        auto it2 = _customAttribNVPtr.find(attr);
+        _customAttribNVPtr.erase(it2);
         return;
     }
     if(mr::gl::IsNVVBUMSupported()) {

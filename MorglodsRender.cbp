@@ -74,6 +74,11 @@
 		<Unit filename="Core.hpp" />
 		<Unit filename="CoreObjects.cpp" />
 		<Unit filename="CoreObjects.hpp" />
+		<Unit filename="Framebuffer/FrameBufferConfig.hpp" />
+		<Unit filename="Framebuffer/FrameBufferInterfaces.cpp" />
+		<Unit filename="Framebuffer/FrameBufferInterfaces.hpp" />
+		<Unit filename="Framebuffer/FrameBufferObjects.cpp" />
+		<Unit filename="Framebuffer/FrameBufferObjects.hpp" />
 		<Unit filename="Geometry/GeometryBuffer.cpp" />
 		<Unit filename="Geometry/GeometryBuffer.hpp" />
 		<Unit filename="Geometry/GeometryBuilder.cpp" />

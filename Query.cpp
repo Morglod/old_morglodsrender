@@ -27,6 +27,7 @@ void Query::Destroy() {
     if(_handle != 0) {
         glDeleteQueries(1, &_handle);
         _handle = 0;
+        OnGPUHandleChanged(dynamic_cast<mr::IGPUObjectHandle*>(this), 0);
     }
 }
 

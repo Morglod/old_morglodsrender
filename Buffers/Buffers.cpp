@@ -92,7 +92,7 @@ IGPUBuffer* GPUBuffer::ReBind(const IGPUBuffer::BindTarget& target) {
     return binded;
 }
 
-IGPUBuffer::BindTarget GPUBuffer::GetTarget() {
+IGPUBuffer::BindTarget GPUBuffer::GetBindTarget() {
     return _bindedTarget;
 }
 
@@ -182,7 +182,6 @@ void GPUBuffer::Destroy() {
         glDeleteBuffers(1, &_handle);
         _handle = 0;
         OnGPUHandleChanged(dynamic_cast<mr::IGPUObjectHandle*>(this), 0);
-        OnDestroy(dynamic_cast<mr::IObjectHandle*>(this));
     }
 }
 

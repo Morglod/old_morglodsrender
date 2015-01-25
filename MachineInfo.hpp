@@ -59,6 +59,7 @@ namespace gl {
     const int GetMaxTextureUnits();
     const int GetMaxGeometryStreamsNum();
     const int GetMaxVertexAttribsNum();
+    const int GetMaxFramebufferColorSlots();
 
     //const bool IsCoreProfile();
 

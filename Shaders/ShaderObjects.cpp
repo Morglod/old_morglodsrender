@@ -69,7 +69,6 @@ void Shader::Destroy() {
         glDeleteShader(_handle);
         _handle = 0;
         OnGPUHandleChanged(dynamic_cast<IGPUObjectHandle*>(this), _handle);
-        OnDestroy(dynamic_cast<IObjectHandle*>(this));
     }
 }
 
@@ -251,7 +250,6 @@ void ShaderProgram::Destroy() {
         _handle = 0;
 
         OnGPUHandleChanged(dynamic_cast<IGPUObjectHandle*>(this), _handle);
-        OnDestroy(dynamic_cast<IObjectHandle*>(this));
     }
 }
 

@@ -13,7 +13,7 @@ public:
     void Bind(const BindTarget& target) override;
     void BindAt(const BindTarget& target, const unsigned int& index) override;
     IGPUBuffer* ReBind(const BindTarget& target) override;
-    BindTarget GetTarget() override;
+    BindTarget GetBindTarget() override;
 
     void Allocate(const Usage& usage, const size_t& size) override;
     inline Usage GetUsage() override { return _usage; }

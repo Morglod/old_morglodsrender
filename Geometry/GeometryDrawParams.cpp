@@ -52,7 +52,7 @@ void GeometryDrawParams::_MakeDrawCmd() {
 }
 
 GeometryDrawParams::GeometryDrawParams(const bool& indexBuffer, const unsigned int& istart, const unsigned int& vstart, const unsigned int& icount, const unsigned int& vcount, unsigned int const& instancesNum)
- : drawCmd(0), _istart(istart), _vstart(vstart), _icount(icount), _vcount(vcount), _index_buffer(indexBuffer), _instNum(instancesNum) {
+ : drawCmd(0), _istart(istart), _vstart(vstart), _icount(icount), _vcount(vcount), _instNum(instancesNum), _index_buffer(indexBuffer) {
      if(mr::gl::IsIndirectDrawSupported()) _MakeDrawCmd();
 }
 

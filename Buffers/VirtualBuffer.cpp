@@ -17,7 +17,6 @@ void VirtualGPUBuffer::Destroy() {
     _size = 0;
     _realBuffer_offset = 0;
     _realBuffer = nullptr;
-    OnDestroy(dynamic_cast<mr::IGPUBuffer*>(this));
 }
 
 VirtualGPUBuffer::VirtualGPUBuffer(IGPUBuffer* realBuffer, size_t const& offset, size_t const& size) : _realBuffer(realBuffer), _realBuffer_offset(offset), _size(size), _eventHandle(0) {
