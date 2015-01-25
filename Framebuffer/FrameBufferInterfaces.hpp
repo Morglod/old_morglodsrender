@@ -6,6 +6,7 @@
 namespace mr {
 
 class ITexture;
+class IRenderBuffer;
 
 class IFrameBuffer : public IGPUObjectHandle {
 public:
@@ -43,8 +44,10 @@ public:
 
     virtual CompletionStatus CheckCompletion(BindTarget const& target) = 0;
 
-    virtual bool AttachTextureMipmap(ITexture* tex, Attachment const& attachment, unsigned int const& mipmapLevel) = 0;
-    virtual bool AttachTextureMipmapToColor(ITexture* tex, unsigned int const& colorSlot, unsigned int const& mipmapLevel) = 0;
+    virtual bool SetTextureMipmap(ITexture* tex, Attachment const& attachment, unsigned int const& mipmapLevel) = 0;
+    virtual bool SetTextureMipmapToColor(ITexture* tex, unsigned int const& colorSlot, unsigned int const& mipmapLevel) = 0;
+    virtual bool SetRenderBuffer(IRenderBuffer* renderBuffer, Attachment const& attachment) = 0;
+    virtual bool SetRenderBufferToColor(IRenderBuffer* renderBuffer, unsigned int const& colorSlot) = 0;
 
     virtual ~IFrameBuffer() {}
 };

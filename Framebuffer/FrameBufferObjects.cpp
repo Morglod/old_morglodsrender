@@ -2,7 +2,7 @@
 #include "FrameBufferConfig.hpp"
 #include "../MachineInfo.hpp"
 #include "../Utils/Containers.hpp"
-#include "../Textures/TextureInterfaces.hpp"
+#include "../Renderbuffer/RenderBufferInterfaces.hpp"
 
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -89,29 +89,67 @@ IFrameBuffer::CompletionStatus FrameBuffer::CheckCompletion(BindTarget const& ta
     }
 }
 
-bool FrameBuffer::AttachTextureMipmap(class ITexture* tex, Attachment const& attachment, unsigned int const& mipmapLevel) {
-    Assert(tex == nullptr)
+bool FrameBuffer::SetTextureMipmap(ITexture* tex, Attachment const& attachment, unsigned int const& mipmapLevel) {
+    unsigned int texHandle = (tex != nullptr) ? tex->GetGPUHandle() : 0;
 
     if(mr::gl::IsDirectStateAccessSupported()) {
-        glNamedFramebufferTexture(GetGPUHandle(), attachment, tex->GetGPUHandle(), mipmapLevel);
+        glNamedFramebufferTexture(GetGPUHandle(), attachment, texHandle, mipmapLevel);
     } else {
         IFrameBuffer* binded = nullptr;
         if(_bindedTarget == NotBinded) binded = mr::FrameBuffer::ReBind(IFrameBuffer::DrawReadFramebuffer);
-        glFramebufferTexture(IFrameBuffer::DrawReadFramebuffer, attachment, tex->GetGPUHandle(), mipmapLevel);
+        glFramebufferTexture(IFrameBuffer::DrawReadFramebuffer, attachment, texHandle, mipmapLevel);
         if(binded) binded->Bind(IFrameBuffer::DrawReadFramebuffer);
     }
     return true;
 }
 
-bool FrameBuffer::AttachTextureMipmapToColor(class ITexture* tex, unsigned int const& colorSlot, unsigned int const& mipmapLevel) {
-    Assert(tex == nullptr)
+bool FrameBuffer::SetTextureMipmapToColor(ITexture* tex, unsigned int const& colorSlot, unsigned int const& mipmapLevel) {
+    unsigned int texHandle = (tex != nullptr) ? tex->GetGPUHandle() : 0;
 
     if(mr::gl::IsDirectStateAccessSupported()) {
-        glNamedFramebufferTexture(GetGPUHandle(), GL_COLOR_ATTACHMENT0 + colorSlot, tex->GetGPUHandle(), mipmapLevel);
+        glNamedFramebufferTexture(GetGPUHandle(), GL_COLOR_ATTACHMENT0 + colorSlot, texHandle, mipmapLevel);
     } else {
         IFrameBuffer* binded = nullptr;
         if(_bindedTarget == NotBinded) binded = mr::FrameBuffer::ReBind(IFrameBuffer::DrawReadFramebuffer);
-        glFramebufferTexture(IFrameBuffer::DrawReadFramebuffer, GL_COLOR_ATTACHMENT0 + colorSlot, tex->GetGPUHandle(), mipmapLevel);
+        glFramebufferTexture(IFrameBuffer::DrawReadFramebuffer, GL_COLOR_ATTACHMENT0 + colorSlot, texHandle, mipmapLevel);
+        if(binded) binded->Bind(IFrameBuffer::DrawReadFramebuffer);
+    }
+    return true;
+}
+
+bool FrameBuffer::SetRenderBuffer(IRenderBuffer* renderBuffer, Attachment const& attachment) {
+#warning May be bind render buffer here?
+
+    unsigned int renderBufferHandle = (renderBuffer != nullptr) ? renderBuffer->GetGPUHandle() : 0;
+
+    if(mr::gl::IsOpenGL45()) {
+        glNamedFramebufferRenderbuffer(GetGPUHandle(), attachment, GL_RENDERBUFFER, renderBufferHandle);
+    }
+    else if(mr::gl::IsDirectStateAccessSupported()) {
+        glNamedFramebufferRenderbufferEXT(GetGPUHandle(), attachment, GL_RENDERBUFFER, renderBufferHandle);
+    } else {
+        IFrameBuffer* binded = nullptr;
+        if(_bindedTarget == NotBinded) binded = mr::FrameBuffer::ReBind(IFrameBuffer::DrawReadFramebuffer);
+        glNamedFramebufferRenderbuffer(IFrameBuffer::DrawReadFramebuffer, attachment, GL_RENDERBUFFER, renderBufferHandle);
+        if(binded) binded->Bind(IFrameBuffer::DrawReadFramebuffer);
+    }
+    return true;
+}
+
+bool FrameBuffer::SetRenderBufferToColor(IRenderBuffer* renderBuffer, unsigned int const& colorSlot) {
+#warning May be bind render buffer here?
+
+    unsigned int renderBufferHandle = (renderBuffer != nullptr) ? renderBuffer->GetGPUHandle() : 0;
+
+    if(mr::gl::IsOpenGL45()) {
+        glNamedFramebufferRenderbuffer(GetGPUHandle(), GL_COLOR_ATTACHMENT0 + colorSlot, GL_RENDERBUFFER, renderBufferHandle);
+    }
+    else if(mr::gl::IsDirectStateAccessSupported()) {
+        glNamedFramebufferRenderbufferEXT(GetGPUHandle(), GL_COLOR_ATTACHMENT0 + colorSlot, GL_RENDERBUFFER, renderBufferHandle);
+    } else {
+        IFrameBuffer* binded = nullptr;
+        if(_bindedTarget == NotBinded) binded = mr::FrameBuffer::ReBind(IFrameBuffer::DrawReadFramebuffer);
+        glNamedFramebufferRenderbuffer(IFrameBuffer::DrawReadFramebuffer, GL_COLOR_ATTACHMENT0 + colorSlot, GL_RENDERBUFFER, renderBufferHandle);
         if(binded) binded->Bind(IFrameBuffer::DrawReadFramebuffer);
     }
     return true;
