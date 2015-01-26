@@ -74,11 +74,6 @@
 		<Unit filename="Core.hpp" />
 		<Unit filename="CoreObjects.cpp" />
 		<Unit filename="CoreObjects.hpp" />
-		<Unit filename="Framebuffer/FrameBufferConfig.hpp" />
-		<Unit filename="Framebuffer/FrameBufferInterfaces.cpp" />
-		<Unit filename="Framebuffer/FrameBufferInterfaces.hpp" />
-		<Unit filename="Framebuffer/FrameBufferObjects.cpp" />
-		<Unit filename="Framebuffer/FrameBufferObjects.hpp" />
 		<Unit filename="Geometry/GeometryBuffer.cpp" />
 		<Unit filename="Geometry/GeometryBuffer.hpp" />
 		<Unit filename="Geometry/GeometryBuilder.cpp" />
@@ -113,6 +108,14 @@
 		<Unit filename="Postprocessing/PostprocessStep.hpp" />
 		<Unit filename="Query.cpp" />
 		<Unit filename="Query.hpp" />
+		<Unit filename="RTT/FrameBufferConfig.hpp" />
+		<Unit filename="RTT/FrameBufferInterfaces.cpp" />
+		<Unit filename="RTT/FrameBufferInterfaces.hpp" />
+		<Unit filename="RTT/FrameBufferObjects.cpp" />
+		<Unit filename="RTT/FrameBufferObjects.hpp" />
+		<Unit filename="RTT/RenderBufferInterfaces.hpp" />
+		<Unit filename="RTT/RenderBufferObject.cpp" />
+		<Unit filename="RTT/RenderBufferObject.hpp" />
 		<Unit filename="Resources/ResourceInterfaces.hpp" />
 		<Unit filename="Resources/ResourceManager.hpp" />
 		<Unit filename="Resources/ResourceType.cpp" />

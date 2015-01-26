@@ -2,7 +2,7 @@
 #include "FrameBufferConfig.hpp"
 #include "../MachineInfo.hpp"
 #include "../Utils/Containers.hpp"
-#include "../Renderbuffer/RenderBufferInterfaces.hpp"
+#include "RenderBufferInterfaces.hpp"
 
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -130,8 +130,10 @@ bool FrameBuffer::SetRenderBuffer(IRenderBuffer* renderBuffer, Attachment const&
     } else {
         IFrameBuffer* binded = nullptr;
         if(_bindedTarget == NotBinded) binded = mr::FrameBuffer::ReBind(IFrameBuffer::DrawReadFramebuffer);
-        glNamedFramebufferRenderbuffer(IFrameBuffer::DrawReadFramebuffer, attachment, GL_RENDERBUFFER, renderBufferHandle);
+        auto bindedRB = renderBuffer->ReBind();
+        glFramebufferRenderbuffer(IFrameBuffer::DrawReadFramebuffer, attachment, GL_RENDERBUFFER, renderBufferHandle);
         if(binded) binded->Bind(IFrameBuffer::DrawReadFramebuffer);
+        if(bindedRB) bindedRB->Bind();
     }
     return true;
 }
@@ -149,8 +151,10 @@ bool FrameBuffer::SetRenderBufferToColor(IRenderBuffer* renderBuffer, unsigned i
     } else {
         IFrameBuffer* binded = nullptr;
         if(_bindedTarget == NotBinded) binded = mr::FrameBuffer::ReBind(IFrameBuffer::DrawReadFramebuffer);
-        glNamedFramebufferRenderbuffer(IFrameBuffer::DrawReadFramebuffer, GL_COLOR_ATTACHMENT0 + colorSlot, GL_RENDERBUFFER, renderBufferHandle);
+        auto bindedRB = renderBuffer->ReBind();
+        glFramebufferRenderbuffer(IFrameBuffer::DrawReadFramebuffer, GL_COLOR_ATTACHMENT0 + colorSlot, GL_RENDERBUFFER, renderBufferHandle);
         if(binded) binded->Bind(IFrameBuffer::DrawReadFramebuffer);
+        if(bindedRB) bindedRB->Bind();
     }
     return true;
 }
