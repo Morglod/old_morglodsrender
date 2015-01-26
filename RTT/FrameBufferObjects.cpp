@@ -165,7 +165,75 @@ void FrameBuffer::Destroy() {
     OnGPUHandleChanged(dynamic_cast<mr::IGPUObjectHandle*>(this), 0);
 }
 
+bool FrameBuffer::DrawToTarget(TargetBuffer const& targetBuffer) {
+    //TODO check for errors
+    if(mr::gl::IsDirectStateAccessSupported()) {
+        glNamedFramebufferDrawBuffer(_handle, targetBuffer);
+    } else {
+        IFrameBuffer* binded = nullptr;
+        if(_bindedTarget == NotBinded) binded = mr::FrameBuffer::ReBind(IFrameBuffer::DrawReadFramebuffer);
+        glDrawBuffer(targetBuffer);
+        if(binded) binded->Bind(IFrameBuffer::DrawReadFramebuffer);
+    }
+    return true;
+}
+
+bool FrameBuffer::DrawToAttachment(Attachment const& attachment) {
+    //TODO check for errors
+    if(mr::gl::IsDirectStateAccessSupported()) {
+        glNamedFramebufferDrawBuffer(_handle, attachment);
+    } else {
+        IFrameBuffer* binded = nullptr;
+        if(_bindedTarget == NotBinded) binded = mr::FrameBuffer::ReBind(IFrameBuffer::DrawReadFramebuffer);
+        glDrawBuffer(attachment);
+        if(binded) binded->Bind(IFrameBuffer::DrawReadFramebuffer);
+    }
+    return true;
+}
+
+bool FrameBuffer::DrawToColor(unsigned int const& colorSlot) {
+    //TODO check for errors
+    if(mr::gl::IsDirectStateAccessSupported()) {
+        glNamedFramebufferDrawBuffer(_handle, GL_COLOR_ATTACHMENT0 + colorSlot);
+    } else {
+        IFrameBuffer* binded = nullptr;
+        if(_bindedTarget == NotBinded) binded = mr::FrameBuffer::ReBind(IFrameBuffer::DrawReadFramebuffer);
+        glDrawBuffer(GL_COLOR_ATTACHMENT0 + colorSlot);
+        if(binded) binded->Bind(IFrameBuffer::DrawReadFramebuffer);
+    }
+    return true;
+}
+
+bool FrameBuffer::DrawTo(mu::ArrayHandle<TargetBuffer> const& targetBuffers,
+                        mu::ArrayHandle<Attachment> const& attachments,
+                        mu::ArrayHandle<unsigned int> const& colorSlots)
+{
+    //TODO check for errors
+    mu::ArrayHandle<unsigned int> targets = mu::Combine(mu::CombineCast<unsigned int, TargetBuffer, Attachment>(targetBuffers, attachments, true), colorSlots, true);
+    if(mr::gl::IsDirectStateAccessSupported()) {
+        glNamedFramebufferDrawBuffers(_handle, targets.GetNum(), targets.GetArray());
+    } else {
+        IFrameBuffer* binded = nullptr;
+        if(_bindedTarget == NotBinded) binded = mr::FrameBuffer::ReBind(IFrameBuffer::DrawReadFramebuffer);
+        glDrawBuffers(targets.GetNum(), targets.GetArray());
+        if(binded) binded->Bind(IFrameBuffer::DrawReadFramebuffer);
+    }
+    return true;
+}
+
 FrameBuffer::~FrameBuffer() {}
+
+bool DrawTo(IFrameBuffer::TargetBuffer const& targetBuffer) {
+    //TODO check for errors
+    auto was1 = FrameBufferGetBinded(IFrameBuffer::BindTarget::DrawFramebuffer);
+    auto was2 = FrameBufferGetBinded(IFrameBuffer::BindTarget::DrawReadFramebuffer);
+    if(was1) FrameBufferUnBind(IFrameBuffer::BindTarget::DrawFramebuffer);
+    if(was2) FrameBufferUnBind(IFrameBuffer::BindTarget::DrawReadFramebuffer);
+    glDrawBuffer(targetBuffer);
+    if(was1) was1->Bind(IFrameBuffer::BindTarget::DrawFramebuffer);
+    if(was2) was2->Bind(IFrameBuffer::BindTarget::DrawReadFramebuffer);
+    return true;
+}
 
 IFrameBuffer* FrameBufferGetBinded(IFrameBuffer::BindTarget const& target) {
     return _MR_FB_BIND_TARGETS_.GetRaw()[(size_t)target];

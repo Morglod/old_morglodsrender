@@ -20,10 +20,20 @@ public:
     bool SetRenderBuffer(class IRenderBuffer* renderBuffer, Attachment const& attachment) override;
     bool SetRenderBufferToColor(class IRenderBuffer* renderBuffer, unsigned int const& colorSlot) override;
 
+    bool DrawToTarget(TargetBuffer const& targetBuffer) override;
+    bool DrawToAttachment(Attachment const& attachment) override;
+    bool DrawToColor(unsigned int const& colorSlot) override;
+
+    bool DrawTo(mu::ArrayHandle<TargetBuffer> const& targetBuffers,
+                mu::ArrayHandle<Attachment> const& attachments,
+                mu::ArrayHandle<unsigned int> const& colorSlots) override;
+
     virtual ~FrameBuffer();
 protected:
     BindTarget _bindedTarget;
 };
+
+bool DrawTo(IFrameBuffer::TargetBuffer const& targetBuffer);
 
 IFrameBuffer* FrameBufferGetBinded(IFrameBuffer::BindTarget const& target);
 void FrameBufferUnBind(IFrameBuffer::BindTarget const& target);
