@@ -9,11 +9,7 @@ namespace mr {
 
 class Viewport : public IViewport {
 public:
-    //Usable
-
     bool Use() override;
-
-    //IViewport
 
     inline glm::ivec4 GetRect() { return _rect; }
     void SetRect(const glm::ivec4& r);

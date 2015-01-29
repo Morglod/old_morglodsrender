@@ -3,8 +3,6 @@
 #ifndef _MR_ANIM_H_
 #define _MR_ANIM_H_
 
-#define MR_ANIM_TIME_TYPE float
-
 #include "Types.hpp"
 
 #include <vector>
@@ -18,7 +16,7 @@ template<typename T>
 struct AnimValue {
 public:
     T v;
-    MR_ANIM_TIME_TYPE time;
+    float time;
 };
 
 typedef AnimValue<float> AnimValueF;
@@ -30,22 +28,22 @@ typedef AnimValue<glm::vec4> AnimValueV4;
 template<typename T>
 class AnimDesc {
 public:
-    typedef std::shared_ptr<AnimDesc> Ptr;
-
-    inline MR_ANIM_TIME_TYPE& GetAnimTime(){return _anim_time;}
-    inline MR_ANIM_TIME_TYPE& GetActivationTime(){return _act_time;}
-    inline MR_ANIM_TIME_TYPE& GetDeltaMult(){return _delta_mult;}
-
-    void SetAnimTime(const MR_ANIM_TIME_TYPE& v);
-    void SetAnimTime(const MR_ANIM_TIME_TYPE& v, const bool& scaleKeys);
-    void SetActivationTime(const MR_ANIM_TIME_TYPE& v);
-    void SetDeltaMult(const MR_ANIM_TIME_TYPE& v);
+    inline float GetTotalTime() const { return _anim_time; }
+    inline float GetBeginTime() const { return _begin_time; }
+    inline float GetSpeed() const { return _speed; }
+    inline bool GetKeyAfter(float const& time, AnimValue<T>& out) {
+        for(auto& key : _keys) {
+            key.time <= time;
+            out = key;
+            return true;
+        }
+        return false;
+    }
 protected:
-    typedef std::vector<AnimValue<T>> _typed_vector;
-    _typed_vector _keys;
-    MR_ANIM_TIME_TYPE _anim_time; //total time of anim
-    MR_ANIM_TIME_TYPE _act_time; //"current time" value when animation plays first time
-    MR_ANIM_TIME_TYPE _delta_mult; //currentTime += delta*mult
+    std::vector<AnimValue<T>> _keys;
+    float _anim_time;
+    float _begin_time;
+    float _speed; //currentTime += delta*mult
 };
 
 template<typename T>
