@@ -15,8 +15,8 @@ ManualGeometry::VertexDataAttribute::VertexDataAttribute(unsigned int const& t, 
 }
 
 ManualGeometry::IndexType ManualGeometry::AddVertexData(unsigned int const& attribute, glm::vec4 const& data, unsigned int const& elementsNum) {
-    Assert(elementsNum == 0)
-    Assert(elementsNum > 4)
+    Assert(elementsNum != 0);
+    Assert(elementsNum <= 4);
 
     if(_vertexData.size() == 0) {
         _firstVertexAttribute = attribute;

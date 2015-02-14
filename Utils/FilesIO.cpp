@@ -104,8 +104,8 @@ bool FileUtils::SplitPath(const std::string& fullPathToFile, std::string& path, 
 }
 
 bool FileIO::WriteBytes(std::string const& path, TStaticArray<unsigned char> bytes) {
-    Assert(path == "")
-    Assert(bytes.GetNum() == 0)
+    Assert((!path.empty()) && (path != ""));
+    Assert(bytes.GetNum() != 0);
 
     std::ofstream file(path, std::ios::out | std::ios::binary);
     if(file.bad() || !file.is_open()) return false;
@@ -114,7 +114,7 @@ bool FileIO::WriteBytes(std::string const& path, TStaticArray<unsigned char> byt
 }
 
 bool FileIO::ReadBytes(std::string const& path, TStaticArray<unsigned char>& out_bytes) {
-    Assert(path == "")
+    Assert((!path.empty()) && (path != ""));
 
     size_t sz = GetFileSize(path);
     if(sz == 0) return false;

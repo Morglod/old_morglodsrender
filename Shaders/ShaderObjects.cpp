@@ -92,7 +92,7 @@ Shader* Shader::CreateAndCompile(const IShader::Type& type, const std::string& c
 
 bool ShaderProgram::Link(mu::ArrayHandle<IShader*> shaders) {
     _linked = false;
-    Assert(shaders.GetNum() == 0)
+    Assert(shaders.GetNum() != 0);
 
     if(_handle == 0) {
 #ifdef MR_CHECK_LARGE_GL_ERRORS

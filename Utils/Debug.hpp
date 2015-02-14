@@ -33,18 +33,18 @@
 #define _MR_ASSERTION_MSG(x) _MR_ASSERTION_FUNC("Assertion failed (" x ")")
 
 #define Assert(_what ) \
-    if(_what) { \
+    if(!(_what)) { \
         _MR_ASSERTION_MSG( #_what ) \
     }
 
 #define AssertAndExec(_what, _exec) \
-    if(_what) { \
+    if(!(_what)) { \
         _MR_ASSERTION_MSG( #_what ) \
         _exec; \
     }
 
 #define AssertExec(_what, _exec) \
-    if(_what) { \
+    if(!(_what)) { \
         _exec; \
     }
 

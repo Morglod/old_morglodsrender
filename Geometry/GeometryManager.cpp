@@ -10,13 +10,12 @@ namespace mr {
 IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* vertexData, const size_t& vertexNum,
                              IIndexFormat* indexFormat, void* indexData, const size_t& indexNum,
                              const IGPUBuffer::Usage& usage, const IGeometryBuffer::DrawMode& drawMode) {
-    Assert(!vertexFormat)
-    Assert(!vertexData)
-    Assert(vertexNum == 0)
+    Assert(vertexFormat != nullptr);
+    Assert(vertexData != nullptr);
+    Assert(vertexNum != 0);
 
     if(indexFormat){
-        Assert(!indexData)
-        Assert(indexNum == 0)
+        Assert(indexNum != 0);
     }
 
     const size_t vertexDataSize = vertexNum * vertexFormat->GetSize();
@@ -25,13 +24,33 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
     if(_buffer_per_geom) {
         GPUBuffer* vertexBuffer = new mr::GPUBuffer();
         vertexBuffer->Allocate(usage, vertexDataSize);
-        vertexBuffer->Write(vertexData, 0, 0, vertexDataSize,  nullptr, nullptr);
+
+        //Write thro mapping or by default
+        auto vmapped = vertexBuffer->Map(0, vertexDataSize, IGPUBuffer::IMappedRange::Write | IGPUBuffer::IMappedRange::Invalidate);
+        if(vmapped == nullptr) {
+            vertexBuffer->Write(vertexData, 0, 0, vertexDataSize,  nullptr, nullptr);
+        }
+        else {
+            memcpy(vmapped->Get(), vertexData, vertexDataSize);
+            //vmapped->Flush();
+            vmapped->UnMap();
+        }
 
         GPUBuffer* indexBuffer = nullptr;
         if(indexFormat) {
             indexBuffer = new mr::GPUBuffer();
             indexBuffer->Allocate(usage, indexDataSize);
-            indexBuffer->Write(indexData, 0, 0, indexDataSize, nullptr, nullptr);
+
+            //Write thro mapping or by default
+            auto imapped = indexBuffer->Map(0, indexDataSize, IGPUBuffer::IMappedRange::Write | IGPUBuffer::IMappedRange::Invalidate);
+            if(imapped == nullptr) {
+                indexBuffer->Write(indexData, 0, 0, indexDataSize, nullptr, nullptr);
+            }
+            else {
+                memcpy(imapped->Get(), indexData, indexDataSize);
+                //imapped->Flush();
+                imapped->UnMap();
+            }
         }
 
         mr::GeometryBuffer* geomBuffer = new mr::GeometryBuffer();
@@ -60,9 +79,35 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
     FormatBuffer* fbuf = _RequestFormatBuffer(vertexFormat, vertexDataSize, indexFormat, indexDataSize, usage);
     VirtualGPUBuffer* virtualBuffer = fbuf->manager->Take(vertexDataSize+indexDataSize);
     mr::IGPUBuffer::BufferedDataInfo bufferedVertexDataInfo, bufferedIndexDataInfo;
-    virtualBuffer->Write(vertexData, 0, 0, vertexDataSize, nullptr, &bufferedVertexDataInfo);
 
-    if(indexDataSize) virtualBuffer->Write(indexData, 0, vertexDataSize, indexDataSize, nullptr, &bufferedIndexDataInfo);
+    //Write thro mapping or by default
+    auto vmapped = virtualBuffer->Map(0, vertexDataSize, IGPUBuffer::IMappedRange::Write | IGPUBuffer::IMappedRange::Invalidate);
+    if(vmapped == nullptr) {
+        virtualBuffer->Write(vertexData, 0, 0, vertexDataSize, nullptr, &bufferedVertexDataInfo);
+    } else {
+        bufferedVertexDataInfo.buffer = virtualBuffer->GetRealBuffer();
+        bufferedVertexDataInfo.size = vertexDataSize;
+        bufferedVertexDataInfo.offset = virtualBuffer->GetRealOffset();
+        memcpy(vmapped->Get(), vertexData, vertexDataSize);
+        //vmapped->Flush();
+        vmapped->UnMap();
+    }
+
+    if(indexDataSize) {
+        //Write thro mapping or by default
+        auto imapped = virtualBuffer->Map(vertexDataSize, indexDataSize, IGPUBuffer::IMappedRange::Write | IGPUBuffer::IMappedRange::Invalidate);
+        if(imapped == nullptr) {
+            virtualBuffer->Write(indexData, 0, vertexDataSize, indexDataSize, nullptr, &bufferedIndexDataInfo);
+        }
+        else {
+            bufferedIndexDataInfo.buffer = virtualBuffer->GetRealBuffer();
+            bufferedIndexDataInfo.size = indexDataSize;
+            bufferedIndexDataInfo.offset = virtualBuffer->GetRealOffset() + vertexDataSize;
+            memcpy(imapped->Get(), indexData, indexDataSize);
+            //imapped->Flush();
+            imapped->UnMap();
+        }
+    }
 
     mr::GeometryBuffer* geomBuffer = new mr::GeometryBuffer();
     if(!geomBuffer->Create  (

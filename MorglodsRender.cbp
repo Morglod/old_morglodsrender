@@ -137,6 +137,8 @@
 		<Unit filename="Shaders/ShaderCompiler.cpp" />
 		<Unit filename="Shaders/ShaderCompiler.hpp" />
 		<Unit filename="Shaders/ShaderConfig.hpp" />
+		<Unit filename="Shaders/ShaderFeatureSet.cpp" />
+		<Unit filename="Shaders/ShaderFeatureSet.hpp" />
 		<Unit filename="Shaders/ShaderInterfaces.cpp" />
 		<Unit filename="Shaders/ShaderInterfaces.hpp" />
 		<Unit filename="Shaders/ShaderObjects.cpp" />

@@ -30,7 +30,7 @@ bool GeometryBuffer::Create(IGeometryBuffer::CreationParams const& params) {
 }
 
 bool GeometryBuffer::SetVertexBuffer(IGPUBuffer* buf) {
-    Assert(buf == nullptr)
+    Assert(buf != nullptr);
     _vb = buf;
 
     if(buf != nullptr) {

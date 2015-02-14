@@ -20,9 +20,9 @@ void VirtualGPUBuffer::Destroy() {
 }
 
 VirtualGPUBuffer::VirtualGPUBuffer(IGPUBuffer* realBuffer, size_t const& offset, size_t const& size) : _realBuffer(realBuffer), _realBuffer_offset(offset), _size(size), _eventHandle(0) {
-    Assert(_realBuffer == 0)
-    Assert(size == 0)
-    Assert(offset >= _realBuffer->GetGPUMem())
+    Assert(_realBuffer != nullptr);
+    Assert(size != 0);
+    Assert(offset < _realBuffer->GetGPUMem());
 
     if(_realBuffer->GetGPUMem() == 0) {
         mr::Log::LogString("VirtualGPUBuffer::ctor. RealBuffer not allocated or allocated with some errors.", MR_LOG_LEVEL_WARNING);
@@ -40,9 +40,9 @@ VirtualGPUBuffer::~VirtualGPUBuffer() {
 /** MANAGER **/
 
 VirtualGPUBuffer* VirtualGPUBufferManager::Take(const size_t& size) {
-    Assert(size == 0)
-    Assert(size+_offset > _realBuffer->GetGPUMem())
-    Assert(_realBuffer->GetGPUHandle() == 0)
+    Assert(size != 0);
+    Assert(size+_offset < _realBuffer->GetGPUMem());
+    Assert(_realBuffer->GetGPUHandle() != 0);
 
     VirtualGPUBuffer* buf = new mr::VirtualGPUBuffer(_realBuffer, _offset, size);
     _offset += size;

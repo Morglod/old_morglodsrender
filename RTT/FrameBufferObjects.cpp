@@ -47,9 +47,8 @@ void FrameBuffer::Bind(BindTarget const& target) {
         return;
     }
 
-    Assert(target < 0)
-    Assert((size_t)target >= _MR_FB_BIND_TARGETS_NUM_)
-    Assert(GetGPUHandle() == 0)
+    Assert((size_t)target < _MR_FB_BIND_TARGETS_NUM_);
+    Assert(GetGPUHandle() != 0);
 
     if(_MR_FB_BIND_TARGETS_.GetRaw()[(size_t)target] == dynamic_cast<mr::IFrameBuffer*>(this)) return;
     _MR_FB_BIND_TARGETS_.GetRaw()[(size_t)target] = dynamic_cast<mr::IFrameBuffer*>(this);
@@ -66,8 +65,7 @@ IFrameBuffer* FrameBuffer::ReBind(BindTarget const& target) {
         return 0;
     }
 
-    Assert(target < 0)
-    Assert((size_t)target >= _MR_FB_BIND_TARGETS_NUM_)
+    Assert((size_t)target < _MR_FB_BIND_TARGETS_NUM_);
 
     IFrameBuffer* binded = _MR_FB_BIND_TARGETS_.GetRaw()[(size_t)target];
     Bind(target);

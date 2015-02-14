@@ -21,7 +21,7 @@ bool __mr_TexturesIsInit = false;
 void __mr_TexturesInit() {
     if(__mr_TexturesIsInit) return;
     int units = mr::gl::GetMaxTextureUnits();
-    Assert(units < 4)
+    Assert(units >= 4);
     _MR_TEXTURE_BIND_TARGETS_ = mu::ArrayHandle<mr::ITexture*>(new mr::ITexture*[units], units, true);
     _MR_TEXTURE_BIND_TARGETS_SAMPLERS_ = mu::ArrayHandle<mr::ITextureSettings*>(new mr::ITextureSettings*[units], units, true);
     for(size_t i = 0; i < _MR_TEXTURE_BIND_TARGETS_.GetNum(); ++i){
@@ -44,8 +44,8 @@ namespace mr {
 
 void Texture::Bind(unsigned short const& unit) {
     __MR_REQUEST_TEXTURE_INIT();
-    Assert(GetGPUHandle() == 0)
-    Assert(unit >= _MR_TEXTURE_BIND_TARGETS_.GetNum())
+    Assert(GetGPUHandle() != 0);
+    Assert(unit < _MR_TEXTURE_BIND_TARGETS_.GetNum());
 
     if(_MR_TEXTURE_BIND_TARGETS_.GetArray()[unit] == dynamic_cast<mr::ITexture*>(this)) return;
 
@@ -119,9 +119,9 @@ void Texture::Create(ITexture::Types const& type) {
 void Texture::GetData(const int& mipMapLevel,
                 const ITexture::DataFormat& dformat, const ITexture::DataType& dtype, unsigned int const& dstBufferSize,
                 void* dstBuffer) {
-    Assert(_handle == 0)
-    Assert(dstBufferSize == 0)
-    Assert(!dstBuffer)
+    Assert(GetGPUHandle() != 0);
+    Assert(dstBufferSize != 0);
+    Assert(dstBuffer != nullptr);
 
     if(mr::gl::IsOpenGL45()) {
         glGetTextureImage(_handle, mipMapLevel, (int)dformat, (int)dtype, dstBufferSize, dstBuffer);
@@ -142,9 +142,9 @@ void mr::Texture::SetData(const int& mipMapLevel,
                          const ITexture::DataFormat& dformat, const ITexture::DataType& dtype, const ITexture::StorageDataFormat& sdFormat,
                          const int& width, const int& height, const int& depth,
                          void* data) {
-    Assert(_handle == 0)
-    Assert(width <= 0)
-    Assert(!data)
+    Assert(GetGPUHandle() != 0);
+    Assert(width > 0);
+    Assert(data != nullptr);
 
     if(mr::gl::IsDirectStateAccessSupported()) {
         glPushClientAttribDefaultEXT(GL_CLIENT_PIXEL_STORE_BIT);
@@ -188,10 +188,10 @@ void Texture::UpdateData(const int& mipMapLevel,
                             const int& width, const int& height, const int& depth,
                             const ITexture::DataFormat& dformat, const ITexture::DataType& dtype,
                             void* data) {
-    Assert(_handle == 0)
-    Assert(width <= 0)
-    Assert(xOffset <= 0)
-    Assert(!data)
+    Assert(GetGPUHandle() == 0);
+    Assert(width > 0);
+    Assert(xOffset > 0);
+    Assert(data != nullptr);
 
     if(mr::gl::IsOpenGL45()) {
         switch(_texture_type) {
@@ -380,13 +380,13 @@ mr::Texture::~Texture() {
 
 ITexture* TextureGetBinded(const unsigned short& unit) {
     __MR_REQUEST_TEXTURE_INIT();
-    Assert(unit >= _MR_TEXTURE_BIND_TARGETS_.GetNum())
+    Assert(unit < _MR_TEXTURE_BIND_TARGETS_.GetNum());
     return _MR_TEXTURE_BIND_TARGETS_.GetArray()[unit];
 }
 
 void TextureUnBind(const unsigned short& unit, const bool& fast) {
     __MR_REQUEST_TEXTURE_INIT();
-    Assert(unit >= _MR_TEXTURE_BIND_TARGETS_.GetNum())
+    Assert(unit < _MR_TEXTURE_BIND_TARGETS_.GetNum());
     if(_MR_TEXTURE_BIND_TARGETS_.GetArray()[unit] == nullptr) return;
 
     if(!fast) {

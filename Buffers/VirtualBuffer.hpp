@@ -25,6 +25,10 @@ public:
     inline bool Read(void* dstData, const size_t& dstOffset, const size_t& srcOffset, const size_t& size) override { return _realBuffer->Read(dstData, dstOffset, srcOffset+GetRealOffset(), size); }
     inline Usage GetUsage() override { return _realBuffer->GetUsage(); }
 
+    inline IMappedRangePtr Map(size_t const& offset, size_t const& length, unsigned int const& flags) override { return _realBuffer->Map(offset + _realBuffer_offset, length, flags); }
+    inline IMappedRangeWeakPtr GetMapped() { return _realBuffer->GetMapped(); }
+    inline bool IsMapped() { return _realBuffer->IsMapped(); }
+
     /* GPUObjectHandle */
     inline unsigned int GetGPUHandle() override { return (_realBuffer) ? _realBuffer->GetGPUHandle() : 0; }
     inline size_t GetGPUMem() override { return _size; }
