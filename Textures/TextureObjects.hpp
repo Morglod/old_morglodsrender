@@ -67,6 +67,21 @@ protected:
     bool _mipmaps = false;
 };
 
+class TextureList : public ITextureList {
+public:
+    void Bind() override;
+    inline void SetFirstUnit(unsigned short const& unit) override { _firstUnit = unit; }
+    inline unsigned short GetFirstUnit() override { return _firstUnit; }
+    inline ITexture* GetTexture(unsigned short const& index) override { return _textures.GetArray()[index]; }
+    inline mu::ArrayRef<ITexture*> GetTextures() override { return _textures.ToRef(); }
+    void SetTextures(mu::ArrayHandle<ITexture*> tex) override;
+    void SetTexture(ITexture* tex, unsigned short const& index) override;
+protected:
+    unsigned short _firstUnit;
+    mu::ArrayHandle<ITexture*> _textures;
+    mu::ArrayHandle<unsigned int> _gpuHandles; // [_textures.GetNum()*2]{ texutre handles, sampler handles }
+};
+
 ITexture* TextureGetBinded(const unsigned short& unit);
 void TextureUnBind(const unsigned short& unit, const bool& fast);
 unsigned short TextureFreeUnit();

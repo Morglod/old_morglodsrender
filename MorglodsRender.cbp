@@ -63,13 +63,11 @@
 		<Unit filename="Buffers/BuffersInterfaces.hpp" />
 		<Unit filename="Buffers/VirtualBuffer.cpp" />
 		<Unit filename="Buffers/VirtualBuffer.hpp" />
+		<Unit filename="BuildConfig.hpp" />
 		<Unit filename="Collisions/CollisionBoxes.cpp" />
 		<Unit filename="Collisions/CollisionBoxes.hpp" />
 		<Unit filename="Collisions/CollisionInterfaces.hpp" />
 		<Unit filename="Config.hpp" />
-		<Unit filename="ContextGLFW.hpp" />
-		<Unit filename="ContextManager.cpp" />
-		<Unit filename="ContextManager.hpp" />
 		<Unit filename="Core.cpp" />
 		<Unit filename="Core.hpp" />
 		<Unit filename="CoreObjects.cpp" />
@@ -137,8 +135,6 @@
 		<Unit filename="Shaders/ShaderCompiler.cpp" />
 		<Unit filename="Shaders/ShaderCompiler.hpp" />
 		<Unit filename="Shaders/ShaderConfig.hpp" />
-		<Unit filename="Shaders/ShaderFeatureSet.cpp" />
-		<Unit filename="Shaders/ShaderFeatureSet.hpp" />
 		<Unit filename="Shaders/ShaderInterfaces.cpp" />
 		<Unit filename="Shaders/ShaderInterfaces.hpp" />
 		<Unit filename="Shaders/ShaderObjects.cpp" />

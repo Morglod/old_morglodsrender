@@ -267,6 +267,20 @@ public:
     virtual ~ITexture() {}
 };
 
+class ITextureList {
+public:
+    virtual void Bind() = 0;
+    virtual void SetFirstUnit(unsigned short const& unit) = 0;
+    virtual unsigned short GetFirstUnit() = 0;
+    virtual ITexture* GetTexture(unsigned short const& index) = 0;
+    virtual mu::ArrayRef<ITexture*> GetTextures() = 0;
+    virtual void SetTextures(mu::ArrayHandle<ITexture*> tex) = 0;
+    virtual void SetTexture(ITexture* tex, unsigned short const& index) = 0; //index inside TexturesSize bounds
+};
+
+typedef std::shared_ptr<ITextureList> TextureListPtr;
+typedef std::weak_ptr<ITextureList> TextureListWeakPtr;
+
 }
 
 #endif // _MR_TEXTURE_INTERFACES_H_

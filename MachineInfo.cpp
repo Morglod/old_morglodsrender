@@ -1,6 +1,5 @@
 #include "MachineInfo.hpp"
 #include "Utils/Log.hpp"
-#include "ContextManager.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
@@ -29,12 +28,6 @@
 #define WGL_GPU_NUM_SIMD_AMD               0x21A6
 #define WGL_GPU_NUM_RB_AMD                 0x21A7
 #define WGL_GPU_NUM_SPI_AMD                0x21A8
-
-typedef unsigned int (*PROC_wglGetGPUIDsAMD)(unsigned int maxCount, unsigned int * ids);
-typedef int (*PROC_wglGetGPUInfoAMD)(unsigned int id, int property, GLenum dataType, unsigned int size, void * data);
-
-PROC_wglGetGPUIDsAMD wglGetGPUIDsAMD = 0;
-PROC_wglGetGPUInfoAMD wglGetGPUInfoAMD = 0;
 
 namespace mr {
 namespace machine {

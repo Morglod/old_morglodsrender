@@ -378,6 +378,47 @@ mr::Texture::~Texture() {
     _MR_REGISTERED_TEXTURES_.Erase(dynamic_cast<ITexture*>(this));
 }
 
+void mr::TextureList::Bind() {
+    size_t num = _textures.GetNum();
+    if(GLEW_ARB_multi_bind) {
+        glBindTextures(_firstUnit, num, _gpuHandles.GetArray());
+        glBindSamplers(_firstUnit, num, &(_gpuHandles.GetArray()[num]));
+    } else {
+        for(size_t i = 0; i < num; ++i) {
+            _textures.GetArray()[i]->Bind(i + _firstUnit);
+        }
+    }
+}
+
+void mr::TextureList::SetTexture(ITexture* tex, unsigned short const& index) {
+    size_t num = _textures.GetNum();
+    Assert(index < num)
+    _textures.GetArray()[index] = tex;
+    if(tex == nullptr) {
+        _gpuHandles.GetArray()[index] = _gpuHandles.GetArray()[index + num] = 0;
+    }
+    else {
+        _gpuHandles.GetArray()[index] = tex->GetGPUHandle();
+        _gpuHandles.GetArray()[index + num] = (tex->GetSettings() != nullptr) ? tex->GetSettings()->GetGPUHandle() : 0;
+    }
+}
+
+void mr::TextureList::SetTextures(mu::ArrayHandle<ITexture*> tex) {
+    _textures = tex;
+    size_t texNum = tex.GetNum();
+    if(texNum != 0) {
+        unsigned int* handles = new unsigned int [texNum * 2];
+        for(size_t i = 0; i < texNum; ++i) {
+            handles[i] = tex.GetArray()[i]->GetGPUHandle();
+            auto texSampler = tex.GetArray()[i]->GetSettings();
+            handles[i + texNum] = (texSampler != nullptr) ? texSampler->GetGPUHandle() : 0;
+        }
+        _gpuHandles = mu::ArrayHandle<unsigned int>(handles, texNum * 2);
+    } else {
+        _gpuHandles = mu::ArrayHandle<unsigned int>();
+    }
+}
+
 ITexture* TextureGetBinded(const unsigned short& unit) {
     __MR_REQUEST_TEXTURE_INIT();
     Assert(unit < _MR_TEXTURE_BIND_TARGETS_.GetNum());

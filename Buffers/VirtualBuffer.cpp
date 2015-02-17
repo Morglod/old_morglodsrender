@@ -41,7 +41,7 @@ VirtualGPUBuffer::~VirtualGPUBuffer() {
 
 VirtualGPUBuffer* VirtualGPUBufferManager::Take(const size_t& size) {
     Assert(size != 0);
-    Assert(size+_offset < _realBuffer->GetGPUMem());
+    Assert(size+_offset <= _realBuffer->GetGPUMem());
     Assert(_realBuffer->GetGPUHandle() != 0);
 
     VirtualGPUBuffer* buf = new mr::VirtualGPUBuffer(_realBuffer, _offset, size);

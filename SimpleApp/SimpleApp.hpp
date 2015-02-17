@@ -3,7 +3,6 @@
 #ifndef _MR_SIMPLE_APP_H_
 #define _MR_SIMPLE_APP_H_
 
-#include "ContextManager.hpp"
 #include "Utils/Exception.hpp"
 #include "ConfigClass.hpp"
 #include "Config.hpp"
@@ -11,10 +10,8 @@
 #include "Scene/PerspectiveCamera.hpp"
 #include "Utils/Log.hpp"
 
-#ifndef __glew_h__
-#   define GLEW_STATIC
-#   include <GL\glew.h>
-#endif
+#define GLEW_STATIC
+#include <GL\glew.h>
 
 #include "ContextGLFW.hpp"
 
@@ -88,10 +85,9 @@ public:
             return false;
         }
 
-        mr::IContextManager::SetCurrent(&contextMgr);
         context->MakeCurrent();
 
-        if(!mr::Init(context)) {
+        if(!mr::Init()) {
             if(ThrowExceptions()) {
                 throw mr::Exception("Failed context initialization SimpleApp::Go. Check log.");
             }

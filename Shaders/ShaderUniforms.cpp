@@ -10,7 +10,7 @@
 namespace mr {
 
 bool ShaderUniform::ResetLocation() {
-    AssertExec(!_owner, mr::Log::LogString("Error in ShaderUniform::ResetLocation : program == nullptr.", MR_LOG_LEVEL_ERROR))
+    AssertExec(_owner != nullptr, mr::Log::LogString("Error in ShaderUniform::ResetLocation : program == nullptr.", MR_LOG_LEVEL_ERROR))
 
 #ifdef MR_CHECK_SMALL_GL_ERRORS
     int gl_er = 0;

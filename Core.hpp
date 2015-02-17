@@ -2,8 +2,7 @@
 
 namespace mr {
 
-bool Init(class IContextManager* contextManager);
-bool Init(class IContext* context);
+bool Init();
 void Shutdown();
 
 }
