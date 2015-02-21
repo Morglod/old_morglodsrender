@@ -141,7 +141,8 @@
 		<Unit filename="Shaders/ShaderObjects.hpp" />
 		<Unit filename="Shaders/ShaderUniforms.cpp" />
 		<Unit filename="Shaders/ShaderUniforms.hpp" />
-		<Unit filename="SimpleApp.hpp" />
+		<Unit filename="SimpleApp/ContextGLFW.hpp" />
+		<Unit filename="SimpleApp/SimpleApp.hpp" />
 		<Unit filename="Textures/TextureInterfaces.cpp" />
 		<Unit filename="Textures/TextureInterfaces.hpp" />
 		<Unit filename="Textures/TextureObjects.cpp" />

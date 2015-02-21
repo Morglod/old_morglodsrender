@@ -14,15 +14,17 @@ public:
     void Create(MaterialDescr const& descr) override;
 
     bool Use() override;
-    bool IsTwoSided() override { return false; }
-    bool IsDebugOnly() override { return false; }
+    inline bool IsTwoSided() override { return _twoSided; }
+    inline bool IsDebugOnly() override { return false; }
+
+    virtual void SetTwoSided(bool s) { _twoSided = s; }
 
     void OnMaterialFlagChanged(MaterialFlag const& newFlag) override;
 
     inline mr::TStaticArray<MaterialFlag> GetAvailableFlags() override { return mr::TStaticArray<MaterialFlag> { MaterialFlag_Default }; }
 
     inline MaterialDescr GetDescription() override { return _descr; }
-    inline MaterialShaderParams GetShaderParams() override { return _shader_descr; }
+    inline MaterialShaderParams GetShaderParams() override { return _shaderParams; }
     inline IShaderProgram* GetShaderProgram() const override { return _program; }
 
     DefaultMaterial();
@@ -30,7 +32,8 @@ public:
 protected:
     IShaderProgram* _program;
     MaterialDescr _descr;
-    MaterialShaderParams _shader_descr;
+    MaterialShaderParams _shaderParams;
+    bool _twoSided;
 };
 
 MaterialFlag MaterialFlagGetUsed();

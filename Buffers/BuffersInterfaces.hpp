@@ -103,6 +103,9 @@ public:
     virtual ~IGPUBuffer() {}
 };
 
+typedef std::shared_ptr<IGPUBuffer> IGPUBufferPtr;
+typedef std::weak_ptr<IGPUBuffer> IGPUBufferWeakPtr;
+
 }
 
 #endif // _MR_BUFFERS_INTERFACES_H_

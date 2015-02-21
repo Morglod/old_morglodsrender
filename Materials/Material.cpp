@@ -17,9 +17,9 @@ namespace mr {
 
 void DefaultMaterial::Create(MaterialDescr const& descr) {
     _descr = descr;
-    //_program = mr::ShaderProgram::Default();
-    _shader_descr.colorAmbient = _descr.colorAmbient;
-    _shader_descr.colorDiffuse = _descr.colorDiffuse;
+    _program = mr::ShaderProgram::Default();
+    _shaderParams.colorAmbient = _descr.colorAmbient;
+    _shaderParams.colorDiffuse = _descr.colorDiffuse;
 
     if((!_descr.texColor.empty()) && _descr.texColor != "") {
         auto tex = mr::Texture::FromFile(_descr.texColor);
@@ -31,7 +31,7 @@ void DefaultMaterial::Create(MaterialDescr const& descr) {
             tex->Bind(0);
         }
 
-        _shader_descr.texColor.handle = tex->GetGPUHandle();
+        _shaderParams.texColor.handle = tex->GetGPUHandle();
     }
 }
 
@@ -42,6 +42,7 @@ bool DefaultMaterial::Use() {
 }
 
 void DefaultMaterial::OnMaterialFlagChanged(MaterialFlag const& newFlag) {
+    this->Use();
 }
 
 DefaultMaterial::DefaultMaterial() : _program(nullptr) {

@@ -119,15 +119,14 @@ void GPUBuffer::Allocate(const Usage& usage, const size_t& size) {
         break;
     }
 
+    //Bind, because OnAllocated event may need this buffer rebind.
     IGPUBuffer* binded = 0;
     if(!mr::gl::IsDirectStateAccessSupported()) binded = ReBind(ArrayBuffer);
 
     MR_BUFFERS_CHECK_BUFFER_DATA_ERRORS_CATCH(
-        if(mr::gl::IsDirectStateAccessSupported()) {
-            glNamedBufferDataEXT(_handle, _size, 0, usageFlags);
-        } else {
-            glBufferData(_MR_BUFFER_BIND_TARGETS_REMAP_FROM_INDEX_[(size_t)ArrayBuffer], _size, 0, usageFlags);
-        }
+        if(mr::gl::IsOpenGL45()) glNamedBufferData(_handle, _size, 0, usageFlags);
+        else if(mr::gl::IsDirectStateAccessSupported()) glNamedBufferDataEXT(_handle, _size, 0, usageFlags);
+        else glBufferData(_MR_BUFFER_BIND_TARGETS_REMAP_FROM_INDEX_[(size_t)ArrayBuffer], _size, 0, usageFlags);
     )
 
     OnAllocated(dynamic_cast<mr::IGPUBuffer*>(this), usage, _size);
@@ -141,10 +140,9 @@ bool GPUBuffer::Write(void* srcData, const size_t& srcOffset, const size_t& dstO
     Assert(GetGPUHandle() != 0);
 
     MR_BUFFERS_CHECK_BUFFER_DATA_ERRORS_CATCH(
-        if(mr::gl::IsDirectStateAccessSupported()) {
-            glNamedBufferSubDataEXT(GetGPUHandle(), dstOffset, size, (void*)((size_t)srcData+srcOffset));
-        } else {
-
+        if(mr::gl::IsOpenGL45()) glNamedBufferSubData(GetGPUHandle(), dstOffset, size, (void*)((size_t)srcData+srcOffset));
+        else if(mr::gl::IsDirectStateAccessSupported()) glNamedBufferSubDataEXT(GetGPUHandle(), dstOffset, size, (void*)((size_t)srcData+srcOffset));
+        else {
             IGPUBuffer* binded = ReBind(ArrayBuffer);
             glBufferSubData(_MR_BUFFER_BIND_TARGETS_REMAP_FROM_INDEX_[(size_t)ArrayBuffer], dstOffset, size, (void*)((size_t)srcData+srcOffset));
             if(binded) binded->Bind(ArrayBuffer);
@@ -163,13 +161,13 @@ bool GPUBuffer::Read(void* dstData, const size_t& dstOffset, const size_t& srcOf
     Assert(GetGPUHandle() != 0);
 
     MR_BUFFERS_CHECK_BUFFER_DATA_ERRORS_CATCH(
-        /*if(MR::MachineInfo::IsDirectStateAccessSupported()) {
-            glGetNamedBufferSubData(GetGPUHandle(), srcOffset, size, (void*)((size_t)dstData+dstOffset));
-        } else {*/
+        if(mr::gl::IsOpenGL45())  glGetNamedBufferSubData(GetGPUHandle(), srcOffset, size, (void*)((size_t)dstData+dstOffset));
+        else if(mr::gl::IsDirectStateAccessSupported()) glGetNamedBufferSubDataEXT(GetGPUHandle(), srcOffset, size, (void*)((size_t)dstData+dstOffset));
+        else {
             IGPUBuffer* binded = ReBind(ArrayBuffer);
             glGetBufferSubData(_MR_BUFFER_BIND_TARGETS_REMAP_FROM_INDEX_[(size_t)ArrayBuffer], srcOffset, size, (void*)((size_t)dstData+dstOffset));
             if(binded) binded->Bind(ArrayBuffer);
-        //}
+        }
     )
 
     return true;
@@ -202,12 +200,8 @@ GPUBuffer::~GPUBuffer() {
 
 void GPUBuffer::MappedRange::Flush() {
     if(_mem == 0) return;
-    if(mr::gl::IsOpenGL45()) {
-        glFlushMappedNamedBufferRange(_buffer->GetGPUHandle(), _offset, _length);
-    }
-    else if(mr::gl::IsDirectStateAccessSupported()) {
-        glFlushMappedNamedBufferRangeEXT(_buffer->GetGPUHandle(), _offset, _length);
-    }
+    if(mr::gl::IsOpenGL45()) glFlushMappedNamedBufferRange(_buffer->GetGPUHandle(), _offset, _length);
+    else if(mr::gl::IsDirectStateAccessSupported()) glFlushMappedNamedBufferRangeEXT(_buffer->GetGPUHandle(), _offset, _length);
     else {
         IGPUBuffer* binded = _buffer->ReBind(ArrayBuffer);
         glFlushMappedBufferRange(_MR_BUFFER_BIND_TARGETS_REMAP_FROM_INDEX_[(size_t)ArrayBuffer], _offset, _length);
@@ -217,12 +211,8 @@ void GPUBuffer::MappedRange::Flush() {
 
 void GPUBuffer::MappedRange::UnMap() {
     if(_mem == 0) return;
-    if(mr::gl::IsOpenGL45()) {
-        glUnmapNamedBuffer(_buffer->GetGPUHandle());
-    }
-    else if(mr::gl::IsDirectStateAccessSupported()) {
-        glUnmapNamedBufferEXT(_buffer->GetGPUHandle());
-    }
+    if(mr::gl::IsOpenGL45()) glUnmapNamedBuffer(_buffer->GetGPUHandle());
+    else if(mr::gl::IsDirectStateAccessSupported()) glUnmapNamedBufferEXT(_buffer->GetGPUHandle());
     else {
     MR_BUFFERS_CHECK_MAPPINGS_ERRORS_CATCH(
         IGPUBuffer* binded = _buffer->ReBind(ArrayBuffer);

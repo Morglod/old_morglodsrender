@@ -26,7 +26,7 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
         vertexBuffer->Allocate(usage, vertexDataSize);
 
         //Write thro mapping or by default
-        auto vmapped = vertexBuffer->Map(0, vertexDataSize, IGPUBuffer::IMappedRange::Write | IGPUBuffer::IMappedRange::Invalidate);
+        auto vmapped = vertexBuffer->Map(0, vertexDataSize, IGPUBuffer::IMappedRange::Write | IGPUBuffer::IMappedRange::Invalidate | IGPUBuffer::IMappedRange::Unsynchronized);
         if(vmapped == nullptr) {
             vertexBuffer->Write(vertexData, 0, 0, vertexDataSize,  nullptr, nullptr);
         }
@@ -42,7 +42,7 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
             indexBuffer->Allocate(usage, indexDataSize);
 
             //Write thro mapping or by default
-            auto imapped = indexBuffer->Map(0, indexDataSize, IGPUBuffer::IMappedRange::Write | IGPUBuffer::IMappedRange::Invalidate);
+            auto imapped = indexBuffer->Map(0, indexDataSize, IGPUBuffer::IMappedRange::Write | IGPUBuffer::IMappedRange::Invalidate | IGPUBuffer::IMappedRange::Unsynchronized);
             if(imapped == nullptr) {
                 indexBuffer->Write(indexData, 0, 0, indexDataSize, nullptr, nullptr);
             }
@@ -81,7 +81,7 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
     mr::IGPUBuffer::BufferedDataInfo bufferedVertexDataInfo, bufferedIndexDataInfo;
 
     //Write thro mapping or by default
-    auto vmapped = virtualBuffer->Map(0, vertexDataSize, IGPUBuffer::IMappedRange::Write | IGPUBuffer::IMappedRange::Invalidate);
+    auto vmapped = virtualBuffer->Map(0, vertexDataSize, IGPUBuffer::IMappedRange::Write | IGPUBuffer::IMappedRange::Invalidate | IGPUBuffer::IMappedRange::Unsynchronized);
     if(vmapped == nullptr) {
         virtualBuffer->Write(vertexData, 0, 0, vertexDataSize, nullptr, &bufferedVertexDataInfo);
     } else {
@@ -95,7 +95,7 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
 
     if(indexDataSize) {
         //Write thro mapping or by default
-        auto imapped = virtualBuffer->Map(vertexDataSize, indexDataSize, IGPUBuffer::IMappedRange::Write | IGPUBuffer::IMappedRange::Invalidate);
+        auto imapped = virtualBuffer->Map(vertexDataSize, indexDataSize, IGPUBuffer::IMappedRange::Write | IGPUBuffer::IMappedRange::Invalidate | IGPUBuffer::IMappedRange::Unsynchronized);
         if(imapped == nullptr) {
             virtualBuffer->Write(indexData, 0, vertexDataSize, indexDataSize, nullptr, &bufferedIndexDataInfo);
         }
