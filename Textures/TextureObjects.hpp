@@ -38,11 +38,17 @@ public:
                 const int& width, const int& height, const int& depth,
                 void* data) override;
 
-    void UpdateData(const int& mipMapLevel,
+    bool UpdateData(const int& mipMapLevel,
                     const int& xOffset, const int& yOffset, const int& zOffset,
                     const int& width, const int& height, const int& depth,
                     const ITexture::DataFormat& dformat, const ITexture::DataType& dtype,
                     void* data) override;
+
+    bool UpdateDataFromBuffer(const int& mipMapLevel,
+                            const int& xOffset, const int& yOffset, const int& zOffset,
+                            const int& width, const int& height, const int& depth,
+                            const ITexture::DataFormat& dformat, const ITexture::DataType& dtype,
+                            class IGPUBuffer* buffer) override;
 
     bool Complete(bool mipMaps) override;
     void UpdateInfo() override;

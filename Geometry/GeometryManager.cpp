@@ -10,12 +10,12 @@ namespace mr {
 IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* vertexData, const size_t& vertexNum,
                              IIndexFormat* indexFormat, void* indexData, const size_t& indexNum,
                              const IGPUBuffer::Usage& usage, const IGeometryBuffer::DrawMode& drawMode) {
-    Assert(vertexFormat != nullptr);
-    Assert(vertexData != nullptr);
-    Assert(vertexNum != 0);
+    AssertAndExec(vertexFormat != nullptr, return nullptr);
+    AssertAndExec(vertexData != nullptr, return nullptr);
+    AssertAndExec(vertexNum != 0, return nullptr);
 
     if(indexFormat){
-        Assert(indexNum != 0);
+        AssertAndExec(indexNum != 0, return nullptr);
     }
 
     const size_t vertexDataSize = vertexNum * vertexFormat->GetSize();

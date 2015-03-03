@@ -37,6 +37,17 @@ public:
         DepthStencil = 0x821A
     };
 
+    enum AttachmentTarget {
+        ColorTarget = 0x00004000,
+        DepthTarget = 0x00000100,
+        StencilTarget = 0x00000400
+    };
+
+    enum TargetFilter {
+        Nearest = 0x2600,
+        Linear = 0x2601
+    };
+
     enum TargetBuffer {
         NoneTarget = 0,
         FrontLeftTarget = 0x0400,
@@ -54,7 +65,7 @@ public:
     static std::string CompletionStatusToString(CompletionStatus const& cs);
 
     virtual bool Create() = 0;
-    virtual void Bind(BindTarget const& target) = 0;
+    virtual bool Bind(BindTarget const& target) = 0;
     virtual IFrameBuffer* ReBind(BindTarget const& target) = 0;
     virtual BindTarget GetBindTarget() = 0;
 
@@ -72,6 +83,9 @@ public:
     virtual bool DrawTo(mu::ArrayHandle<TargetBuffer> const& targetBuffers,
                         mu::ArrayHandle<Attachment> const& attachments,
                         mu::ArrayHandle<unsigned int> const& colorSlots) = 0;
+    virtual bool DrawTo(mu::ArrayHandle<unsigned int> const& glDrawBuffers) = 0;
+
+    virtual void ToTarget(TargetBuffer const& targetBuffer, glm::ivec4 const& srcRect, glm::ivec4 const& dstRect, AttachmentTarget const& attachmentTarget, TargetFilter const& filter) = 0;
 
     virtual ~IFrameBuffer() {}
 };

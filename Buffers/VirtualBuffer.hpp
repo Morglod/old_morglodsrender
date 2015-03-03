@@ -17,10 +17,6 @@ class VirtualGPUBuffer : public IGPUBuffer {
     friend class VirtualGPUBuffer_DestroyEvent;
 public:
     /* IGPUBuffer */
-    inline void Bind(const BindTarget& target) override { _realBuffer->Bind(target); }
-    inline void BindAt(const BindTarget& target, const unsigned int& index) override { _realBuffer->BindAt(target, index); }
-    inline IGPUBuffer* ReBind(const BindTarget& target) override { return _realBuffer->ReBind(target); }
-    inline BindTarget GetBindTarget() override { return _realBuffer->GetBindTarget(); }
     inline bool Write(void* srcData, const size_t& srcOffset, const size_t& dstOffset, const size_t& size, size_t* out_realOffset, BufferedDataInfo* out_info) override { return _realBuffer->Write(srcData, srcOffset, dstOffset+GetRealOffset(), size, out_realOffset, out_info); }
     inline bool Read(void* dstData, const size_t& dstOffset, const size_t& srcOffset, const size_t& size) override { return _realBuffer->Read(dstData, dstOffset, srcOffset+GetRealOffset(), size); }
     inline Usage GetUsage() override { return _realBuffer->GetUsage(); }
@@ -43,7 +39,7 @@ public:
     virtual ~VirtualGPUBuffer();
 protected:
     /* IGPUBuffer */
-    void Allocate(const Usage& usage, const size_t& size) override {}
+    bool Allocate(const Usage& usage, const size_t& size) override;
 
     IGPUBuffer* _realBuffer;
     size_t _realBuffer_offset;

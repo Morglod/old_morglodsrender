@@ -4,7 +4,8 @@
 //#include "../RenderManager.hpp"
 #include "../Utils/Debug.hpp"
 #include "../MachineInfo.hpp"
-
+#include "../Buffers/BuffersInterfaces.hpp"
+#include "../StateCache.hpp"
 #include "../Utils/Containers.hpp"
 
 #include <SOIL.h>
@@ -183,15 +184,14 @@ void mr::Texture::SetData(const int& mipMapLevel,
     }
 }
 
-void Texture::UpdateData(const int& mipMapLevel,
+bool Texture::UpdateData(const int& mipMapLevel,
                             const int& xOffset, const int& yOffset, const int& zOffset,
                             const int& width, const int& height, const int& depth,
                             const ITexture::DataFormat& dformat, const ITexture::DataType& dtype,
                             void* data) {
-    Assert(GetGPUHandle() == 0);
+    Assert(GetGPUHandle() != 0);
     Assert(width > 0);
     Assert(xOffset > 0);
-    Assert(data != nullptr);
 
     if(mr::gl::IsOpenGL45()) {
         switch(_texture_type) {
@@ -238,6 +238,27 @@ void Texture::UpdateData(const int& mipMapLevel,
         if(fu == 0) binded->Bind(0);
         else TextureUnBind(fu, false);
     }
+
+    return true;
+}
+
+bool mr::Texture::UpdateDataFromBuffer(const int& mipMapLevel,
+                            const int& xOffset, const int& yOffset, const int& zOffset,
+                            const int& width, const int& height, const int& depth,
+                            const ITexture::DataFormat& dformat, const ITexture::DataType& dtype,
+                            IGPUBuffer* buffer)
+{
+    StateCache* stateCache = StateCache::GetDefault();
+    IGPUBuffer* binded = nullptr;
+    if(!stateCache->ReBindBuffer(buffer, IGPUBuffer::PixelUnpackBuffer, &binded)) {
+        mr::Log::LogString("Bind buffer failed in Texture::UpdateDataFromBuffer.", MR_LOG_LEVEL_ERROR);
+        return false;
+    }
+
+    bool b = this->UpdateData(mipMapLevel, xOffset, yOffset, zOffset, width, height, depth, dformat, dtype, 0);
+    if(binded) stateCache->BindBuffer(binded, IGPUBuffer::PixelUnpackBuffer);
+
+    return b;
 }
 
 bool mr::Texture::Complete(bool mipMaps) {

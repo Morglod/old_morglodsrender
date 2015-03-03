@@ -79,16 +79,7 @@ public:
 
     mu::Event<IGPUBuffer*, const IGPUBuffer::Usage&, const size_t&> OnAllocated;
 
-	/**
-		To unbind buffer, use global MR::GPUBufferUnBind method, defined in 'Buffers/Buffers.hpp'.
-	**/
-
-    virtual void Bind(const BindTarget& target) = 0; //BindBuffer
-    virtual void BindAt(const BindTarget& target, const unsigned int& index) = 0; //BindBufferBase
-    virtual IGPUBuffer* ReBind(const BindTarget& target) = 0; //BindBuffer and return what was binded (may be nullptr)
-    virtual BindTarget GetBindTarget() = 0; //returns last binded target, or NotBinded
-
-    virtual void Allocate(const IGPUBuffer::Usage& usage, const size_t& size) = 0;
+    virtual bool Allocate(const IGPUBuffer::Usage& usage, const size_t& size) = 0;
     virtual Usage GetUsage() = 0;
 
     /*  out_realOffset is offset of buffered data. out_realOffset pointer and out_info may be nullptr
@@ -102,9 +93,6 @@ public:
 
     virtual ~IGPUBuffer() {}
 };
-
-typedef std::shared_ptr<IGPUBuffer> IGPUBufferPtr;
-typedef std::weak_ptr<IGPUBuffer> IGPUBufferWeakPtr;
 
 }
 

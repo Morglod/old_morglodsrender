@@ -2,6 +2,7 @@
 
 #include "../Utils/Debug.hpp"
 #include "../MachineInfo.hpp"
+#include "../StateCache.hpp"
 
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -30,7 +31,7 @@ bool GeometryBuffer::Create(IGeometryBuffer::CreationParams const& params) {
 }
 
 bool GeometryBuffer::SetVertexBuffer(IGPUBuffer* buf) {
-    Assert(buf != nullptr);
+    AssertAndExec(buf != nullptr, return false);
     _vb = buf;
 
     if(buf != nullptr) {
@@ -39,10 +40,15 @@ bool GeometryBuffer::SetVertexBuffer(IGPUBuffer* buf) {
                 glGetNamedBufferParameterui64vNV(buf->GetGPUHandle(), GL_BUFFER_GPU_ADDRESS_NV, &_vb_nv_resident_ptr);
                 glGetNamedBufferParameterivEXT(buf->GetGPUHandle(), GL_BUFFER_SIZE, &_vb_nv_buffer_size);
             } else {
-                IGPUBuffer* binded = buf->ReBind(IGPUBuffer::ArrayBuffer);
+                StateCache* stateCache = StateCache::GetDefault();
+                IGPUBuffer* binded = nullptr;
+                if(!stateCache->ReBindBuffer(buf, IGPUBuffer::ArrayBuffer, &binded)) {
+                    mr::Log::LogString("Bind buffer failed in GeometryBuffer::SetVertexBuffer.", MR_LOG_LEVEL_ERROR);
+                    return false;
+                }
                 glGetBufferParameterui64vNV(GL_ARRAY_BUFFER, GL_BUFFER_GPU_ADDRESS_NV, &_vb_nv_resident_ptr);
                 glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &_vb_nv_buffer_size);
-                if(binded) binded->Bind(IGPUBuffer::ArrayBuffer);
+                if(binded) stateCache->BindBuffer(binded, IGPUBuffer::ArrayBuffer);
             }
         }
     }
@@ -63,10 +69,15 @@ bool GeometryBuffer::SetIndexBuffer(IGPUBuffer* buf) {
                 glGetNamedBufferParameterui64vNV(buf->GetGPUHandle(), GL_BUFFER_GPU_ADDRESS_NV, &_ib_nv_resident_ptr);
                 glGetNamedBufferParameterivEXT(buf->GetGPUHandle(), GL_BUFFER_SIZE, &_ib_nv_buffer_size);
             } else {
-                IGPUBuffer* binded = buf->ReBind(IGPUBuffer::ElementArrayBuffer);
+                StateCache* stateCache = StateCache::GetDefault();
+                IGPUBuffer* binded = nullptr;
+                if(!stateCache->ReBindBuffer(buf, IGPUBuffer::ElementArrayBuffer, &binded)) {
+                    mr::Log::LogString("Bind buffer failed in GeometryBuffer::SetIndexBuffer.", MR_LOG_LEVEL_ERROR);
+                    return false;
+                }
                 glGetBufferParameterui64vNV(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_GPU_ADDRESS_NV, &_ib_nv_resident_ptr);
                 glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &_ib_nv_buffer_size);
-                if(binded) binded->Bind(IGPUBuffer::ElementArrayBuffer);
+                if(binded) stateCache->BindBuffer(binded, IGPUBuffer::ElementArrayBuffer);
             }
         }
     }
@@ -93,10 +104,15 @@ void GeometryBuffer::SetAttribute(IVertexAttribute* attr, IGPUBuffer* buf) {
             glGetNamedBufferParameterui64vNV(buf->GetGPUHandle(), GL_BUFFER_GPU_ADDRESS_NV, &brp.ptr);
             glGetNamedBufferParameterivEXT(buf->GetGPUHandle(), GL_BUFFER_SIZE, &brp.size);
         } else {
-            IGPUBuffer* binded = buf->ReBind(IGPUBuffer::ArrayBuffer);
-            glGetBufferParameterui64vNV(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_GPU_ADDRESS_NV, &brp.ptr);
-            glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &brp.size);
-            if(binded) binded->Bind(IGPUBuffer::ArrayBuffer);
+            StateCache* stateCache = StateCache::GetDefault();
+            IGPUBuffer* binded = nullptr;
+            if(!stateCache->ReBindBuffer(buf, IGPUBuffer::ArrayBuffer, &binded)) {
+                mr::Log::LogString("Bind buffer failed in GeometryBuffer::SetAttribute.", MR_LOG_LEVEL_ERROR);
+                return;
+            }
+            glGetBufferParameterui64vNV(GL_ARRAY_BUFFER, GL_BUFFER_GPU_ADDRESS_NV, &brp.ptr);
+            glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &brp.size);
+            if(binded) stateCache->BindBuffer(binded, IGPUBuffer::ArrayBuffer);
         }
         _customAttribNVPtr[attr] = brp;
     }
@@ -108,11 +124,18 @@ bool GeometryBuffer::Bind(bool useIndexBuffer) const {
     if(!_format) return false;
     if(!_vb) return false;
 
-    auto wasBinded = _vb->ReBind(IGPUBuffer::ArrayBuffer);
+    StateCache* stateCache = StateCache::GetDefault();
+    IGPUBuffer* binded = nullptr;
+    if(!stateCache->ReBindBuffer(_vb, IGPUBuffer::ArrayBuffer, &binded)) {
+        mr::Log::LogString("Bind buffer failed in GeometryBuffer::Bind.", MR_LOG_LEVEL_ERROR);
+        return false;
+    }
     _format->Bind();
 
     for(std::pair<IVertexAttribute*, IGPUBuffer*> const& cAttrs : _customAttribs) {
-        cAttrs.second->Bind(IGPUBuffer::ArrayBuffer);
+        //cAttrs.second->Bind(IGPUBuffer::ArrayBuffer);
+        stateCache->BindBuffer(cAttrs.second, IGPUBuffer::ArrayBuffer);
+
         unsigned int sh_i = cAttrs.first->GetShaderIndex();
         glEnableVertexAttribArray(sh_i);
         int elNum = (int)(cAttrs.first->GetElementsNum());
@@ -134,7 +157,7 @@ bool GeometryBuffer::Bind(bool useIndexBuffer) const {
                                    );
     }
 
-    _vb->Bind(IGPUBuffer::ArrayBuffer);
+    stateCache->BindBuffer(_vb, IGPUBuffer::ArrayBuffer);
 
     if(mr::gl::IsNVVBUMSupported()) {
         mu::ArrayRef<IVertexAttribute*> attrs = _format->GetAttributes();
@@ -154,12 +177,12 @@ bool GeometryBuffer::Bind(bool useIndexBuffer) const {
         }
     } else {
         if(_ib != nullptr && useIndexBuffer && _iformat != nullptr){
-            _ib->Bind(IGPUBuffer::ElementArrayBuffer);
+            stateCache->BindBuffer(_ib, IGPUBuffer::ElementArrayBuffer);
             _iformat->Bind();
         }
     }
 
-    if(wasBinded) wasBinded->Bind(IGPUBuffer::ArrayBuffer);
+    if(binded) stateCache->BindBuffer(binded, IGPUBuffer::ArrayBuffer);
 
     _MR_BINDED_GEOM_BUFFER_ = (mr::IGeometryBuffer*)dynamic_cast<const mr::IGeometryBuffer*>(this);
     return true;

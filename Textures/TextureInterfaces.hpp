@@ -247,11 +247,17 @@ public:
                          const int& width, const int& height, const int& depth,
                          void* data) = 0;
 
-    virtual void UpdateData(const int& mipMapLevel,
+    virtual bool UpdateData(const int& mipMapLevel,
                             const int& xOffset, const int& yOffset, const int& zOffset,
                             const int& width, const int& height, const int& depth,
                             const ITexture::DataFormat& dformat, const ITexture::DataType& dtype,
                             void* data) = 0;
+
+    virtual bool UpdateDataFromBuffer(const int& mipMapLevel,
+                            const int& xOffset, const int& yOffset, const int& zOffset,
+                            const int& width, const int& height, const int& depth,
+                            const ITexture::DataFormat& dformat, const ITexture::DataType& dtype,
+                            class IGPUBuffer* buffer) = 0;
 
     virtual bool Complete(bool mipMaps) = 0;
 

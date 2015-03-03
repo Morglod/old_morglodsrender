@@ -1,25 +1,26 @@
 #pragma once
 
-#ifndef _MR_VIEWPORT_H_
-#define _MR_VIEWPORT_H_
-
-#include "ViewportInterfaces.hpp"
+#include "Events.hpp"
+#include <glm/glm.hpp>
 
 namespace mr {
 
-class Viewport : public IViewport {
+class Viewport {
 public:
-    bool Use() override;
+    static mu::Event<Viewport*> OnAnyUsed;
+
+    mu::Event<Viewport*, glm::ivec4 const&> OnRectChanged;
+    mu::Event<Viewport*> OnUsed;
+
+    bool Use();
 
     inline glm::ivec4 GetRect() { return _rect; }
-    void SetRect(const glm::ivec4& r);
+    void SetRect(glm::ivec4 const& r);
 
-    Viewport(const glm::ivec4& r);
+    Viewport(glm::ivec4 const& r);
     virtual ~Viewport();
 protected:
     glm::ivec4 _rect; //x,y,w,h
 };
 
 }
-
-#endif // _MR_VIEWPORT_H_

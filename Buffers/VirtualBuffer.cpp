@@ -34,15 +34,20 @@ VirtualGPUBuffer::VirtualGPUBuffer(IGPUBuffer* realBuffer, size_t const& offset,
     };
 }
 
+bool VirtualGPUBuffer::Allocate(const Usage& usage, const size_t& size) {
+    mr::Log::LogString("Cannot Allocate gpu mem in virtual buffer. VirtualGPUBuffer::Allocate failed.", MR_LOG_LEVEL_ERROR);
+    return false;
+}
+
 VirtualGPUBuffer::~VirtualGPUBuffer() {
 }
 
 /** MANAGER **/
 
 VirtualGPUBuffer* VirtualGPUBufferManager::Take(const size_t& size) {
-    Assert(size != 0);
-    Assert(size+_offset <= _realBuffer->GetGPUMem());
-    Assert(_realBuffer->GetGPUHandle() != 0);
+    AssertAndExec(size != 0, return nullptr);
+    AssertAndExec(size+_offset <= _realBuffer->GetGPUMem(), return nullptr);
+    AssertAndExec(_realBuffer->GetGPUHandle() != 0, return nullptr);
 
     VirtualGPUBuffer* buf = new mr::VirtualGPUBuffer(_realBuffer, _offset, size);
     _offset += size;

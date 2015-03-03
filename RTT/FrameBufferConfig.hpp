@@ -10,9 +10,9 @@
 #endif
 
 #if (MR_FRAMEBUFFERS_CHECK_BIND_ERRORS == 1)
-    #define MR_FRAMEBUFFERS_CHECK_BIND_ERRORS_CATCH(x) CheckGLError(x)
+    #define MR_FRAMEBUFFERS_CHECK_BIND_ERRORS_CATCH(x, y) CheckGLError(x, y)
 #else
-    #define MR_FRAMEBUFFERS_CHECK_BIND_ERRORS_CATCH(x)
+    #define MR_FRAMEBUFFERS_CHECK_BIND_ERRORS_CATCH(x, y)
 #endif
 
 #endif

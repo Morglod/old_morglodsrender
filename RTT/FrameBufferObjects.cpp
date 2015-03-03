@@ -41,22 +41,25 @@ bool FrameBuffer::Create() {
     return true;
 }
 
-void FrameBuffer::Bind(BindTarget const& target) {
+bool FrameBuffer::Bind(BindTarget const& target) {
     if(target == NotBinded) {
         _bindedTarget = target;
-        return;
+        return true;
     }
 
     Assert((size_t)target < _MR_FB_BIND_TARGETS_NUM_);
     Assert(GetGPUHandle() != 0);
 
-    if(_MR_FB_BIND_TARGETS_.GetRaw()[(size_t)target] == dynamic_cast<mr::IFrameBuffer*>(this)) return;
+    if(_MR_FB_BIND_TARGETS_.GetRaw()[(size_t)target] == dynamic_cast<mr::IFrameBuffer*>(this)) return true;
     _MR_FB_BIND_TARGETS_.GetRaw()[(size_t)target] = dynamic_cast<mr::IFrameBuffer*>(this);
     _bindedTarget = target;
 
     MR_FRAMEBUFFERS_CHECK_BIND_ERRORS_CATCH(
         glBindFramebuffer(_MR_FB_BIND_TARGETS_REMAP_FROM_INDEX_[(size_t)target], GetGPUHandle());
+        ,
+        return false;
     )
+    return true;
 }
 
 IFrameBuffer* FrameBuffer::ReBind(BindTarget const& target) {
@@ -208,15 +211,32 @@ bool FrameBuffer::DrawTo(mu::ArrayHandle<TargetBuffer> const& targetBuffers,
 {
     //TODO check for errors
     mu::ArrayHandle<unsigned int> targets = mu::Combine(mu::CombineCast<unsigned int, TargetBuffer, Attachment>(targetBuffers, attachments, true), colorSlots, true);
+    return DrawTo(targets);
+}
+
+bool FrameBuffer::DrawTo(mu::ArrayHandle<unsigned int> const& drawBuffers)
+{
+    //TODO check for errors
     if(mr::gl::IsDirectStateAccessSupported()) {
-        glNamedFramebufferDrawBuffers(_handle, targets.GetNum(), targets.GetArray());
+        glNamedFramebufferDrawBuffers(_handle, drawBuffers.GetNum(), drawBuffers.GetArray());
     } else {
         IFrameBuffer* binded = nullptr;
         if(_bindedTarget == NotBinded) binded = mr::FrameBuffer::ReBind(IFrameBuffer::DrawReadFramebuffer);
-        glDrawBuffers(targets.GetNum(), targets.GetArray());
+        glDrawBuffers(drawBuffers.GetNum(), drawBuffers.GetArray());
         if(binded) binded->Bind(IFrameBuffer::DrawReadFramebuffer);
     }
     return true;
+}
+
+void FrameBuffer::ToTarget(TargetBuffer const& targetBuffer, glm::ivec4 const& srcRect, glm::ivec4 const& dstRect, AttachmentTarget const& attachmentTarget, TargetFilter const& filter) {
+    if(mr::gl::IsOpenGL45()) {
+        glBlitNamedFramebuffer(GetGPUHandle(), 0, srcRect.x, srcRect.y, srcRect.z, srcRect.w, dstRect.x, dstRect.y, dstRect.z, dstRect.w, attachmentTarget, filter);
+    } else {
+        IFrameBuffer* binded = nullptr;
+        if(_bindedTarget == NotBinded) binded = mr::FrameBuffer::ReBind(IFrameBuffer::DrawReadFramebuffer);
+        glBlitFramebuffer(srcRect.x, srcRect.y, srcRect.z, srcRect.w, dstRect.x, dstRect.y, dstRect.z, dstRect.w, attachmentTarget, filter);
+        if(binded) binded->Bind(IFrameBuffer::DrawReadFramebuffer);
+    }
 }
 
 FrameBuffer::~FrameBuffer() {}

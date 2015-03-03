@@ -4,6 +4,7 @@
 #include <GL/glew.h>
 
 mr::Viewport * usedViewport = nullptr;
+mu::Event<mr::Viewport*> mr::Viewport::OnAnyUsed;
 
 namespace mr {
 
@@ -15,7 +16,7 @@ void Viewport::SetRect(const glm::ivec4& r){
             glViewport(_rect.x, _rect.y, _rect.z, _rect.w);
         }
 
-        OnRectChanged(dynamic_cast<IViewport*>(this), r);
+        OnRectChanged(dynamic_cast<Viewport*>(this), r);
     }
 }
 
@@ -24,8 +25,8 @@ bool Viewport::Use() {
         usedViewport = this;
         glViewport(_rect.x, _rect.y, _rect.z, _rect.w);
 
-        mr::Viewport::OnAnyUsed(dynamic_cast<IViewport*>(this));
-        OnUsed(dynamic_cast<IViewport*>(this));
+        mr::Viewport::OnAnyUsed(dynamic_cast<Viewport*>(this));
+        OnUsed(dynamic_cast<Viewport*>(this));
     }
     return true;
 }

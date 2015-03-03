@@ -9,13 +9,7 @@ namespace mr {
 
 class GPUBuffer : public IGPUBuffer {
 public:
-    /* IGPUBuffer */
-    void Bind(const BindTarget& target) override;
-    void BindAt(const BindTarget& target, const unsigned int& index) override;
-    IGPUBuffer* ReBind(const BindTarget& target) override;
-    BindTarget GetBindTarget() override;
-
-    void Allocate(const Usage& usage, const size_t& size) override;
+    bool Allocate(const Usage& usage, const size_t& size) override;
     inline Usage GetUsage() override { return _usage; }
     bool Write(void* srcData, const size_t& srcOffset, const size_t& dstOffset, const size_t& size, size_t* out_realOffset, BufferedDataInfo* out_info) override;
     bool Read(void* dstData, const size_t& dstOffset, const size_t& srcOffset, const size_t& size) override;
@@ -67,18 +61,13 @@ protected:
         unsigned int _flags;
     };
 
-    BindTarget _bindedTarget;
     size_t _size;
     Usage _usage;
     IMappedRangeWeakPtr _mapped;
 };
 
-IGPUBuffer* GPUBufferGetBinded(const IGPUBuffer::BindTarget& target);
-void GPUBufferUnBind(const IGPUBuffer::BindTarget& target); //BindBuffer(0)
-void GPUBufferUnBindAt(const IGPUBuffer::BindTarget& target, const unsigned int& index); //BindBufferBase(0)
-
 /** !! DO NOT USE IT ON VirtualGPUBuffers !! **/
-void GPUBufferCopy(IGPUBuffer* src, IGPUBuffer* dst, const unsigned int& srcOffset, const unsigned int& dstOffset, const unsigned int& size);
+bool GPUBufferCopy(IGPUBuffer* src, IGPUBuffer* dst, const unsigned int& srcOffset, const unsigned int& dstOffset, const unsigned int& size);
 
 void DestroyAllBuffers();
 

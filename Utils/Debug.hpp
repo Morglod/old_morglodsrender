@@ -57,7 +57,7 @@
     #define _MR_DEBUG_GL_ERROR_CATCHED_FUNC(std_string, int_gl_code) _MR_ASSERTION_FUNC("OpenGL error " + std::to_string(int_gl_code) + ": " + std_string)
 #endif
 
-#define CheckGLError(_ofLine) \
+#define CheckGLError(_ofLine, _errCode) \
     mr::gl::ClearError(); \
     _ofLine \
     { \
@@ -65,6 +65,7 @@
         int localGlCode = 0; \
         if(mr::gl::CheckError(&localErrorString, &localGlCode)) { \
             _MR_DEBUG_GL_ERROR_CATCHED_FUNC(localErrorString, localGlCode) \
+            _errCode \
         } \
     }
 

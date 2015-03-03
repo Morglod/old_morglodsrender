@@ -9,7 +9,7 @@ public:
     bool Create() override;
     void Destroy() override;
 
-    void Bind(BindTarget const& target) override;
+    bool Bind(BindTarget const& target) override;
     IFrameBuffer* ReBind(BindTarget const& target) override;
     inline BindTarget GetBindTarget() override { return _bindedTarget; }
 
@@ -27,6 +27,10 @@ public:
     bool DrawTo(mu::ArrayHandle<TargetBuffer> const& targetBuffers,
                 mu::ArrayHandle<Attachment> const& attachments,
                 mu::ArrayHandle<unsigned int> const& colorSlots) override;
+
+    bool DrawTo(mu::ArrayHandle<unsigned int> const& glDrawBuffers) override;
+
+    void ToTarget(TargetBuffer const& targetBuffer, glm::ivec4 const& srcRect, glm::ivec4 const& dstRect, AttachmentTarget const& attachmentTarget, TargetFilter const& filter)  override;
 
     virtual ~FrameBuffer();
 protected:

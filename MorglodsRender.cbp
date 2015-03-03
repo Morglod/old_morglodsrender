@@ -30,6 +30,7 @@
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
 				<Compiler>
+					<Add option="-march=corei7-avx" />
 					<Add option="-fexpensive-optimizations" />
 					<Add option="-O3" />
 					<Add option="-Wall" />
@@ -143,6 +144,8 @@
 		<Unit filename="Shaders/ShaderUniforms.hpp" />
 		<Unit filename="SimpleApp/ContextGLFW.hpp" />
 		<Unit filename="SimpleApp/SimpleApp.hpp" />
+		<Unit filename="StateCache.cpp" />
+		<Unit filename="StateCache.hpp" />
 		<Unit filename="Textures/TextureInterfaces.cpp" />
 		<Unit filename="Textures/TextureInterfaces.hpp" />
 		<Unit filename="Textures/TextureObjects.cpp" />
@@ -173,8 +176,6 @@
 		<Unit filename="Utils/Worker.hpp" />
 		<Unit filename="Viewports/Viewport.cpp" />
 		<Unit filename="Viewports/Viewport.hpp" />
-		<Unit filename="Viewports/ViewportInterfaces.cpp" />
-		<Unit filename="Viewports/ViewportInterfaces.hpp" />
 		<Unit filename="_Anim.cpp" />
 		<Unit filename="_Anim.hpp" />
 		<Extensions>
