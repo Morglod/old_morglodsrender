@@ -15,9 +15,11 @@
 				<Option createDefFile="1" />
 				<Compiler>
 					<Add option="-Wall" />
+					<Add option="-pg" />
 					<Add option="-g" />
 				</Compiler>
 				<Linker>
+					<Add option="-pg -lgmon" />
 					<Add library="C:\Libs\Projects\MorglodsUtils\bin\Debug\libMorglodsUtils.a" />
 				</Linker>
 			</Target>

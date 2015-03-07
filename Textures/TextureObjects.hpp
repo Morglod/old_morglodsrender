@@ -23,17 +23,13 @@ public:
 
     inline size_t GetGPUMem() override { return _mem_size; }
 
-    void Bind(unsigned short const& unit) override;
-    unsigned short Bind() override;
-    ITexture* ReBind(unsigned short const& unit) override;
+    bool Create(const ITexture::Types& target) override;
 
-    void Create(const ITexture::Types& target) override;
-
-    void GetData(const int& mipMapLevel,
+    bool GetData(const int& mipMapLevel,
                 const ITexture::DataFormat& dformat, const ITexture::DataType& dtype, unsigned int const& dstBufferSize,
                 void* dstBuffer) override; //dstBufferSize should be enought for data
 
-    void SetData(const int& mipMapLevel,
+    bool SetData(const int& mipMapLevel,
                 const ITexture::DataFormat& dformat, const ITexture::DataType& dtype, const ITexture::StorageDataFormat& sdFormat,
                 const int& width, const int& height, const int& depth,
                 void* data) override;
@@ -51,7 +47,7 @@ public:
                             class IGPUBuffer* buffer) override;
 
     bool Complete(bool mipMaps) override;
-    void UpdateInfo() override;
+    bool UpdateInfo() override;
 
     void Destroy() override;
 
@@ -87,10 +83,6 @@ protected:
     mu::ArrayHandle<ITexture*> _textures;
     mu::ArrayHandle<unsigned int> _gpuHandles; // [_textures.GetNum()*2]{ texutre handles, sampler handles }
 };
-
-ITexture* TextureGetBinded(const unsigned short& unit);
-void TextureUnBind(const unsigned short& unit, const bool& fast);
-unsigned short TextureFreeUnit();
 
 void DestroyAllTextures();
 

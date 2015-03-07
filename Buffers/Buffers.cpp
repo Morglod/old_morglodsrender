@@ -28,8 +28,8 @@ bool GPUBuffer::Allocate(const Usage& usage, const size_t& size) {
     }
 
     _size = size;
-
     _usage = usage;
+	
     unsigned int usageFlags = 0;
     switch(usage) {
     case Static:
@@ -184,6 +184,7 @@ void GPUBuffer::MappedRange::UnMap() {
         mr::Log::LogString("Failed glUnmapBuffer in GPUBuffer::MappedRange::UnMap.", MR_LOG_LEVEL_WARNING);
     )
     }
+	
     _mem = 0;
     _buffer = nullptr;
     _length = 0;

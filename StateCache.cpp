@@ -2,6 +2,9 @@
 #include "Utils/Log.hpp"
 #include "Utils/Debug.hpp"
 #include "MachineInfo.hpp"
+#include "RTT/FrameBufferInterfaces.hpp"
+#include "Buffers/BuffersInterfaces.hpp"
+#include "Textures/TextureInterfaces.hpp"
 
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -24,21 +27,49 @@ unsigned int MR_BUFFER_TARGET[] {
     GL_TEXTURE_BUFFER
 };
 
+unsigned int MR_TEXTURE_TARGET[]{
+    GL_TEXTURE_1D,
+    GL_TEXTURE_2D,
+    GL_TEXTURE_3D
+};
+
 namespace mr {
 
 std::vector<StateCacheWeakPtr> MR_STATE_CACHES;
 thread_local std::vector<StateCachePtr> MR_STATE_CACHES_THIS_THREAD = std::vector<StateCachePtr>();
 
 void StateCache::ResetCache() {
+    //Buffers
     _buffers = mu::ArrayHandle<IGPUBuffer*>(new IGPUBuffer*[MR_BUFFERS_BIND_TARGETS_NUM], MR_BUFFERS_BIND_TARGETS_NUM, true);
     for(size_t i = 0; i < MR_BUFFERS_BIND_TARGETS_NUM; ++i) _buffers.GetArray()[i] = nullptr;
 
+    //Textures
+    int textureUnits = mr::gl::GetMaxTextureUnits();
+    AssertAndExec(textureUnits >= 4, mr::Log::LogString("MaxTextureUnits less than 4. May be problems.", MR_LOG_LEVEL_WARNING));
+
+    if(textureUnits == 0 || textureUnits == -1) {
+        mr::Log::LogString("Cannot get MaxTextureUnits. May be serious problems. 4 will be used.", MR_LOG_LEVEL_ERROR);
+        textureUnits = 4;
+    }
+
+    _textures = mu::ArrayHandle<mr::ITexture*>(new mr::ITexture*[textureUnits], textureUnits, true);
+    _textureSettings = mu::ArrayHandle<mr::ITextureSettings*>(new mr::ITextureSettings*[textureUnits], textureUnits, true);
+
+    ITexture** texturesArray = _textures.GetArray();
+    ITextureSettings** textureSettingsArray = _textureSettings.GetArray();
+
+    for(int i = 0; i < textureUnits; ++i){
+        texturesArray[i] = nullptr;
+        textureSettingsArray[i] = nullptr;
+    }
+
+    //Clear
     _ubos.clear();
     _transformFeedbacks.clear();
 }
 
 bool StateCache::ReBindBuffers() {
-    auto bufAr = _buffers.GetArray();
+    const auto bufAr = _buffers.GetArray();
     MR_BUFFERS_CHECK_BIND_ERRORS_CATCH(
         for(size_t i = 0; i < MR_BUFFERS_BIND_TARGETS_NUM; ++i) {
             glBindBuffer(MR_BUFFER_TARGET[(size_t)i], (bufAr[i] == nullptr) ? 0 : bufAr[i]->GetGPUHandle());
@@ -51,7 +82,7 @@ bool StateCache::ReBindBuffers() {
 bool StateCache::ReBindUBOs() {
     if(_ubos.size() == 0) return true;
     MR_BUFFERS_CHECK_BIND_ERRORS_CATCH(
-        for(auto& ubo_pair : _ubos) {
+        for(auto const& ubo_pair : _ubos) {
             glBindBufferBase(GL_UNIFORM_BUFFER, ubo_pair.first, (ubo_pair.second == nullptr) ? 0 : ubo_pair.second->GetGPUHandle());
         },
         return false;
@@ -62,7 +93,7 @@ bool StateCache::ReBindUBOs() {
 bool StateCache::ReBindTransformFeedbacks() {
     if(_transformFeedbacks.size() == 0) return true;
     MR_BUFFERS_CHECK_BIND_ERRORS_CATCH(
-        for(auto& tf_pair : _transformFeedbacks) {
+        for(auto const& tf_pair : _transformFeedbacks) {
             glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, tf_pair.first, (tf_pair.second == nullptr) ? 0 : tf_pair.second->GetGPUHandle());
         },
         return false;
@@ -70,8 +101,47 @@ bool StateCache::ReBindTransformFeedbacks() {
     return true;
 }
 
+bool StateCache::ReBindTextures() {
+	const size_t num = _textures.GetNum();
+    ITexture** texArray = _textures.GetArray();
+    ITextureSettings** texSetArray = _textureSettings.GetArray();
+
+	if(num == 0) return true;
+
+	unsigned int handles[num + num]; // textureHandles[num] + samplerHandles[num]
+
+	for(size_t i = 0; i < _textures.GetNum(); ++i) {
+		handles[i] = (texArray[i]) ? texArray[i]->GetGPUHandle() : 0;
+		handles[i + num] = (texSetArray[i]) ? texSetArray[i]->GetGPUHandle() : 0;
+	}
+
+	//TODO error catch.
+
+    if(GLEW_ARB_multi_bind) {
+        glBindTextures(0, num, handles);
+        glBindSamplers(0, num, &(handles[num]));
+    } else {
+        StateCache* stateCache = StateCache::GetDefault();
+        for(unsigned int i = 0; i < num; ++i) {
+            if(!stateCache->BindTexture(texArray[i], i)) {
+                mr::Log::LogString("Bind texture failed in StateCache::ReBindTextures.", MR_LOG_LEVEL_ERROR);
+            }
+        }
+    }
+
+	return true;
+}
+
+bool StateCache::ReBindFrameBuffers() {
+	return BindFramebuffer(_framebuffer);
+}
+
 bool StateCache::ReBindAll() {
-    return ReBindBuffers() && ReBindUBOs() && ReBindTransformFeedbacks();
+    return 	ReBindBuffers() &&
+			ReBindUBOs() &&
+			ReBindTransformFeedbacks() &&
+			ReBindTextures() &&
+			ReBindFrameBuffers();
 }
 
 bool StateCache::BindBuffer(IGPUBuffer* buffer, IGPUBuffer::BindTarget const& target) {
@@ -169,6 +239,100 @@ bool StateCache::ReBindBuffer(IGPUBuffer* buffer, IGPUBuffer::BindTarget const& 
     }
 }
 
+bool StateCache::BindTexture(ITexture* texture, unsigned int const& unit) {
+    AssertAndExec(unit < _textures.GetNum(), return false);
+
+    if(_textures.GetArray()[unit] == texture) return true;
+
+    unsigned int handle = ((texture != nullptr) ? texture->GetGPUHandle() : 0);
+    unsigned int texType = MR_TEXTURE_TARGET[((texture != nullptr) ? texture->GetType() : ITexture::Base2D)];
+
+    if(mr::gl::IsOpenGL45()) {
+        glBindTextureUnit(unit, handle);
+    }
+    else if(mr::gl::IsDirectStateAccessSupported()) {
+        glBindMultiTextureEXT(GL_TEXTURE0+unit, texType, handle);
+    } else {
+        int actived_tex = 0;
+        glGetIntegerv(GL_ACTIVE_TEXTURE, &actived_tex);
+        glActiveTexture(GL_TEXTURE0+unit);
+        glBindTexture(texType, handle);
+        glActiveTexture(actived_tex);
+    }
+
+    mr::ITextureSettings* ts = (texture != nullptr) ? texture->GetSettings() : nullptr;
+    _textures.GetArray()[unit] = texture;
+    _textureSettings.GetArray()[unit] = ts;
+    glBindSampler(unit, (ts) ? ts->GetGPUHandle() : 0);
+
+    return true;
+}
+
+ITexture* StateCache::GetBindedTexture(unsigned int const& unit) {
+    if(unit >= _textures.GetNum()) {
+        mr::Log::LogString("Trying to get " + std::to_string(unit) + " texture unit. Bigger than max ("+ std::to_string(_textures.GetNum())+") texture unit. StateCache::GetBindedTexture.", MR_LOG_LEVEL_ERROR);
+        return nullptr;
+    }
+    return _textures.GetArray()[unit];
+}
+
+ITextureSettings* StateCache::GetBindedTextureSettings(unsigned int const& unit) {
+    if(unit >= _textureSettings.GetNum()) {
+        mr::Log::LogString("Trying to get " + std::to_string(unit) + " texture unit. Bigger than max ("+ std::to_string(_textureSettings.GetNum())+") texture unit. StateCache::GetBindedTextureSettings.", MR_LOG_LEVEL_ERROR);
+        return nullptr;
+    }
+    return _textureSettings.GetArray()[unit];
+}
+
+bool StateCache::ReBindTexture(ITexture* texture, unsigned int const& unit, ITexture** was) {
+    if(unit >= _textures.GetNum()) {
+        mr::Log::LogString("Trying to get " + std::to_string(unit) + " texture unit. Bigger than max ("+ std::to_string(_textures.GetNum())+") texture unit. StateCache::ReBindTexture.", MR_LOG_LEVEL_ERROR);
+        return false;
+    }
+    ITexture* binded = _textures.GetArray()[unit];
+    if(binded == texture) return true;
+    *was = binded;
+    if(BindTexture(texture, unit)) return true;
+    else {
+        BindTexture(binded, unit);
+        return false;
+    }
+}
+
+bool StateCache::GetFreeTextureUnit(unsigned int& freeUnit) {
+    ITexture** texArray = _textures.GetArray();
+    for(unsigned int i = 0; i < _textures.GetNum(); ++i) {
+        if(texArray == nullptr) {
+            freeUnit = i;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool StateCache::BindFramebuffer(IFrameBuffer* frameBuffer) {
+	if(frameBuffer == _framebuffer) return true;
+	//TODO error catch.
+	glBindFramebuffer(GL_FRAMEBUFFER, (frameBuffer) ? frameBuffer->GetGPUHandle() : 0);
+	return true;
+}
+
+IFrameBuffer* StateCache::GetBindedFramebuffer() {
+	return _framebuffer;
+}
+
+bool StateCache::ReBindFramebuffer(IFrameBuffer* frameBuffer, IFrameBuffer** was) {
+	IFrameBuffer* binded = GetBindedFramebuffer();
+	if(binded == frameBuffer) return true;
+	if(!BindFramebuffer(frameBuffer)) {
+		BindFramebuffer(binded);
+		return false;
+	}
+	if(binded) *was = binded;
+	return true;
+}
+
+
 StateCache::StateCache() {
 }
 
@@ -203,10 +367,6 @@ StateCacheWeakPtr StateCache::GetThisThread(size_t const& index) {
 StateCache* StateCache::GetDefault() {
     if(MR_STATE_CACHES_THIS_THREAD.empty()) New();
     return MR_STATE_CACHES_THIS_THREAD[0].get();
-}
-
-const unsigned int * StateCache::GetGLBufferTargets() {
-    return MR_BUFFER_TARGET;
 }
 
 }

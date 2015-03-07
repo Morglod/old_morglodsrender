@@ -6,6 +6,7 @@
 #include "../Utils/Debug.hpp"
 #include "../Textures/TextureObjects.hpp"
 #include "../Textures/TextureSettings.hpp"
+#include "../StateCache.hpp"
 
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -28,7 +29,11 @@ void DefaultMaterial::Create(MaterialDescr const& descr) {
             mr::ITextureSettings* texSettings = new mr::TextureSettings();
             texSettings->Create();
             tex->SetSettings(texSettings);
-            tex->Bind(0);
+            StateCache* stateCache = StateCache::GetDefault();
+            if(!stateCache->BindTexture(tex, 0)) {
+                mr::Log::LogString("Bind texture failed in DefaultMaterial::Create.", MR_LOG_LEVEL_ERROR);
+                return;
+            }
         }
 
         _shaderParams.texColor.handle = tex->GetGPUHandle();

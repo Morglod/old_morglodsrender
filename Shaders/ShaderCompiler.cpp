@@ -3,6 +3,8 @@
 #include "../Config.hpp"
 #include "../Utils/Log.hpp"
 
+#include <fstream>
+
 #ifndef __glew_h__
 #   include <GL\glew.h>
 #endif
@@ -301,7 +303,43 @@ ShaderCompilationOutput ShaderCompiler::LinkToByteCode(TStaticArray<unsigned int
 std::string ShaderCompiler::_Optimize(const std::string& code, const ShaderType& type) {
     return code;
 }
+/*
+std::string ShaderCompiler::PreProcess(std::string code, ShaderType const& type, std::string const& shaderDirectory) {
+    const std::string include_const("#include");
+PreProcess_STEP:
+    size_t it_include = code.find("#include");
+    const auto it_include_const = it_include;
+    if(it_include == std::string::npos) return code;
+    std::advance(it_include, include_const.size());
+    auto it_file_begin = code.find('"', it_include);
+    if(it_file_begin == std::string::npos) {
+        code = code.erase(it_include_const, it_include);
+        goto PreProcess_STEP;
+    }
+    auto it_file_end = code.find('"', it_file_begin+1);
+    if(it_file_end == std::string::npos) {
+        code = code.erase(it_include_const, it_file_begin+1);
+        goto PreProcess_STEP;
+    }
+    std::string fileName = code.substr(it_file_begin+1, it_file_end - it_file_begin);
 
+    std::ifstream include_file(shaderDirectory + "/" + fileName, std::ifstream::in);
+    if(!include_file.is_open()) {
+        code = code.erase(it_include_const, it_file_end+1);
+        goto PreProcess_STEP;
+    }
+
+    std::string includeFile = "";
+    std::string nextLine = "";
+    while(std::getline(include_file, nextLine)) includeFile += nextLine + "\n";
+    include_file.close();
+
+    code = code.erase(it_include_const, it_file_end+1);
+    code = code.insert(it_include_const, includeFile);
+
+    goto PreProcess_STEP;
+}
+*/
 void ShaderCompiler::Release() {
     if(mr::gl::GetVersionAsFloat() >= 4.1f)
         glReleaseShaderCompiler();

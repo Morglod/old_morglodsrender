@@ -1,8 +1,6 @@
 #pragma once
 
 #include "Buffers/BuffersInterfaces.hpp"
-#include "Textures/TextureInterfaces.hpp"
-#include "RTT/FrameBufferInterfaces.hpp"
 
 #include <Containers.hpp>
 #include <vector>
@@ -10,6 +8,7 @@
 
 namespace mr {
 
+class IGPUBuffer;
 class ITexture;
 class ITextureSettings;
 class IFrameBuffer;
@@ -24,6 +23,8 @@ public:
     bool ReBindBuffers();
     bool ReBindUBOs();
     bool ReBindTransformFeedbacks();
+	bool ReBindTextures();
+	bool ReBindFrameBuffers();
     bool ReBindAll();
 
     bool BindBuffer(IGPUBuffer* buffer, IGPUBuffer::BindTarget const& target);
@@ -34,6 +35,16 @@ public:
     IGPUBuffer* GetBindedTransformFeedbackBuffer(unsigned int const& index);
     bool ReBindBuffer(IGPUBuffer* buffer, IGPUBuffer::BindTarget const& target, IGPUBuffer** was);
 
+    bool BindTexture(ITexture* texture, unsigned int const& unit);
+    ITexture* GetBindedTexture(unsigned int const& unit);
+    ITextureSettings* GetBindedTextureSettings(unsigned int const& unit);
+    bool ReBindTexture(ITexture* texture, unsigned int const& unit, ITexture** was);
+    bool GetFreeTextureUnit(unsigned int& freeUnit);
+
+	bool BindFramebuffer(IFrameBuffer* frameBuffer);
+	IFrameBuffer* GetBindedFramebuffer();
+	bool ReBindFramebuffer(IFrameBuffer* frameBuffer, IFrameBuffer** was);
+
     virtual ~StateCache();
 
     static StateCache* GetDefault(); //this thread default, 0 index
@@ -41,8 +52,6 @@ public:
     static mu::ArrayRef<StateCacheWeakPtr> GetAll();
     static mu::ArrayHandle<StateCacheWeakPtr> GetThisThread();
     static StateCacheWeakPtr GetThisThread(size_t const& index);
-
-    static const unsigned int* GetGLBufferTargets();
 private:
     StateCache();
 

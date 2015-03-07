@@ -4,6 +4,7 @@
 #define _MR_SHADER_OBJECTS_H_
 
 #include "ShaderInterfaces.hpp"
+#include <unordered_map>
 
 namespace mr {
 
@@ -71,7 +72,8 @@ public:
     static ShaderProgram* FromCache(ShaderProgramCache cache);
 
 protected:
-    std::vector<IShaderUniform*> _shaderUniforms;
+    //std::vector<IShaderUniform*> _shaderUniforms;
+    std::unordered_map<std::string, IShaderUniform*> _shaderUniforms; // (uniformName, uniformHandle)
     bool _linked;
 };
 

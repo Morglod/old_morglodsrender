@@ -81,8 +81,9 @@ public:
     virtual ShaderCompilationOutput Link(TStaticArray<unsigned int> gpu_handles, const unsigned int& gpu_program_handle) = 0;
     virtual ShaderCompilationOutput LinkToByteCode(TStaticArray<unsigned int> gpu_handles, const unsigned int& gpu_program_handle, int* outLength, unsigned int* outFromat, void** outData, bool* byteCode) = 0;
 
-    /// IShaderCompiler::Compile calls this method before compilation
+    /// IShaderCompiler::Compile calls this methods before compilation
     virtual std::string _Optimize(const std::string& code, const ShaderType& type) = 0;
+    //virtual std::string PreProcess(std::string code, ShaderType const& type, std::string const& shaderDirectory) = 0;
 
     virtual ~IShaderCompiler() {}
 };
@@ -94,6 +95,7 @@ public:
     ShaderCompilationOutput Link(TStaticArray<unsigned int> gpu_handles, const unsigned int& gpu_program_handle) override;
     ShaderCompilationOutput LinkToByteCode(TStaticArray<unsigned int> gpu_handles, const unsigned int& gpu_program_handle, int* outLength, unsigned int* outFromat, void** outData, bool* byteCode) override;
     std::string _Optimize(const std::string& code, const ShaderType& type) override;
+    //std::string PreProcess(std::string code, ShaderType const& type, std::string const& shaderDirectory) override;
     bool debug_log = true;
     virtual ~ShaderCompiler();
 };

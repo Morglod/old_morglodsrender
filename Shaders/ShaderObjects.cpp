@@ -135,7 +135,7 @@ bool ShaderProgram::Link(mu::ArrayHandle<IShader*> shaders) {
 
 IShaderUniform* ShaderProgram::CreateUniform(const std::string& name, const mr::IShaderUniform::Type& type, void* value) {
     ShaderUniform* su = new ShaderUniform(name, type, value, dynamic_cast<IShaderProgram*>(this));
-    _shaderUniforms.push_back(su);
+    _shaderUniforms.emplace(name, su);
     return su;
 }
 
@@ -182,21 +182,28 @@ void ShaderProgram::SetUniform(const std::string& name, const glm::mat4& value) 
 }
 
 void ShaderProgram::DeleteUniform(IShaderUniform* su) {
-    auto it = std::find(_shaderUniforms.begin(), _shaderUniforms.end(), su);
-    if(it == _shaderUniforms.end()) return;
-    delete (*it);
-    _shaderUniforms.erase(it);
+    for(auto it = _shaderUniforms.begin(); it != _shaderUniforms.end(); ++it) {
+        if(it->second == su) {
+            delete su;
+            _shaderUniforms.erase(it);
+            return;
+        }
+    }
 }
 
 IShaderUniform* ShaderProgram::FindShaderUniform(const std::string& name) {
-    for(size_t i = 0; i < _shaderUniforms.size(); ++i){
-        if(_shaderUniforms[i]->GetName() == name) return _shaderUniforms[i];
-    }
-    return nullptr;
+    if(_shaderUniforms.count(name) == 0) return nullptr;
+    return _shaderUniforms[name];
 }
 
 mu::ArrayHandle<IShaderUniform*> ShaderProgram::GetShaderUniforms() {
-    return mu::ArrayHandle<IShaderUniform*>(&_shaderUniforms[0], _shaderUniforms.size(), false);
+    IShaderUniform** uniformsAr = new IShaderUniform*[_shaderUniforms.size()];
+    size_t i = 0;
+    for(auto const& it : _shaderUniforms) {
+        uniformsAr[i] = it.second;
+        ++i;
+    }
+    return mu::ArrayHandle<IShaderUniform*>(&uniformsAr[0], _shaderUniforms.size(), true);
 }
 
 mu::ArrayHandle<ShaderUniformInfo> ShaderProgram::GetCompiledUniforms() {
@@ -219,16 +226,12 @@ mu::ArrayHandle<ShaderUniformInfo> ShaderProgram::GetCompiledUniforms() {
 }
 
 bool ShaderProgram::IsUniform(std::string const& uniformName) {
-    for(size_t i = 0; i < _shaderUniforms.size(); ++i){
-        if(_shaderUniforms[i]->GetName() == uniformName) return true;
-    }
-    return false;
+    return (_shaderUniforms.count(uniformName) != 0);
 }
 
 void ShaderProgram::UpdateUniforms() {
-    IShaderUniform** su = &_shaderUniforms[0];
-    for(size_t i = 0; i < _shaderUniforms.size(); ++i){
-        su[i]->Update();
+    for(auto const& it : _shaderUniforms) {
+        it.second->Update();
     }
 }
 
@@ -445,9 +448,14 @@ ShaderProgram* ShaderProgram::DefaultWithTexture() {
         "uniform vec4 "+std::string(MR_SHADER_COLOR_V)+";\n"
 
         "out vec4 "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+";\n"
-
+        "const vec4 lightPos = vec4(0, 0, 100, 1);"
+        "const float lightRoughness = 0.0;"
+        "vec4 OrenNyar(vec3 albedo, float roughness, vec3 faceNormal, vec3 lightDir, vec3 viewNormal) { vec3 n = normalize(faceNormal); vec3 l = normalize(-lightDir); vec3 v = normalize(viewNormal); float rough2 = roughness * roughness; float A = 1.0f - 0.5f * (rough2 / (rough2 + 0.57f)); float B = 0.45f * (rough2 / (rough2 + 0.09)); float a1 = acos( dot( v, n ) ); float a2 = acos( dot( l, n ) ); float C = sin(max(a1, a2)) * tan(min(a1, a2)); float gamma = dot(v - n * dot( v, n ), l - n * dot( l, n )); float final = (A + B * max( 0.0f, gamma ) * C); return vec4( albedo * max( 0.0f, dot( n, l ) ) * final, 1.0f ); }"
         "void main() {"
-        "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+" = texture("+std::string(MR_SHADER_COLOR_TEX)+", MR_VertexTexCoord) * vec4(MR_VertexNormal, 1);"
+        "   vec3 albedoColor = texture("+std::string(MR_SHADER_COLOR_TEX)+", MR_VertexTexCoord).xyz;"
+        "   vec3 lightNormal = normalize(MR_LocalVertexPos * "+std::string(MR_SHADER_MODEL_MAT4)+" - lightPos).xyz;"
+        // * lightF * dot(vec4(-1 * MR_VertexNormal, 0),
+        "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+" = OrenNyar(albedoColor, lightRoughness, (vec4(MR_VertexNormal,0) * "+std::string(MR_SHADER_MODEL_MAT4)+").xyz, lightNormal, (vec4(MR_VertexNormal, 0) * "+std::string(MR_SHADER_VIEW_MAT4)+" * "+std::string(MR_SHADER_MODEL_MAT4)+").xyz);"
         "}";
 
     IShader* sh[2] { dynamic_cast<mr::IShader*>(Shader::CreateAndCompile(IShader::Type::Vertex, vs)), dynamic_cast<mr::IShader*>(Shader::CreateAndCompile(IShader::Type::Fragment, fs))};

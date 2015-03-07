@@ -232,17 +232,13 @@ public:
 
     virtual ITexture::Types GetType() = 0;
 
-    virtual void Bind(unsigned short const& unit) = 0;
-    virtual unsigned short Bind() = 0; //Binds at any free texture unit. returns 0 if failed.
-    virtual ITexture* ReBind(unsigned short const& unit) = 0;
+    virtual bool Create(const ITexture::Types& type) = 0;
 
-    virtual void Create(const ITexture::Types& type) = 0;
-
-    virtual void GetData(const int& mipMapLevel,
+    virtual bool GetData(const int& mipMapLevel,
                          const ITexture::DataFormat& dformat, const ITexture::DataType& dtype, unsigned int const& dstBufferSize,
                          void* dstBuffer) = 0; //dstBufferSize should be enought for data
 
-    virtual void SetData(const int& mipMapLevel,
+    virtual bool SetData(const int& mipMapLevel,
                          const ITexture::DataFormat& dformat, const ITexture::DataType& dtype, const ITexture::StorageDataFormat& sdFormat,
                          const int& width, const int& height, const int& depth,
                          void* data) = 0;
@@ -261,7 +257,7 @@ public:
 
     virtual bool Complete(bool mipMaps) = 0;
 
-    virtual void UpdateInfo() = 0;
+    virtual bool UpdateInfo() = 0;
 
     /* GPUObjectHandle */
     //virtual unsigned int GetGPUHandle();
