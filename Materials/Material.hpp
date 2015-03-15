@@ -26,6 +26,7 @@ public:
     inline MaterialDescr GetDescription() override { return _descr; }
     inline MaterialShaderParams GetShaderParams() override { return _shaderParams; }
     inline IShaderProgram* GetShaderProgram() const override { return _program; }
+    inline void SetShaderProgram(IShaderProgram* sp) override { _program = sp; }
 
     DefaultMaterial();
     virtual ~DefaultMaterial();
@@ -34,6 +35,7 @@ protected:
     MaterialDescr _descr;
     MaterialShaderParams _shaderParams;
     bool _twoSided;
+	ITexture* texColorPtr;
 };
 
 MaterialFlag MaterialFlagGetUsed();

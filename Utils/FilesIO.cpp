@@ -4,6 +4,9 @@
 
 namespace mr {
 
+template<>
+mr::FileUtils mu::StaticSingleton<mr::FileUtils>::_singleton_instance = mr::FileUtils();
+
 bool FileWriter::IsOpen() {
     return _f.is_open();
 }

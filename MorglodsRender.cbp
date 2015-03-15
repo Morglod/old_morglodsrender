@@ -64,6 +64,8 @@
 		<Unit filename="Buffers/Buffers.hpp" />
 		<Unit filename="Buffers/BuffersConfig.hpp" />
 		<Unit filename="Buffers/BuffersInterfaces.hpp" />
+		<Unit filename="Buffers/BuffersManager.cpp" />
+		<Unit filename="Buffers/BuffersManager.hpp" />
 		<Unit filename="Buffers/VirtualBuffer.cpp" />
 		<Unit filename="Buffers/VirtualBuffer.hpp" />
 		<Unit filename="BuildConfig.hpp" />

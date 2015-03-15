@@ -3,7 +3,6 @@
 #include <Events.hpp>
 
 #include <string>
-#include <memory>
 #include <glm/glm.hpp>
 
 namespace std {
@@ -25,7 +24,7 @@ namespace mr {
 class IObjectHandle {
 public:
     mu::Event<IObjectHandle*> OnDestroy;
-    virtual void Destroy() {}
+    virtual void Destroy();
     virtual ~IObjectHandle();
 };
 

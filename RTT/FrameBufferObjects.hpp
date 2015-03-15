@@ -32,6 +32,7 @@ public:
 
     void ToTarget(TargetBuffer const& targetBuffer, glm::ivec4 const& srcRect, glm::ivec4 const& dstRect, AttachmentTarget const& attachmentTarget, TargetFilter const& filter)  override;
 
+    FrameBuffer();
     virtual ~FrameBuffer();
 protected:
     BindTarget _bindedTarget;

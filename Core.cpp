@@ -4,6 +4,7 @@
 
 #include "Geometry/GeometryManager.hpp"
 #include "Utils/FilesIO.hpp"
+#include "Buffers/BuffersManager.hpp"
 
 #include <GL/glew.h>
 
@@ -13,7 +14,6 @@ PFNGLNAMEDBUFFERSTORAGEEXTPROC __glewNamedBufferStorageEXT;
 namespace mr {
 
 void DestroyAllTextures();
-void DestroyAllBuffers();
 void DestroyAllShaderPrograms();
 
 }
@@ -34,7 +34,7 @@ bool mr::Init() {
 
 void mr::Shutdown() {
     mr::DestroyAllTextures();
-    mr::DestroyAllBuffers();
+    mr::GPUBuffersManager::GetInstance().DestroyAllBuffers();
     mr::DestroyAllShaderPrograms();
     mr::GeometryManager::DestroyInstance();
 }

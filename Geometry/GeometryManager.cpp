@@ -6,6 +6,8 @@
 
 namespace mr {
 
+template<>
+mr::GeometryManager * mu::Singleton<mr::GeometryManager>::_singleton_instance = nullptr;
 
 IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* vertexData, const size_t& vertexNum,
                              IIndexFormat* indexFormat, void* indexData, const size_t& indexNum,

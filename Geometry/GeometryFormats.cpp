@@ -91,6 +91,18 @@ InterfaceType* __MR_GEOM_FORMAT_CACHE_FUNC_(Type* what, std::vector<CacheType>& 
 
 namespace mr {
 
+template<>
+mr::VertexDataTypeInt mu::StaticSingleton<mr::VertexDataTypeInt>::_singleton_instance = mr::VertexDataTypeInt();
+
+template<>
+mr::VertexDataTypeUInt mu::StaticSingleton<mr::VertexDataTypeUInt>::_singleton_instance = mr::VertexDataTypeUInt();
+
+template<>
+mr::VertexDataTypeFloat mu::StaticSingleton<mr::VertexDataTypeFloat>::_singleton_instance = mr::VertexDataTypeFloat();
+
+template<>
+mr::VertexAttributePos3F mu::StaticSingleton<mr::VertexAttributePos3F>::_singleton_instance = mr::VertexAttributePos3F();
+
 IVertexDataType* VertexDataTypeCustom::Cache() {
     return __MR_GEOM_FORMAT_CACHE_FUNC_<mr::__VertexDataTypeCached, IVertexDataType, VertexDataTypeCustom> (this, __MR_VERTEX_DATA_TYPE_CACHED_);
 }

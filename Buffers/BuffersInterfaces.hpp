@@ -4,8 +4,6 @@
 #define _MR_BUFFERS_INTERFACES_H_
 
 #include "BuffersConfig.hpp"
-
-#include "../Utils/Memory.hpp"
 #include "../CoreObjects.hpp"
 
 #include <memory>
@@ -14,25 +12,6 @@ namespace mr {
 
 class IGPUBuffer : public IGPUObjectHandle {
 public:
-    enum BindTarget {
-        ArrayBuffer = 0,
-        AtomicCounterBuffer = 1,
-        CopyReadBuffer,
-        CopyWriteBuffer,
-        DrawIndirectBuffer,
-        DispatchIndirectBuffer,
-        ElementArrayBuffer,
-        PixelPackBuffer,
-        PixelUnpackBuffer,
-        QueryBuffer,
-        ShaderStorageBuffer,
-        TextureBuffer,
-        TransformFeedbackBuffer,
-        UniformBuffer,
-
-        NotBinded = 255
-    };
-
     enum Usage {
         Static = 0,
         FastChange = 1
@@ -48,9 +27,7 @@ public:
 
     class IMappedRange {
     public:
-        /*
-            Example: (Write | FlushExplicit)
-        */
+        //Example: (Write | FlushExplicit)
         enum Flags {
             Read = 0x0001,
             Write = 0x0002,
@@ -76,8 +53,6 @@ public:
 
     typedef std::shared_ptr<IMappedRange> IMappedRangePtr;
     typedef std::weak_ptr<IMappedRange> IMappedRangeWeakPtr;
-
-    mu::Event<IGPUBuffer*, const IGPUBuffer::Usage&, const size_t&> OnAllocated;
 
     virtual bool Allocate(const IGPUBuffer::Usage& usage, const size_t& size) = 0;
     virtual Usage GetUsage() = 0;

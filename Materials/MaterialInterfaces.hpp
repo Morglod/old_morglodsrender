@@ -14,6 +14,7 @@
 namespace mr {
 
 class IShaderProgram;
+class ITexture;
 
 typedef unsigned int MaterialFlag;
 const MaterialFlag MaterialFlag_Default = 0;
@@ -74,6 +75,7 @@ public:
     virtual MaterialShaderParams GetShaderParams() = 0;
     virtual MaterialDescr GetDescription() = 0;
     virtual IShaderProgram* GetShaderProgram() const = 0;
+    virtual void SetShaderProgram(IShaderProgram* sp) = 0;
 
     virtual ~IMaterial() {}
 };

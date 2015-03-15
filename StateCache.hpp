@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Buffers/BuffersInterfaces.hpp"
-
 #include <Containers.hpp>
 #include <vector>
 #include <unordered_map>
@@ -19,6 +17,25 @@ typedef std::weak_ptr<StateCache> StateCacheWeakPtr;
 
 class StateCache {
 public:
+    enum BufferBindTarget : unsigned char {
+        ArrayBuffer = 0,
+        AtomicCounterBuffer = 1,
+        CopyReadBuffer,
+        CopyWriteBuffer,
+        DrawIndirectBuffer,
+        DispatchIndirectBuffer,
+        ElementArrayBuffer,
+        PixelPackBuffer,
+        PixelUnpackBuffer,
+        QueryBuffer,
+        ShaderStorageBuffer,
+        TextureBuffer,
+        TransformFeedbackBuffer,
+        UniformBuffer,
+
+        NotBinded = 255
+    };
+
     void ResetCache();
     bool ReBindBuffers();
     bool ReBindUBOs();
@@ -27,13 +44,13 @@ public:
 	bool ReBindFrameBuffers();
     bool ReBindAll();
 
-    bool BindBuffer(IGPUBuffer* buffer, IGPUBuffer::BindTarget const& target);
+    bool BindBuffer(IGPUBuffer* buffer, BufferBindTarget const& target);
     bool BindUniformBuffer(IGPUBuffer* buffer, unsigned int const& index);
     bool BindTransformFeedbackBuffer(IGPUBuffer* buffer, unsigned int const& index);
-    IGPUBuffer* GetBindedBuffer(IGPUBuffer::BindTarget const& target);
+    IGPUBuffer* GetBindedBuffer(BufferBindTarget const& target);
     IGPUBuffer* GetBindedUniformBuffer(unsigned int const& index);
     IGPUBuffer* GetBindedTransformFeedbackBuffer(unsigned int const& index);
-    bool ReBindBuffer(IGPUBuffer* buffer, IGPUBuffer::BindTarget const& target, IGPUBuffer** was);
+    bool ReBindBuffer(IGPUBuffer* buffer, BufferBindTarget const& target, IGPUBuffer** was);
 
     bool BindTexture(ITexture* texture, unsigned int const& unit);
     ITexture* GetBindedTexture(unsigned int const& unit);

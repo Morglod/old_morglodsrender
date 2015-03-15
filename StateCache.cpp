@@ -144,11 +144,11 @@ bool StateCache::ReBindAll() {
 			ReBindFrameBuffers();
 }
 
-bool StateCache::BindBuffer(IGPUBuffer* buffer, IGPUBuffer::BindTarget const& target) {
-    if(target == IGPUBuffer::NotBinded) {
+bool StateCache::BindBuffer(IGPUBuffer* buffer, BufferBindTarget const& target) {
+    /*if(target == IGPUBuffer::NotBinded) {
         mr::Log::LogString("Strange \"NotBinded\" target in StateCache::BindBuffer.", MR_LOG_LEVEL_WARNING);
         return false;
-    }
+    }*/
 
     AssertAndExec((size_t)target < MR_BUFFERS_BIND_TARGETS_NUM, return false);
 
@@ -213,7 +213,7 @@ bool StateCache::BindTransformFeedbackBuffer(IGPUBuffer* buffer, unsigned int co
     return true;
 }
 
-IGPUBuffer* StateCache::GetBindedBuffer(IGPUBuffer::BindTarget const& target) {
+IGPUBuffer* StateCache::GetBindedBuffer(BufferBindTarget const& target) {
     AssertAndExec((size_t)target < MR_BUFFERS_BIND_TARGETS_NUM, return nullptr);
     return _buffers.GetArray()[(size_t)target];
 }
@@ -228,7 +228,7 @@ IGPUBuffer* StateCache::GetBindedTransformFeedbackBuffer(unsigned int const& ind
     return _transformFeedbacks[index];
 }
 
-bool StateCache::ReBindBuffer(IGPUBuffer* buffer, IGPUBuffer::BindTarget const& target, IGPUBuffer** was) {
+bool StateCache::ReBindBuffer(IGPUBuffer* buffer, BufferBindTarget const& target, IGPUBuffer** was) {
     IGPUBuffer* binded = GetBindedBuffer(target);
     if(binded == buffer) return true;
     *was = binded;

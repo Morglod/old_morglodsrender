@@ -23,26 +23,26 @@ void DefaultMaterial::Create(MaterialDescr const& descr) {
     _shaderParams.colorDiffuse = _descr.colorDiffuse;
 
     if((!_descr.texColor.empty()) && _descr.texColor != "") {
-        auto tex = mr::Texture::FromFile(_descr.texColor);
+        texColorPtr = mr::Texture::FromFile(_descr.texColor);
 
-        if(tex) {
+        if(texColorPtr) {
             mr::ITextureSettings* texSettings = new mr::TextureSettings();
             texSettings->Create();
-            tex->SetSettings(texSettings);
-            StateCache* stateCache = StateCache::GetDefault();
-            if(!stateCache->BindTexture(tex, 0)) {
+            texColorPtr->SetSettings(texSettings);
+            /*StateCache* stateCache = StateCache::GetDefault();
+            if(!stateCache->BindTexture(texColorPtr, 0)) {
                 mr::Log::LogString("Bind texture failed in DefaultMaterial::Create.", MR_LOG_LEVEL_ERROR);
                 return;
-            }
+            }*/
+            _shaderParams.texColor.handle = texColorPtr->GetGPUHandle();
         }
 
-        _shaderParams.texColor.handle = tex->GetGPUHandle();
     }
 }
 
 bool DefaultMaterial::Use() {
     if(_program) _program->Use();
-
+    if(texColorPtr != nullptr) StateCache::GetDefault()->BindTexture(texColorPtr, 0);
     return true;
 }
 
@@ -50,7 +50,7 @@ void DefaultMaterial::OnMaterialFlagChanged(MaterialFlag const& newFlag) {
     this->Use();
 }
 
-DefaultMaterial::DefaultMaterial() : _program(nullptr) {
+DefaultMaterial::DefaultMaterial() : _program(nullptr), texColorPtr(nullptr) {
 }
 
 DefaultMaterial::~DefaultMaterial() {

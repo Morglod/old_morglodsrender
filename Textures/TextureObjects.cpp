@@ -25,25 +25,26 @@ unsigned int MR_TEXTURE_TARGET2[]{
 namespace mr {
 
 bool Texture::Create(ITexture::Types const& type) {
-    if(GetGPUHandle() != 0) {
+    unsigned int handle = GetGPUHandle();
+    if(handle != 0) {
         Destroy();
     }
 
-    if(mr::gl::IsOpenGL45()) glCreateTextures(type, 1, &_handle);
-    else glGenTextures(1, &_handle);
+    if(mr::gl::IsOpenGL45()) glCreateTextures(type, 1, &handle);
+    else glGenTextures(1, &handle);
     _texture_type = type;
 
     if(mr::gl::IsOpenGL45()) {
-        glTextureParameteri(_handle, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTextureParameteri(_handle, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTextureParameteri(_handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTextureParameteri(_handle, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameteri(handle, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(handle, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTextureParameteri(handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteri(handle, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
     else if(mr::gl::IsDirectStateAccessSupported()) {
-        glTextureParameteriEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTextureParameteriEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTextureParameteriEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTextureParameteriEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameteriEXT(handle, MR_TEXTURE_TARGET2[_texture_type], GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteriEXT(handle, MR_TEXTURE_TARGET2[_texture_type], GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTextureParameteriEXT(handle, MR_TEXTURE_TARGET2[_texture_type], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteriEXT(handle, MR_TEXTURE_TARGET2[_texture_type], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
     else {
         StateCache* stateCache = StateCache::GetDefault();
@@ -72,9 +73,9 @@ bool Texture::GetData(const int& mipMapLevel,
     Assert(dstBuffer != nullptr);
 
     if(mr::gl::IsOpenGL45()) {
-        glGetTextureImage(_handle, mipMapLevel, (int)dformat, (int)dtype, dstBufferSize, dstBuffer);
+        glGetTextureImage(GetGPUHandle(), mipMapLevel, (int)dformat, (int)dtype, dstBufferSize, dstBuffer);
     } else if(mr::gl::IsDirectStateAccessSupported()) {
-        glGetTextureImageEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], mipMapLevel, (int)dformat, (int)dtype, dstBuffer);
+        glGetTextureImageEXT(GetGPUHandle(), MR_TEXTURE_TARGET2[_texture_type], mipMapLevel, (int)dformat, (int)dtype, dstBuffer);
     } else {
         StateCache* stateCache = StateCache::GetDefault();
         ITexture* binded = nullptr;
@@ -99,17 +100,19 @@ bool mr::Texture::SetData(const int& mipMapLevel,
     Assert(width > 0);
     Assert(data != nullptr);
 
+
     if(mr::gl::IsDirectStateAccessSupported()) {
+        unsigned int handle = GetGPUHandle();
         glPushClientAttribDefaultEXT(GL_CLIENT_PIXEL_STORE_BIT);
         switch(_texture_type) {
         case Base1D:
-            glTextureImage1DEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], mipMapLevel, (int)sdFormat, width, 0, (int)dformat, (int)dtype, data);
+            glTextureImage1DEXT(handle, MR_TEXTURE_TARGET2[_texture_type], mipMapLevel, (int)sdFormat, width, 0, (int)dformat, (int)dtype, data);
             break;
         case Base2D:
-            glTextureImage2DEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], mipMapLevel, (int)sdFormat, width, height, 0, (int)dformat, (int)dtype, data);
+            glTextureImage2DEXT(handle, MR_TEXTURE_TARGET2[_texture_type], mipMapLevel, (int)sdFormat, width, height, 0, (int)dformat, (int)dtype, data);
             break;
         case Base3D:
-            glTextureImage3DEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], mipMapLevel, (int)sdFormat, width, height, depth, 0, (int)dformat, (int)dtype, data);
+            glTextureImage3DEXT(handle, MR_TEXTURE_TARGET2[_texture_type], mipMapLevel, (int)sdFormat, width, height, depth, 0, (int)dformat, (int)dtype, data);
             break;
         }
         glPopClientAttrib();
@@ -148,28 +151,31 @@ bool Texture::UpdateData(const int& mipMapLevel,
     Assert(width > 0);
     Assert(xOffset > 0);
 
+
     if(mr::gl::IsOpenGL45()) {
+        unsigned int handle = GetGPUHandle();
         switch(_texture_type) {
         case Base1D:
-            glTextureSubImage1D(_handle, mipMapLevel, xOffset, width, (unsigned int)dformat, (unsigned int)dtype, data);
+            glTextureSubImage1D(handle, mipMapLevel, xOffset, width, (unsigned int)dformat, (unsigned int)dtype, data);
             break;
         case Base2D:
-            glTextureSubImage2D(_handle, mipMapLevel, xOffset, yOffset, width, height, (unsigned int)dformat, (unsigned int)dtype, data);
+            glTextureSubImage2D(handle, mipMapLevel, xOffset, yOffset, width, height, (unsigned int)dformat, (unsigned int)dtype, data);
             break;
         case Base3D:
-            glTextureSubImage3D(_handle, mipMapLevel, xOffset, yOffset, zOffset, width, height, depth, (unsigned int)dformat, (unsigned int)dtype, data);
+            glTextureSubImage3D(handle, mipMapLevel, xOffset, yOffset, zOffset, width, height, depth, (unsigned int)dformat, (unsigned int)dtype, data);
             break;
         }
     } else if(mr::gl::IsDirectStateAccessSupported()) {
+        unsigned int handle = GetGPUHandle();
         switch(_texture_type) {
         case Base1D:
-            glTextureSubImage1DEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], mipMapLevel, xOffset, width, (unsigned int)dformat, (unsigned int)dtype, data);
+            glTextureSubImage1DEXT(handle, MR_TEXTURE_TARGET2[_texture_type], mipMapLevel, xOffset, width, (unsigned int)dformat, (unsigned int)dtype, data);
             break;
         case Base2D:
-            glTextureSubImage2DEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], mipMapLevel, xOffset, yOffset, width, height, (unsigned int)dformat, (unsigned int)dtype, data);
+            glTextureSubImage2DEXT(handle, MR_TEXTURE_TARGET2[_texture_type], mipMapLevel, xOffset, yOffset, width, height, (unsigned int)dformat, (unsigned int)dtype, data);
             break;
         case Base3D:
-            glTextureSubImage3DEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], mipMapLevel, xOffset, yOffset, zOffset, width, height, depth, (unsigned int)dformat, (unsigned int)dtype, data);
+            glTextureSubImage3DEXT(handle, MR_TEXTURE_TARGET2[_texture_type], mipMapLevel, xOffset, yOffset, zOffset, width, height, depth, (unsigned int)dformat, (unsigned int)dtype, data);
             break;
         }
     } else {
@@ -206,19 +212,20 @@ bool mr::Texture::UpdateDataFromBuffer(const int& mipMapLevel,
 {
     StateCache* stateCache = StateCache::GetDefault();
     IGPUBuffer* binded = nullptr;
-    if(!stateCache->ReBindBuffer(buffer, IGPUBuffer::PixelUnpackBuffer, &binded)) {
+    if(!stateCache->ReBindBuffer(buffer, StateCache::PixelUnpackBuffer, &binded)) {
         mr::Log::LogString("Bind buffer failed in Texture::UpdateDataFromBuffer.", MR_LOG_LEVEL_ERROR);
         return false;
     }
 
     const bool b = this->UpdateData(mipMapLevel, xOffset, yOffset, zOffset, width, height, depth, dformat, dtype, 0);
-    if(binded) stateCache->BindBuffer(binded, IGPUBuffer::PixelUnpackBuffer);
+    if(binded) stateCache->BindBuffer(binded, StateCache::PixelUnpackBuffer);
 
     return b;
 }
 
 bool mr::Texture::Complete(bool mipMaps) {
-    if(_handle == 0) {
+    unsigned int handle = GetGPUHandle();
+    if(handle == 0) {
         mr::Log::LogString("Failed Texture::Complete. Handle is null.", MR_LOG_LEVEL_ERROR);
         return false;
     }
@@ -230,9 +237,9 @@ bool mr::Texture::Complete(bool mipMaps) {
     mr::MachineInfo::ClearError();
 #endif
         if(mr::gl::IsOpenGL45()) {
-            glGenerateTextureMipmap(_handle);
+            glGenerateTextureMipmap(handle);
         } else if(mr::gl::IsDirectStateAccessSupported()) {
-            glGenerateTextureMipmapEXT(_handle, MR_TEXTURE_TARGET2[_texture_type]);
+            glGenerateTextureMipmapEXT(handle, MR_TEXTURE_TARGET2[_texture_type]);
         } else {
             StateCache* stateCache = StateCache::GetDefault();
             ITexture* binded = nullptr;
@@ -259,7 +266,8 @@ bool mr::Texture::Complete(bool mipMaps) {
 }
 
 bool Texture::UpdateInfo() {
-    if(_handle == 0) {
+    unsigned int handle = GetGPUHandle();
+    if(handle == 0) {
         _sizes = mu::ArrayHandle<TextureSizeInfo>();
         _bits = TextureBitsInfo(0,0,0,0,0);
         _mem_size = 0;
@@ -280,13 +288,13 @@ bool Texture::UpdateInfo() {
 
         int maxW = 0, maxH = 0, maxD = 0;
         if(mr::gl::IsOpenGL45()) {
-            glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_WIDTH, &maxW);
-            glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_HEIGHT, &maxH);
-            glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_DEPTH, &maxD);
+            glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_WIDTH, &maxW);
+            glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_HEIGHT, &maxH);
+            glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_DEPTH, &maxD);
         } else if(mr::gl::IsDirectStateAccessSupported()) {
-            glGetTextureLevelParameterivEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_WIDTH, &maxW);
-            glGetTextureLevelParameterivEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_HEIGHT, &maxH);
-            glGetTextureLevelParameterivEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_DEPTH, &maxD);
+            glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_WIDTH, &maxW);
+            glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_HEIGHT, &maxH);
+            glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_DEPTH, &maxD);
         } else {
             glGetTexLevelParameteriv(MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_WIDTH, &maxW);
             glGetTexLevelParameteriv(MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_HEIGHT, &maxH);
@@ -299,21 +307,21 @@ bool Texture::UpdateInfo() {
 
         int fi = 0, rs = 0, gs = 0, bs = 0, ds = 0, as = 0, cm = 0;
         if(mr::gl::IsOpenGL45()) {
-            glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_INTERNAL_FORMAT, &fi);
-            glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_RED_SIZE, &rs);
-            glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_GREEN_SIZE, &gs);
-            glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_BLUE_SIZE, &bs);
-            glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_DEPTH_SIZE, &ds);
-            glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_ALPHA_SIZE, &as);
-            glGetTextureLevelParameteriv(_handle, 0, GL_TEXTURE_COMPRESSED, &cm);
+            glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_INTERNAL_FORMAT, &fi);
+            glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_RED_SIZE, &rs);
+            glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_GREEN_SIZE, &gs);
+            glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_BLUE_SIZE, &bs);
+            glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_DEPTH_SIZE, &ds);
+            glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_ALPHA_SIZE, &as);
+            glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_COMPRESSED, &cm);
         } else if(mr::gl::IsDirectStateAccessSupported()) {
-            glGetTextureLevelParameterivEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_INTERNAL_FORMAT, &fi);
-            glGetTextureLevelParameterivEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_RED_SIZE, &rs);
-            glGetTextureLevelParameterivEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_GREEN_SIZE, &gs);
-            glGetTextureLevelParameterivEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_BLUE_SIZE, &bs);
-            glGetTextureLevelParameterivEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_DEPTH_SIZE, &ds);
-            glGetTextureLevelParameterivEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_ALPHA_SIZE, &as);
-            glGetTextureLevelParameterivEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_COMPRESSED, &cm);
+            glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_INTERNAL_FORMAT, &fi);
+            glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_RED_SIZE, &rs);
+            glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_GREEN_SIZE, &gs);
+            glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_BLUE_SIZE, &bs);
+            glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_DEPTH_SIZE, &ds);
+            glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_ALPHA_SIZE, &as);
+            glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_COMPRESSED, &cm);
         } else {
             glGetTexLevelParameteriv(MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_INTERNAL_FORMAT, &fi);
             glGetTexLevelParameteriv(MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_RED_SIZE, &rs);
@@ -332,13 +340,13 @@ bool Texture::UpdateInfo() {
             int w = 0, h = 0, d = 0;
 
             if(mr::gl::IsOpenGL45()) {
-                glGetTextureLevelParameteriv(_handle, i, GL_TEXTURE_WIDTH, &w);
-                glGetTextureLevelParameteriv(_handle, i, GL_TEXTURE_HEIGHT, &h);
-                glGetTextureLevelParameteriv(_handle, i, GL_TEXTURE_DEPTH, &d);
+                glGetTextureLevelParameteriv(handle, i, GL_TEXTURE_WIDTH, &w);
+                glGetTextureLevelParameteriv(handle, i, GL_TEXTURE_HEIGHT, &h);
+                glGetTextureLevelParameteriv(handle, i, GL_TEXTURE_DEPTH, &d);
             } else if(mr::gl::IsDirectStateAccessSupported()) {
-                glGetTextureLevelParameterivEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], i, GL_TEXTURE_WIDTH, &w);
-                glGetTextureLevelParameterivEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], i, GL_TEXTURE_HEIGHT, &h);
-                glGetTextureLevelParameterivEXT(_handle, MR_TEXTURE_TARGET2[_texture_type], i, GL_TEXTURE_DEPTH, &d);
+                glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], i, GL_TEXTURE_WIDTH, &w);
+                glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], i, GL_TEXTURE_HEIGHT, &h);
+                glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], i, GL_TEXTURE_DEPTH, &d);
             } else {
                 glGetTexLevelParameteriv(MR_TEXTURE_TARGET2[_texture_type], i, GL_TEXTURE_WIDTH, &w);
                 glGetTexLevelParameteriv(MR_TEXTURE_TARGET2[_texture_type], i, GL_TEXTURE_HEIGHT, &h);
@@ -356,10 +364,10 @@ bool Texture::UpdateInfo() {
 }
 
 void mr::Texture::Destroy() {
-    if(_handle != 0) {
-        glDeleteTextures(1, &_handle);
-        _handle = 0;
-        OnGPUHandleChanged(dynamic_cast<mr::IGPUObjectHandle*>(this), 0);
+    unsigned int handle = GetGPUHandle();
+    if(handle != 0) {
+        glDeleteTextures(1, &handle);
+        SetGPUHandle(0);
     }
 }
 
@@ -373,7 +381,7 @@ mr::Texture::~Texture() {
 
 void mr::TextureList::Bind() {
 	//TODO, BindFunction in StateCache.
-	
+
     const size_t num = _textures.GetNum();
 	const unsigned int* handles = _gpuHandles.GetArray();
     if(GLEW_ARB_multi_bind) {
@@ -421,15 +429,15 @@ void mr::TextureList::SetTextures(mu::ArrayHandle<ITexture*> tex) {
 
 ITexture* Texture::FromFile(std::string const& path) {
     Texture* tex = new Texture();
-	
-	const unsigned int handle = 
+
+	const unsigned int handle =
 		SOIL_load_OGL_texture(	path.c_str(),
                                SOIL_LOAD_AUTO,
                                SOIL_CREATE_NEW_ID,
                                SOIL_FLAG_MIPMAPS);
-							   
+
 	if(handle == 0) return nullptr;
-	tex->_handle = handle;
+	tex->SetGPUHandle(handle);
 	tex->_texture_type = mr::ITexture::Base2D;
 	tex->Complete(true);
 	return dynamic_cast<mr::ITexture*>(tex);
@@ -447,7 +455,7 @@ ITexture* Texture::CreateMipmapChecker() {
     ITexture* tex = dynamic_cast<ITexture*>(new mr::Texture());
     tex->Create(Base2D);
 
-    if(!tex->IsGood()) {
+    if(tex->GetGPUHandle() == 0) {
         delete tex;
         return nullptr;
     }

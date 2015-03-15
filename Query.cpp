@@ -8,12 +8,14 @@
 namespace mr {
 
 void Query::Begin() {
-    if(_handle == 0) {
-        if(mr::gl::IsOpenGL45()) glCreateQueries(_target, 1, &_handle);
-        else glGenQueries(1, &_handle);
+    unsigned int handle = 0;
+    if((handle = GetGPUHandle()) == 0) {
+        if(mr::gl::IsOpenGL45()) glCreateQueries(_target, 1, &handle);
+        else glGenQueries(1, &handle);
+        SetGPUHandle(handle);
     }
-    if(_target == Query::Target::TimeStamp) glQueryCounter(_handle, _target);
-    else glBeginQuery(_target, _handle);
+    if(_target == Query::Target::TimeStamp) glQueryCounter(handle, _target);
+    else glBeginQuery(_target, handle);
 
     _ended = false;
 }
@@ -24,15 +26,16 @@ void Query::End() {
 }
 
 void Query::Destroy() {
-    if(_handle != 0) {
-        glDeleteQueries(1, &_handle);
-        _handle = 0;
-        OnGPUHandleChanged(dynamic_cast<mr::IGPUObjectHandle*>(this), 0);
+    unsigned int handle = GetGPUHandle();
+    if(handle != 0) {
+        glDeleteQueries(1, &handle);
+        SetGPUHandle(0);
     }
 }
 
 bool Query::GetResult(void* dst) {
-    if(_handle == 0) {
+    unsigned int handle = 0;
+    if((handle = GetGPUHandle()) == 0) {
         mr::Log::LogString("Failed Query::GetResult(...). handle is null.", MR_LOG_LEVEL_WARNING);
         return false;
     }
@@ -49,31 +52,31 @@ bool Query::GetResult(void* dst) {
 
     switch(_target) {
     case Query::Target::AnySamplesPassed:
-        glGetQueryObjectiv(_handle, GL_QUERY_RESULT, (int*)dst);
+        glGetQueryObjectiv(handle, GL_QUERY_RESULT, (int*)dst);
         return true;
         break;
     case Query::Target::AnySamplesPassedConservative:
-        glGetQueryObjectiv(_handle, GL_QUERY_RESULT, (int*)dst);
+        glGetQueryObjectiv(handle, GL_QUERY_RESULT, (int*)dst);
         return true;
         break;
     case Query::Target::PrimitivesGenerated:
-        glGetQueryObjectuiv(_handle, GL_QUERY_RESULT, (unsigned int*)dst);
+        glGetQueryObjectuiv(handle, GL_QUERY_RESULT, (unsigned int*)dst);
         return true;
         break;
     case Query::Target::SamplesPassed:
-        glGetQueryObjectuiv(_handle, GL_QUERY_RESULT, (unsigned int*)dst);
+        glGetQueryObjectuiv(handle, GL_QUERY_RESULT, (unsigned int*)dst);
         return true;
         break;
     case Query::Target::TimeElapsed:
-        glGetQueryObjectui64v(_handle, GL_QUERY_RESULT, (uint64_t*)dst);
+        glGetQueryObjectui64v(handle, GL_QUERY_RESULT, (uint64_t*)dst);
         return true;
         break;
     case Query::Target::TimeStamp:
-        glGetQueryObjectui64v(_handle, GL_QUERY_RESULT, (uint64_t*)dst);
+        glGetQueryObjectui64v(handle, GL_QUERY_RESULT, (uint64_t*)dst);
         return true;
         break;
     case Query::Target::TransformFeedbackPrimitivesWritten:
-        glGetQueryObjectuiv(_handle, GL_QUERY_RESULT, (unsigned int*)dst);
+        glGetQueryObjectuiv(handle, GL_QUERY_RESULT, (unsigned int*)dst);
         return true;
         break;
     }
@@ -99,7 +102,7 @@ Query Query::GetQuery(const Query::Target& target) {
     unsigned int handle = 0;
     glGetQueryiv(target, GL_CURRENT_QUERY, (int*)&handle);
     Query q(target);
-    q._handle = handle;
+    q.SetGPUHandle(handle);
     return q;
 }
 

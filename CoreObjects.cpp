@@ -2,8 +2,6 @@
 
 namespace mr {
 
-size_t IGPUObjectHandle::GetGPUMem() {
-    return 0;
-}
+IGPUObjectHandle::~IGPUObjectHandle() {}
 
 }

@@ -33,10 +33,10 @@ bool FrameBuffer::Create() {
         Destroy();
     }
 
-    if(mr::gl::IsOpenGL45())
-        glCreateFramebuffers(1, &_handle);
-    else
-        glGenFramebuffers(1, &_handle);
+    unsigned int handle = 0;
+    if(mr::gl::IsOpenGL45()) glCreateFramebuffers(1, &handle);
+    else glGenFramebuffers(1, &handle);
+    SetGPUHandle(handle);
 
     return true;
 }
@@ -131,10 +131,9 @@ bool FrameBuffer::SetRenderBuffer(IRenderBuffer* renderBuffer, Attachment const&
     } else {
         IFrameBuffer* binded = nullptr;
         if(_bindedTarget == NotBinded) binded = mr::FrameBuffer::ReBind(IFrameBuffer::DrawReadFramebuffer);
-        auto bindedRB = renderBuffer->ReBind();
+        renderBuffer->Bind();
         glFramebufferRenderbuffer(IFrameBuffer::DrawReadFramebuffer, attachment, GL_RENDERBUFFER, renderBufferHandle);
         if(binded) binded->Bind(IFrameBuffer::DrawReadFramebuffer);
-        if(bindedRB) bindedRB->Bind();
     }
     return true;
 }
@@ -152,24 +151,25 @@ bool FrameBuffer::SetRenderBufferToColor(IRenderBuffer* renderBuffer, unsigned i
     } else {
         IFrameBuffer* binded = nullptr;
         if(_bindedTarget == NotBinded) binded = mr::FrameBuffer::ReBind(IFrameBuffer::DrawReadFramebuffer);
-        auto bindedRB = renderBuffer->ReBind();
+        renderBuffer->Bind();
         glFramebufferRenderbuffer(IFrameBuffer::DrawReadFramebuffer, GL_COLOR_ATTACHMENT0 + colorSlot, GL_RENDERBUFFER, renderBufferHandle);
         if(binded) binded->Bind(IFrameBuffer::DrawReadFramebuffer);
-        if(bindedRB) bindedRB->Bind();
     }
     return true;
 }
 
 void FrameBuffer::Destroy() {
-    glDeleteFramebuffers(1, &_handle);
-    _handle = 0;
-    OnGPUHandleChanged(dynamic_cast<mr::IGPUObjectHandle*>(this), 0);
+    unsigned int handle = GetGPUHandle();
+    if(handle != 0) {
+        glDeleteFramebuffers(1, &handle);
+        SetGPUHandle(0);
+    }
 }
 
 bool FrameBuffer::DrawToTarget(TargetBuffer const& targetBuffer) {
     //TODO check for errors
     if(mr::gl::IsDirectStateAccessSupported()) {
-        glNamedFramebufferDrawBuffer(_handle, targetBuffer);
+        glNamedFramebufferDrawBuffer(GetGPUHandle(), targetBuffer);
     } else {
         IFrameBuffer* binded = nullptr;
         if(_bindedTarget == NotBinded) binded = mr::FrameBuffer::ReBind(IFrameBuffer::DrawReadFramebuffer);
@@ -181,8 +181,8 @@ bool FrameBuffer::DrawToTarget(TargetBuffer const& targetBuffer) {
 
 bool FrameBuffer::DrawToAttachment(Attachment const& attachment) {
     //TODO check for errors
-    if(mr::gl::IsDirectStateAccessSupported()) {
-        glNamedFramebufferDrawBuffer(_handle, attachment);
+    if(mr::gl::IsOpenGL45()) {
+        glNamedFramebufferDrawBuffer(GetGPUHandle(), attachment);
     } else {
         IFrameBuffer* binded = nullptr;
         if(_bindedTarget == NotBinded) binded = mr::FrameBuffer::ReBind(IFrameBuffer::DrawReadFramebuffer);
@@ -194,8 +194,8 @@ bool FrameBuffer::DrawToAttachment(Attachment const& attachment) {
 
 bool FrameBuffer::DrawToColor(unsigned int const& colorSlot) {
     //TODO check for errors
-    if(mr::gl::IsDirectStateAccessSupported()) {
-        glNamedFramebufferDrawBuffer(_handle, GL_COLOR_ATTACHMENT0 + colorSlot);
+    if(mr::gl::IsOpenGL45()) {
+        glNamedFramebufferDrawBuffer(GetGPUHandle(), GL_COLOR_ATTACHMENT0 + colorSlot);
     } else {
         IFrameBuffer* binded = nullptr;
         if(_bindedTarget == NotBinded) binded = mr::FrameBuffer::ReBind(IFrameBuffer::DrawReadFramebuffer);
@@ -217,8 +217,8 @@ bool FrameBuffer::DrawTo(mu::ArrayHandle<TargetBuffer> const& targetBuffers,
 bool FrameBuffer::DrawTo(mu::ArrayHandle<unsigned int> const& drawBuffers)
 {
     //TODO check for errors
-    if(mr::gl::IsDirectStateAccessSupported()) {
-        glNamedFramebufferDrawBuffers(_handle, drawBuffers.GetNum(), drawBuffers.GetArray());
+    if(mr::gl::IsOpenGL45()) {
+        glNamedFramebufferDrawBuffers(GetGPUHandle(), drawBuffers.GetNum(), drawBuffers.GetArray());
     } else {
         IFrameBuffer* binded = nullptr;
         if(_bindedTarget == NotBinded) binded = mr::FrameBuffer::ReBind(IFrameBuffer::DrawReadFramebuffer);
@@ -238,6 +238,8 @@ void FrameBuffer::ToTarget(TargetBuffer const& targetBuffer, glm::ivec4 const& s
         if(binded) binded->Bind(IFrameBuffer::DrawReadFramebuffer);
     }
 }
+
+FrameBuffer::FrameBuffer() : _bindedTarget(NotBinded) {}
 
 FrameBuffer::~FrameBuffer() {}
 

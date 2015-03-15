@@ -69,8 +69,6 @@ protected:
 /** !! DO NOT USE IT ON VirtualGPUBuffers !! **/
 bool GPUBufferCopy(IGPUBuffer* src, IGPUBuffer* dst, const unsigned int& srcOffset, const unsigned int& dstOffset, const unsigned int& size);
 
-void DestroyAllBuffers();
-
 }
 
 #endif // _MR_BUFFERS_H_

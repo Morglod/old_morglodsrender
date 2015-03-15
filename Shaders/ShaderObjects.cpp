@@ -19,14 +19,14 @@ namespace mr {
 
 bool Shader::Compile(IShader::Type const& type, std::string const& code) {
     _compiled = false;
-
-    if(_handle == 0) {
+    unsigned int handle = 0;
+    if((handle = GetGPUHandle()) == 0) {
 #ifdef MR_CHECK_LARGE_GL_ERRORS
         int gl_er = 0;
         mr::MachineInfo::ClearError();
 #endif
-         _handle = glCreateShader(type);
-         OnGPUHandleChanged(dynamic_cast<IGPUObjectHandle*>(this), _handle);
+         handle = glCreateShader(type);
+         SetGPUHandle(handle);
 #ifdef MR_CHECK_LARGE_GL_ERRORS
         if(mr::MachineInfo::CatchError(0, &gl_er)) {
             std::string err_str = "Error in Shader::Compile : glCreateShader ended with \"" + std::to_string(gl_er) + "\" code. ";
@@ -44,7 +44,7 @@ bool Shader::Compile(IShader::Type const& type, std::string const& code) {
 
     mr::ShaderCompiler compiler;
     compiler.debug_log = false;
-    mr::ShaderCompilationOutput out = compiler.Compile(code, (IShaderCompiler::ShaderType)type, _handle);
+    mr::ShaderCompilationOutput out = compiler.Compile(code, (IShaderCompiler::ShaderType)type, handle);
     compiler.Release();
 
     if(!out.Good()) {
@@ -65,10 +65,10 @@ bool Shader::Compile(IShader::Type const& type, std::string const& code) {
 
 void Shader::Destroy() {
     _compiled = false;
-    if(_handle != 0) {
-        glDeleteShader(_handle);
-        _handle = 0;
-        OnGPUHandleChanged(dynamic_cast<IGPUObjectHandle*>(this), _handle);
+    unsigned int handle = GetGPUHandle();
+    if(handle != 0) {
+        glDeleteShader(handle);
+        SetGPUHandle(0);
     }
 }
 
@@ -94,13 +94,15 @@ bool ShaderProgram::Link(mu::ArrayHandle<IShader*> shaders) {
     _linked = false;
     AssertAndExec(shaders.GetNum() != 0, return false);
 
-    if(_handle == 0) {
+    unsigned int handle = 0;
+
+    if((handle = GetGPUHandle()) == 0) {
 #ifdef MR_CHECK_LARGE_GL_ERRORS
         std::string gl_str = "";
         mr::MachineInfo::ClearError();
 #endif
-        _handle = glCreateProgram();
-        OnGPUHandleChanged(dynamic_cast<IGPUObjectHandle*>(this), _handle);
+        handle = glCreateProgram();
+        SetGPUHandle(handle);
 #ifdef MR_CHECK_LARGE_GL_ERRORS
         if(mr::MachineInfo::CatchError(&gl_str, 0)) {
             mr::Log::LogString("Failed ShaderProgram::Link(). Failed creating OpenGL shader program. " + gl_str, MR_LOG_LEVEL_ERROR);
@@ -117,7 +119,7 @@ bool ShaderProgram::Link(mu::ArrayHandle<IShader*> shaders) {
 
     mr::ShaderCompiler compiler;
     compiler.debug_log = false;
-    mr::ShaderCompilationOutput out = compiler.Link(shadersHandles, _handle);
+    mr::ShaderCompilationOutput out = compiler.Link(shadersHandles, handle);
     compiler.Release();
 
     if(!out.Good()) {
@@ -140,44 +142,50 @@ IShaderUniform* ShaderProgram::CreateUniform(const std::string& name, const mr::
 }
 
 void ShaderProgram::SetUniform(const std::string& name, const int& value) {
-    if(_handle) {
-        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniform1i(_handle, glGetUniformLocation(_handle, name.c_str()), value);
-        else glUniform1i(glGetUniformLocation(_handle, name.c_str()), value);
+    unsigned int handle = GetGPUHandle();
+    if(handle) {
+        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniform1i(handle, glGetUniformLocation(handle, name.c_str()), value);
+        else glUniform1i(glGetUniformLocation(handle, name.c_str()), value);
     }
 }
 
 void ShaderProgram::SetUniform(const std::string& name, const float& value) {
-    if(_handle) {
-        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniform1f(_handle, glGetUniformLocation(_handle, name.c_str()), value);
-        else glUniform1f(glGetUniformLocation(_handle, name.c_str()), value);
+    unsigned int handle = GetGPUHandle();
+    if(handle) {
+        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniform1f(handle, glGetUniformLocation(handle, name.c_str()), value);
+        else glUniform1f(glGetUniformLocation(handle, name.c_str()), value);
     }
 }
 
 void ShaderProgram::SetUniform(const std::string& name, const glm::vec2& value) {
-    if(_handle) {
-        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniform2fv(_handle, glGetUniformLocation(_handle, name.c_str()), 2, &value.x);
-        else glUniform2fv(glGetUniformLocation(_handle, name.c_str()), 2, &value.x);
+    unsigned int handle = GetGPUHandle();
+    if(handle) {
+        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniform2fv(handle, glGetUniformLocation(handle, name.c_str()), 2, &value.x);
+        else glUniform2fv(glGetUniformLocation(handle, name.c_str()), 2, &value.x);
     }
 }
 
 void ShaderProgram::SetUniform(const std::string& name, const glm::vec3& value) {
-    if(_handle) {
-        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniform3fv(_handle, glGetUniformLocation(_handle, name.c_str()), 3, &value.x);
-        else glUniform3fv(glGetUniformLocation(_handle, name.c_str()), 3, &value.x);
+    unsigned int handle = GetGPUHandle();
+    if(handle) {
+        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniform3fv(handle, glGetUniformLocation(handle, name.c_str()), 3, &value.x);
+        else glUniform3fv(glGetUniformLocation(handle, name.c_str()), 3, &value.x);
     }
 }
 
 void ShaderProgram::SetUniform(const std::string& name, const glm::vec4& value) {
-    if(_handle) {
-        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniform4fv(_handle, glGetUniformLocation(_handle, name.c_str()), 4, &value.x);
-        else glUniform4fv(glGetUniformLocation(_handle, name.c_str()), 4, &value.x);
+    unsigned int handle = GetGPUHandle();
+    if(handle) {
+        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniform4fv(handle, glGetUniformLocation(handle, name.c_str()), 4, &value.x);
+        else glUniform4fv(glGetUniformLocation(handle, name.c_str()), 4, &value.x);
     }
 }
 
 void ShaderProgram::SetUniform(const std::string& name, const glm::mat4& value) {
-    if(_handle) {
-        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniformMatrix4fv(_handle, glGetUniformLocation(_handle, name.c_str()), 1,  GL_FALSE, &value[0][0]);
-        else glUniformMatrix4fv(glGetUniformLocation(_handle, name.c_str()), 1,  GL_FALSE, &value[0][0]);
+    unsigned int handle = GetGPUHandle();
+    if(handle) {
+        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniformMatrix4fv(handle, glGetUniformLocation(handle, name.c_str()), 1,  GL_FALSE, &value[0][0]);
+        else glUniformMatrix4fv(glGetUniformLocation(handle, name.c_str()), 1,  GL_FALSE, &value[0][0]);
     }
 }
 
@@ -207,8 +215,9 @@ mu::ArrayHandle<IShaderUniform*> ShaderProgram::GetShaderUniforms() {
 }
 
 mu::ArrayHandle<ShaderUniformInfo> ShaderProgram::GetCompiledUniforms() {
+    unsigned int handle = GetGPUHandle();
     int act_uniforms = 0;
-    glGetProgramiv(_handle, GL_ACTIVE_UNIFORMS, &act_uniforms);
+    glGetProgramiv(handle, GL_ACTIVE_UNIFORMS, &act_uniforms);
     if(act_uniforms == 0) return mu::ArrayHandle<ShaderUniformInfo>();
 
     ShaderUniformInfo* uni = new ShaderUniformInfo[act_uniforms];
@@ -218,7 +227,7 @@ mu::ArrayHandle<ShaderUniformInfo> ShaderProgram::GetCompiledUniforms() {
         int real_buf_size = 0;
         int unif_size = 0;
         unsigned int uni_type = 0;
-        glGetActiveUniform(_handle, iu, 1024, &real_buf_size, &unif_size, &uni_type, &namebuffer[0]);
+        glGetActiveUniform(handle, iu, 1024, &real_buf_size, &unif_size, &uni_type, &namebuffer[0]);
         uni[iu] = ShaderUniformInfo(dynamic_cast<IShaderProgram*>(this), std::string(namebuffer), unif_size, uni_type);
     }
 
@@ -236,28 +245,29 @@ void ShaderProgram::UpdateUniforms() {
 }
 
 ShaderProgramCache ShaderProgram::GetCache() {
-    if(_handle == 0) return ShaderProgramCache();
+    unsigned int handle = GetGPUHandle();
+    if(handle == 0) return ShaderProgramCache();
 
     int bin_length = 0, _a = 0;
     unsigned int form = 0;
-    glGetProgramiv(_handle, GL_PROGRAM_BINARY_LENGTH, &bin_length);
+    glGetProgramiv(handle, GL_PROGRAM_BINARY_LENGTH, &bin_length);
     unsigned char * buf = new unsigned char[bin_length];
 
-    glGetProgramBinary(_handle, bin_length, &_a, &form, &buf[0]);
+    glGetProgramBinary(handle, bin_length, &_a, &form, &buf[0]);
     return ShaderProgramCache(form, mu::ArrayHandle<unsigned char>(&buf[0], bin_length, true));
 }
 
 void ShaderProgram::Destroy() {
-    if(_handle != 0) {
-        glDeleteProgram(_handle);
-        _handle = 0;
-
-        OnGPUHandleChanged(dynamic_cast<IGPUObjectHandle*>(this), _handle);
+    unsigned int handle = GetGPUHandle();
+    if(handle != 0) {
+        glDeleteProgram(handle);
+        SetGPUHandle(0);
     }
 }
 
 bool ShaderProgram::Use() {
-    if(_handle == 0) {
+    unsigned int handle = GetGPUHandle();
+    if(handle == 0) {
 #ifdef MR_CHECK_SMALL_GL_ERRORS
         mr::Log::LogString("Failed ShaderProgram::Use(). Can't use not created shader program.", MR_LOG_LEVEL_ERROR);
 #endif
@@ -271,7 +281,7 @@ bool ShaderProgram::Use() {
     }
     IShaderProgram* ptr = dynamic_cast<IShaderProgram*>(this);
     if(__MR_USED_SHADER_PROGRAM != ptr) {
-        glUseProgram(_handle);
+        glUseProgram(handle);
         __MR_USED_SHADER_PROGRAM = ptr;
     }
     UpdateUniforms();
@@ -585,7 +595,7 @@ ShaderProgram* ShaderProgram::FromCache(ShaderProgramCache cache) {
 
     ShaderProgram* prog = new ShaderProgram();
     prog->_linked = true;
-    prog->_handle = sp_handle;
+    prog->SetGPUHandle(sp_handle);
     return prog;
 }
 

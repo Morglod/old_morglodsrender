@@ -152,6 +152,10 @@ TStaticArray<IMaterial*> SceneLoader::GetMaterials() {
     return this->_impl->_materials;
 }
 
+TStaticArray<IMesh*> SceneLoader::GetMeshes() {
+    return this->_impl->_meshes;
+}
+
 SceneLoader::SceneLoader() : _impl(new SceneLoader::Impl()) {
 }
 
