@@ -1,5 +1,6 @@
 #include "GeometryManager.hpp"
-#include "../Buffers/Buffers.hpp"
+
+#include "../Buffers/BuffersManager.hpp"
 #include "GeometryBuffer.hpp"
 #include "GeometryObject.hpp"
 #include "GeometryDrawParams.hpp"
@@ -24,8 +25,11 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
     const size_t indexDataSize = (indexFormat) ? (indexNum * indexFormat->GetSize()) : 0;
 
     if(_buffer_per_geom) {
-        GPUBuffer* vertexBuffer = new mr::GPUBuffer();
-        vertexBuffer->Allocate(usage, vertexDataSize);
+        IGPUBuffer* vertexBuffer = mr::GPUBuffersManager::GetInstance().CreateBuffer(usage, vertexDataSize);
+        if(vertexBuffer == nullptr) {
+            mr::Log::LogString("Failed GeometryManager::PlaceGeometry. New vertexBuffer is null.", MR_LOG_LEVEL_ERROR);
+            return nullptr;
+        }
 
         //Write thro mapping or by default
         auto vmapped = vertexBuffer->Map(0, vertexDataSize, IGPUBuffer::IMappedRange::Write | IGPUBuffer::IMappedRange::Invalidate | IGPUBuffer::IMappedRange::Unsynchronized);
@@ -38,10 +42,13 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
             vmapped->UnMap();
         }
 
-        GPUBuffer* indexBuffer = nullptr;
+        IGPUBuffer* indexBuffer = nullptr;
         if(indexFormat) {
-            indexBuffer = new mr::GPUBuffer();
-            indexBuffer->Allocate(usage, indexDataSize);
+            indexBuffer = mr::GPUBuffersManager::GetInstance().CreateBuffer(usage, indexDataSize);
+            if(indexBuffer == nullptr) {
+                mr::Log::LogString("Failed GeometryManager::PlaceGeometry. New indexBuffer is null.", MR_LOG_LEVEL_ERROR);
+                return nullptr;
+            }
 
             //Write thro mapping or by default
             auto imapped = indexBuffer->Map(0, indexDataSize, IGPUBuffer::IMappedRange::Write | IGPUBuffer::IMappedRange::Invalidate | IGPUBuffer::IMappedRange::Unsynchronized);
@@ -150,9 +157,14 @@ GeometryManager::FormatBuffer* GeometryManager::_RequestFormatBuffer(IVertexForm
         }
     }
 
+    IGPUBuffer* gpuBuffer = mr::GPUBuffersManager::GetInstance().CreateBuffer(usage, std::max(vertexDataSize+indexDataSize, _max_buffer_size));
+    if(gpuBuffer == nullptr) {
+        mr::Log::LogString("Failed GeometryManager::_RequestFormatBuffer. New gpuBuffer is null.", MR_LOG_LEVEL_ERROR);
+        return nullptr;
+    }
+
     FormatBuffer formatBuf;
-    formatBuf.buffer = new mr::GPUBuffer();
-    formatBuf.buffer->Allocate(usage, std::max(vertexDataSize+indexDataSize, _max_buffer_size));
+    formatBuf.buffer = gpuBuffer;
     formatBuf.iFormat = indexFormat;
     formatBuf.vFormat = vertexFormat;
     formatBuf.usage = usage;
@@ -163,7 +175,7 @@ GeometryManager::FormatBuffer* GeometryManager::_RequestFormatBuffer(IVertexForm
 }
 
 //5 mb per buffer
-GeometryManager::GeometryManager() : _max_buffer_size(5242880), _buffer_per_geom(false), _split_by_data_formats(true) {
+GeometryManager::GeometryManager() : _max_buffer_size(5242880), _buffer_per_geom(true), _split_by_data_formats(true) {
 }
 
 GeometryManager::~GeometryManager() {

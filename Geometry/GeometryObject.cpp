@@ -28,7 +28,7 @@ void Geometry::Draw() const {
     if(_buffer->GetIndexBuffer() != nullptr && _draw_params->GetUsingIndexBuffer()){
         mr::IIndexFormat* iformat = _buffer->GetIndexFormat();
         if(mr::gl::IsIndirectDrawSupported()) {
-            glDrawElementsIndirect( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], iformat->GetDataType()->GetDataType(), _draw_params->GetIndirectPtr());
+            glDrawElementsIndirect( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], iformat->GetDataType()->GetDataTypeGL(), _draw_params->GetIndirectPtr());
         }
         else {
             /*glDrawElementsBaseVertex(  _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()],
@@ -36,9 +36,10 @@ void Geometry::Draw() const {
                                         iformat->GetDataType()->GetDataType(),
                                         (void*)(size_t)(iformat->GetSize() * _draw_params->GetIndexStart()),
                                         _draw_params->GetVertexStart());*/
+
             glDrawElementsInstancedBaseVertex(_MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()],
                                         _draw_params->GetIndexCount(),
-                                        iformat->GetDataType()->GetDataType(),
+                                        iformat->GetDataType()->GetDataTypeGL(),
                                         (void*)(size_t)(iformat->GetSize() * _draw_params->GetIndexStart()),
                                         _draw_params->GetInstancesNum(),
                                         _draw_params->GetVertexStart());
@@ -62,7 +63,8 @@ Geometry::~Geometry(){
 IGeometry* Geometry::MakeTriangle(const float& scale, const glm::vec3& offset) {
     mr::VertexFormatCustomFixed vformat;
     vformat.SetAttributesNum(1);
-    vformat.AddVertexAttribute(&(mr::VertexAttributePos3F::GetInstance()));
+    vformat.SetVertexAttribute(&(mr::VertexAttributePos3F::GetInstance()), 0);
+    vformat.Complete();
 
     float vdata[] {
         offset.x,                   offset.y + 1.0f * scale, offset.z,
@@ -78,8 +80,9 @@ IGeometry* Geometry::MakeTriangle(const float& scale, const glm::vec3& offset) {
 IGeometry* Geometry::MakeQuad(const glm::vec2& scale, const glm::vec3& offset, const bool& texCoords, const glm::vec2& texCoordsScale) {
     mr::VertexFormatCustomFixed vformat;
     vformat.SetAttributesNum((texCoords) ? (2) : (1));
-    vformat.AddVertexAttribute(&(mr::VertexAttributePos3F::GetInstance()));
-    if(texCoords) vformat.AddVertexAttribute(mr::VertexAttributeCustom(2, &(mr::VertexDataTypeFloat::GetInstance()), MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION).Cache());
+    vformat.SetVertexAttribute(&(mr::VertexAttributePos3F::GetInstance()), 0);
+    if(texCoords) vformat.SetVertexAttribute(mr::VertexAttributeCustom(2, &(mr::VertexDataTypeFloat::GetInstance()), MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION).Cache(), 1);
+    vformat.Complete();
 
     mr::IndexFormatCustom iformat(VertexDataTypeCustom(GL_UNSIGNED_BYTE, 1).Cache());
 
@@ -120,7 +123,8 @@ IGeometry* Geometry::MakeQuad(const glm::vec2& scale, const glm::vec3& offset, c
 IGeometry* Geometry::MakeBox(const glm::vec3& scale, const glm::vec3& offset, const bool& inside) {
     mr::VertexFormatCustomFixed vformat;
     vformat.SetAttributesNum(1);
-    vformat.AddVertexAttribute(&(mr::VertexAttributePos3F::GetInstance()));
+    vformat.SetVertexAttribute(&(mr::VertexAttributePos3F::GetInstance()), 0);
+    vformat.Complete();
 
     mr::IndexFormatCustom iformat(VertexDataTypeCustom(GL_UNSIGNED_BYTE, 1).Cache());
 

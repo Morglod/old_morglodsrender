@@ -14,7 +14,15 @@ class IGeometry;
 
 class SceneLoader final {
 public:
-    bool Import(std::string const& file, bool fast = false);
+    struct ImportOptions {
+        bool fixInfacingNormals = false; //May occur problems.
+        bool flipUVs = true;
+        bool generateUVs = true;
+        bool transformUVs = true;
+        bool fast = false; //Not max quality?
+    };
+
+    bool Import(std::string const& file, ImportOptions const& options);
 
     unsigned int GetMeshesNum();
     TStaticArray<IMesh*> GetMeshes();

@@ -17,13 +17,16 @@ class VirtualGPUBuffer : public IGPUBuffer {
     friend class VirtualGPUBuffer_DestroyEvent;
 public:
     /* IGPUBuffer */
-    inline bool Write(void* srcData, const size_t& srcOffset, const size_t& dstOffset, const size_t& size, size_t* out_realOffset, BufferedDataInfo* out_info) override { return _realBuffer->Write(srcData, srcOffset, dstOffset+GetRealOffset(), size, out_realOffset, out_info); }
+    inline bool Write(void* __restrict__ srcData, const size_t& srcOffset, const size_t& dstOffset, const size_t& size, size_t* __restrict__ out_realOffset, BufferedDataInfo* __restrict__ out_info) override { return _realBuffer->Write(srcData, srcOffset, dstOffset+GetRealOffset(), size, out_realOffset, out_info); }
     inline bool Read(void* dstData, const size_t& dstOffset, const size_t& srcOffset, const size_t& size) override { return _realBuffer->Read(dstData, dstOffset, srcOffset+GetRealOffset(), size); }
     inline Usage GetUsage() override { return _realBuffer->GetUsage(); }
 
     inline IMappedRangePtr Map(size_t const& offset, size_t const& length, unsigned int const& flags) override { return _realBuffer->Map(offset + _realBuffer_offset, length, flags); }
     inline IMappedRangeWeakPtr GetMapped() { return _realBuffer->GetMapped(); }
     inline bool IsMapped() { return _realBuffer->IsMapped(); }
+
+    inline IGPUBufferRangeHandleWeakPtr UseRange(size_t const& offset, size_t const& size) override { return _realBuffer->UseRange(GetRealOffset()+offset, size); }
+    inline mu::ArrayHandle<IGPUBufferRangeHandle*> GetRangeHandles() override { return _realBuffer->GetRangeHandles(); }
 
     /* GPUObjectHandle */
     inline unsigned int GetGPUHandle() override { return (_realBuffer) ? _realBuffer->GetGPUHandle() : 0; }
@@ -40,6 +43,7 @@ public:
 protected:
     /* IGPUBuffer */
     bool Allocate(const Usage& usage, const size_t& size) override;
+    void _RangeFree(IGPUBufferRangeHandle* handle) override { return _realBuffer->_RangeFree(handle); }
 
     IGPUBuffer* _realBuffer;
     size_t _realBuffer_offset;

@@ -53,7 +53,7 @@ void ShaderUniform::Update() {
     int gl_er = 0;
     mr::gl::ClearError();
 #endif
-        if(mr::gl::IsDirectStateAccessSupported()) {
+        if(GLEW_EXT_direct_state_access) {
             switch(_type){
             case IShaderUniform::Type::Float:
                 glProgramUniform1f(_owner->GetGPUHandle(), _gpu_location, *((float*)_value));

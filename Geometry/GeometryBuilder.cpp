@@ -70,8 +70,9 @@ IGeometry* ManualGeometry::Build(IGPUBuffer::Usage const& usage) {
     vformat.SetAttributesNum(_vertexAttributes.size());
 
     for(size_t i = 0; i < _vertexAttributes.size(); ++i) {
-        vformat.AddVertexAttribute(mr::VertexAttributeCustom(_vertexAttributes[i].elementsNum, &(VertexDataTypeFloat::GetInstance()), _vertexAttributes[i].attributeType).Cache());
+        vformat.SetVertexAttribute(mr::VertexAttributeCustom(_vertexAttributes[i].elementsNum, &(VertexDataTypeFloat::GetInstance()), _vertexAttributes[i].attributeType).Cache(), i);
     }
+    vformat.Complete();
 
     IndexFormatCustom iformat(VertexDataTypeCustom(GPUIndexType, sizeof(ManualGeometry::IndexType)).Cache());
     return mr::GeometryManager::GetInstance()->PlaceGeometry(vformat.Cache(), &_vertexData[0], _vertexes+1, iformat.Cache(), &_indexData[0], _indexData.size()+1, usage, IGeometryBuffer::DrawMode::Triangles); //GL_TRIANGLES - 0x0004

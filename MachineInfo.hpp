@@ -63,7 +63,9 @@ namespace gl {
 
     //const bool IsCoreProfile();
 
-    const bool IsDirectStateAccessSupported();
+    const bool IsDSA_EXT(); //DirectStateAccess Extension
+    const bool IsDSA_ARB(); //DirectStateAccess from OpenGL 4.5
+
     const bool IsVertexAttribBindingSupported();
     const bool IsTextureStorageSupported();
     const bool IsBufferStorageSupported();

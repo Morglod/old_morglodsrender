@@ -228,7 +228,7 @@ IGPUBuffer* StateCache::GetBindedTransformFeedbackBuffer(unsigned int const& ind
     return _transformFeedbacks[index];
 }
 
-bool StateCache::ReBindBuffer(IGPUBuffer* buffer, BufferBindTarget const& target, IGPUBuffer** was) {
+bool StateCache::ReBindBuffer(IGPUBuffer* __restrict__ buffer, BufferBindTarget const& target, IGPUBuffer** __restrict__ was) {
     IGPUBuffer* binded = GetBindedBuffer(target);
     if(binded == buffer) return true;
     *was = binded;
@@ -250,7 +250,7 @@ bool StateCache::BindTexture(ITexture* texture, unsigned int const& unit) {
     if(mr::gl::IsOpenGL45()) {
         glBindTextureUnit(unit, handle);
     }
-    else if(mr::gl::IsDirectStateAccessSupported()) {
+    else if(GLEW_EXT_direct_state_access) {
         glBindMultiTextureEXT(GL_TEXTURE0+unit, texType, handle);
     } else {
         int actived_tex = 0;
@@ -284,7 +284,7 @@ ITextureSettings* StateCache::GetBindedTextureSettings(unsigned int const& unit)
     return _textureSettings.GetArray()[unit];
 }
 
-bool StateCache::ReBindTexture(ITexture* texture, unsigned int const& unit, ITexture** was) {
+bool StateCache::ReBindTexture(ITexture* __restrict__ texture, unsigned int const& unit, ITexture** __restrict__ was) {
     if(unit >= _textures.GetNum()) {
         mr::Log::LogString("Trying to get " + std::to_string(unit) + " texture unit. Bigger than max ("+ std::to_string(_textures.GetNum())+") texture unit. StateCache::ReBindTexture.", MR_LOG_LEVEL_ERROR);
         return false;
@@ -321,7 +321,7 @@ IFrameBuffer* StateCache::GetBindedFramebuffer() {
 	return _framebuffer;
 }
 
-bool StateCache::ReBindFramebuffer(IFrameBuffer* frameBuffer, IFrameBuffer** was) {
+bool StateCache::ReBindFramebuffer(IFrameBuffer* __restrict__ frameBuffer, IFrameBuffer** __restrict__ was) {
 	IFrameBuffer* binded = GetBindedFramebuffer();
 	if(binded == frameBuffer) return true;
 	if(!BindFramebuffer(frameBuffer)) {

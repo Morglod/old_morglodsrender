@@ -1,22 +1,20 @@
 #pragma once
 
-#include "Types.hpp"
-
+#include <Events.hpp>
 #include "stddef.h"
 
 namespace mr {
 
-class IGPUObjectHandle : public IObjectHandle {
+class IGPUObjectHandle {
 public:
     mu::Event<IGPUObjectHandle*, unsigned int const&> OnGPUHandleChanged;
+    mu::Event<IGPUObjectHandle*> OnDestroy;
 
     virtual unsigned int GetGPUHandle() { return _handle; }
     virtual size_t GetGPUMem() { return 0; }
+    virtual void Destroy();
 
     virtual ~IGPUObjectHandle();
-
-    /* IObjectHandle */
-    //void Destroy();
 protected:
     virtual void SetGPUHandle(unsigned int const& newHandle) {
         _handle = newHandle;

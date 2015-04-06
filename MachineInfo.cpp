@@ -74,7 +74,8 @@ void PrintInfo() {
         , MR_LOG_LEVEL_INFO);
 
         mr::Log::LogString("\nNvidia VBUM: " + std::to_string(gl::IsNVVBUMSupported()));
-        mr::Log::LogString("Direct state access: " + std::to_string(gl::IsDirectStateAccessSupported()));
+        mr::Log::LogString("Direct state access EXT: " + std::to_string(gl::IsDSA_EXT()));
+        mr::Log::LogString("Direct state access ARB: " + std::to_string(gl::IsDSA_ARB()));
     } catch(std::exception& e) {
         mr::Log::LogString("Exception cathed, while printing machine info.");
     }
@@ -251,13 +252,18 @@ const bool IsIndirectDrawSupported() {
     return support;
 }
 
-const bool IndirectDraw_UseGPUBuffer() {
-    return IsIndirectDrawSupported();
+const bool IsDSA_EXT() {
+    static bool support = GLEW_EXT_direct_state_access;
+    return support;
 }
 
-const bool IsDirectStateAccessSupported(){
-    static bool state = GLEW_EXT_direct_state_access;//(__glewNamedBufferDataEXT);
-    return state;
+const bool IsDSA_ARB() {
+    static bool support = GLEW_ARB_direct_state_access;
+    return support;
+}
+
+const bool IndirectDraw_UseGPUBuffer() {
+    return IsIndirectDrawSupported();
 }
 
 const bool IsVertexAttribBindingSupported() {

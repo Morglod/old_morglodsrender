@@ -2,6 +2,12 @@
 
 namespace mr {
 
-IGPUObjectHandle::~IGPUObjectHandle() {}
+void IGPUObjectHandle::Destroy() {
+    OnDestroy(this);
+}
+
+IGPUObjectHandle::~IGPUObjectHandle() {
+    if(GetGPUMem() > 0) Destroy();
+}
 
 }

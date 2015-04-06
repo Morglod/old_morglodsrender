@@ -76,7 +76,7 @@ IFrameBuffer* FrameBuffer::ReBind(BindTarget const& target) {
 }
 
 IFrameBuffer::CompletionStatus FrameBuffer::CheckCompletion(BindTarget const& target) {
-    if(mr::gl::IsDirectStateAccessSupported()) {
+    if(GLEW_EXT_direct_state_access) {
         return (CompletionStatus)glCheckNamedFramebufferStatusEXT(GetGPUHandle(), _MR_FB_BIND_TARGETS_REMAP_FROM_INDEX_[(size_t)target]);
     }
     else {
@@ -93,7 +93,7 @@ IFrameBuffer::CompletionStatus FrameBuffer::CheckCompletion(BindTarget const& ta
 bool FrameBuffer::SetTextureMipmap(ITexture* tex, Attachment const& attachment, unsigned int const& mipmapLevel) {
     unsigned int texHandle = (tex != nullptr) ? tex->GetGPUHandle() : 0;
 
-    if(mr::gl::IsDirectStateAccessSupported()) {
+    if(GLEW_EXT_direct_state_access) {
         glNamedFramebufferTexture(GetGPUHandle(), attachment, texHandle, mipmapLevel);
     } else {
         IFrameBuffer* binded = nullptr;
@@ -107,7 +107,7 @@ bool FrameBuffer::SetTextureMipmap(ITexture* tex, Attachment const& attachment, 
 bool FrameBuffer::SetTextureMipmapToColor(ITexture* tex, unsigned int const& colorSlot, unsigned int const& mipmapLevel) {
     unsigned int texHandle = (tex != nullptr) ? tex->GetGPUHandle() : 0;
 
-    if(mr::gl::IsDirectStateAccessSupported()) {
+    if(GLEW_EXT_direct_state_access) {
         glNamedFramebufferTexture(GetGPUHandle(), GL_COLOR_ATTACHMENT0 + colorSlot, texHandle, mipmapLevel);
     } else {
         IFrameBuffer* binded = nullptr;
@@ -126,7 +126,7 @@ bool FrameBuffer::SetRenderBuffer(IRenderBuffer* renderBuffer, Attachment const&
     if(mr::gl::IsOpenGL45()) {
         glNamedFramebufferRenderbuffer(GetGPUHandle(), attachment, GL_RENDERBUFFER, renderBufferHandle);
     }
-    else if(mr::gl::IsDirectStateAccessSupported()) {
+    else if(GLEW_EXT_direct_state_access) {
         glNamedFramebufferRenderbufferEXT(GetGPUHandle(), attachment, GL_RENDERBUFFER, renderBufferHandle);
     } else {
         IFrameBuffer* binded = nullptr;
@@ -146,7 +146,7 @@ bool FrameBuffer::SetRenderBufferToColor(IRenderBuffer* renderBuffer, unsigned i
     if(mr::gl::IsOpenGL45()) {
         glNamedFramebufferRenderbuffer(GetGPUHandle(), GL_COLOR_ATTACHMENT0 + colorSlot, GL_RENDERBUFFER, renderBufferHandle);
     }
-    else if(mr::gl::IsDirectStateAccessSupported()) {
+    else if(GLEW_EXT_direct_state_access) {
         glNamedFramebufferRenderbufferEXT(GetGPUHandle(), GL_COLOR_ATTACHMENT0 + colorSlot, GL_RENDERBUFFER, renderBufferHandle);
     } else {
         IFrameBuffer* binded = nullptr;
@@ -168,7 +168,7 @@ void FrameBuffer::Destroy() {
 
 bool FrameBuffer::DrawToTarget(TargetBuffer const& targetBuffer) {
     //TODO check for errors
-    if(mr::gl::IsDirectStateAccessSupported()) {
+    if(GLEW_EXT_direct_state_access) {
         glNamedFramebufferDrawBuffer(GetGPUHandle(), targetBuffer);
     } else {
         IFrameBuffer* binded = nullptr;

@@ -40,7 +40,7 @@ bool Texture::Create(ITexture::Types const& type) {
         glTextureParameteri(handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTextureParameteri(handle, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
-    else if(mr::gl::IsDirectStateAccessSupported()) {
+    else if(GLEW_EXT_direct_state_access) {
         glTextureParameteriEXT(handle, MR_TEXTURE_TARGET2[_texture_type], GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTextureParameteriEXT(handle, MR_TEXTURE_TARGET2[_texture_type], GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTextureParameteriEXT(handle, MR_TEXTURE_TARGET2[_texture_type], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -74,7 +74,7 @@ bool Texture::GetData(const int& mipMapLevel,
 
     if(mr::gl::IsOpenGL45()) {
         glGetTextureImage(GetGPUHandle(), mipMapLevel, (int)dformat, (int)dtype, dstBufferSize, dstBuffer);
-    } else if(mr::gl::IsDirectStateAccessSupported()) {
+    } else if(GLEW_EXT_direct_state_access) {
         glGetTextureImageEXT(GetGPUHandle(), MR_TEXTURE_TARGET2[_texture_type], mipMapLevel, (int)dformat, (int)dtype, dstBuffer);
     } else {
         StateCache* stateCache = StateCache::GetDefault();
@@ -101,7 +101,7 @@ bool mr::Texture::SetData(const int& mipMapLevel,
     Assert(data != nullptr);
 
 
-    if(mr::gl::IsDirectStateAccessSupported()) {
+    if(GLEW_EXT_direct_state_access) {
         unsigned int handle = GetGPUHandle();
         glPushClientAttribDefaultEXT(GL_CLIENT_PIXEL_STORE_BIT);
         switch(_texture_type) {
@@ -165,7 +165,7 @@ bool Texture::UpdateData(const int& mipMapLevel,
             glTextureSubImage3D(handle, mipMapLevel, xOffset, yOffset, zOffset, width, height, depth, (unsigned int)dformat, (unsigned int)dtype, data);
             break;
         }
-    } else if(mr::gl::IsDirectStateAccessSupported()) {
+    } else if(GLEW_EXT_direct_state_access) {
         unsigned int handle = GetGPUHandle();
         switch(_texture_type) {
         case Base1D:
@@ -238,7 +238,7 @@ bool mr::Texture::Complete(bool mipMaps) {
 #endif
         if(mr::gl::IsOpenGL45()) {
             glGenerateTextureMipmap(handle);
-        } else if(mr::gl::IsDirectStateAccessSupported()) {
+        } else if(GLEW_EXT_direct_state_access) {
             glGenerateTextureMipmapEXT(handle, MR_TEXTURE_TARGET2[_texture_type]);
         } else {
             StateCache* stateCache = StateCache::GetDefault();
@@ -279,7 +279,7 @@ bool Texture::UpdateInfo() {
         StateCache* stateCache = StateCache::GetDefault();
         ITexture* binded = nullptr;
 
-        if((mr::gl::IsOpenGL45() || mr::gl::IsDirectStateAccessSupported()) == false) {
+        if((mr::gl::IsOpenGL45() || GLEW_EXT_direct_state_access) == false) {
             if(!stateCache->ReBindTexture(dynamic_cast<ITexture*>(this), 0, &binded)) {
                 mr::Log::LogString("Bind texture failed in Texture::UpdateInfo.", MR_LOG_LEVEL_ERROR);
                 return false;
@@ -291,7 +291,7 @@ bool Texture::UpdateInfo() {
             glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_WIDTH, &maxW);
             glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_HEIGHT, &maxH);
             glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_DEPTH, &maxD);
-        } else if(mr::gl::IsDirectStateAccessSupported()) {
+        } else if(GLEW_EXT_direct_state_access) {
             glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_WIDTH, &maxW);
             glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_HEIGHT, &maxH);
             glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_DEPTH, &maxD);
@@ -314,7 +314,7 @@ bool Texture::UpdateInfo() {
             glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_DEPTH_SIZE, &ds);
             glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_ALPHA_SIZE, &as);
             glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_COMPRESSED, &cm);
-        } else if(mr::gl::IsDirectStateAccessSupported()) {
+        } else if(GLEW_EXT_direct_state_access) {
             glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_INTERNAL_FORMAT, &fi);
             glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_RED_SIZE, &rs);
             glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], 0, GL_TEXTURE_GREEN_SIZE, &gs);
@@ -343,7 +343,7 @@ bool Texture::UpdateInfo() {
                 glGetTextureLevelParameteriv(handle, i, GL_TEXTURE_WIDTH, &w);
                 glGetTextureLevelParameteriv(handle, i, GL_TEXTURE_HEIGHT, &h);
                 glGetTextureLevelParameteriv(handle, i, GL_TEXTURE_DEPTH, &d);
-            } else if(mr::gl::IsDirectStateAccessSupported()) {
+            } else if(GLEW_EXT_direct_state_access) {
                 glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], i, GL_TEXTURE_WIDTH, &w);
                 glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], i, GL_TEXTURE_HEIGHT, &h);
                 glGetTextureLevelParameterivEXT(handle, MR_TEXTURE_TARGET2[_texture_type], i, GL_TEXTURE_DEPTH, &d);

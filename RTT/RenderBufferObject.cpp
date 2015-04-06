@@ -18,7 +18,7 @@ bool RenderBuffer::Create(mr::ITexture::StorageDataFormat const& storageDataForm
     if(mr::gl::IsOpenGL45()) {
         if(samples == 0) glNamedRenderbufferStorage(handle, storageDataFormat, width, height);
         else glNamedRenderbufferStorageMultisample(handle, samples, storageDataFormat, width, height);
-    } else if(mr::gl::IsDirectStateAccessSupported()) {
+    } else if(GLEW_EXT_direct_state_access) {
         if(samples == 0) glNamedRenderbufferStorageEXT(handle, storageDataFormat, width, height);
         else glNamedRenderbufferStorageMultisampleEXT(handle, samples, storageDataFormat, width, height);
     } else {

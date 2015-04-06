@@ -36,7 +36,7 @@ bool GeometryBuffer::SetVertexBuffer(IGPUBuffer* buf) {
 
     if(buf != nullptr) {
         if(mr::gl::IsNVVBUMSupported()){
-            if(mr::gl::IsDirectStateAccessSupported()){
+            if(GLEW_EXT_direct_state_access){
                 glGetNamedBufferParameterui64vNV(buf->GetGPUHandle(), GL_BUFFER_GPU_ADDRESS_NV, &_vb_nv_resident_ptr);
                 glGetNamedBufferParameterivEXT(buf->GetGPUHandle(), GL_BUFFER_SIZE, &_vb_nv_buffer_size);
             } else {
@@ -65,7 +65,7 @@ bool GeometryBuffer::SetIndexBuffer(IGPUBuffer* buf) {
 
     if(buf != nullptr) {
         if(mr::gl::IsNVVBUMSupported()){
-            if(mr::gl::IsDirectStateAccessSupported()){
+            if(GLEW_EXT_direct_state_access){
                 glGetNamedBufferParameterui64vNV(buf->GetGPUHandle(), GL_BUFFER_GPU_ADDRESS_NV, &_ib_nv_resident_ptr);
                 glGetNamedBufferParameterivEXT(buf->GetGPUHandle(), GL_BUFFER_SIZE, &_ib_nv_buffer_size);
             } else {
@@ -100,7 +100,7 @@ void GeometryBuffer::SetAttribute(IVertexAttribute* attr, IGPUBuffer* buf) {
     }
     if(mr::gl::IsNVVBUMSupported()) {
         BufferResidentPtr brp;
-        if(mr::gl::IsDirectStateAccessSupported()){
+        if(GLEW_EXT_direct_state_access){
             glGetNamedBufferParameterui64vNV(buf->GetGPUHandle(), GL_BUFFER_GPU_ADDRESS_NV, &brp.ptr);
             glGetNamedBufferParameterivEXT(buf->GetGPUHandle(), GL_BUFFER_SIZE, &brp.size);
         } else {
@@ -119,7 +119,7 @@ void GeometryBuffer::SetAttribute(IVertexAttribute* attr, IGPUBuffer* buf) {
 }
 
 bool GeometryBuffer::Bind(bool useIndexBuffer) const {
-    if(_MR_BINDED_GEOM_BUFFER_ == dynamic_cast<const mr::IGeometryBuffer*>(this)) return true;
+    //if(_MR_BINDED_GEOM_BUFFER_ == dynamic_cast<const mr::IGeometryBuffer*>(this)) return true;
 
     if(!_format) return false;
     if(!_vb) return false;
@@ -142,9 +142,9 @@ bool GeometryBuffer::Bind(bool useIndexBuffer) const {
         auto dataTypePtr = cAttrs.first->GetDataType();
 
         if(mr::gl::IsNVVBUMSupported())
-            glVertexAttribFormatNV(sh_i, elNum, dataTypePtr->GetDataType(), GL_FALSE, cAttrs.first->GetSize());
+            glVertexAttribFormatNV(sh_i, elNum, dataTypePtr->GetDataTypeGL(), GL_FALSE, cAttrs.first->GetByteSize());
         else
-            glVertexAttribPointer(sh_i, elNum, dataTypePtr->GetDataType(), GL_FALSE, cAttrs.first->GetSize(), 0);
+            glVertexAttribPointer(sh_i, elNum, dataTypePtr->GetDataTypeGL(), GL_FALSE, cAttrs.first->GetByteSize(), 0);
 
         glVertexAttribDivisor(sh_i, cAttrs.first->GetDivisor());
     }
@@ -182,7 +182,9 @@ bool GeometryBuffer::Bind(bool useIndexBuffer) const {
         }
     }
 
-    if(binded) stateCache->BindBuffer(binded, StateCache::ArrayBuffer);
+    if(binded) {
+        stateCache->BindBuffer(binded, StateCache::ArrayBuffer);
+    }
 
     _MR_BINDED_GEOM_BUFFER_ = (mr::IGeometryBuffer*)dynamic_cast<const mr::IGeometryBuffer*>(this);
     return true;

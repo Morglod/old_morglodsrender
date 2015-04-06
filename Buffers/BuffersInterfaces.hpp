@@ -1,17 +1,39 @@
 #pragma once
 
-#ifndef _MR_BUFFERS_INTERFACES_H_
-#define _MR_BUFFERS_INTERFACES_H_
-
 #include "BuffersConfig.hpp"
 #include "../CoreObjects.hpp"
+#include <Containers.hpp>
 
 #include <memory>
 
 namespace mr {
 
-class IGPUBuffer : public IGPUObjectHandle {
+class IGPUBuffer;
+
+//Memory is used, so handle it.
+class IGPUBufferRangeHandle {
 public:
+    virtual IGPUBuffer* GetBuffer() = 0;
+    virtual size_t GetOffset() = 0;
+    virtual size_t GetSize() = 0;
+    virtual bool IsInRange(size_t const& x);
+    virtual ~IGPUBufferRangeHandle() {}
+protected:
+    //Call it in class, derived from IGPUBufferRangeHandle, when yu free this memory range.
+    virtual void _FreeRange();
+};
+
+typedef std::shared_ptr<IGPUBufferRangeHandle> IGPUBufferRangeHandlePtr;
+typedef std::weak_ptr<IGPUBufferRangeHandle> IGPUBufferRangeHandleWeakPtr;
+
+class IGPUBuffer : public IGPUObjectHandle {
+    friend class GPUBuffersManager;
+    friend class IGPUBufferRangeHandle;
+    friend class VirtualGPUBuffer;
+public:
+
+    mu::Event<IGPUBuffer*, size_t const&> OnGPUBufferAllocated;
+
     enum Usage {
         Static = 0,
         FastChange = 1
@@ -54,21 +76,35 @@ public:
     typedef std::shared_ptr<IMappedRange> IMappedRangePtr;
     typedef std::weak_ptr<IMappedRange> IMappedRangeWeakPtr;
 
-    virtual bool Allocate(const IGPUBuffer::Usage& usage, const size_t& size) = 0;
     virtual Usage GetUsage() = 0;
 
     /*  out_realOffset is offset of buffered data. out_realOffset pointer and out_info may be nullptr
         false will be returned if memory is mapped */
-    virtual bool Write(void* srcData, const size_t& srcOffset, const size_t& dstOffset, const size_t& size, size_t* out_realOffset, BufferedDataInfo* out_info) = 0;
+    virtual bool Write(void* __restrict__ srcData, const size_t& srcOffset, const size_t& dstOffset, const size_t& size, size_t* __restrict__ out_realOffset, BufferedDataInfo* __restrict__ out_info) = 0;
     virtual bool Read(void* dstData, const size_t& dstOffset, const size_t& srcOffset, const size_t& size) = 0;
 
     virtual IMappedRangePtr Map(size_t const& offset, size_t const& length, unsigned int const& flags) = 0;
     virtual IMappedRangeWeakPtr GetMapped() = 0;
     virtual bool IsMapped() = 0;
 
+    virtual IGPUBufferRangeHandleWeakPtr UseRange(size_t const& offset, size_t const& size) = 0;
+    virtual mu::ArrayHandle<IGPUBufferRangeHandle*> GetRangeHandles() = 0;
+
     virtual ~IGPUBuffer() {}
+
+protected:
+    virtual bool Allocate(const IGPUBuffer::Usage& usage, const size_t& size) = 0;
+    virtual void _RangeFree(IGPUBufferRangeHandle* handle) = 0;
 };
 
 }
 
-#endif // _MR_BUFFERS_INTERFACES_H_
+inline void mr::IGPUBufferRangeHandle::_FreeRange() {
+    GetBuffer()->_RangeFree(this);
+}
+
+inline bool mr::IGPUBufferRangeHandle::IsInRange(size_t const& x) {
+    if(x < GetOffset()) return false;
+    if(x >= GetOffset()+GetSize()) return false;
+    return true;
+}

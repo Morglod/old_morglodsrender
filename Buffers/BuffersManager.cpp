@@ -6,18 +6,36 @@ namespace mr {
 template<>
 mr::GPUBuffersManager mu::StaticSingleton<mr::GPUBuffersManager>::_singleton_instance = mr::GPUBuffersManager();
 
-IGPUBuffer* GPUBuffersManager::CreateBuffer() {
+IGPUBuffer* GPUBuffersManager::CreateBuffer(IGPUBuffer::Usage const& usage, size_t const& size) {
     IGPUBuffer* buffer = dynamic_cast<IGPUBuffer*>(new GPUBuffer());
 
-    class COnGPUBufferDestroy : public mu::Event<IObjectHandle*>::Listener {
+    if(!buffer->Allocate(usage, size)) {
+        delete buffer;
+        return nullptr;
+    }
+
+    class COnGPUBufferAllocated : public mu::Event<IGPUBuffer*, size_t const&>::Listener {
+    public:
+        void Callback(IGPUBuffer*, size_t const& sz) override {
+            GPUBuffersManager::GetInstance()._usedMem += sz;
+        }
+
+        COnGPUBufferAllocated() {}
+        virtual ~COnGPUBufferAllocated() { }
+    };
+
+    class COnGPUBufferDestroy : public mu::Event<IGPUObjectHandle*>::Listener {
     public:
         IGPUBuffer* currentBuffer = nullptr;
 
         virtual ~COnGPUBufferDestroy() {
-            GPUBuffersManager::GetInstance().UnRegisterBuffer(currentBuffer);
+            GPUBuffersManager::GetInstance()._UnRegisterBuffer(currentBuffer);
         }
 
-        void Callback(IObjectHandle*) override {}
+        void Callback(IGPUObjectHandle* obj) override {
+            GPUBuffersManager::GetInstance()._usedMem -= currentBuffer->GetGPUMem();
+        }
+
         COnGPUBufferDestroy(IGPUBuffer* curBuf) : currentBuffer(curBuf) {}
     };
 
@@ -27,17 +45,21 @@ IGPUBuffer* GPUBuffersManager::CreateBuffer() {
     then COnGPUBufferDestroy's destructor is called and buffer instance is unregistered.
     **/
 
+    buffer->OnGPUBufferAllocated.RegisterListener(new COnGPUBufferAllocated());
     buffer->OnDestroy.RegisterListener(new COnGPUBufferDestroy(buffer));
-    RegisterBuffer(buffer);
+    _RegisterBuffer(buffer);
+
+    ///GPUBuffer is already allocated, so OnGPUBufferAllocated event isn't Invoked.
+    buffer->OnGPUBufferAllocated.Invoke(buffer, size);
 
     return buffer;
 }
 
-void GPUBuffersManager::RegisterBuffer(IGPUBuffer* buf) {
+void GPUBuffersManager::_RegisterBuffer(IGPUBuffer* buf) {
     _buffers.insert(buf);
 }
 
-void GPUBuffersManager::UnRegisterBuffer(IGPUBuffer* buf) {
+void GPUBuffersManager::_UnRegisterBuffer(IGPUBuffer* buf) {
     _buffers.erase(buf);
 }
 
@@ -46,10 +68,11 @@ void GPUBuffersManager::DestroyAllBuffers() {
     _buffers.clear();
 }
 
-GPUBuffersManager::GPUBuffersManager() {
+GPUBuffersManager::GPUBuffersManager() : _usedMem(0) {
 }
 
 GPUBuffersManager::~GPUBuffersManager() {
+    DestroyAllBuffers();
 }
 
 }

@@ -9,16 +9,18 @@ namespace mr {
 
 class GPUBuffersManager : public mu::StaticSingleton<GPUBuffersManager> {
 public:
-    IGPUBuffer* CreateBuffer();
-    void RegisterBuffer(IGPUBuffer* buf);
-    void UnRegisterBuffer(IGPUBuffer* buf);
+    IGPUBuffer* CreateBuffer(IGPUBuffer::Usage const& usage, size_t const& size);
+    inline size_t GetUsedGPUMemory() { return _usedMem; }
 
     void DestroyAllBuffers();
 
     GPUBuffersManager();
     virtual ~GPUBuffersManager();
 private:
+    void _RegisterBuffer(IGPUBuffer* buf);
+    void _UnRegisterBuffer(IGPUBuffer* buf);
     std::unordered_set<IGPUBuffer*> _buffers;
+    size_t _usedMem;
 };
 
 }

@@ -24,7 +24,7 @@ public:
 bool GeometryLoader::Import(std::string const& file) {
     bool bNoError = true;
 
-    const aiScene* scene = _impl->importer.ReadFile(file, /*aiProcessPreset_TargetRealtime_MaxQuality*/ aiProcess_JoinIdenticalVertices | aiProcess_ImproveCacheLocality | aiProcess_Triangulate | aiProcess_ValidateDataStructure | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_FindDegenerates | aiProcess_FindInvalidData | aiProcess_GenSmoothNormals );
+    const aiScene* scene = _impl->importer.ReadFile(file, aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_JoinIdenticalVertices | aiProcess_ImproveCacheLocality | aiProcess_Triangulate | aiProcess_ValidateDataStructure | aiProcess_OptimizeMeshes | aiProcess_GenUVCoords | aiProcess_FindDegenerates | aiProcess_FindInvalidData | aiProcess_GenSmoothNormals );
     if(!scene) {
         mr::Log::LogString("Assimp error: " + std::string(_impl->importer.GetErrorString()), MR_LOG_LEVEL_ERROR);
         return false;
@@ -46,10 +46,22 @@ bool GeometryLoader::Import(std::string const& file) {
         VertexFormatCustomFixed vf;
         vf.SetAttributesNum(attr_num);
 
-        /*if(bPosA)*/   vf.AddVertexAttribute(VertexAttributeCustom(3, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION).Cache());
-        if(bNormalA)    vf.AddVertexAttribute(VertexAttributeCustom(3, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION).Cache());
-        if(bColorA)     vf.AddVertexAttribute(VertexAttributeCustom(4, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION).Cache());
-        if(bTexCoordA)  vf.AddVertexAttribute(VertexAttributeCustom(2, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION).Cache());
+        size_t attr_index = 0;
+        /*if(bPosA)*/   vf.SetVertexAttribute(VertexAttributeCustom(3, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION).Cache(), attr_index);
+        attr_index++;
+        if(bNormalA) {
+            vf.SetVertexAttribute(VertexAttributeCustom(3, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION).Cache(), attr_index);
+            attr_index++;
+        }
+        if(bColorA) {
+            vf.SetVertexAttribute(VertexAttributeCustom(4, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION).Cache(), attr_index);
+            attr_index++;
+        }
+        if(bTexCoordA) {
+            vf.SetVertexAttribute(VertexAttributeCustom(2, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION).Cache(), attr_index);
+            attr_index++;
+        }
+        vf.Complete();
 
         ///Create index format
         IndexFormatCustom fi(&VertexDataTypeUInt::GetInstance());

@@ -12,6 +12,7 @@ void mr::TextureSettings::Create() {
     if(handle != 0) return;
     if(mr::gl::IsOpenGL45()) glCreateSamplers(1, &handle);
     else glGenSamplers(1, &handle);
+    SetGPUHandle(handle);
     glSamplerParameterf(handle, GL_TEXTURE_LOD_BIAS, _lod_bias);
     glSamplerParameteri(handle, GL_TEXTURE_MAG_FILTER, (int)_mag_filter);
     glSamplerParameteri(handle, GL_TEXTURE_MIN_FILTER, (int)_min_filter);

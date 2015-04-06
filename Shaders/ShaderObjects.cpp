@@ -144,7 +144,7 @@ IShaderUniform* ShaderProgram::CreateUniform(const std::string& name, const mr::
 void ShaderProgram::SetUniform(const std::string& name, const int& value) {
     unsigned int handle = GetGPUHandle();
     if(handle) {
-        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniform1i(handle, glGetUniformLocation(handle, name.c_str()), value);
+        if(GLEW_EXT_direct_state_access) glProgramUniform1i(handle, glGetUniformLocation(handle, name.c_str()), value);
         else glUniform1i(glGetUniformLocation(handle, name.c_str()), value);
     }
 }
@@ -152,7 +152,7 @@ void ShaderProgram::SetUniform(const std::string& name, const int& value) {
 void ShaderProgram::SetUniform(const std::string& name, const float& value) {
     unsigned int handle = GetGPUHandle();
     if(handle) {
-        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniform1f(handle, glGetUniformLocation(handle, name.c_str()), value);
+        if(GLEW_EXT_direct_state_access) glProgramUniform1f(handle, glGetUniformLocation(handle, name.c_str()), value);
         else glUniform1f(glGetUniformLocation(handle, name.c_str()), value);
     }
 }
@@ -160,7 +160,7 @@ void ShaderProgram::SetUniform(const std::string& name, const float& value) {
 void ShaderProgram::SetUniform(const std::string& name, const glm::vec2& value) {
     unsigned int handle = GetGPUHandle();
     if(handle) {
-        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniform2fv(handle, glGetUniformLocation(handle, name.c_str()), 2, &value.x);
+        if(GLEW_EXT_direct_state_access) glProgramUniform2fv(handle, glGetUniformLocation(handle, name.c_str()), 2, &value.x);
         else glUniform2fv(glGetUniformLocation(handle, name.c_str()), 2, &value.x);
     }
 }
@@ -168,7 +168,7 @@ void ShaderProgram::SetUniform(const std::string& name, const glm::vec2& value) 
 void ShaderProgram::SetUniform(const std::string& name, const glm::vec3& value) {
     unsigned int handle = GetGPUHandle();
     if(handle) {
-        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniform3fv(handle, glGetUniformLocation(handle, name.c_str()), 3, &value.x);
+        if(GLEW_EXT_direct_state_access) glProgramUniform3fv(handle, glGetUniformLocation(handle, name.c_str()), 3, &value.x);
         else glUniform3fv(glGetUniformLocation(handle, name.c_str()), 3, &value.x);
     }
 }
@@ -176,7 +176,7 @@ void ShaderProgram::SetUniform(const std::string& name, const glm::vec3& value) 
 void ShaderProgram::SetUniform(const std::string& name, const glm::vec4& value) {
     unsigned int handle = GetGPUHandle();
     if(handle) {
-        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniform4fv(handle, glGetUniformLocation(handle, name.c_str()), 4, &value.x);
+        if(GLEW_EXT_direct_state_access) glProgramUniform4fv(handle, glGetUniformLocation(handle, name.c_str()), 4, &value.x);
         else glUniform4fv(glGetUniformLocation(handle, name.c_str()), 4, &value.x);
     }
 }
@@ -184,7 +184,7 @@ void ShaderProgram::SetUniform(const std::string& name, const glm::vec4& value) 
 void ShaderProgram::SetUniform(const std::string& name, const glm::mat4& value) {
     unsigned int handle = GetGPUHandle();
     if(handle) {
-        if(mr::gl::IsDirectStateAccessSupported()) glProgramUniformMatrix4fv(handle, glGetUniformLocation(handle, name.c_str()), 1,  GL_FALSE, &value[0][0]);
+        if(GLEW_EXT_direct_state_access) glProgramUniformMatrix4fv(handle, glGetUniformLocation(handle, name.c_str()), 1,  GL_FALSE, &value[0][0]);
         else glUniformMatrix4fv(glGetUniformLocation(handle, name.c_str()), 1,  GL_FALSE, &value[0][0]);
     }
 }
@@ -458,14 +458,15 @@ ShaderProgram* ShaderProgram::DefaultWithTexture() {
         "uniform vec4 "+std::string(MR_SHADER_COLOR_V)+";\n"
 
         "out vec4 "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+";\n"
-        "const vec4 lightPos = vec4(0, 0, 100, 1);"
-        "const float lightRoughness = 0.0;"
-        "vec4 OrenNyar(vec3 albedo, float roughness, vec3 faceNormal, vec3 lightDir, vec3 viewNormal) { vec3 n = normalize(faceNormal); vec3 l = normalize(-lightDir); vec3 v = normalize(viewNormal); float rough2 = roughness * roughness; float A = 1.0f - 0.5f * (rough2 / (rough2 + 0.57f)); float B = 0.45f * (rough2 / (rough2 + 0.09)); float a1 = acos( dot( v, n ) ); float a2 = acos( dot( l, n ) ); float C = sin(max(a1, a2)) * tan(min(a1, a2)); float gamma = dot(v - n * dot( v, n ), l - n * dot( l, n )); float final = (A + B * max( 0.0f, gamma ) * C); return vec4( albedo * max( 0.0f, dot( n, l ) ) * final, 1.0f ); }"
+        "const vec3 lightSunDir = vec3(-0.5, -1, -0.5);"
         "void main() {"
         "   vec3 albedoColor = texture("+std::string(MR_SHADER_COLOR_TEX)+", MR_VertexTexCoord).xyz;"
-        "   vec3 lightNormal = normalize(MR_LocalVertexPos * "+std::string(MR_SHADER_MODEL_MAT4)+" - lightPos).xyz;"
+        "   vec3 lightNormal = normalize(lightSunDir);"
+        "   vec3 lightFactor = normalize((vec4(MR_VertexNormal,0) * "+std::string(MR_SHADER_MODEL_MAT4)+").xyz);"
+        "   float lightF = dot(-lightNormal, lightFactor) * 0.3;"
+        "   float ambient = 0.5;"
         // * lightF * dot(vec4(-1 * MR_VertexNormal, 0),
-        "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+" = OrenNyar(albedoColor, lightRoughness, (vec4(MR_VertexNormal,0) * "+std::string(MR_SHADER_MODEL_MAT4)+").xyz, lightNormal, (vec4(MR_VertexNormal, 0) * "+std::string(MR_SHADER_VIEW_MAT4)+" * "+std::string(MR_SHADER_MODEL_MAT4)+").xyz);"
+        "   "+std::string(MR_SHADER_DEFAULT_FRAG_DATA_NAME_1)+" = vec4(albedoColor*lightF + albedoColor*ambient, 1.0);"
         "}";
 
     IShader* sh[2] { dynamic_cast<mr::IShader*>(Shader::CreateAndCompile(IShader::Type::Vertex, vs)), dynamic_cast<mr::IShader*>(Shader::CreateAndCompile(IShader::Type::Fragment, fs))};

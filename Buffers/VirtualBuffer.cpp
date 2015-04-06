@@ -29,7 +29,7 @@ VirtualGPUBuffer::VirtualGPUBuffer(IGPUBuffer* realBuffer, size_t const& offset,
     }
 
     _eventHandle = _realBuffer->OnDestroy +=
-    [this](IObjectHandle* oh) {
+    [this](IGPUObjectHandle* oh) {
         this->Destroy();
     };
 }

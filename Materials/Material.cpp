@@ -28,6 +28,9 @@ void DefaultMaterial::Create(MaterialDescr const& descr) {
         if(texColorPtr) {
             mr::ITextureSettings* texSettings = new mr::TextureSettings();
             texSettings->Create();
+            texSettings->SetWrapT(descr.texColorWrapMode);
+            texSettings->SetWrapS(descr.texColorWrapMode);
+            texSettings->SetWrapR(descr.texColorWrapMode);
             texColorPtr->SetSettings(texSettings);
             /*StateCache* stateCache = StateCache::GetDefault();
             if(!stateCache->BindTexture(texColorPtr, 0)) {

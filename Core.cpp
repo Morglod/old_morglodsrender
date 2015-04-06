@@ -8,17 +8,12 @@
 
 #include <GL/glew.h>
 
-PFNGLBUFFERSTORAGEPROC __glewBufferStorage;
-PFNGLNAMEDBUFFERSTORAGEEXTPROC __glewNamedBufferStorageEXT;
-
 namespace mr {
 
 void DestroyAllTextures();
 void DestroyAllShaderPrograms();
 
-}
-
-bool mr::Init() {
+bool Init() {
     GLenum result = glewInit();
     if(result != GLEW_OK) {
         mr::Log::LogString("Failed Init(). glew initialization failed. "+std::string((char*)glewGetErrorString(result)), MR_LOG_LEVEL_ERROR);
@@ -32,9 +27,11 @@ bool mr::Init() {
     return true;
 }
 
-void mr::Shutdown() {
-    mr::DestroyAllTextures();
-    mr::GPUBuffersManager::GetInstance().DestroyAllBuffers();
-    mr::DestroyAllShaderPrograms();
-    mr::GeometryManager::DestroyInstance();
+void Shutdown() {
+    DestroyAllTextures();
+    GPUBuffersManager::GetInstance().DestroyAllBuffers();
+    DestroyAllShaderPrograms();
+    GeometryManager::DestroyInstance();
+}
+
 }

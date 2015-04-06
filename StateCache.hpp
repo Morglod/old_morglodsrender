@@ -50,17 +50,17 @@ public:
     IGPUBuffer* GetBindedBuffer(BufferBindTarget const& target);
     IGPUBuffer* GetBindedUniformBuffer(unsigned int const& index);
     IGPUBuffer* GetBindedTransformFeedbackBuffer(unsigned int const& index);
-    bool ReBindBuffer(IGPUBuffer* buffer, BufferBindTarget const& target, IGPUBuffer** was);
+    bool ReBindBuffer(IGPUBuffer* __restrict__ buffer, BufferBindTarget const& target, IGPUBuffer** __restrict__ was);
 
     bool BindTexture(ITexture* texture, unsigned int const& unit);
     ITexture* GetBindedTexture(unsigned int const& unit);
     ITextureSettings* GetBindedTextureSettings(unsigned int const& unit);
-    bool ReBindTexture(ITexture* texture, unsigned int const& unit, ITexture** was);
+    bool ReBindTexture(ITexture* __restrict__ texture, unsigned int const& unit, ITexture** __restrict__ was);
     bool GetFreeTextureUnit(unsigned int& freeUnit);
 
 	bool BindFramebuffer(IFrameBuffer* frameBuffer);
 	IFrameBuffer* GetBindedFramebuffer();
-	bool ReBindFramebuffer(IFrameBuffer* frameBuffer, IFrameBuffer** was);
+	bool ReBindFramebuffer(IFrameBuffer* __restrict__ frameBuffer, IFrameBuffer** __restrict__ was);
 
     virtual ~StateCache();
 

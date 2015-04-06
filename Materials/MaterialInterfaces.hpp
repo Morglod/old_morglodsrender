@@ -4,6 +4,7 @@
 #define _MR_MATERIAL_INTERFACES_H_
 
 #include "../Utils/Containers.hpp"
+#include "../Textures/TextureInterfaces.hpp"
 
 #include <string>
 
@@ -37,6 +38,7 @@ struct MaterialDescr {
 	glm::vec3 colorDiffuse;
 
 	std::string texColor;
+	ITextureSettings::Wrap texColorWrapMode;
 };
 
 struct MaterialShaderParams {

@@ -21,7 +21,8 @@ public:
 
     virtual bool IsEqual(IVertexDataType*) const = 0;
     virtual unsigned int GetSize() const = 0; //one element of this data type size in bytes
-    virtual unsigned int GetDataType() const = 0; //opengl data type
+    virtual unsigned int GetDataTypeGL() const = 0; //opengl data type
+    virtual bool IsCached() const = 0;
 
     virtual ~IVertexDataType() {}
 };
@@ -36,7 +37,7 @@ public:
     };
 
     virtual bool IsEqual(IVertexAttribute*) const = 0;
-    virtual unsigned int GetSize() const = 0; //one attrib size in bytes
+    virtual unsigned int GetByteSize() const = 0; //one attrib size in bytes
     virtual unsigned int GetElementsNum() const = 0; //num of elements used in attribute
     virtual IVertexDataType* GetDataType() const  = 0;
     virtual unsigned int GetShaderIndex() const = 0;
@@ -53,7 +54,6 @@ class IVertexFormat {
 public:
     virtual bool IsEqual(IVertexFormat*) const = 0;
     virtual unsigned int GetSize() const = 0; //one vertex size in bytes
-    virtual void AddVertexAttribute(IVertexAttribute* a) = 0;
     virtual bool Bind() const = 0;
     virtual void UnBind() const = 0;
 

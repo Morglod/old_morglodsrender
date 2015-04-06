@@ -5,6 +5,8 @@
 
 #include <Containers.hpp>
 
+#include <glm/glm.hpp>
+
 namespace mr {
 
 class ITexture;

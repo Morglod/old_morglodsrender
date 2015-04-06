@@ -1,17 +1,29 @@
 #pragma once
 
-#ifndef _MR_BUFFERS_H_
-#define _MR_BUFFERS_H_
-
 #include "BuffersInterfaces.hpp"
 
 namespace mr {
 
-class GPUBuffer : public IGPUBuffer {
+class GPUBufferRangeHandle : public IGPUBufferRangeHandle {
+    friend class GPUBuffer;
 public:
-    bool Allocate(const Usage& usage, const size_t& size) override;
+    inline IGPUBuffer* GetBuffer() override { return _buffer; }
+    inline size_t GetOffset() override { return _offset; }
+    inline size_t GetSize() override { return _size; }
+
+    virtual ~GPUBufferRangeHandle();
+protected:
+    GPUBufferRangeHandle(IGPUBuffer* buf, size_t const& off, size_t const& sz);
+    IGPUBuffer* _buffer;
+    size_t _offset;
+    size_t _size;
+};
+
+class GPUBuffer : public IGPUBuffer {
+    friend class GPUBuffersManager;
+public:
     inline Usage GetUsage() override { return _usage; }
-    bool Write(void* srcData, const size_t& srcOffset, const size_t& dstOffset, const size_t& size, size_t* out_realOffset, BufferedDataInfo* out_info) override;
+    bool Write(void* __restrict__ srcData, const size_t& srcOffset, const size_t& dstOffset, const size_t& size, size_t* __restrict__ out_realOffset, BufferedDataInfo* __restrict__ out_info) override;
     bool Read(void* dstData, const size_t& dstOffset, const size_t& srcOffset, const size_t& size) override;
 
     IMappedRangePtr Map(size_t const& offset, size_t const& length, unsigned int const& flags) override;
@@ -27,6 +39,9 @@ public:
         return true;
     }
 
+    IGPUBufferRangeHandleWeakPtr UseRange(size_t const& offset, size_t const& size) override;
+    mu::ArrayHandle<IGPUBufferRangeHandle*> GetRangeHandles() override;
+
     /* GPUObjectHandle */
     //unsigned int GetGPUHandle() override;
     size_t GetGPUMem() override { return _size; }
@@ -34,9 +49,12 @@ public:
     /* ObjectHandle */
     void Destroy() override;
 
-    GPUBuffer();
     virtual ~GPUBuffer();
 protected:
+    GPUBuffer();
+    bool Allocate(const Usage& usage, const size_t& size) override;
+    void _RangeFree(IGPUBufferRangeHandle* handle) override;
+
     class MappedRange : public IGPUBuffer::IMappedRange {
     public:
         inline IGPUBuffer* GetBuffer() override { return _buffer; }
@@ -64,11 +82,11 @@ protected:
     size_t _size;
     Usage _usage;
     IMappedRangeWeakPtr _mapped;
+
+    std::vector<IGPUBufferRangeHandlePtr> _rangeHandles;
 };
 
 /** !! DO NOT USE IT ON VirtualGPUBuffers !! **/
 bool GPUBufferCopy(IGPUBuffer* src, IGPUBuffer* dst, const unsigned int& srcOffset, const unsigned int& dstOffset, const unsigned int& size);
 
 }
-
-#endif // _MR_BUFFERS_H_
