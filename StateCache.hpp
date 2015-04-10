@@ -56,7 +56,8 @@ public:
     ITexture* GetBindedTexture(unsigned int const& unit);
     ITextureSettings* GetBindedTextureSettings(unsigned int const& unit);
     bool ReBindTexture(ITexture* __restrict__ texture, unsigned int const& unit, ITexture** __restrict__ was);
-    bool GetFreeTextureUnit(unsigned int& freeUnit);
+    bool GetFreeTextureUnit(unsigned int& outFreeUnit);
+    bool IsTextureUnitFree(unsigned int const& unit);
 
 	bool BindFramebuffer(IFrameBuffer* frameBuffer);
 	IFrameBuffer* GetBindedFramebuffer();
@@ -65,7 +66,7 @@ public:
     virtual ~StateCache();
 
     static StateCache* GetDefault(); //this thread default, 0 index
-    static StateCacheWeakPtr New();
+    static StateCacheWeakPtr New(size_t& outThisThreadIndex);
     static mu::ArrayRef<StateCacheWeakPtr> GetAll();
     static mu::ArrayHandle<StateCacheWeakPtr> GetThisThread();
     static StateCacheWeakPtr GetThisThread(size_t const& index);

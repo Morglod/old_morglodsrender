@@ -20,6 +20,7 @@ public:
         bool generateUVs = true;
         bool transformUVs = true;
         bool fast = false; //Not max quality?
+        bool debugLog = false;
     };
 
     bool Import(std::string const& file, ImportOptions const& options);

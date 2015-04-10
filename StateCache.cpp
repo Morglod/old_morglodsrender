@@ -12,6 +12,8 @@
 //without transform and uniform
 #define MR_BUFFERS_BIND_TARGETS_NUM 12
 
+namespace {
+
 unsigned int MR_BUFFER_TARGET[] {
     GL_ARRAY_BUFFER,
     GL_ATOMIC_COUNTER_BUFFER,
@@ -33,10 +35,14 @@ unsigned int MR_TEXTURE_TARGET[]{
     GL_TEXTURE_3D
 };
 
+}
+
 namespace mr {
 
-std::vector<StateCacheWeakPtr> MR_STATE_CACHES;
-thread_local std::vector<StateCachePtr> MR_STATE_CACHES_THIS_THREAD = std::vector<StateCachePtr>();
+namespace {
+    std::vector<StateCacheWeakPtr> MR_STATE_CACHES;
+    thread_local std::vector<StateCachePtr> MR_STATE_CACHES_THIS_THREAD = std::vector<StateCachePtr>();
+}
 
 void StateCache::ResetCache() {
     //Buffers
@@ -299,15 +305,21 @@ bool StateCache::ReBindTexture(ITexture* __restrict__ texture, unsigned int cons
     }
 }
 
-bool StateCache::GetFreeTextureUnit(unsigned int& freeUnit) {
+bool StateCache::GetFreeTextureUnit(unsigned int& outFreeUnit) {
     ITexture** texArray = _textures.GetArray();
     for(unsigned int i = 0; i < _textures.GetNum(); ++i) {
         if(texArray == nullptr) {
-            freeUnit = i;
+            outFreeUnit = i;
             return true;
         }
     }
     return false;
+}
+
+bool StateCache::IsTextureUnitFree(unsigned int const& unit) {
+    if(_textures.GetNum() <= unit) return false;
+    ITexture** texArray = _textures.GetArray();
+    return (texArray[unit] == nullptr);
 }
 
 bool StateCache::BindFramebuffer(IFrameBuffer* frameBuffer) {
@@ -339,9 +351,10 @@ StateCache::StateCache() {
 StateCache::~StateCache() {
 }
 
-StateCacheWeakPtr StateCache::New() {
+StateCacheWeakPtr StateCache::New(size_t& outThisThreadIndex) {
     StateCachePtr stateCache(new StateCache());
     stateCache->ResetCache();
+    outThisThreadIndex = MR_STATE_CACHES_THIS_THREAD.size();
     MR_STATE_CACHES_THIS_THREAD.push_back(stateCache);
     StateCacheWeakPtr weakPtr(stateCache);
     MR_STATE_CACHES.push_back(weakPtr);
@@ -365,8 +378,9 @@ StateCacheWeakPtr StateCache::GetThisThread(size_t const& index) {
 }
 
 StateCache* StateCache::GetDefault() {
-    if(MR_STATE_CACHES_THIS_THREAD.empty()) New();
-    return MR_STATE_CACHES_THIS_THREAD[0].get();
+    size_t indexNew = 0;
+    if(MR_STATE_CACHES_THIS_THREAD.empty()) New(indexNew);
+    return MR_STATE_CACHES_THIS_THREAD[indexNew].get();
 }
 
 }

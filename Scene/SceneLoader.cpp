@@ -80,28 +80,32 @@ public:
 }
 
 bool SceneLoader::Import(std::string const& file, ImportOptions const& options) {
-    bool bNoError = true;
+    bool anyError = false;
 
+    //Setup log if needed
     _AssimpLogStream logStream;
-    Assimp::Logger* assimpLogger = Assimp::DefaultLogger::create(ASSIMP_DEFAULT_LOG_NAME, Assimp::Logger::VERBOSE, aiDefaultLogStream_STDOUT, NULL);
-    assimpLogger->attachStream(&logStream, Assimp::Logger::Debugging | Assimp::Logger::Info | Assimp::Logger::Warn | Assimp::Logger::Err);
+    if(options.debugLog) {
+        Assimp::Logger* assimpLogger = Assimp::DefaultLogger::create(ASSIMP_DEFAULT_LOG_NAME, Assimp::Logger::VERBOSE, aiDefaultLogStream_STDOUT, NULL);
+        assimpLogger->attachStream(&logStream, Assimp::Logger::Debugging | Assimp::Logger::Info | Assimp::Logger::Warn | Assimp::Logger::Err);
+    }
 
-    unsigned int assimpFlags = 0;
+    //Set flags and import
+    unsigned int flags = 0;
+    if(options.fast) flags |= aiProcessPreset_TargetRealtime_Fast;
+    else flags |= aiProcessPreset_TargetRealtime_MaxQuality;
+    if(options.fixInfacingNormals) flags |= aiProcess_FixInfacingNormals;
+    if(options.flipUVs) flags |= aiProcess_FlipUVs;
+    if(options.generateUVs) flags |= aiProcess_GenUVCoords;
+    if(options.transformUVs) flags |= aiProcess_TransformUVCoords;
 
-    if(options.fast) assimpFlags |= aiProcessPreset_TargetRealtime_Fast;
-    else assimpFlags |= aiProcessPreset_TargetRealtime_MaxQuality;
-    if(options.fixInfacingNormals) assimpFlags |= aiProcess_FixInfacingNormals;
-    if(options.flipUVs) assimpFlags |= aiProcess_FlipUVs;
-    if(options.generateUVs) assimpFlags |= aiProcess_GenUVCoords;
-    if(options.transformUVs) assimpFlags |= aiProcess_TransformUVCoords;
-
-    const aiScene* scene = _impl->importer.ReadFile(file, assimpFlags);
+    const aiScene* scene = _impl->importer.ReadFile(file, flags);
 
     if(!scene) {
         mr::Log::LogString("Assimp error: " + std::string(_impl->importer.GetErrorString()), MR_LOG_LEVEL_ERROR);
         return false;
     }
 
+    //Process materials
     _impl->_materials = mr::TStaticArray<IMaterial*>(scene->mNumMaterials);
     for(unsigned int i = 0; i < scene->mNumMaterials; ++i) {
         aiMaterial* material = scene->mMaterials[i];
@@ -146,15 +150,17 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
         _impl->_materials.At(i) = dynamic_cast<IMaterial*>(newMat);
     }
 
+    //Process nodes
     std::unordered_map<size_t, aiMatrix4x4> nodesCache;
     _AssimpCacheNodes(scene->mRootNode, aiMatrix4x4(), &nodesCache);
 
     _impl->_geoms = mr::TStaticArray<IGeometry*>(scene->mNumMeshes);
     _impl->_meshes = mr::TStaticArray<IMesh*>(scene->mNumMeshes);
 
-    size_t DEBUGverticesNum = 0;
-    size_t DEBUGindeciesNum = 0;
+    size_t debugVerticiesNum = 0;
+    size_t debugIndeciesNum = 0;
 
+    //Process geometry
     for(unsigned int i = 0; i < scene->mNumMeshes; ++i) {
         aiMesh* mesh = scene->mMeshes[i];
         aiMatrix4x4 transformMatrix = _AssimpGetMat(scene, &nodesCache, i);
@@ -167,31 +173,34 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
 
         ///Create vertex format
 
-        size_t attr_num = 0;
+        size_t attributesNum = 0;
         for(unsigned char attr_i = 0; attr_i < 4; ++attr_i) {
-            if(bAttrib[attr_i]) ++attr_num;
+            if(bAttrib[attr_i]) ++attributesNum;
         }
 
         VertexFormatCustomFixed vertexFormat;
-        vertexFormat.SetAttributesNum(attr_num);
+        vertexFormat.SetAttributesNum(attributesNum);
 
-        size_t attr_index = 0;
-        if(bAttrib[0]) {
-            vertexFormat.SetVertexAttribute(VertexAttributeCustom(3, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION).Cache(), attr_index);
-            attr_index++;
+        {
+            size_t attr_index = 0;
+            if(bAttrib[0]) {
+                vertexFormat.SetVertexAttribute(VertexAttributeCustom(3, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION).Cache(), attr_index);
+                attr_index++;
+            }
+            if(bAttrib[1]) {
+                vertexFormat.SetVertexAttribute(VertexAttributeCustom(3, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION).Cache(), attr_index);
+                attr_index++;
+            }
+            if(bAttrib[2]) {
+                vertexFormat.SetVertexAttribute(VertexAttributeCustom(4, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION).Cache(), attr_index);
+                attr_index++;
+            }
+            if(bAttrib[3]) {
+                vertexFormat.SetVertexAttribute(VertexAttributeCustom(2, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION).Cache(), attr_index);
+                attr_index++;
+            }
         }
-        if(bAttrib[1]) {
-            vertexFormat.SetVertexAttribute(VertexAttributeCustom(3, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION).Cache(), attr_index);
-            attr_index++;
-        }
-        if(bAttrib[2]) {
-            vertexFormat.SetVertexAttribute(VertexAttributeCustom(4, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION).Cache(), attr_index);
-            attr_index++;
-        }
-        if(bAttrib[3]) {
-            vertexFormat.SetVertexAttribute(VertexAttributeCustom(2, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION).Cache(), attr_index);
-            attr_index++;
-        }
+
         vertexFormat.Complete();
 
         ///Create index format
@@ -212,17 +221,19 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
         size_t vertexDataSize = mesh->mNumVertices * vertexFormat.GetSize();
         unsigned char * vertexData = new unsigned char [vertexDataSize];
         for(size_t it = 0; it < mesh->mNumVertices; ++it) {
-            size_t offset = vertexFormat.GetSize() * it;
+            const size_t vertexOffset = vertexFormat.GetSize() * it;
 
-            aiVector3D pos = mesh->mVertices[it];
-            pos *= transformMatrix;
-            memcpy(&vertexData[offset + vertexOffsets[vertexOffsets_attribs_map[0]]], &pos, sizeof(float)*3);
+            {
+                aiVector3D pos = mesh->mVertices[it];
+                pos *= transformMatrix;
+                memcpy(&vertexData[vertexOffset + vertexOffsets[vertexOffsets_attribs_map[0]]], &pos, sizeof(float)*3);
+            }
 
-            if(bAttrib[1]) memcpy(&vertexData[offset + vertexOffsets[vertexOffsets_attribs_map[1]]], &(mesh->mNormals[it]),  sizeof(float)*3);
-            if(bAttrib[2]) memcpy(&vertexData[offset + vertexOffsets[vertexOffsets_attribs_map[2]]], &(mesh->mColors[0][it]),sizeof(float)*4);
+            if(bAttrib[1]) memcpy(&vertexData[vertexOffset + vertexOffsets[vertexOffsets_attribs_map[1]]], &(mesh->mNormals[it]),  sizeof(float)*3);
+            if(bAttrib[2]) memcpy(&vertexData[vertexOffset + vertexOffsets[vertexOffsets_attribs_map[2]]], &(mesh->mColors[0][it]),sizeof(float)*4);
             if(bAttrib[3]) {
                 aiVector2D texCoord(mesh->mTextureCoords[0][it].x, mesh->mTextureCoords[0][it].y);
-                memcpy(&vertexData[offset + vertexOffsets[vertexOffsets_attribs_map[3]]], &texCoord, sizeof(float)*2);
+                memcpy(&vertexData[vertexOffset + vertexOffsets[vertexOffsets_attribs_map[3]]], &texCoord, sizeof(float)*2);
             }
         }
 
@@ -234,43 +245,45 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
         }
 
         ///Make geometry
-        DEBUGverticesNum += mesh->mNumVertices;
-        DEBUGindeciesNum += mesh->mNumFaces;
+        debugVerticiesNum += mesh->mNumVertices;
+        debugIndeciesNum += mesh->mNumFaces;
         _impl->_geoms.At(i) = mr::GeometryManager::GetInstance()->PlaceGeometry(vertexFormat.Cache(), &vertexData[0], mesh->mNumVertices,
                                                                                 indexFormat.Cache(), &indexData[0], mesh->mNumFaces*3,
                                                                                 mr::IGPUBuffer::Usage::Static, mr::IGeometryBuffer::DrawMode::Triangles);
 
         delete [] vertexData;
         delete [] indexData;
-        if(_impl->_geoms.At(i) == nullptr) bNoError = false;
+        if(_impl->_geoms.At(i) == nullptr) anyError = false;
 
         _impl->_meshes.At(i) = dynamic_cast<mr::IMesh*>(new Mesh(_impl->_geoms.RangeCopy(i,i+1), _impl->_materials.At(mesh->mMaterialIndex)));
     }
 
-    std::cout << "VERTICES: " << DEBUGverticesNum;
-    std::cout << " IND: " << DEBUGindeciesNum;
+    if(options.debugLog) {
+        mr::Log::LogString("Total verticies: " + std::to_string(debugVerticiesNum));
+        mr::Log::LogString("Total indecies: " + std::to_string(debugIndeciesNum));
+    }
 
-    return bNoError;
+    return !anyError;
 }
 
 unsigned int SceneLoader::GetGeometriesNum() {
-    return this->_impl->_geoms.GetNum();
+    return _impl->_geoms.GetNum();
 }
 
 TStaticArray<IGeometry*> SceneLoader::GetGeometry() {
-    return this->_impl->_geoms;
+    return _impl->_geoms;
 }
 
 unsigned int SceneLoader::GetMaterialsNum() {
-    return this->_impl->_materials.GetNum();
+    return _impl->_materials.GetNum();
 }
 
 TStaticArray<IMaterial*> SceneLoader::GetMaterials() {
-    return this->_impl->_materials;
+    return _impl->_materials;
 }
 
 TStaticArray<IMesh*> SceneLoader::GetMeshes() {
-    return this->_impl->_meshes;
+    return _impl->_meshes;
 }
 
 SceneLoader::SceneLoader() : _impl(new SceneLoader::Impl()) {
