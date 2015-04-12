@@ -3,14 +3,18 @@
 #include "../Materials/MaterialInterfaces.hpp"
 #include "GeometryInterfaces.hpp"
 #include "../Utils/Debug.hpp"
-#include "../Shaders/ShaderObjects.hpp"
+#include "../Shaders/ShaderInterfaces.hpp"
+#include <Macro.hpp>
+#include "../StateCache.hpp"
 
 void mr::Mesh::Draw(glm::mat4* modelMat) {
     if(_mat) {
         _mat->Use();
     }
-    IShaderProgram* usedShaderProgram = nullptr;
-    if((usedShaderProgram = GetUsedShaderProgram())) {
+    mr::StateCache* stateCache = mr::StateCache::GetDefault();
+    mr::IShaderProgram* usedShaderProgram = stateCache->GetBindedShaderProgram();
+
+    if(usedShaderProgram) {
         IShaderUniform* uni = nullptr;
         if((uni = usedShaderProgram->FindShaderUniform(MR_SHADER_MODEL_MAT4)))
             uni->SetPtr(modelMat);

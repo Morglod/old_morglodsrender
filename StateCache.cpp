@@ -5,6 +5,7 @@
 #include "RTT/FrameBufferInterfaces.hpp"
 #include "Buffers/BuffersInterfaces.hpp"
 #include "Textures/TextureInterfaces.hpp"
+#include "Shaders/ShaderProgramObject.hpp"
 
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -326,6 +327,7 @@ bool StateCache::BindFramebuffer(IFrameBuffer* frameBuffer) {
 	if(frameBuffer == _framebuffer) return true;
 	//TODO error catch.
 	glBindFramebuffer(GL_FRAMEBUFFER, (frameBuffer) ? frameBuffer->GetGPUHandle() : 0);
+	_framebuffer = frameBuffer;
 	return true;
 }
 
@@ -344,6 +346,42 @@ bool StateCache::ReBindFramebuffer(IFrameBuffer* __restrict__ frameBuffer, IFram
 	return true;
 }
 
+bool StateCache::BindShaderProgram(IShaderProgram* shaderProgram) {
+    if(shaderProgram == _shaderProgram) {
+        _shaderProgram->UpdateUniforms();
+        return true;
+    }
+
+    if(shaderProgram != nullptr) {
+        if(!shaderProgram->IsLinked()) {
+            mr::Log::LogString("Failed StateCache::BindShaderProgram. Can't use not linked shader program.", MR_LOG_LEVEL_ERROR);
+            return false;
+        }
+        const unsigned int handle = shaderProgram->GetGPUHandle();
+        glUseProgram(handle);
+        shaderProgram->UpdateUniforms();
+    } else {
+        glUseProgram(0);
+    }
+
+    _shaderProgram = shaderProgram;
+    return true;
+}
+
+IShaderProgram* StateCache::GetBindedShaderProgram() {
+    return _shaderProgram;
+}
+
+bool StateCache::ReBindShaderProgram(IShaderProgram* __restrict__ shaderProgram, IShaderProgram** __restrict__ was) {
+    IShaderProgram* binded = _shaderProgram;
+    if(binded == shaderProgram) return true;
+    *was = binded;
+    if(BindShaderProgram(shaderProgram)) return true;
+    else {
+        BindShaderProgram(binded);
+        return false;
+    }
+}
 
 StateCache::StateCache() {
 }

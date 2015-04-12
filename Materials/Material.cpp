@@ -1,7 +1,7 @@
 #include "Material.hpp"
 #include "../Utils/Log.hpp"
 //#include "../RenderManager.hpp"
-#include "../Shaders/ShaderObjects.hpp"
+#include "../Shaders/ShaderManager.hpp"
 #include "MaterialsConfig.hpp"
 #include "../Utils/Debug.hpp"
 #include "../Textures/TextureObjects.hpp"
@@ -18,9 +18,11 @@ namespace mr {
 
 void DefaultMaterial::Create(MaterialDescr const& descr) {
     _descr = descr;
-    _program = mr::ShaderProgram::Default();
     _shaderParams.colorAmbient = _descr.colorAmbient;
     _shaderParams.colorDiffuse = _descr.colorDiffuse;
+
+    ShaderManager* shaderManager = mr::ShaderManager::GetInstance();
+    _program = shaderManager->DefaultShaderProgram();
 
     if((!_descr.texColor.empty()) && _descr.texColor != "") {
         texColorPtr = mr::Texture::FromFile(_descr.texColor);
@@ -44,8 +46,11 @@ void DefaultMaterial::Create(MaterialDescr const& descr) {
 }
 
 bool DefaultMaterial::Use() {
-    if(_program) _program->Use();
-    if(texColorPtr != nullptr) StateCache::GetDefault()->BindTexture(texColorPtr, 0);
+    StateCache* stateCache = StateCache::GetDefault();
+    if(_program) {
+        stateCache->BindShaderProgram(_program);
+    }
+    if(texColorPtr != nullptr) stateCache->BindTexture(texColorPtr, 0);
     return true;
 }
 

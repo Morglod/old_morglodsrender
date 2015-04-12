@@ -11,18 +11,18 @@ class TextureSettings : public ITextureSettings {
 public:
     ITextureSettings* Copy() override;
 
-    void SetLodBias(const float& v) override ;
-    void SetBorderColor(float* rgba) override ;
-    void SetBorderColor(const float& r, const float& g, const float& b, const float& a) override ;
-    void SetMinFilter(const MinFilter& v) override ;
-    void SetMagFilter(const MagFilter& v) override ;
-    void SetMinLod(const int& v) override ;
-    void SetMaxLod(const int& v) override ;
-    void SetWrapS(const Wrap& v) override ;
-    void SetWrapR(const Wrap& v) override ;
-    void SetWrapT(const Wrap& v) override ;
-    void SetCompareMode(const CompareMode& v) override ;
-    void SetCompareFunc(const CompareFunc& v) override ;
+    void SetLodBias(const float& v) override;
+    void SetBorderColor(float* rgba) override;
+    void SetBorderColor(const float& r, const float& g, const float& b, const float& a) override;
+    void SetMinFilter(const MinFilter& v) override;
+    void SetMagFilter(const MagFilter& v) override;
+    void SetMinLod(const int& v) override;
+    void SetMaxLod(const int& v) override;
+    void SetWrapS(const Wrap& v) override;
+    void SetWrapR(const Wrap& v) override;
+    void SetWrapT(const Wrap& v) override;
+    void SetCompareMode(const CompareMode& v) override;
+    void SetCompareFunc(const CompareFunc& v) override;
 
     inline float GetLodBias() override {
         return _lod_bias;

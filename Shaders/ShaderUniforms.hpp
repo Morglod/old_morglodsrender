@@ -18,7 +18,7 @@ class ShaderUniform : public IShaderUniform {
 public:
     inline std::string GetName() override { return _name; }
     inline IShaderUniform::Type GetType() override { return _type; }
-    inline void SetPtr(void* ptr) override { _value = ptr; OnNewValuePtr(dynamic_cast<IShaderUniform*>(this), ptr); }
+    inline void SetPtr(void* ptr) override { _value = ptr; }
     inline void* GetPtr() override { return _value; }
     inline int GetGPULocation() override { return _gpu_location; }
     void Update() override;

@@ -3,7 +3,10 @@
 #ifndef _MR_SHADER_COMPILER_H_
 #define _MR_SHADER_COMPILER_H_
 
-#include "../Utils/Containers.hpp"
+#include "ShaderInterfaces.hpp"
+
+#include <Containers.hpp>
+#include <Singleton.hpp>
 
 #include <string>
 
@@ -39,8 +42,8 @@ protected:
 
 class ShaderCompilationOutput {
 public:
-    inline TStaticArray<ShaderCompilationMessage>& GetMessages() { return _messages; }
-    inline ShaderCompilationMessage& GetMessage(const size_t& i) { return _messages.At(i); }
+    inline mu::ArrayHandle<ShaderCompilationMessage>& GetMessages() { return _messages; }
+    inline ShaderCompilationMessage& GetMessage(const size_t& i) { return _messages.GetArray()[i]; }
     inline size_t GetMessagesNum() { return _messages.GetNum(); }
     inline bool Good() { return _result; }
 
@@ -50,51 +53,38 @@ public:
     /// Memory, allocated for array, will be free on ShaderCompilationOutput deletion
     ShaderCompilationOutput(ShaderCompilationMessage* ar, const size_t& num, const bool& result);
 
-    ShaderCompilationOutput(const TStaticArray<ShaderCompilationMessage>& msg, const bool& result);
+    ShaderCompilationOutput(mu::ArrayHandle<ShaderCompilationMessage> const& msg, const bool& result);
 protected:
-    TStaticArray<ShaderCompilationMessage> _messages;
+    mu::ArrayHandle<ShaderCompilationMessage> _messages;
     bool _result;
 };
 
 class IShaderCompiler {
 public:
-    enum ShaderType {
-        None = 0,
-        Vertex = 0x8B31,
-        Fragment = 0x8B30,
-        Compute = 0x91B9,
-        TessControl = 0x8E88,
-        TessEvaluation = 0x8E87,
-        Geometry = 0x8DD9,
-        TypesNum = 8
-    };
-
     virtual void Release() = 0;
 
     /// Should call IShaderCompiler::_Optimize
-    /// gpu_handle is OpenGL shader object id
-    virtual ShaderCompilationOutput Compile(const std::string& code, const ShaderType& type, const unsigned int& gpu_handle) = 0;
+    virtual ShaderCompilationOutput Compile(IShader* shaderObject, std::string const& code) = 0;
 
-    /// gpu_handles contain OpenGL shader object ids
-    /// gpu_program_handle is OpenGL shader program object id
+    virtual ShaderCompilationOutput Link(IShaderProgram* shaderProgramObject, mu::ArrayHandle<IShader*> shaderObjects) = 0;
+
     /// byteCode returns status of getting byte code from program
-    virtual ShaderCompilationOutput Link(TStaticArray<unsigned int> gpu_handles, const unsigned int& gpu_program_handle) = 0;
-    virtual ShaderCompilationOutput LinkToByteCode(TStaticArray<unsigned int> gpu_handles, const unsigned int& gpu_program_handle, int* outLength, unsigned int* outFromat, void** outData, bool* byteCode) = 0;
+    virtual ShaderCompilationOutput LinkToByteCode(IShaderProgram* shaderProgramObject, mu::ArrayHandle<IShader*> shaderObjects, int* __restrict__ outLength, unsigned int* __restrict__ outFromat, void** __restrict__ outData, bool* __restrict__ byteCode) = 0;
 
     /// IShaderCompiler::Compile calls this methods before compilation
-    virtual std::string _Optimize(const std::string& code, const ShaderType& type) = 0;
+    virtual std::string _Optimize(IShader::Type const& type, std::string const& code) = 0;
     //virtual std::string PreProcess(std::string code, ShaderType const& type, std::string const& shaderDirectory) = 0;
 
     virtual ~IShaderCompiler() {}
 };
 
-class ShaderCompiler : public IShaderCompiler {
+class ShaderCompiler : public IShaderCompiler, public mu::Singleton<ShaderCompiler> {
 public:
     void Release() override;
-    ShaderCompilationOutput Compile(const std::string& code, const ShaderType& type, const unsigned int& gpu_handle) override;
-    ShaderCompilationOutput Link(TStaticArray<unsigned int> gpu_handles, const unsigned int& gpu_program_handle) override;
-    ShaderCompilationOutput LinkToByteCode(TStaticArray<unsigned int> gpu_handles, const unsigned int& gpu_program_handle, int* outLength, unsigned int* outFromat, void** outData, bool* byteCode) override;
-    std::string _Optimize(const std::string& code, const ShaderType& type) override;
+    ShaderCompilationOutput Compile(IShader* shaderObject, std::string const& code) override;
+    ShaderCompilationOutput Link(IShaderProgram* shaderProgramObject, mu::ArrayHandle<IShader*> shaderObjects) override;
+    ShaderCompilationOutput LinkToByteCode(IShaderProgram* shaderProgramObject, mu::ArrayHandle<IShader*> shaderObjects, int* outLength, unsigned int* outFromat, void** outData, bool* byteCode) override;
+    std::string _Optimize(IShader::Type const& type, std::string const& code) override;
     //std::string PreProcess(std::string code, ShaderType const& type, std::string const& shaderDirectory) override;
     bool debug_log = true;
     virtual ~ShaderCompiler();

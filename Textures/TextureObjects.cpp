@@ -379,7 +379,7 @@ mr::Texture::~Texture() {
     _MR_REGISTERED_TEXTURES_.Erase(dynamic_cast<ITexture*>(this));
 }
 
-void mr::TextureList::Bind() {
+void mr::TextureBindList::Bind() {
 	//TODO, BindFunction in StateCache.
 
     const size_t num = _textures.GetNum();
@@ -392,13 +392,13 @@ void mr::TextureList::Bind() {
         StateCache* stateCache = StateCache::GetDefault();
         for(size_t i = 0; i < num; ++i) {
             if(!stateCache->BindTexture(texArray[i], i + _firstUnit)) {
-                mr::Log::LogString("Bind texture failed in TextureList::Bind.", MR_LOG_LEVEL_ERROR);
+                mr::Log::LogString("Bind texture failed in TextureBindList::Bind.", MR_LOG_LEVEL_ERROR);
             }
         }
     }
 }
 
-void mr::TextureList::SetTexture(ITexture* tex, unsigned short const& index) {
+void mr::TextureBindList::SetTexture(ITexture* tex, unsigned short const& index) {
     const size_t num = _textures.GetNum();
     Assert(index < num)
     _textures.GetArray()[index] = tex;
@@ -411,7 +411,7 @@ void mr::TextureList::SetTexture(ITexture* tex, unsigned short const& index) {
     }
 }
 
-void mr::TextureList::SetTextures(mu::ArrayHandle<ITexture*> tex) {
+void mr::TextureBindList::SetTextures(mu::ArrayHandle<ITexture*> tex) {
     _textures = tex;
     const size_t texNum = tex.GetNum();
     if(texNum != 0) {

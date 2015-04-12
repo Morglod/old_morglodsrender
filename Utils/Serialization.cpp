@@ -1,7 +1,7 @@
 #include "Serialization.hpp"
 #include "Debug.hpp"
 #include "../Buffers/BuffersManager.hpp"
-#include "../Shaders/ShaderObjects.hpp"
+#include "../Shaders/ShaderManager.hpp"
 
 namespace mr {
 
@@ -52,7 +52,7 @@ IShaderProgram* SerializeMRTypes::ShaderProgramFromBytes(TStaticArray<unsigned c
     memcpy(data, &bytes.GetRaw()[sizeof(unsigned int)], bytes.GetNum());
 
     ShaderProgramCache cache = ShaderProgramCache(format, mu::ArrayHandle<unsigned char>(data, bytes.GetNum() - sizeof(unsigned int), true));
-    return dynamic_cast<mr::IShaderProgram*>(mr::ShaderProgram::FromCache(cache));
+    return mr::ShaderManager::GetInstance()->CreateShaderProgramFromCache(cache);
 }
 
 }

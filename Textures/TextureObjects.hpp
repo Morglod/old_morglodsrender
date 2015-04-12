@@ -69,7 +69,7 @@ protected:
     bool _mipmaps = false;
 };
 
-class TextureList : public ITextureList {
+class TextureBindList : public ITextureBindList {
 public:
     void Bind() override;
     inline void SetFirstUnit(unsigned short const& unit) override { _firstUnit = unit; }

@@ -7,15 +7,17 @@
 #include <Containers.hpp>
 
 #include <glm/glm.hpp>
+#include <functional>
 
 namespace mr {
 
 class IShaderProgram;
+struct ShaderUniformDesc;
 
 class IShaderUniform {
     friend class IShaderProgram;
 public:
-    enum Type {
+    enum Type : unsigned char {
         Float = 0,
         Vec2 = 1, //glm::vec2 float[2]
         Vec3 = 2, //glm::vec3 float[3]
@@ -29,9 +31,6 @@ public:
 
     static std::string TypeToString(const IShaderUniform::Type& t);
 
-    mu::Event<IShaderUniform*, void*> OnNewValuePtr;
-    mu::Event<IShaderUniform*, IShaderProgram*, const int&> OnNewLocation; //as args (shader program, new uniform location)
-
     virtual std::string GetName() = 0;
     virtual IShaderUniform::Type GetType() = 0;
     virtual void SetPtr(void* ptr)  = 0;
@@ -42,6 +41,12 @@ public:
     virtual IShaderProgram* GetParent() = 0;
 
     virtual ~IShaderUniform() {}
+};
+
+struct ShaderUniformDesc {
+    std::string name = "NoNameUniform";
+    IShaderUniform::Type type = IShaderUniform::Type::Float;
+    int gpuLocation = -1; //-1, auto-detect
 };
 
 struct ShaderUniformInfo {
@@ -91,14 +96,13 @@ public:
         TypesNum = 8
     };
 
-    mu::Event<IShader*, const std::string&, const IShader::Type&> OnCompiled; //as args(new code, new shader type)
-
     //virtual const unsigned int& GetGPUHandle() = 0; GPUObjectHandle
     virtual IShader::Type GetType() = 0;
     virtual bool IsCompiled() = 0;
-    virtual bool Compile(IShader::Type const& type, std::string const& code) = 0;
 
     virtual ~IShader() {}
+protected:
+    virtual bool Create(IShader::Type const& type) = 0;
 };
 
 struct ShaderProgramCache {
@@ -133,15 +137,15 @@ public:
     virtual mu::ArrayHandle<ShaderUniformInfo> GetCompiledUniforms() = 0; //returns used in shaders uniforms. don't forget to free this array manually
     virtual bool IsUniform(std::string const& uniformName) = 0;
 
-    virtual bool Link(mu::ArrayHandle<IShader*> shaders) = 0;
     virtual bool IsLinked() = 0;
 
     virtual ShaderProgramCache GetCache() = 0;
 
-    virtual bool Use() = 0;
     //virtual unsigned int GetGPUHandle() = 0; GPUObjectHandle
 
     virtual ~IShaderProgram() {}
+protected:
+    virtual bool Create() = 0;
 };
 
 class ShaderProgramInstance : public IShaderProgram {
@@ -157,18 +161,11 @@ public:
     void SetUniform(const std::string& name, const glm::mat4& value) override { _program->SetUniform(name, value); }
     mu::ArrayHandle<ShaderUniformInfo> GetCompiledUniforms() override { return _program->GetCompiledUniforms(); }
     bool IsUniform(std::string const& uniformName) override { return _program->IsUniform(uniformName); }
-    bool Link(mu::ArrayHandle<IShader*> shaders) override { return _program->Link(shaders); }
     bool IsLinked() override { return _program->IsLinked(); }
     ShaderProgramCache GetCache() override { return _program->GetCache(); }
 
     mu::ArrayHandle<IShaderUniform*> GetShaderUniforms() override { return mu::Combine(_program->GetShaderUniforms(), mu::ArrayHandle<IShaderUniform*>(_uniforms.GetList())); }
     void UpdateUniforms() override { _program->UpdateUniforms(); _uniforms.Update(); }
-
-    inline bool Use() override {
-        bool b = _program->Use();
-        if(b) _uniforms.Update();
-        return b;
-    }
 
     ShaderProgramInstance() : _program(nullptr) {}
     ShaderProgramInstance(ShaderUniformsList const& uniforms, IShaderProgram* program) : _uniforms(uniforms), _program(program) {}

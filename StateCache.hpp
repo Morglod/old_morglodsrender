@@ -10,6 +10,7 @@ class IGPUBuffer;
 class ITexture;
 class ITextureSettings;
 class IFrameBuffer;
+class IShaderProgram;
 
 class StateCache;
 typedef std::shared_ptr<StateCache> StateCachePtr;
@@ -63,6 +64,10 @@ public:
 	IFrameBuffer* GetBindedFramebuffer();
 	bool ReBindFramebuffer(IFrameBuffer* __restrict__ frameBuffer, IFrameBuffer** __restrict__ was);
 
+    bool BindShaderProgram(IShaderProgram* shaderProgram);
+    IShaderProgram* GetBindedShaderProgram();
+    bool ReBindShaderProgram(IShaderProgram* __restrict__ shaderProgram, IShaderProgram** __restrict__ was);
+
     virtual ~StateCache();
 
     static StateCache* GetDefault(); //this thread default, 0 index
@@ -79,6 +84,7 @@ private:
     mu::ArrayHandle<ITexture*> _textures;
     mu::ArrayHandle<ITextureSettings*> _textureSettings;
     IFrameBuffer* _framebuffer;
+    IShaderProgram* _shaderProgram;
 };
 
 }

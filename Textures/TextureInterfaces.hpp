@@ -269,7 +269,7 @@ public:
     virtual ~ITexture() {}
 };
 
-class ITextureList {
+class ITextureBindList {
 public:
     virtual void Bind() = 0;
     virtual void SetFirstUnit(unsigned short const& unit) = 0;
@@ -280,8 +280,8 @@ public:
     virtual void SetTexture(ITexture* tex, unsigned short const& index) = 0; //index inside TexturesSize bounds
 };
 
-typedef std::shared_ptr<ITextureList> TextureListPtr;
-typedef std::weak_ptr<ITextureList> TextureListWeakPtr;
+typedef std::shared_ptr<ITextureBindList> TextureListPtr;
+typedef std::weak_ptr<ITextureBindList> TextureListWeakPtr;
 
 }
 

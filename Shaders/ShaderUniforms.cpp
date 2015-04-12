@@ -42,8 +42,6 @@ bool ShaderUniform::ResetLocation() {
         return false;
     }
 
-    OnNewLocation(this, _owner, _gpu_location);
-
     return true;
 }
 
