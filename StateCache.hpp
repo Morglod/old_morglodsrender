@@ -11,6 +11,8 @@ class ITexture;
 class ITextureSettings;
 class IFrameBuffer;
 class IShaderProgram;
+class IVertexFormat;
+class IIndexFormat;
 
 class StateCache;
 typedef std::shared_ptr<StateCache> StateCachePtr;
@@ -53,6 +55,7 @@ public:
     IGPUBuffer* GetBindedTransformFeedbackBuffer(unsigned int const& index);
     bool ReBindBuffer(IGPUBuffer* __restrict__ buffer, BufferBindTarget const& target, IGPUBuffer** __restrict__ was);
 
+    void TextureUnitNotUsed(unsigned int const& unit);
     bool BindTexture(ITexture* texture, unsigned int const& unit);
     ITexture* GetBindedTexture(unsigned int const& unit);
     ITextureSettings* GetBindedTextureSettings(unsigned int const& unit);
@@ -64,9 +67,22 @@ public:
 	IFrameBuffer* GetBindedFramebuffer();
 	bool ReBindFramebuffer(IFrameBuffer* __restrict__ frameBuffer, IFrameBuffer** __restrict__ was);
 
-    bool BindShaderProgram(IShaderProgram* shaderProgram);
-    IShaderProgram* GetBindedShaderProgram();
-    bool ReBindShaderProgram(IShaderProgram* __restrict__ shaderProgram, IShaderProgram** __restrict__ was);
+    bool SetShaderProgram(IShaderProgram* shaderProgram);
+    IShaderProgram* GetShaderProgram();
+
+    bool SetVertexFormat(IVertexFormat* format);
+    IVertexFormat* GetVertexFormat();
+
+    bool SetIndexFormat(IIndexFormat* format);
+    IIndexFormat* GetIndexFormat();
+
+    bool SetVertexBuffer(IGPUBuffer* buf);
+    bool SetVertexBuffer(IGPUBuffer* buf, IVertexFormat* format);
+    IGPUBuffer* GetVertexBuffer();
+
+    bool SetIndexBuffer(IGPUBuffer* buf);
+    bool SetIndexBuffer(IGPUBuffer* buf, IIndexFormat* format);
+    IGPUBuffer* GetIndexBuffer();
 
     virtual ~StateCache();
 
@@ -85,6 +101,8 @@ private:
     mu::ArrayHandle<ITextureSettings*> _textureSettings;
     IFrameBuffer* _framebuffer;
     IShaderProgram* _shaderProgram;
+    IVertexFormat* _vertexFormat;
+    IIndexFormat* _indexFormat;
 };
 
 }

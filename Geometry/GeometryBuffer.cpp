@@ -125,12 +125,10 @@ bool GeometryBuffer::Bind(bool useIndexBuffer) const {
     if(!_vb) return false;
 
     StateCache* stateCache = StateCache::GetDefault();
-    IGPUBuffer* binded = nullptr;
-    if(!stateCache->ReBindBuffer(_vb, StateCache::ArrayBuffer, &binded)) {
-        mr::Log::LogString("Bind buffer failed in GeometryBuffer::Bind.", MR_LOG_LEVEL_ERROR);
+    if(!stateCache->SetVertexBuffer(_vb, _format)) {
+        mr::Log::LogString("Bind vertex buffer failed in GeometryBuffer::Bind.", MR_LOG_LEVEL_ERROR);
         return false;
     }
-    _format->Bind();
 
     for(std::pair<IVertexAttribute*, IGPUBuffer*> const& cAttrs : _customAttribs) {
         //cAttrs.second->Bind(IGPUBuffer::ArrayBuffer);
@@ -177,13 +175,8 @@ bool GeometryBuffer::Bind(bool useIndexBuffer) const {
         }
     } else {
         if(_ib != nullptr && useIndexBuffer && _iformat != nullptr){
-            stateCache->BindBuffer(_ib, StateCache::ElementArrayBuffer);
-            _iformat->Bind();
+            stateCache->SetIndexBuffer(_ib, _iformat);
         }
-    }
-
-    if(binded) {
-        stateCache->BindBuffer(binded, StateCache::ArrayBuffer);
     }
 
     _MR_BINDED_GEOM_BUFFER_ = (mr::IGeometryBuffer*)dynamic_cast<const mr::IGeometryBuffer*>(this);

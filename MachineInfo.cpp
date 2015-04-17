@@ -267,7 +267,7 @@ const bool IndirectDraw_UseGPUBuffer() {
 }
 
 const bool IsVertexAttribBindingSupported() {
-    static bool state = GLEW_ARB_vertex_attrib_binding;//ctx->ExtensionSupported("ARB_vertex_attrib_binding");
+    static bool state = GLEW_ARB_vertex_attrib_binding;
     return state;
 }
 

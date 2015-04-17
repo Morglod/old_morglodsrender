@@ -6,6 +6,7 @@
 #include "Buffers/BuffersInterfaces.hpp"
 #include "Textures/TextureInterfaces.hpp"
 #include "Shaders/ShaderProgramObject.hpp"
+#include "Geometry/GeometryInterfaces.hpp"
 
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -246,10 +247,16 @@ bool StateCache::ReBindBuffer(IGPUBuffer* __restrict__ buffer, BufferBindTarget 
     }
 }
 
+void StateCache::TextureUnitNotUsed(unsigned int const& unit) {
+    AssertAndExec(unit < _textures.GetNum(), return);
+    _textures.GetArray()[unit] = nullptr;
+}
+
 bool StateCache::BindTexture(ITexture* texture, unsigned int const& unit) {
     AssertAndExec(unit < _textures.GetNum(), return false);
 
-    if(_textures.GetArray()[unit] == texture) return true;
+    if(texture != nullptr)
+        if(_textures.GetArray()[unit] == texture) return true;
 
     unsigned int handle = ((texture != nullptr) ? texture->GetGPUHandle() : 0);
     unsigned int texType = MR_TEXTURE_TARGET[((texture != nullptr) ? texture->GetType() : ITexture::Base2D)];
@@ -346,7 +353,7 @@ bool StateCache::ReBindFramebuffer(IFrameBuffer* __restrict__ frameBuffer, IFram
 	return true;
 }
 
-bool StateCache::BindShaderProgram(IShaderProgram* shaderProgram) {
+bool StateCache::SetShaderProgram(IShaderProgram* shaderProgram) {
     if(shaderProgram == _shaderProgram) {
         _shaderProgram->UpdateUniforms();
         return true;
@@ -368,22 +375,61 @@ bool StateCache::BindShaderProgram(IShaderProgram* shaderProgram) {
     return true;
 }
 
-IShaderProgram* StateCache::GetBindedShaderProgram() {
+IShaderProgram* StateCache::GetShaderProgram() {
     return _shaderProgram;
 }
 
-bool StateCache::ReBindShaderProgram(IShaderProgram* __restrict__ shaderProgram, IShaderProgram** __restrict__ was) {
-    IShaderProgram* binded = _shaderProgram;
-    if(binded == shaderProgram) return true;
-    *was = binded;
-    if(BindShaderProgram(shaderProgram)) return true;
-    else {
-        BindShaderProgram(binded);
-        return false;
-    }
+bool StateCache::SetVertexFormat(IVertexFormat* format) {
+    _vertexFormat = format;
+    return true;
+}
+
+IVertexFormat* StateCache::GetVertexFormat() {
+    return _vertexFormat;
+}
+
+bool StateCache::SetIndexFormat(IIndexFormat* format) {
+    _indexFormat = format;
+    return true;
+}
+
+IIndexFormat* StateCache::GetIndexFormat() {
+    return _indexFormat;
+}
+
+bool StateCache::SetVertexBuffer(IGPUBuffer* buf) {
+    if(!BindBuffer(buf, BufferBindTarget::ArrayBuffer)) return false;
+    if(_vertexFormat) return _vertexFormat->Bind();
+    return true;
+}
+
+bool StateCache::SetVertexBuffer(IGPUBuffer* buf, IVertexFormat* format) {
+    return SetVertexFormat(format) && SetVertexBuffer(buf);
+}
+
+IGPUBuffer* StateCache::GetVertexBuffer() {
+    return GetBindedBuffer(BufferBindTarget::ArrayBuffer);
+}
+
+bool StateCache::SetIndexBuffer(IGPUBuffer* buf) {
+    if(!BindBuffer(buf, BufferBindTarget::ElementArrayBuffer)) return false;
+    if(_indexFormat) return _indexFormat->Bind();
+    return true;
+}
+
+bool StateCache::SetIndexBuffer(IGPUBuffer* buf, IIndexFormat* format) {
+    return SetIndexFormat(format) && SetIndexBuffer(buf);
+}
+
+IGPUBuffer* StateCache::GetIndexBuffer() {
+    return GetBindedBuffer(BufferBindTarget::ElementArrayBuffer);
 }
 
 StateCache::StateCache() {
+    _framebuffer = nullptr;
+    _shaderProgram = nullptr;
+    _vertexFormat = nullptr;
+    _indexFormat = nullptr;
 }
 
 StateCache::~StateCache() {

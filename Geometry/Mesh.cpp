@@ -12,7 +12,7 @@ void mr::Mesh::Draw(glm::mat4* modelMat) {
         _mat->Use();
     }
     mr::StateCache* stateCache = mr::StateCache::GetDefault();
-    mr::IShaderProgram* usedShaderProgram = stateCache->GetBindedShaderProgram();
+    mr::IShaderProgram* usedShaderProgram = stateCache->GetShaderProgram();
 
     if(usedShaderProgram) {
         IShaderUniform* uni = nullptr;

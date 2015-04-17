@@ -48,7 +48,7 @@ void DefaultMaterial::Create(MaterialDescr const& descr) {
 bool DefaultMaterial::Use() {
     StateCache* stateCache = StateCache::GetDefault();
     if(_program) {
-        stateCache->BindShaderProgram(_program);
+        stateCache->SetShaderProgram(_program);
     }
     if(texColorPtr != nullptr) stateCache->BindTexture(texColorPtr, 0);
     return true;
