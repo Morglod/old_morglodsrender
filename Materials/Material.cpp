@@ -34,11 +34,6 @@ void DefaultMaterial::Create(MaterialDescr const& descr) {
             texSettings->SetWrapS(descr.texColorWrapMode);
             texSettings->SetWrapR(descr.texColorWrapMode);
             texColorPtr->SetSettings(texSettings);
-            /*StateCache* stateCache = StateCache::GetDefault();
-            if(!stateCache->BindTexture(texColorPtr, 0)) {
-                mr::Log::LogString("Bind texture failed in DefaultMaterial::Create.", MR_LOG_LEVEL_ERROR);
-                return;
-            }*/
             _shaderParams.texColor.handle = texColorPtr->GetGPUHandle();
         }
 

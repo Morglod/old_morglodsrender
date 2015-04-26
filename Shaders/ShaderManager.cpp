@@ -19,6 +19,8 @@ namespace mr {
 void ShaderManager::SetGlobalUniform(ShaderUniformDesc const& desc, void* data) {
     _globalUniforms[desc.name] = data;
     _globalUniformsDesc[desc.name] = desc;
+
+    UpdateGlobalUniform(desc.name, data);
 }
 
 void ShaderManager::RemoveGlobalUniform(ShaderUniformDesc const& desc) {
@@ -32,6 +34,41 @@ void ShaderManager::SetUniformBufferObject(unsigned int const& index, IGPUBuffer
 
 void ShaderManager::RemoveUniformBufferObject(unsigned int const& index, IGPUBuffer* buffer) {
     _globalUbos.erase(index);
+}
+
+void ShaderManager::UpdateGlobalUniform(std::string const& name) {
+    for(IShaderProgram* prog : _programs) {
+        IShaderUniform* uniform = prog->FindShaderUniform(name);
+        if(uniform) {
+            uniform->Update();
+        }
+    }
+}
+
+void ShaderManager::UpdateGlobalUniform(std::string const& name, void* data) {
+    for(IShaderProgram* prog : _programs) {
+        IShaderUniform* uniform = prog->FindShaderUniform(name);
+        if(uniform) {
+            uniform->Update();
+        } else {
+            auto const& desc = _globalUniformsDesc[name];
+            prog->CreateUniform(desc.name, desc.type, data);
+        }
+    }
+}
+
+void ShaderManager::UpdateAllGlobalUniforms() {
+    for(IShaderProgram* prog : _programs) {
+        for(std::pair<const std::string, void*>& u : _globalUniforms) {
+            IShaderUniform* uniform = prog->FindShaderUniform(u.first);
+            if(uniform) {
+                uniform->SetPtr(u.second);
+            } else {
+                auto const& desc = _globalUniformsDesc[u.first];
+                prog->CreateUniform(desc.name, desc.type, u.second);
+            }
+        }
+    }
 }
 
 IShader* ShaderManager::CreateShader(IShader::Type const& type) {
@@ -81,7 +118,10 @@ IShaderProgram* ShaderManager::CreateShaderProgram() {
         delete shaderProgram;
         return nullptr;
     }
-    return static_cast<IShaderProgram*>(shaderProgram);
+
+    IShaderProgram* ishaderProgram = static_cast<IShaderProgram*>(shaderProgram);
+    RegisterShaderProgram(ishaderProgram);
+    return ishaderProgram;
 }
 
 IShaderProgram* ShaderManager::CreateAndLink(mu::ArrayHandle<IShader*> shaders) {
@@ -146,6 +186,7 @@ IShaderProgram* ShaderManager::CreateSimpleShaderProgram(std::string const& vert
         //Don't exit from this point, because we need to free shaders.
         mr::Log::LogString("Failed ShaderManager::CreateSimpleShaderProgram. Shader program not linked.", MR_LOG_LEVEL_ERROR);
     }
+    else RegisterShaderProgram(sp);
 
     //Free shaders. Now it's not needed.
     for(unsigned char i = 0; i < 2; ++i) {
@@ -163,6 +204,7 @@ IShaderProgram* ShaderManager::CreateDefaultShaderProgram() {
             std::string(mr::BaseShaderFS_glsl)
         );
     if(!sp) mr::Log::LogString("Failed ShaderManager::CreateDefaultShaderProgram. Shader program not created.", MR_LOG_LEVEL_ERROR);
+    else RegisterShaderProgram(sp);
     return sp;
 }
 
@@ -216,6 +258,14 @@ IShaderProgram* ShaderManager::CreateShaderProgramFromCache(ShaderProgramCache c
     ShaderProgram* shaderProgram = static_cast<ShaderProgram*>(ishaderProgram);
     shaderProgram->_linked = true;
     return ishaderProgram;
+}
+
+void ShaderManager::RegisterShaderProgram(IShaderProgram* shaderProgram) {
+    _programs.insert(shaderProgram);
+}
+
+void ShaderManager::UnRegisterShaderProgram(IShaderProgram* shaderProgram) {
+    _programs.erase(shaderProgram);
 }
 
 }

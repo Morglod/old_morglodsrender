@@ -14,6 +14,11 @@ class IGeometry;
 
 class SceneLoader final {
 public:
+    struct ProgressInfo {
+        unsigned int    meshes, totalMeshes,
+                        materials, totalMaterials;
+    };
+
     struct ImportOptions {
         bool fixInfacingNormals = false; //May occur problems.
         bool flipUVs = true;
@@ -21,6 +26,8 @@ public:
         bool transformUVs = true;
         bool fast = false; //Not max quality?
         bool debugLog = false;
+        std::function<bool (float percentage)> assimpProcessCallback = nullptr;
+        std::function<void (ProgressInfo const& info)> progressCallback = nullptr;
     };
 
     bool Import(std::string const& file, ImportOptions const& options);

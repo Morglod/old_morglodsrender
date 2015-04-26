@@ -47,6 +47,8 @@ struct ShaderUniformDesc {
     std::string name = "NoNameUniform";
     IShaderUniform::Type type = IShaderUniform::Type::Float;
     int gpuLocation = -1; //-1, auto-detect
+
+    ShaderUniformDesc(std::string const& name_, IShaderUniform::Type const& type_, int const& gpuLoc_ = -1) : name(name_), type(type_), gpuLocation(gpuLoc_) {}
 };
 
 struct ShaderUniformInfo {
@@ -134,7 +136,7 @@ public:
     virtual void UpdateUniforms() = 0; //update all attached uniform values
 
     virtual mu::ArrayHandle<IShaderUniform*> GetShaderUniforms() = 0; //get all uniform handles
-    virtual mu::ArrayHandle<ShaderUniformInfo> GetCompiledUniforms() = 0; //returns used in shaders uniforms. don't forget to free this array manually
+    virtual mu::ArrayHandle<ShaderUniformInfo> GetCompiledUniforms() = 0; //returns used in shaders uniforms.
     virtual bool IsUniform(std::string const& uniformName) = 0;
 
     virtual bool IsLinked() = 0;

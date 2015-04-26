@@ -380,7 +380,9 @@ IShaderProgram* StateCache::GetShaderProgram() {
 }
 
 bool StateCache::SetVertexFormat(IVertexFormat* format) {
+    if(_vertexFormat && _vertexFormat->IsEqual(format)) return true;
     _vertexFormat = format;
+    if(format) return format->Bind();
     return true;
 }
 
@@ -389,7 +391,9 @@ IVertexFormat* StateCache::GetVertexFormat() {
 }
 
 bool StateCache::SetIndexFormat(IIndexFormat* format) {
+    if(_indexFormat && _indexFormat->IsEqual(format)) return true;
     _indexFormat = format;
+    if(format) return format->Bind();
     return true;
 }
 
@@ -399,7 +403,6 @@ IIndexFormat* StateCache::GetIndexFormat() {
 
 bool StateCache::SetVertexBuffer(IGPUBuffer* buf) {
     if(!BindBuffer(buf, BufferBindTarget::ArrayBuffer)) return false;
-    if(_vertexFormat) return _vertexFormat->Bind();
     return true;
 }
 
@@ -413,7 +416,6 @@ IGPUBuffer* StateCache::GetVertexBuffer() {
 
 bool StateCache::SetIndexBuffer(IGPUBuffer* buf) {
     if(!BindBuffer(buf, BufferBindTarget::ElementArrayBuffer)) return false;
-    if(_indexFormat) return _indexFormat->Bind();
     return true;
 }
 

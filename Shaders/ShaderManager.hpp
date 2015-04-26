@@ -5,6 +5,7 @@
 #include <Singleton.hpp>
 #include <Containers.hpp>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace mr {
 
@@ -15,6 +16,10 @@ class ShaderManager : public mu::Singleton<ShaderManager> {
 public:
     virtual void SetGlobalUniform(ShaderUniformDesc const& desc, void* data);
     virtual void RemoveGlobalUniform(ShaderUniformDesc const& desc);
+
+    virtual void UpdateGlobalUniform(std::string const& name);
+    virtual void UpdateGlobalUniform(std::string const& name, void* data);
+    virtual void UpdateAllGlobalUniforms();
 
     virtual void SetUniformBufferObject(unsigned int const& index, IGPUBuffer* buffer);
     virtual void RemoveUniformBufferObject(unsigned int const& index, IGPUBuffer* buffer);
@@ -33,9 +38,13 @@ public:
     virtual IShaderProgram* CreateDefaultShaderProgram();
     virtual IShaderProgram* DefaultShaderProgram();
 
+    virtual void RegisterShaderProgram(IShaderProgram* shaderProgram);
+    virtual void UnRegisterShaderProgram(IShaderProgram* shaderProgram);
+
     ShaderManager();
     virtual ~ShaderManager();
 protected:
+
     IShaderCompiler* _shaderCompiler;
 
     std::unordered_map<std::string, void*> _globalUniforms; //<name, data>
@@ -43,6 +52,8 @@ protected:
     std::unordered_map<unsigned int, IGPUBuffer*> _globalUbos;
 
     IShaderProgram* _defaultShaderProgram;
+
+    std::unordered_set<IShaderProgram*> _programs;
 };
 
 }

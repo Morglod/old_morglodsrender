@@ -16,6 +16,7 @@
 #include <assimp/color4.h>
 #include <assimp/material.h>
 #include <assimp/DefaultLogger.hpp>
+#include <assimp/ProgressHandler.hpp>
 
 #include <glm/glm.hpp>
 
@@ -24,6 +25,18 @@
 
 namespace mr {
 
+namespace {
+
+class SceneLoaderProgressHandler : public Assimp::ProgressHandler {
+public:
+    std::function<bool (float percentage)> callback = nullptr;
+    bool Update(float percentage) override {
+        if(callback != nullptr) return callback(percentage);
+        return true;
+    }
+};
+
+}
 
 class SceneLoader::Impl {
 public:
@@ -31,8 +44,14 @@ public:
     mr::TStaticArray<IGeometry*> _geoms;
     mr::TStaticArray<IMaterial*> _materials;
     mr::TStaticArray<IMesh*> _meshes;
+    SceneLoaderProgressHandler progressHandler;
+
+    Impl() {
+        importer.SetProgressHandler(&progressHandler);
+    }
 
     ~Impl() {
+        importer.SetProgressHandler(0);
         importer.FreeScene();
     }
 };
@@ -81,6 +100,7 @@ public:
 
 bool SceneLoader::Import(std::string const& file, ImportOptions const& options) {
     bool anyError = false;
+    SceneLoader::ProgressInfo progressInfo;
 
     //Setup log if needed
     _AssimpLogStream logStream;
@@ -98,6 +118,7 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
     if(options.generateUVs) flags |= aiProcess_GenUVCoords;
     if(options.transformUVs) flags |= aiProcess_TransformUVCoords;
 
+    _impl->progressHandler.callback = options.assimpProcessCallback;
     const aiScene* scene = _impl->importer.ReadFile(file, flags);
 
     if(!scene) {
@@ -107,6 +128,7 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
 
     //Process materials
     _impl->_materials = mr::TStaticArray<IMaterial*>(scene->mNumMaterials);
+    progressInfo.totalMaterials = scene->mNumMaterials;
     for(unsigned int i = 0; i < scene->mNumMaterials; ++i) {
         aiMaterial* material = scene->mMaterials[i];
         MaterialDescr matDescr;
@@ -148,6 +170,9 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
         auto newMat = new mr::DefaultMaterial();
         newMat->Create(matDescr);
         _impl->_materials.At(i) = dynamic_cast<IMaterial*>(newMat);
+
+        progressInfo.materials = i+1;
+        if(options.progressCallback) options.progressCallback(progressInfo);
     }
 
     //Process nodes
@@ -161,6 +186,7 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
     size_t debugIndeciesNum = 0;
 
     //Process geometry
+    progressInfo.totalMeshes = scene->mNumMeshes;
     for(unsigned int i = 0; i < scene->mNumMeshes; ++i) {
         aiMesh* mesh = scene->mMeshes[i];
         aiMatrix4x4 transformMatrix = _AssimpGetMat(scene, &nodesCache, i);
@@ -256,6 +282,10 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
         if(_impl->_geoms.At(i) == nullptr) anyError = false;
 
         _impl->_meshes.At(i) = dynamic_cast<mr::IMesh*>(new Mesh(_impl->_geoms.RangeCopy(i,i+1), _impl->_materials.At(mesh->mMaterialIndex)));
+
+
+        progressInfo.meshes = i+1;
+        if(options.progressCallback) options.progressCallback(progressInfo);
     }
 
     if(options.debugLog) {
