@@ -9,34 +9,133 @@
 #   include <glm/glm.hpp>
 #endif
 
+#include <unordered_map>
+#include <unordered_set>
+
 namespace mr {
 
-/** Named uniform of shader
+struct ShaderUniformInfo {
+public:
+    IShaderProgram* program;
+    std::string name;
+    int size;
+    unsigned int gl_type;
+    IShaderUniformRef* value_ref; //may be nullptr
+    int location;
+
+    ShaderUniformInfo();
+    ShaderUniformInfo(IShaderProgram* program, std::string const& name, int const& size, unsigned int const& type, int const& loc);
+};
+
+struct ShaderUniformDesc {
+    std::string name;
+    IShaderUniformRef::Type type;
+
+    ShaderUniformDesc();
+    ShaderUniformDesc(std::string const& name, IShaderUniformRef::Type const& type);
+};
+
+///Set uniform values and handle refs.
+class ShaderUniformMap {
+public:
+    virtual IShaderUniformRef* CreateRef(std::string const& name, IShaderUniformRef::Type const& type, void* value);
+    virtual void DeleteRef(std::string const& name);
+    virtual IShaderUniformRef* FindRef(std::string const& name);
+    virtual mu::ArrayHandle<IShaderUniformRef*> GetRefs();
+    virtual void DeleteAllRefs();
+
+    virtual mu::ArrayHandle<ShaderUniformInfo> GetCompiledUniforms();
+    virtual bool IsUniform(std::string const& uniformName);
+    virtual int GetUniformGPULocation(std::string const& uniformName);
+
+    virtual void Reset(bool saveRefs); //reset uniforms map
+
+    virtual void UpdateRefs();
+
+    inline virtual IShaderProgram* GetShaderProgram() { return _program; }
+
+    template<typename T>
+    inline void SetUniform(std::string const& name, T const& value) {
+        SetUniform(GetUniformGPULocation(name), value);
+    }
+
+    template<typename T>
+    inline void SetUniform(int location, T const& value) {
+        SetUniform(location, value);
+    }
+
+    template<typename T>
+    inline void SetUniform(int location, T* valuePtr) {
+        SetUniform(location, *valuePtr);
+    }
+
+    inline void SetUniform(int location, IShaderUniformRef::Type const& type, void* value) {
+        switch(type){
+        case IShaderUniformRef::Type::Float:
+            SetUniform(location, (float*)value);
+            break;
+        case IShaderUniformRef::Type::Sampler1D:
+        case IShaderUniformRef::Type::Sampler2D:
+        case IShaderUniformRef::Type::Sampler3D:
+        case IShaderUniformRef::Type::Int:
+            SetUniform(location, (int*)value);
+        break;
+        case IShaderUniformRef::Type::Mat4:
+            SetUniform(location, (glm::mat4*)value);
+            break;
+        case IShaderUniformRef::Type::Vec2:
+            SetUniform(location, (glm::vec2*)value);
+            break;
+        case IShaderUniformRef::Type::Vec3:
+            SetUniform(location, (glm::vec3*)value);
+            break;
+        case IShaderUniformRef::Type::Vec4:
+            SetUniform(location, (glm::vec4*)value);
+            break;
+        }
+    }
+
+    virtual void SetUniform(int const& location, int const& value);
+    virtual void SetUniform(int const& location, float const& value);
+    virtual void SetUniform(int const& location, glm::vec2 const& value);
+    virtual void SetUniform(int const& location, glm::vec3 const& value);
+    virtual void SetUniform(int const& location, glm::vec4 const& value);
+    virtual void SetUniform(int const& location, glm::mat4 const& value);
+
+    ShaderUniformMap(IShaderProgram* program);
+protected:
+    virtual bool _GetUniformGPULocation(std::string const& uniformName, int* out); //not cached, get directly from gl
+
+    std::unordered_map<std::string, ShaderUniformInfo> _uniforms;
+    std::unordered_set<IShaderUniformRef*> _refs;
+    IShaderProgram* _program;
+};
+
+/** Named uniform ref in shader program
  *  After shader recompilation, call ShaderUniform::ResetLocation method
  */
-class ShaderUniform : public IShaderUniform {
+class ShaderUniformRef : public IShaderUniformRef {
 public:
     inline std::string GetName() override { return _name; }
-    inline IShaderUniform::Type GetType() override { return _type; }
-    inline void SetPtr(void* ptr) override { _value = ptr; }
-    inline void* GetPtr() override { return _value; }
+    inline IShaderUniformRef::Type GetType() override { return _type; }
+
+    inline void SetValuePtr(void* ptr) override { _value = ptr; }
+    inline void* GetValuePtr() override { return _value; }
+
     inline int GetGPULocation() override { return _gpu_location; }
+
     void Update() override;
 
-    bool ResetLocation() override;
+    inline ShaderUniformMap* GetMap() override { return _owner; }
 
-    inline IShaderProgram* GetParent() override { return _owner; }
-
-    //ResetLocation will be called
-    ShaderUniform();
-    ShaderUniform(const std::string& name, const IShaderUniform::Type& type, void* value, IShaderProgram* program);
-    virtual ~ShaderUniform() {}
+    ShaderUniformRef(std::string const& name, IShaderUniformRef::Type const& type, int const& gpuLocation, void* value, ShaderUniformMap* map);
+    virtual ~ShaderUniformRef();
 protected:
     std::string _name;
     int _gpu_location;
-    IShaderUniform::Type _type;
+    IShaderUniformRef::Type _type;
     void* _value;
-    IShaderProgram* _owner;
+    ShaderUniformMap* _owner;
 };
 
 }

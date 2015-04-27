@@ -3,7 +3,7 @@
 #include "../Materials/MaterialInterfaces.hpp"
 #include "GeometryInterfaces.hpp"
 #include "../Utils/Debug.hpp"
-#include "../Shaders/ShaderInterfaces.hpp"
+#include "../Shaders/ShaderUniforms.hpp"
 #include <Macro.hpp>
 #include "../StateCache.hpp"
 
@@ -15,11 +15,7 @@ void mr::Mesh::Draw(glm::mat4* modelMat) {
     mr::IShaderProgram* usedShaderProgram = stateCache->GetShaderProgram();
 
     if(usedShaderProgram) {
-        IShaderUniform* uni = nullptr;
-        if((uni = usedShaderProgram->FindShaderUniform(MR_SHADER_MODEL_MAT4)))
-            uni->SetPtr(modelMat);
-        else
-            usedShaderProgram->CreateUniform(MR_SHADER_MODEL_MAT4, IShaderUniform::Mat4, modelMat);
+        usedShaderProgram->GetMap()->SetUniform(MR_SHADER_MODEL_MAT4, *modelMat);
     }
     for(size_t i = 0; i < _geom.GetNum(); ++i){
         _geom.GetRaw()[i]->Draw();

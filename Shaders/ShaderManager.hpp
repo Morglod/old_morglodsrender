@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ShaderInterfaces.hpp"
+#include "ShaderUniforms.hpp"
 
 #include <Singleton.hpp>
 #include <Containers.hpp>
@@ -15,7 +16,7 @@ class IShaderCompiler;
 class ShaderManager : public mu::Singleton<ShaderManager> {
 public:
     virtual void SetGlobalUniform(ShaderUniformDesc const& desc, void* data);
-    virtual void RemoveGlobalUniform(ShaderUniformDesc const& desc);
+    virtual void DeleteGlobalUniform(ShaderUniformDesc const& desc);
 
     virtual void UpdateGlobalUniform(std::string const& name);
     virtual void UpdateGlobalUniform(std::string const& name, void* data);

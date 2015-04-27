@@ -355,7 +355,7 @@ bool StateCache::ReBindFramebuffer(IFrameBuffer* __restrict__ frameBuffer, IFram
 
 bool StateCache::SetShaderProgram(IShaderProgram* shaderProgram) {
     if(shaderProgram == _shaderProgram) {
-        _shaderProgram->UpdateUniforms();
+        //_shaderProgram->UpdateUniforms();
         return true;
     }
 
@@ -366,13 +366,24 @@ bool StateCache::SetShaderProgram(IShaderProgram* shaderProgram) {
         }
         const unsigned int handle = shaderProgram->GetGPUHandle();
         glUseProgram(handle);
-        shaderProgram->UpdateUniforms();
+        //shaderProgram->UpdateUniforms();
     } else {
         glUseProgram(0);
     }
 
     _shaderProgram = shaderProgram;
     return true;
+}
+
+bool StateCache::ReSetShaderProgram(IShaderProgram* __restrict__ shaderProgram, IShaderProgram** __restrict__ was) {
+    IShaderProgram* binded = GetShaderProgram();
+	if(binded == shaderProgram) return true;
+	if(!SetShaderProgram(shaderProgram)) {
+		SetShaderProgram(binded);
+		return false;
+	}
+	if(binded) *was = binded;
+	return true;
 }
 
 IShaderProgram* StateCache::GetShaderProgram() {

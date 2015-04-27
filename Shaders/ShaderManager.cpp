@@ -23,7 +23,7 @@ void ShaderManager::SetGlobalUniform(ShaderUniformDesc const& desc, void* data) 
     UpdateGlobalUniform(desc.name, data);
 }
 
-void ShaderManager::RemoveGlobalUniform(ShaderUniformDesc const& desc) {
+void ShaderManager::DeleteGlobalUniform(ShaderUniformDesc const& desc) {
     _globalUniforms.erase(desc.name);
     _globalUniformsDesc.erase(desc.name);
 }
@@ -37,36 +37,24 @@ void ShaderManager::RemoveUniformBufferObject(unsigned int const& index, IGPUBuf
 }
 
 void ShaderManager::UpdateGlobalUniform(std::string const& name) {
+    void* value = _globalUniforms[name];
+    IShaderUniformRef::Type type = _globalUniformsDesc[name].type;
     for(IShaderProgram* prog : _programs) {
-        IShaderUniform* uniform = prog->FindShaderUniform(name);
-        if(uniform) {
-            uniform->Update();
-        }
+        ShaderUniformMap* map = prog->GetMap();
+        map->SetUniform(map->GetUniformGPULocation(name), type, value);
     }
 }
 
-void ShaderManager::UpdateGlobalUniform(std::string const& name, void* data) {
-    for(IShaderProgram* prog : _programs) {
-        IShaderUniform* uniform = prog->FindShaderUniform(name);
-        if(uniform) {
-            uniform->Update();
-        } else {
-            auto const& desc = _globalUniformsDesc[name];
-            prog->CreateUniform(desc.name, desc.type, data);
-        }
-    }
+void ShaderManager::UpdateGlobalUniform(std::string const& name, void* value) {
+    _globalUniforms[name] = value;
+    UpdateGlobalUniform(name);
 }
 
 void ShaderManager::UpdateAllGlobalUniforms() {
     for(IShaderProgram* prog : _programs) {
+        ShaderUniformMap* map = prog->GetMap();
         for(std::pair<const std::string, void*>& u : _globalUniforms) {
-            IShaderUniform* uniform = prog->FindShaderUniform(u.first);
-            if(uniform) {
-                uniform->SetPtr(u.second);
-            } else {
-                auto const& desc = _globalUniformsDesc[u.first];
-                prog->CreateUniform(desc.name, desc.type, u.second);
-            }
+            map->SetUniform(map->GetUniformGPULocation(u.first), _globalUniformsDesc[u.first].type, u.second);
         }
     }
 }
@@ -149,6 +137,7 @@ IShaderProgram* ShaderManager::CreateAndLink(mu::ArrayHandle<IShader*> shaders) 
     }
 
     shaderProgram->_linked = true;
+    shaderProgram->GetMap()->Reset(false);
     return ishaderProgram;
 }
 

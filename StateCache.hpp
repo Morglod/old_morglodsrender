@@ -68,6 +68,7 @@ public:
 	bool ReBindFramebuffer(IFrameBuffer* __restrict__ frameBuffer, IFrameBuffer** __restrict__ was);
 
     bool SetShaderProgram(IShaderProgram* shaderProgram);
+    bool ReSetShaderProgram(IShaderProgram* __restrict__ shaderProgram, IShaderProgram** __restrict__ was);
     IShaderProgram* GetShaderProgram();
 
     bool SetVertexFormat(IVertexFormat* format);
