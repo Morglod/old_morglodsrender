@@ -15,11 +15,11 @@ class IShaderCompiler;
 
 class ShaderManager : public mu::Singleton<ShaderManager> {
 public:
-    virtual void SetGlobalUniform(ShaderUniformDesc const& desc, void* data);
+    virtual void SetGlobalUniform(ShaderUniformDesc const& desc, const void* value, bool oneTime = false);
     virtual void DeleteGlobalUniform(ShaderUniformDesc const& desc);
 
     virtual void UpdateGlobalUniform(std::string const& name);
-    virtual void UpdateGlobalUniform(std::string const& name, void* data);
+    virtual void UpdateGlobalUniform(std::string const& name, const void* value);
     virtual void UpdateAllGlobalUniforms();
 
     virtual void SetUniformBufferObject(unsigned int const& index, IGPUBuffer* buffer);
@@ -48,7 +48,7 @@ protected:
 
     IShaderCompiler* _shaderCompiler;
 
-    std::unordered_map<std::string, void*> _globalUniforms; //<name, data>
+    std::unordered_map<std::string, const void*> _globalUniforms; //<name, data>
     std::unordered_map<std::string, ShaderUniformDesc> _globalUniformsDesc; //<name, desc>
     std::unordered_map<unsigned int, IGPUBuffer*> _globalUbos;
 

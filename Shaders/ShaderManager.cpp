@@ -16,11 +16,18 @@ mr::ShaderManager* mu::Singleton<mr::ShaderManager>::_singleton_instance = nullp
 
 namespace mr {
 
-void ShaderManager::SetGlobalUniform(ShaderUniformDesc const& desc, void* data) {
-    _globalUniforms[desc.name] = data;
+void ShaderManager::SetGlobalUniform(ShaderUniformDesc const& desc, const void* value, bool oneTime) {
+    if(oneTime) {
+        for(IShaderProgram* prog : _programs) {
+            ShaderUniformMap* map = prog->GetMap();
+            map->SetUniform(map->GetUniformGPULocation(desc.name), desc.type, value);
+        }
+    }
+
+    _globalUniforms[desc.name] = value;
     _globalUniformsDesc[desc.name] = desc;
 
-    UpdateGlobalUniform(desc.name, data);
+    UpdateGlobalUniform(desc.name, value);
 }
 
 void ShaderManager::DeleteGlobalUniform(ShaderUniformDesc const& desc) {
@@ -37,7 +44,7 @@ void ShaderManager::RemoveUniformBufferObject(unsigned int const& index, IGPUBuf
 }
 
 void ShaderManager::UpdateGlobalUniform(std::string const& name) {
-    void* value = _globalUniforms[name];
+    const void* value = _globalUniforms[name];
     IShaderUniformRef::Type type = _globalUniformsDesc[name].type;
     for(IShaderProgram* prog : _programs) {
         ShaderUniformMap* map = prog->GetMap();
@@ -45,7 +52,7 @@ void ShaderManager::UpdateGlobalUniform(std::string const& name) {
     }
 }
 
-void ShaderManager::UpdateGlobalUniform(std::string const& name, void* value) {
+void ShaderManager::UpdateGlobalUniform(std::string const& name, const void* value) {
     _globalUniforms[name] = value;
     UpdateGlobalUniform(name);
 }
@@ -53,7 +60,7 @@ void ShaderManager::UpdateGlobalUniform(std::string const& name, void* value) {
 void ShaderManager::UpdateAllGlobalUniforms() {
     for(IShaderProgram* prog : _programs) {
         ShaderUniformMap* map = prog->GetMap();
-        for(std::pair<const std::string, void*>& u : _globalUniforms) {
+        for(std::pair<const std::string, const void*>& u : _globalUniforms) {
             map->SetUniform(map->GetUniformGPULocation(u.first), _globalUniformsDesc[u.first].type, u.second);
         }
     }

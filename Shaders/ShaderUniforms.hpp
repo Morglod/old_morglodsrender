@@ -69,7 +69,7 @@ public:
         SetUniform(location, *valuePtr);
     }
 
-    inline void SetUniform(int location, IShaderUniformRef::Type const& type, void* value) {
+    inline void SetUniform(int location, IShaderUniformRef::Type const& type, const void* value) {
         switch(type){
         case IShaderUniformRef::Type::Float:
             SetUniform(location, (float*)value);
