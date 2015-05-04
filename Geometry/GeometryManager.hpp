@@ -27,27 +27,29 @@ public:
     inline size_t _GetMaxBufferSize() { return _max_buffer_size; }
     inline void _SetMaxBufferSize(size_t const& s) { _max_buffer_size = s; }
 
-    inline bool _GetSplitByDataFormats() { return _split_by_data_formats; }
-    inline void _SetSplitByDataFormats(bool b) { _split_by_data_formats = b; }
 protected:
     size_t _max_buffer_size;
     bool _buffer_per_geom;
-    bool _split_by_data_formats;
 
-    class FormatBuffer {
-    public:
-        IVertexFormat* vFormat;
-        IIndexFormat* iFormat;
+    struct VertexFormatBuffer {
+        IVertexFormat* format;
         mr::IGPUBuffer::Usage usage;
         mr::VirtualGPUBufferManager* manager; //when memory is totally used, manager will be deleted.
         mr::IGPUBuffer* buffer; //ptr to real buffer
     };
 
-    std::vector<FormatBuffer> _buffers;
+    struct IndexFormatBuffer {
+        IIndexFormat* format;
+        mr::IGPUBuffer::Usage usage;
+        mr::VirtualGPUBufferManager* manager; //when memory is totally used, manager will be deleted.
+        mr::IGPUBuffer* buffer; //ptr to real buffer
+    };
 
-    FormatBuffer* _RequestFormatBuffer(IVertexFormat* vertexFormat, const size_t& vertexDataSize,
-                             IIndexFormat* indexFormat, const size_t& indexDataSize,
-                             const IGPUBuffer::Usage& usage);
+    std::vector<VertexFormatBuffer> _vertex_buffers;
+    std::vector<IndexFormatBuffer> _index_buffers;
+
+    VertexFormatBuffer* _RequestVFBuffer(IVertexFormat* format, size_t const& dataSize, IGPUBuffer::Usage const& usage);
+    IndexFormatBuffer* _RequestIFBuffer(IIndexFormat* format, size_t const& dataSize, IGPUBuffer::Usage const& usage);
 };
 
 }

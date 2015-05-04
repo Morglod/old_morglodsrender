@@ -17,6 +17,7 @@ EntityPtr SceneManager::CreateEntity(ModelPtr model, SceneNodePtr parentSceneNod
     EntityPtr ent = EntityPtr(new Entity(ModelWeakPtr(model), name));
     parentSceneNode->AddChild(std::static_pointer_cast<SceneNode>(ent));
     _entities.PushBack(ent);
+    _OnSceneChanged();
     return ent;
 }
 
@@ -35,10 +36,29 @@ mr::TStaticArray<EntityPtr> SceneManager::FindEntities(ModelWeakPtr model) const
     return found.ConvertToStaticArray();
 }
 
-void SceneManager::Draw() const {
+void SceneManager::Optimize() {
+    /*_sort_entity.clear();
     for(size_t i = 0; i < _entities.GetNum(); ++i) {
-        _entities[i]->Draw();
-    }
+        add to _sort_entity
+    }*/
+}
+
+void SceneManager::Draw() const {
+    //if(_sort_entity.empty()) {
+        for(size_t i = 0; i < _entities.GetNum(); ++i) {
+            _entities[i]->Draw();
+        }
+    /*} else {
+        for(std::pair<IVertexFormat*, mr::TDynamicArray<Entity*>> const& p : _sort_entity) {
+            for(size_t i = 0; i < p.second.GetNum(); ++i) {
+                p.second[i]->Draw();
+            }
+        }
+    }*/
+}
+
+void SceneManager::_OnSceneChanged() {
+    //_sort_entity.clear();
 }
 
 SceneManager::SceneManager() : _rootNode(new mr::SceneNode()) {

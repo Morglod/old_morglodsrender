@@ -4,6 +4,8 @@
 
 namespace mr {
 
+class IVertexFormat;
+
 class SceneManager : public ISceneManager {
 public:
     size_t PickLod(float distance, IModel*) const override;
@@ -18,12 +20,16 @@ public:
     EntityPtr FindEntity(std::string const& name) const override;
     mr::TStaticArray<EntityPtr> FindEntities(ModelWeakPtr model) const override;
 
+    void Optimize() override;
     void Draw() const override;
 
     SceneManager();
     virtual ~SceneManager();
 protected:
+    void _OnSceneChanged() override;
+
     mr::TDynamicArray<EntityPtr> _entities;
+    //std::unordered_map<mr::IVertexFormat*, mr::TDynamicArray<Entity*>> _sort_entity;
     SceneNodePtr _rootNode;
 };
 

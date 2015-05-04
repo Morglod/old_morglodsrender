@@ -25,8 +25,11 @@ public:
     virtual EntityPtr FindEntity(std::string const& name) const = 0;
     virtual mr::TStaticArray<EntityPtr> FindEntities(ModelWeakPtr model) const = 0;
     virtual void Draw() const = 0;
+    virtual void Optimize() = 0;
 
     virtual ~ISceneManager() {}
+protected:
+    virtual void _OnSceneChanged() = 0;
 };
 
 }

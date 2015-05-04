@@ -85,18 +85,23 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
                 );
     }
 
-    FormatBuffer* fbuf = _RequestFormatBuffer(vertexFormat, vertexDataSize, indexFormat, indexDataSize, usage);
-    VirtualGPUBuffer* virtualBuffer = fbuf->manager->Take(vertexDataSize+indexDataSize);
-    mr::IGPUBuffer::BufferedDataInfo bufferedVertexDataInfo, bufferedIndexDataInfo;
+    VertexFormatBuffer* vfbuf = _RequestVFBuffer(vertexFormat, vertexDataSize, usage);
+    VirtualGPUBuffer* vf_virtualBuffer = vfbuf->manager->Take(vertexDataSize);
+
+    IndexFormatBuffer* ifbuf = _RequestIFBuffer(indexFormat, indexDataSize, usage);
+    VirtualGPUBuffer* if_virtualBuffer = ifbuf->manager->Take(indexDataSize);
+
+    mr::IGPUBuffer::BufferedDataInfo    bufferedVertexDataInfo,
+                                        bufferedIndexDataInfo;
 
     //Write thro mapping or by default
-    auto vmapped = virtualBuffer->Map(0, vertexDataSize, IGPUBuffer::IMappedRange::Write | IGPUBuffer::IMappedRange::Invalidate | IGPUBuffer::IMappedRange::Unsynchronized);
+    auto vmapped = vf_virtualBuffer->Map(0, vertexDataSize, IGPUBuffer::IMappedRange::Write | IGPUBuffer::IMappedRange::Invalidate | IGPUBuffer::IMappedRange::Unsynchronized);
     if(vmapped == nullptr) {
-        virtualBuffer->Write(vertexData, 0, 0, vertexDataSize, nullptr, &bufferedVertexDataInfo);
+        vf_virtualBuffer->Write(vertexData, 0, 0, vertexDataSize, nullptr, &bufferedVertexDataInfo);
     } else {
-        bufferedVertexDataInfo.buffer = virtualBuffer->GetRealBuffer();
+        bufferedVertexDataInfo.buffer = vf_virtualBuffer->GetRealBuffer();
         bufferedVertexDataInfo.size = vertexDataSize;
-        bufferedVertexDataInfo.offset = virtualBuffer->GetRealOffset();
+        bufferedVertexDataInfo.offset = vf_virtualBuffer->GetRealOffset();
         memcpy(vmapped->Get(), vertexData, vertexDataSize);
         //vmapped->Flush();
         vmapped->UnMap();
@@ -104,14 +109,14 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
 
     if(indexDataSize) {
         //Write thro mapping or by default
-        auto imapped = virtualBuffer->Map(vertexDataSize, indexDataSize, IGPUBuffer::IMappedRange::Write | IGPUBuffer::IMappedRange::Invalidate | IGPUBuffer::IMappedRange::Unsynchronized);
+        auto imapped = if_virtualBuffer->Map(0, indexDataSize, IGPUBuffer::IMappedRange::Write | IGPUBuffer::IMappedRange::Invalidate | IGPUBuffer::IMappedRange::Unsynchronized);
         if(imapped == nullptr) {
-            virtualBuffer->Write(indexData, 0, vertexDataSize, indexDataSize, nullptr, &bufferedIndexDataInfo);
+            if_virtualBuffer->Write(indexData, 0, 0, indexDataSize, nullptr, &bufferedIndexDataInfo);
         }
         else {
-            bufferedIndexDataInfo.buffer = virtualBuffer->GetRealBuffer();
+            bufferedIndexDataInfo.buffer = if_virtualBuffer->GetRealBuffer();
             bufferedIndexDataInfo.size = indexDataSize;
-            bufferedIndexDataInfo.offset = virtualBuffer->GetRealOffset() + vertexDataSize;
+            bufferedIndexDataInfo.offset = if_virtualBuffer->GetRealOffset();
             memcpy(imapped->Get(), indexData, indexDataSize);
             //imapped->Flush();
             imapped->UnMap();
@@ -121,7 +126,7 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
     mr::GeometryBuffer* geomBuffer = new mr::GeometryBuffer();
     if(!geomBuffer->Create  (
         IGeometryBuffer::CreationParams(
-            fbuf->manager->GetRealBuffer(), ((indexFormat) ? (fbuf->manager->GetRealBuffer()) : nullptr),
+            vfbuf->manager->GetRealBuffer(), ((indexFormat) ? (ifbuf->manager->GetRealBuffer()) : nullptr),
             vertexFormat, indexFormat,
             drawMode
         )
@@ -138,49 +143,69 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
             );
 }
 
-GeometryManager::FormatBuffer* GeometryManager::_RequestFormatBuffer(IVertexFormat* vertexFormat, const size_t& vertexDataSize,
-                             IIndexFormat* indexFormat, const size_t& indexDataSize,
-                             const IGPUBuffer::Usage& usage) {
+GeometryManager::VertexFormatBuffer* GeometryManager::_RequestVFBuffer(IVertexFormat* vertexFormat, const size_t& vertexDataSize, const IGPUBuffer::Usage& usage) {
 
-    for(size_t i = 0; i < _buffers.size(); ++i) {
-        if(_split_by_data_formats) {
-            if(_buffers[i].vFormat && !_buffers[i].vFormat->IsEqual(vertexFormat)) continue;
-            if(_buffers[i].iFormat && !_buffers[i].iFormat->IsEqual(indexFormat)) continue;
-        }
-
-        if((_buffers[i].usage == usage) &&
-           (_buffers[i].manager))
+    for(size_t i = 0; i < _vertex_buffers.size(); ++i) {
+        if(_vertex_buffers[i].format && !_vertex_buffers[i].format->IsEqual(vertexFormat)) continue;
+        if((_vertex_buffers[i].usage == usage) &&
+           (_vertex_buffers[i].manager))
         {
-            if(_buffers[i].manager->GetFreeMemorySize() >= vertexDataSize+indexDataSize) {
-                return &_buffers[i];
+            if(_vertex_buffers[i].manager->GetFreeMemorySize() >= vertexDataSize) {
+                return &_vertex_buffers[i];
             }
         }
     }
 
-    IGPUBuffer* gpuBuffer = mr::GPUBuffersManager::GetInstance().CreateBuffer(usage, std::max(vertexDataSize+indexDataSize, _max_buffer_size));
+    IGPUBuffer* gpuBuffer = mr::GPUBuffersManager::GetInstance().CreateBuffer(usage, std::max(vertexDataSize, _max_buffer_size));
     if(gpuBuffer == nullptr) {
         mr::Log::LogString("Failed GeometryManager::_RequestFormatBuffer. New gpuBuffer is null.", MR_LOG_LEVEL_ERROR);
         return nullptr;
     }
 
-    FormatBuffer formatBuf;
+    VertexFormatBuffer formatBuf;
     formatBuf.buffer = gpuBuffer;
-    formatBuf.iFormat = indexFormat;
-    formatBuf.vFormat = vertexFormat;
+    formatBuf.format = vertexFormat;
     formatBuf.usage = usage;
     formatBuf.manager = new mr::VirtualGPUBufferManager(formatBuf.buffer, 0);
-    _buffers.push_back(formatBuf);
+    _vertex_buffers.push_back(formatBuf);
 
-    return &_buffers[_buffers.size()-1];
+    return &_vertex_buffers[_vertex_buffers.size()-1];
 }
 
+GeometryManager::IndexFormatBuffer* GeometryManager::_RequestIFBuffer(IIndexFormat* indexFormat, const size_t& indexDataSize, const IGPUBuffer::Usage& usage) {
+    for(size_t i = 0; i < _index_buffers.size(); ++i) {
+        if(_index_buffers[i].format && !_index_buffers[i].format->IsEqual(indexFormat)) continue;
+        if((_index_buffers[i].usage == usage) &&
+           (_index_buffers[i].manager))
+        {
+            if(_index_buffers[i].manager->GetFreeMemorySize() >= indexDataSize) {
+                return &_index_buffers[i];
+            }
+        }
+    }
+
+    IGPUBuffer* gpuBuffer = mr::GPUBuffersManager::GetInstance().CreateBuffer(usage, std::max(indexDataSize, _max_buffer_size));
+    if(gpuBuffer == nullptr) {
+        mr::Log::LogString("Failed GeometryManager::_RequestFormatBuffer. New gpuBuffer is null.", MR_LOG_LEVEL_ERROR);
+        return nullptr;
+    }
+
+    IndexFormatBuffer formatBuf;
+    formatBuf.buffer = gpuBuffer;
+    formatBuf.format = indexFormat;
+    formatBuf.usage = usage;
+    formatBuf.manager = new mr::VirtualGPUBufferManager(formatBuf.buffer, 0);
+    _index_buffers.push_back(formatBuf);
+
+    return &_index_buffers[_index_buffers.size()-1];
+}
 //5 mb per buffer
-GeometryManager::GeometryManager() : _max_buffer_size(5242880), _buffer_per_geom(true), _split_by_data_formats(true) {
+GeometryManager::GeometryManager() : _max_buffer_size(5242880), _buffer_per_geom(false) {
 }
 
 GeometryManager::~GeometryManager() {
-    while(!_buffers.empty()) {
-        FormatBuffer fbuf = _buffers.back();
+    while(!_vertex_buffers.empty()) {
+        VertexFormatBuffer& fbuf = _vertex_buffers.back();
         if(fbuf.manager) {
             delete fbuf.manager;
         }
@@ -188,7 +213,18 @@ GeometryManager::~GeometryManager() {
             fbuf.buffer->Destroy();
             delete fbuf.buffer;
         }
-        _buffers.pop_back();
+        _vertex_buffers.pop_back();
+    }
+    while(!_index_buffers.empty()) {
+        IndexFormatBuffer& fbuf = _index_buffers.back();
+        if(fbuf.manager) {
+            delete fbuf.manager;
+        }
+        if(fbuf.buffer) {
+            fbuf.buffer->Destroy();
+            delete fbuf.buffer;
+        }
+        _index_buffers.pop_back();
     }
 }
 
