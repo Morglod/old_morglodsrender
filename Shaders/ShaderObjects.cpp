@@ -17,12 +17,12 @@ bool Shader::Create(IShader::Type const& type) {
     if(handle == 0) {
 #ifdef MR_CHECK_LARGE_GL_ERRORS
         int gl_er = 0;
-        mr::MachineInfo::ClearError();
+        mr::gl::ClearError();
 #endif
          handle = glCreateShader(type);
          SetGPUHandle(handle);
 #ifdef MR_CHECK_LARGE_GL_ERRORS
-        if(mr::MachineInfo::CatchError(0, &gl_er)) {
+        if(mr::gl::CheckError(0, &gl_er)) {
             std::string err_str = "Error in Shader::Compile : glCreateShader ended with \"" + std::to_string(gl_er) + "\" code. ";
             switch(gl_er) {
             case GL_INVALID_ENUM:

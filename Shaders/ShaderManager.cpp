@@ -4,6 +4,7 @@
 #include "ShaderCompiler.hpp"
 #include "ShaderCodeDefault.hpp"
 #include "../Utils/Log.hpp"
+#include "../MachineInfo.hpp"
 
 #include "ShaderConfig.hpp"
 
@@ -196,8 +197,8 @@ IShaderProgram* ShaderManager::CreateSimpleShaderProgram(std::string const& vert
 IShaderProgram* ShaderManager::CreateDefaultShaderProgram() {
     IShaderProgram* sp =
         CreateSimpleShaderProgram(
-            std::string(mr::BaseShaderVS_glsl),
-            std::string(mr::BaseShaderFS_glsl)
+            mr::BaseShaderVS_glsl_s,
+            mr::BaseShaderFS_glsl_s
         );
     if(!sp) mr::Log::LogString("Failed ShaderManager::CreateDefaultShaderProgram. Shader program not created.", MR_LOG_LEVEL_ERROR);
     else RegisterShaderProgram(sp);
@@ -230,11 +231,11 @@ IShaderProgram* ShaderManager::CreateShaderProgramFromCache(ShaderProgramCache c
 
 #ifdef MR_CHECK_LARGE_GL_ERRORS
     std::string gl_str = "";
-    mr::MachineInfo::ClearError();
+    mr::gl::ClearError();
 #endif
      glProgramBinary(handle, cache.format, cache.data.GetArray(), cache.data.GetNum());
 #ifdef MR_CHECK_LARGE_GL_ERRORS
-    if(mr::MachineInfo::CatchError(&gl_str, 0)) {
+    if(mr::gl::CheckError(&gl_str, 0)) {
         mr::Log::LogString("Failed ShaderManager::CreateShaderProgramFromCache. Failed loading shader program binary. " + gl_str, MR_LOG_LEVEL_ERROR);
         ishaderProgram->Destroy();
         delete ishaderProgram;

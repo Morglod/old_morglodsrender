@@ -4,6 +4,7 @@
 #define _MR_SHADER_UNIFORMS_H_
 
 #include "ShaderInterfaces.hpp"
+#include "../Utils/Log.hpp"
 
 #ifndef glm_glm
 #   include <glm/glm.hpp>
@@ -11,20 +12,45 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <initializer_list>
 
 namespace mr {
 
 struct ShaderUniformInfo {
-public:
-    IShaderProgram* program;
     std::string name;
-    int size;
     unsigned int gl_type;
     IShaderUniformRef* value_ref; //may be nullptr
     int location;
 
     ShaderUniformInfo();
-    ShaderUniformInfo(IShaderProgram* program, std::string const& name, int const& size, unsigned int const& type, int const& loc);
+    ShaderUniformInfo(std::string const& name, unsigned int const& type, int const& loc);
+};
+
+struct ShaderUniformBlockInfo {
+    std::string name;
+    mu::ArrayHandle<std::string> uniform_names;
+    mu::ArrayHandle<size_t> uniform_hash_names;
+    mu::ArrayHandle<int> uniform_offsets;
+    int location;
+
+    inline int GetOffset(std::string const& name) {
+        static std::hash<std::string> str_hash;
+        size_t* hash_ar = uniform_hash_names.GetArray();
+        size_t name_hash = str_hash(name);
+        for(size_t i = 0; i < uniform_hash_names.GetNum(); ++i) {
+            if(name_hash == hash_ar[i]) {
+                return uniform_offsets.GetArray()[i];
+            }
+        }
+        mr::Log::LogString("Failed ShaderUniformBlockInfo::GetOffset. Failed get offset of \""+name+"\" not found in active uniforms.", MR_LOG_LEVEL_ERROR);
+        return -1;
+    }
+
+    ShaderUniformBlockInfo();
+    ShaderUniformBlockInfo(std::string const& name, int location, mu::ArrayHandle<std::string> const& uniformNames, mu::ArrayHandle<int> const& uniformOffsets);
+    ShaderUniformBlockInfo(std::string const& name, int location, std::initializer_list<std::pair<std::string, int>> const& init_list);
+
+    void _ResetHash();
 };
 
 struct ShaderUniformDesc {
@@ -47,6 +73,10 @@ public:
     virtual mu::ArrayHandle<ShaderUniformInfo> GetCompiledUniforms();
     virtual bool IsUniform(std::string const& uniformName);
     virtual int GetUniformGPULocation(std::string const& uniformName);
+
+    virtual inline ShaderUniformBlockInfo& GetUniformBlock(std::string const& name) {
+        return _uniformBlocks[name];
+    }
 
     virtual void Reset(bool saveRefs); //reset uniforms map
 
@@ -108,6 +138,7 @@ protected:
 
     std::unordered_map<std::string, ShaderUniformInfo> _uniforms;
     std::unordered_set<IShaderUniformRef*> _refs;
+    std::unordered_map<std::string, ShaderUniformBlockInfo> _uniformBlocks;
     IShaderProgram* _program;
 };
 

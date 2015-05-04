@@ -12,7 +12,7 @@ namespace mr {
 
 class ITextureSettings : public IGPUObjectHandle {
 public:
-    enum MinFilter {
+    enum MinFilter : int {
         MinFilter_NEAREST_MIPMAP_NEAREST = 0x2700,
         MinFilter_LINEAR_MIPMAP_NEAREST = 0x2701,
         MinFilter_NEAREST_MIPMAP_LINEAR = 0x2702,
@@ -21,24 +21,24 @@ public:
         MinFilter_LINEAR = 0x2601
     };
 
-    enum MagFilter {
+    enum MagFilter : int {
         MagFilter_NEAREST = 0x2600,
         MagFilter_LINEAR = 0x2601
     };
 
-    enum Wrap {
+    enum Wrap : int {
         Wrap_CLAMP = 0x812F,
         Wrap_REPEAT = 0x2901,
         Wrap_MIRRORED_REPEAT = 0x8370,
         Wrap_DECAL = 0x2101
     };
 
-    enum CompareMode {
+    enum CompareMode : int {
         CompareMode_REF_TO_TEXTURE = 0x884E,
         CompareMode_NONE = 0
     };
 
-    enum CompareFunc {
+    enum CompareFunc : int {
         CompareFunc_LEQUAL = 0x0203,
         CompareFunc_GEQUAL = 0x0206,
         CompareFunc_LESS = 0x0201,

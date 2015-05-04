@@ -15,6 +15,10 @@ class IShaderCompiler;
 
 class ShaderManager : public mu::Singleton<ShaderManager> {
 public:
+    inline void SetGlobalUniform(std::string const& name, IShaderUniformRef::Type const& type, const void* value, bool oneTime = false) {
+        SetGlobalUniform(ShaderUniformDesc(name, type), value, oneTime);
+    }
+
     virtual void SetGlobalUniform(ShaderUniformDesc const& desc, const void* value, bool oneTime = false);
     virtual void DeleteGlobalUniform(ShaderUniformDesc const& desc);
 

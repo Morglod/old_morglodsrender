@@ -234,7 +234,7 @@ bool mr::Texture::Complete(bool mipMaps) {
     if(mipMaps) {
 #ifdef MR_CHECK_LARGE_GL_ERRORS
     int gl_er = 0;
-    mr::MachineInfo::ClearError();
+    mr::gl::ClearError();
 #endif
         if(mr::gl::IsOpenGL45()) {
             glGenerateTextureMipmap(handle);
@@ -253,7 +253,7 @@ bool mr::Texture::Complete(bool mipMaps) {
             if(binded) stateCache->BindTexture(binded, 0);
         }
 #ifdef MR_CHECK_LARGE_GL_ERRORS
-    if(mr::MachineInfo::CatchError(0, &gl_er)) {
+    if(mr::gl::CheckError(0, &gl_er)) {
         mr::Log::LogString("Error in Texture::Complete : glGenerateMipmap() ended with \"" + std::to_string(gl_er) + "\" code. ", MR_LOG_LEVEL_ERROR);
         return false;
     }

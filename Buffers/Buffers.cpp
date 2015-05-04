@@ -43,6 +43,9 @@ bool GPUBuffer::Allocate(const Usage& usage, const size_t& size) {
         usageFlags = GL_STATIC_DRAW;
         break;
     case FastChange:
+        usageFlags = GL_DYNAMIC_DRAW;
+        break;
+    case FastReadWrite:
         usageFlags = GL_STREAM_DRAW;
         break;
     default:

@@ -169,10 +169,13 @@ public:
     virtual unsigned int GetIndexCount() const = 0;
     virtual unsigned int GetVertexCount() const = 0;
 
-
     //By default should be 1
     virtual void SetInstancesNum(unsigned int const& num) = 0;
     virtual unsigned int GetInstancesNum() const = 0;
+
+    //By default should be 0
+    virtual void SetFirstInstance(unsigned int const& index) = 0;
+    virtual unsigned int GetFirstInstance() const = 0;
 
     virtual void* GetIndirectPtr() const = 0;
 

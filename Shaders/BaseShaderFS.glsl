@@ -1,15 +1,18 @@
 #version 330
-#extension GL_ARB_separate_shader_objects : enable
+#extension GL_ARB_uniform_buffer_object : enable
+
+/*#extension GL_ARB_separate_shader_objects : enable
 #pragma optimize (on)
 #pragma optionNV(fastmath on)
 #pragma optionNV(fastprecision on)
 #pragma optionNV(ifcvt none)
 #pragma optionNV(inline all)
 #pragma optionNV(strict on)
-#pragma optionNV(unroll all)
+#pragma optionNV(unroll all)*/
 
-#define MAX_POINT_LIGHTS 10
 #define EPSILON 0.0000001
+
+#define MAX_POINT_LIGHTS 100
 
 //precision mediump float;
 
@@ -34,13 +37,19 @@ uniform sampler2D testSphericalLightMap;
 
 out vec4 MR_fragSceneColorNothing;
 
-uniform int MR_numPointLights;
-uniform struct MR_PointLight {
+struct MR_PointLight {
    vec3 pos;
    vec3 color;
    float innerRange;
    float outerRange;
-} MR_pointLights[MAX_POINT_LIGHTS];
+};
+
+uniform int MR_numPointLights;
+
+layout(std140) uniform MR_pointLights_block
+{
+    MR_PointLight MR_pointLights[MAX_POINT_LIGHTS];
+};
 
 vec2 SphericalTexCoord(in vec3 normal) {
     float m = 2.0 * sqrt(
@@ -71,7 +80,7 @@ float ScalarInterp(in float x1, in float x2, in float x) {
 vec3 ApplyPointLights(in vec3 surfaceColor, in vec3 surfaceNormal) {
     vec3 result = vec3(0,0,0);
     vec3 surfPos = (MR_MAT_MODEL * MR_LocalVertexPos).xyz + MR_VertexInstancedPos;
-    for(int i = 0; i < MR_numPointLights; i++) {
+    for(int i = 0; i < MR_numPointLights; i++){
         float dist = length(surfPos - MR_pointLights[i].pos);
         float inv_dist = 1.0 / (dist + EPSILON);
         float inv_innerR = 1.0 / MR_pointLights[i].innerRange;

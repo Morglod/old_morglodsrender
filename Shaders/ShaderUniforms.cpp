@@ -8,6 +8,8 @@
 #   include <GL\glew.h>
 #endif
 
+#include <iostream>
+
 namespace mr {
 
 ShaderUniformDesc::ShaderUniformDesc() : name("NoNameUniform"), type(IShaderUniformRef::Type::Float) {
@@ -16,12 +18,46 @@ ShaderUniformDesc::ShaderUniformDesc() : name("NoNameUniform"), type(IShaderUnif
 ShaderUniformDesc::ShaderUniformDesc(std::string const& n, IShaderUniformRef::Type const& t) : name(n), type(t) {
 }
 
-ShaderUniformInfo::ShaderUniformInfo() : program(nullptr), name("NoNameUniform"), size(0), gl_type(0), location(-1) {
+ShaderUniformInfo::ShaderUniformInfo() : name("NoNameUniform"), gl_type(0), location(-1) {
 }
 
-ShaderUniformInfo::ShaderUniformInfo(IShaderProgram* p, const std::string& n, const int& s, const unsigned int & t, int const& loc)
-: program(p), name(n), size(s), gl_type(t), location(loc) {}
+ShaderUniformInfo::ShaderUniformInfo(const std::string& n, const unsigned int & t, int const& loc)
+: name(n), gl_type(t), location(loc) {}
 
+void ShaderUniformBlockInfo::_ResetHash() {
+    static std::hash<std::string> str_hash;
+    const size_t num = uniform_names.GetNum();
+    std::string* names = uniform_names.GetArray();
+    size_t* hash_names = new size_t[num];
+    uniform_hash_names = mu::ArrayHandle<size_t>(hash_names, num, true, false);
+    for(size_t i = 0; i < num; ++i) {
+        hash_names[i] = str_hash(names[i]);
+    }
+}
+
+ShaderUniformBlockInfo::ShaderUniformBlockInfo() : name("NoNameUniformBlock"), location(-1) {
+}
+
+ShaderUniformBlockInfo::ShaderUniformBlockInfo(std::string const& name_, int location_, mu::ArrayHandle<std::string> const& uniformNames_, mu::ArrayHandle<int> const& uniformOffsets_)
+: name(name_), uniform_names(uniformNames_), uniform_hash_names(), uniform_offsets(uniformOffsets_), location(location_) {
+    _ResetHash();
+}
+
+ShaderUniformBlockInfo::ShaderUniformBlockInfo(std::string const& name_, int location_, std::initializer_list<std::pair<std::string, int>> const& init_list)
+: name(name_), location(location_) {
+    std::string* uniform_names_ar = new std::string[init_list.size()];
+    int* uniform_offsets_ar = new int[init_list.size()];
+    uniform_names = mu::ArrayHandle<std::string>(uniform_names_ar, init_list.size(), true, false);
+    uniform_offsets = mu::ArrayHandle<int>(uniform_offsets_ar, init_list.size(), true, false);
+
+    size_t i = 0;
+    for(std::pair<std::string, int> const& p : init_list) {
+        uniform_names_ar[i] = p.first;
+        uniform_offsets_ar[i] = p.second;
+        ++i;
+    }
+    _ResetHash();
+}
 
 IShaderUniformRef* ShaderUniformMap::CreateRef(std::string const& name, mr::IShaderUniformRef::Type const& type, void* value) {
     if(!IsUniform(name)) return nullptr;
@@ -97,13 +133,13 @@ void ShaderUniformMap::DeleteAllRefs() {
 bool ShaderUniformMap::_GetUniformGPULocation(std::string const& uniformName, int* out) {
 #ifdef MR_CHECK_SMALL_GL_ERRORS
     int gl_er = 0;
-    mr::MachineInfo::ClearError();
+    mr::gl::ClearError();
 #endif
 
     *out = glGetUniformLocation(_program->GetGPUHandle(), uniformName.c_str());
 
 #ifdef MR_CHECK_SMALL_GL_ERRORS
-    if(mr::MachineInfo::CatchError(0, &gl_er)) {
+    if(mr::gl::CheckError(0, &gl_er)) {
         std::string err_str = "Error in ShaderUniformMap::_GetUniformGPULocation : glGetUniformLocation("+std::to_string(_program->GetGPUHandle())+", \""+uniformName+"\") ended with \"" + std::to_string(gl_er) + "\" code. ";
         switch(gl_er) {
         case GL_INVALID_VALUE:
@@ -214,6 +250,54 @@ void ShaderUniformMap::SetUniform(int const& location, glm::mat4 const& value) {
 
 void ShaderUniformMap::Reset(bool saveRefs) {
     unsigned int handle = _program->GetGPUHandle();
+
+    int act_uniform_blocks = 0;
+    glGetProgramiv(handle, GL_ACTIVE_UNIFORM_BLOCKS, &act_uniform_blocks);
+    if(act_uniform_blocks == 0) {
+        _uniformBlocks.clear();
+    }
+
+    std::vector<int> ub_inds; //not just normal uniform, so filter it, when uniforms parsing.
+
+    for(int iu = 0; iu < act_uniform_blocks; ++iu) {
+        char namebuffer[1024];
+        int namebuffer_size = 0;
+        glGetActiveUniformBlockName(handle, iu, 1024, &namebuffer_size, &namebuffer[0]);
+        std::string name(namebuffer, namebuffer_size);
+
+        _uniformBlocks[name].name = name;
+        _uniformBlocks[name].location = iu;
+
+        int ub_uniforms_num = 0;
+        glGetActiveUniformBlockiv(handle, iu, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &ub_uniforms_num);
+
+        if(ub_uniforms_num > 0) {
+            ub_inds.reserve(ub_uniforms_num);
+
+            unsigned int ub_uniforms_inds[ub_uniforms_num];
+            glGetActiveUniformBlockiv(handle, iu, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, (int*)ub_uniforms_inds);
+
+            int* ub_uniforms_offsets = new int[ub_uniforms_num];
+            glGetActiveUniformsiv(handle, ub_uniforms_num, ub_uniforms_inds, GL_UNIFORM_OFFSET, ub_uniforms_offsets);
+            _uniformBlocks[name].uniform_offsets = mu::ArrayHandle<int>(ub_uniforms_offsets, ub_uniforms_num, true, false);
+
+            std::string* u_names = new std::string[ub_uniforms_num];
+            _uniformBlocks[name].uniform_names = mu::ArrayHandle<std::string>(u_names, ub_uniforms_num, true, false);
+
+            for(int i = 0; i < ub_uniforms_num; ++i) {
+                ub_inds.push_back(ub_uniforms_inds[i]);
+                char u_namebuf[1024];
+                int u_name_size = 0;
+                int unif_size = 0;
+                unsigned int unif_type = 0;
+                glGetActiveUniform(handle, ub_uniforms_inds[i], 1024, &u_name_size, &unif_size, &unif_type, &u_namebuf[0]);
+                u_names[i] = std::string(u_namebuf, u_name_size);
+            }
+        }
+
+        _uniformBlocks[name]._ResetHash();
+    }
+
     int act_uniforms = 0;
     glGetProgramiv(handle, GL_ACTIVE_UNIFORMS, &act_uniforms);
     if(act_uniforms == 0) {
@@ -221,7 +305,9 @@ void ShaderUniformMap::Reset(bool saveRefs) {
         _uniforms.clear();
     }
 
-    for(int iu = 0; iu < act_uniforms; ++iu){
+    for(int iu = 0; iu < act_uniforms; ++iu) {
+        if(std::find(ub_inds.begin(), ub_inds.end(), iu) != ub_inds.end()) continue; //Its in uniform block
+
         char namebuffer[1024];
         int real_buf_size = 0;
         int unif_size = 0;
@@ -230,10 +316,10 @@ void ShaderUniformMap::Reset(bool saveRefs) {
         std::string name(namebuffer);
         int location = -1;
         if(!_GetUniformGPULocation(name, &location)) {
-            mr::Log::LogString("Failed ShaderUniformMap::Reset. Failed get uniform gpu location for \""+name+"\".", MR_LOG_LEVEL_ERROR);
+            mr::Log::LogString("In ShaderUniformMap::Reset. Failed get uniform gpu location for \""+name+"\".", MR_LOG_LEVEL_WARNING);
             location = -1;
         }
-        _uniforms[name] =  ShaderUniformInfo(dynamic_cast<IShaderProgram*>(this), name, unif_size, uni_type, location);
+        _uniforms[name] =  ShaderUniformInfo(name, uni_type, location);
     }
 
     //remap refs
@@ -265,7 +351,7 @@ void ShaderUniformMap::UpdateRefs() {
 #endif
             uref->Update();
 #ifdef MR_CHECK_SMALL_GL_ERRORS
-            if(mr::MachineInfo::CatchError(0, &gl_er)) {
+            if(mr::gl::CheckError(0, &gl_er)) {
                 std::string err_str = "Error in ShaderUniformMap::Update GL \""+ std::to_string(gl_er) + "\" code. ";
                 switch(gl_er) {
                 case GL_INVALID_VALUE:

@@ -36,7 +36,8 @@ public:
 
     enum Usage {
         Static = 0,
-        FastChange = 1
+        FastChange = 1,
+        FastReadWrite = 2
     };
 
     struct BufferedDataInfo {

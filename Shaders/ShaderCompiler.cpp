@@ -55,7 +55,7 @@ ShaderCompilationOutput ShaderCompiler::Compile(IShader* shaderObject, std::stri
     //for gl error handling
 #ifdef MR_CHECK_LARGE_GL_ERRORS
     int gl_er = 0;
-    mr::MachineInfo::ClearError();
+    mr::gl::ClearError();
 #endif
 
     unsigned int handle = shaderObject->GetGPUHandle();
@@ -66,7 +66,7 @@ ShaderCompilationOutput ShaderCompiler::Compile(IShader* shaderObject, std::stri
 
     //if glShaderSource is failed
 #ifdef MR_CHECK_LARGE_GL_ERRORS
-    if(mr::MachineInfo::CatchError(0, &gl_er)){
+    if(mr::gl::CheckError(0, &gl_er)){
         std::string err_str = "Error in ShaderCompiler::Compile : glShaderSource ended with \"" + std::to_string(gl_er) + "\" code. ";
         switch(gl_er) {
         case GL_INVALID_VALUE:
@@ -107,7 +107,7 @@ ShaderCompilationOutput ShaderCompiler::Compile(IShader* shaderObject, std::stri
 
     //if glCompileShader is failed
 #ifdef MR_CHECK_LARGE_GL_ERRORS
-    if(mr::MachineInfo::CatchError(0, &gl_er)){
+    if(mr::gl::CheckError(0, &gl_er)){
         std::string err_str = "Error in ShaderCompiler::Compile : glCompileShader ended with \"" + std::to_string(gl_er) + "\" code. ";
         switch(gl_er) {
         case GL_INVALID_VALUE:
@@ -151,7 +151,7 @@ ShaderCompilationOutput ShaderCompiler::Link(IShaderProgram* shaderProgramObject
     //for gl error handling
 #ifdef MR_CHECK_LARGE_GL_ERRORS
     int gl_er = 0;
-    mr::MachineInfo::ClearError();
+    mr::gl::ClearError();
 #endif
 
     //Attach only not attached shaders
@@ -171,7 +171,7 @@ ShaderCompilationOutput ShaderCompiler::Link(IShaderProgram* shaderProgramObject
 
     //if glAttachShader is failed
 #ifdef MR_CHECK_LARGE_GL_ERRORS
-    if(mr::MachineInfo::CatchError(0, &gl_er)){
+    if(mr::gl::CheckError(0, &gl_er)){
         std::string err_str = "Error in ShaderCompiler::Link : glAttachShader ended with \"" + std::to_string(gl_er) + "\" code. ";
         switch(gl_er) {
         case GL_INVALID_VALUE:
@@ -212,7 +212,7 @@ ShaderCompilationOutput ShaderCompiler::Link(IShaderProgram* shaderProgramObject
 
     //if glLinkProgram is failed
 #ifdef MR_CHECK_LARGE_GL_ERRORS
-    if(mr::MachineInfo::CatchError(0, &gl_er)){
+    if(mr::gl::CheckError(0, &gl_er)){
         std::string err_str = "Error in ShaderCompiler::Link : glLinkProgram ended with \"" + std::to_string(gl_er) + "\" code. ";
         switch(gl_er) {
         case GL_INVALID_VALUE:
@@ -232,20 +232,6 @@ ShaderCompilationOutput ShaderCompiler::Link(IShaderProgram* shaderProgramObject
                                 );
     }
 #endif
-
-    /** DEBUG
-    int act_uniforms = 0;
-    glGetProgramiv(gpu_program_handle, GL_ACTIVE_UNIFORMS, &act_uniforms);
-
-    for(int iu = 0; iu < act_uniforms; ++iu){
-        char namebuffer[1024];
-        int real_buf_size = 0;
-        int unif_size = 0;
-        unsigned int uni_type = 0;
-        glGetActiveUniform(gpu_program_handle, iu, 1024, &real_buf_size, &unif_size, &uni_type, &namebuffer[0]);
-
-        MR::Log::LogString("Program("+std::to_string(gpu_program_handle)+") Uniform \""+std::string(namebuffer)+"\" sizeof("+std::to_string(unif_size)+") typeof("+std::to_string(uni_type)+")", MR_LOG_LEVEL_WARNING);
-    }**/
 
     return ShaderCompilationOutput(
                                 (logString != "") ? new ShaderCompilationMessage[1]{ ShaderCompilationMessage( ShaderCompilationMessage::MT_Info, 0, 0, logString ) } : nullptr,
@@ -273,7 +259,7 @@ ShaderCompilationOutput ShaderCompiler::LinkToByteCode(IShaderProgram* shaderPro
     //for gl error handling
 #ifdef MR_CHECK_LARGE_GL_ERRORS
     int gl_er = 0;
-    mr::MachineInfo::ClearError();
+    mr::gl::ClearError();
 #endif
 
     unsigned int handle = shaderProgramObject->GetGPUHandle();
@@ -287,7 +273,7 @@ ShaderCompilationOutput ShaderCompiler::LinkToByteCode(IShaderProgram* shaderPro
 
     //if glGetProgramBinary is failed
 #ifdef MR_CHECK_LARGE_GL_ERRORS
-    if(mr::MachineInfo::CatchError(0, &gl_er)) {
+    if(mr::gl::CheckError(0, &gl_er)) {
         std::string err_str = "Error in ShaderCompiler::LinkToByteCode : glGetProgramBinary ended with \"" + std::to_string(gl_er) + "\" code. ";
         switch(gl_er) {
         case GL_INVALID_OPERATION:

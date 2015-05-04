@@ -28,6 +28,11 @@ void GeometryDrawParams::SetInstancesNum(unsigned int const& num) {
     if(mr::gl::IsIndirectDrawSupported()) _MakeDrawCmd();
 }
 
+void GeometryDrawParams::SetFirstInstance(unsigned int const& index) {
+    _firstInstance = index;
+    if(mr::gl::IsIndirectDrawSupported()) _MakeDrawCmd();
+}
+
 void GeometryDrawParams::SetUsingIndexBuffer(const bool& state) {
     _index_buffer = state;
     if(mr::gl::IsIndirectDrawSupported()) _MakeDrawCmd();
@@ -42,17 +47,17 @@ void GeometryDrawParams::_MakeDrawCmd() {
         if(drawCmd) {
             delete ((mr::IGeometryDrawParams::DrawElementsIndirectCmd*)drawCmd);
         }
-        drawCmd = new mr::IGeometryDrawParams::DrawElementsIndirectCmd {_icount, _instNum, _istart, _vstart, 0};
+        drawCmd = new mr::IGeometryDrawParams::DrawElementsIndirectCmd {_icount, _instNum, _istart, _vstart, _firstInstance};
     } else {
         if(drawCmd) {
             delete ((mr::IGeometryDrawParams::DrawArraysIndirectCmd*)drawCmd);
         }
-        drawCmd = new mr::IGeometryDrawParams::DrawArraysIndirectCmd {_vcount, _instNum, _vstart, 0};
+        drawCmd = new mr::IGeometryDrawParams::DrawArraysIndirectCmd {_vcount, _instNum, _vstart, _firstInstance};
     }
 }
 
-GeometryDrawParams::GeometryDrawParams(const bool& indexBuffer, const unsigned int& istart, const unsigned int& vstart, const unsigned int& icount, const unsigned int& vcount, unsigned int const& instancesNum)
- : drawCmd(0), _istart(istart), _vstart(vstart), _icount(icount), _vcount(vcount), _instNum(instancesNum), _index_buffer(indexBuffer) {
+GeometryDrawParams::GeometryDrawParams(const bool& indexBuffer, const unsigned int& istart, const unsigned int& vstart, const unsigned int& icount, const unsigned int& vcount, unsigned int const& instancesNum, unsigned int const& firstInstance)
+ : drawCmd(0), _istart(istart), _vstart(vstart), _icount(icount), _vcount(vcount), _instNum(instancesNum), _index_buffer(indexBuffer), _firstInstance(firstInstance) {
      if(mr::gl::IsIndirectDrawSupported()) _MakeDrawCmd();
 }
 
@@ -67,12 +72,12 @@ GeometryDrawParams::~GeometryDrawParams() {
     }
 }
 
-IGeometryDrawParamsPtr GeometryDrawParams::DrawArrays(const unsigned int& vstart, const unsigned int& vcount, unsigned int const& instancesNum) {
-    return IGeometryDrawParamsPtr(new GeometryDrawParams(false, 0, vstart, 0, vcount, instancesNum));
+IGeometryDrawParamsPtr GeometryDrawParams::DrawArrays(const unsigned int& vstart, const unsigned int& vcount, unsigned int const& instancesNum, unsigned int const& firstInstance) {
+    return IGeometryDrawParamsPtr(new GeometryDrawParams(false, 0, vstart, 0, vcount, instancesNum, firstInstance));
 }
 
-IGeometryDrawParamsPtr GeometryDrawParams::DrawElements(const unsigned int& istart, const unsigned int& icount, const unsigned int& vstart, unsigned int const& instancesNum) {
-    return IGeometryDrawParamsPtr(new GeometryDrawParams(true, istart, vstart, icount, 0, instancesNum));
+IGeometryDrawParamsPtr GeometryDrawParams::DrawElements(const unsigned int& istart, const unsigned int& icount, const unsigned int& vstart, unsigned int const& instancesNum, unsigned int const& firstInstance) {
+    return IGeometryDrawParamsPtr(new GeometryDrawParams(true, istart, vstart, icount, 0, instancesNum, firstInstance));
 }
 
 }

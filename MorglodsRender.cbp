@@ -154,6 +154,7 @@
 		<Unit filename="Shaders/ShaderObjects.hpp" />
 		<Unit filename="Shaders/ShaderProgramObject.cpp" />
 		<Unit filename="Shaders/ShaderProgramObject.hpp" />
+		<Unit filename="Shaders/ShaderUniformBuffer.hpp" />
 		<Unit filename="Shaders/ShaderUniforms.cpp" />
 		<Unit filename="Shaders/ShaderUniforms.hpp" />
 		<Unit filename="Shaders/build_shader_resources.py" />

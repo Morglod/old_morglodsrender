@@ -2,6 +2,7 @@
 #include "ShaderUniforms.hpp"
 #include "../Utils/Log.hpp"
 #include "ShaderConfig.hpp"
+#include "../MachineInfo.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
@@ -16,9 +17,13 @@ bool ShaderProgram::Create() {
         return false;
     }
 
+#ifdef MR_CHECK_LARGE_GL_ERRORS
+    mr::gl::ClearError();
+#endif // MR_CHECK_LARGE_GL_ERRORS
     handle = glCreateProgram();
 #ifdef MR_CHECK_LARGE_GL_ERRORS
-    if(mr::MachineInfo::CatchError(&gl_str, 0)) {
+    std::string gl_str;
+    if(mr::gl::CheckError(&gl_str, 0)) {
         mr::Log::LogString("Failed ShaderProgram::Create(). Failed creating OpenGL shader program. " + gl_str, MR_LOG_LEVEL_ERROR);
         return false;
     }

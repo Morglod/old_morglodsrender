@@ -161,6 +161,7 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
 
             material->GetTexture(textureType, 0, &colorTexturePath, &colorTextureMapping, &colorTextureUvIndex, &colorTextureBlend, &colorTextureOp, &colorTextureMapMode);
             matDescr.texColor = std::string(&colorTexturePath.data[0], colorTexturePath.length);
+            matDescr.texColorWrapMode = mr::ITextureSettings::Wrap_REPEAT;
             if(colorTextureMapMode == aiTextureMapMode_Wrap) matDescr.texColorWrapMode = mr::ITextureSettings::Wrap_REPEAT;
             if(colorTextureMapMode == aiTextureMapMode_Clamp) matDescr.texColorWrapMode = mr::ITextureSettings::Wrap_CLAMP;
             if(colorTextureMapMode == aiTextureMapMode_Decal) matDescr.texColorWrapMode = mr::ITextureSettings::Wrap_DECAL;
