@@ -12,201 +12,138 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vector>
+#include <string.h>
 
 namespace mr {
 
-class VertexFormatCustom;
-class VertexFormatCustomFixed;
+struct GeomDataType;
+struct VertexAttributeDesc;
+struct VertexAttribute;
+struct VertexFormat;
+struct IndexFormat;
 
-class VertexDataTypeInt : public IVertexDataType, public mu::StaticSingleton<VertexDataTypeInt> {
-public:
-    inline unsigned int GetSize() const override { return sizeof(int); }
-    inline unsigned int GetDataTypeGL() const override { return 0x1404; }
+typedef std::shared_ptr<GeomDataType> GeomDataTypePtr;
+typedef std::shared_ptr<VertexAttributeDesc> VertexAttributeDescPtr;
+typedef std::shared_ptr<VertexAttribute> VertexAttributePtr;
+typedef std::shared_ptr<VertexFormat> VertexFormatPtr;
+typedef std::shared_ptr<IndexFormat> IndexFormatPtr;
 
-    inline bool IsEqual(IVertexDataType* dt) const override {
-        if(sizeof(int) != dt->GetSize()) return false;
-        if(0x1404 != dt->GetDataTypeGL()) return false;
-        return true;
+struct GeomDataType {
+    enum DefaultDataType {
+        Int = 0x1404,
+        UInt = 0x1405,
+        Float = 0x1406
+    };
+
+    unsigned int dataTypeGL;
+    unsigned int size;
+
+    inline bool Equal(GeomDataType const& other) const {
+        return !((bool)memcmp(this, &other, sizeof(GeomDataType)));
     }
 
-    inline bool IsCached() const override { return true; }
+    GeomDataTypePtr Cache();
+
+    GeomDataType();
+    GeomDataType(unsigned int const& dataTypeGL, unsigned int const& size);
 };
 
-class VertexDataTypeUInt : public IVertexDataType, public mu::StaticSingleton<VertexDataTypeUInt> {
-public:
-    inline unsigned int GetSize() const override { return sizeof(unsigned int); }
-    inline unsigned int GetDataTypeGL() const override { return 0x1405; }
+struct VertexAttributeDesc {
+    enum DefaultShaderIndex {
+        PositionIndex = MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION,
+        NormalIndex = MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION,
+        ColorIndex = MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION,
+        TexCoordIndex = MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION
+    };
 
-    inline bool IsEqual(IVertexDataType* dt) const override {
-        if(sizeof(unsigned int) != dt->GetSize()) return false;
-        if(0x1405 != dt->GetDataTypeGL()) return false;
-        return true;
+    unsigned int elementsNum;
+    unsigned int size;
+    unsigned int shaderIndex;
+    unsigned int divisor;
+    GeomDataTypePtr dataType; //should be at the end or rewrite Equal method.
+
+    inline bool Equal(VertexAttributeDesc const& other) const {
+        bool dt = (dataType.get() == other.dataType.get());
+        if(!dt && (dataType.get() != nullptr && other.dataType.get() != nullptr)) {
+            dt = dataType.get()->Equal(*(other.dataType.get()));
+        }
+        return dt && !((bool)memcmp(this, &other, sizeof(VertexAttributeDesc) - sizeof(GeomDataTypePtr)));
     }
 
-    inline bool IsCached() const override { return true; }
+    VertexAttributeDescPtr Cache();
+
+    VertexAttributeDesc();
+    VertexAttributeDesc(unsigned int const& elementsNum, unsigned int const& size, unsigned int const& shaderIndex, unsigned int const& divisor, GeomDataTypePtr const& dataType);
 };
 
-class VertexDataTypeFloat : public IVertexDataType, public mu::StaticSingleton<VertexDataTypeFloat> {
-public:
-    inline unsigned int GetSize() const override { return sizeof(float); }
-    inline unsigned int GetDataTypeGL() const override { return 0x1406; }
+struct VertexAttribute {
+    unsigned int offset;
+    VertexAttributeDescPtr desc;
 
-    inline bool IsEqual(IVertexDataType* dt) const override {
-        if(sizeof(float) != dt->GetSize()) return false;
-        if(0x1406 != dt->GetDataTypeGL()) return false;
-        return true;
+    inline bool Equal(VertexAttribute const& other) const {
+        bool bDesc = (desc.get() == other.desc.get());
+        if(!bDesc && (desc.get() != nullptr && other.desc.get() != nullptr)) {
+            bDesc = desc.get()->Equal(*(other.desc.get()));
+        }
+        return (offset == other.offset) && bDesc;
     }
 
-    inline bool IsCached() const override { return true; }
-};
-
-class VertexDataTypeCustom : public IVertexDataType {
-public:
-    inline unsigned int GetSize() const override {return _size;}
-    inline unsigned int GetDataTypeGL() const override {return _data_type;}
-
-    inline bool IsEqual(IVertexDataType* dt) const override {
-        if(_size != dt->GetSize()) return false;
-        if(_data_type != dt->GetDataTypeGL()) return false;
-        return true;
+    inline bool operator < (VertexAttribute const& b) const {
+        return (!Equal(b));
     }
-
-    inline bool IsCached() const override { return _cached; }
-
-    IVertexDataType* Cache();
-
-    VertexDataTypeCustom();
-    VertexDataTypeCustom(VertexDataTypeCustom const& cpy);
-    VertexDataTypeCustom(const unsigned int& data_type, const unsigned int& size);
-protected:
-    unsigned int _data_type;
-    unsigned int _size;
-    bool _cached;
 };
 
-class VertexAttributePos3F : public IVertexAttribute, public mu::StaticSingleton<VertexAttributePos3F> {
-public:
-    inline unsigned int GetByteSize() const override {return ((unsigned int)VertexDataTypeFloat::GetInstance().GetSize()) * ((unsigned int)3);}
-    inline unsigned int GetElementsNum() const override { return 3; }
-    inline IVertexDataType* GetDataType() const override { return dynamic_cast<mr::IVertexDataType*>(&VertexDataTypeFloat::GetInstance()); }
-    inline unsigned int GetShaderIndex() const override { return IVertexAttribute::Position; }
+struct VertexFormat {
+    mu::ArrayHandle<VertexAttribute> attributes;
+    mu::ArrayHandle<uint64_t> pointers;
+    unsigned int size;
+    size_t attribsNum;
 
-    inline unsigned int GetDivisor() const { return _divisor; }
-    inline void SetDivisor(unsigned int const& divisor) override { _divisor = divisor; }
-
-    inline bool IsEqual(IVertexAttribute* va) const override {
-        if((VertexDataTypeFloat::GetInstance().GetSize() * 3) != va->GetByteSize()) return false;
-        if(3 != va->GetElementsNum()) return false;
-        if(IVertexAttribute::Position != va->GetShaderIndex()) return false;
-        if(_divisor != va->GetDivisor()) return false;
-
-        return VertexDataTypeFloat::GetInstance().IsEqual(va->GetDataType());
-    }
-protected:
-    unsigned int _divisor = 0;
-};
-
-class VertexAttributeCustom : public IVertexAttribute {
-public:
-    inline unsigned int GetByteSize() const override { return _size; }
-    inline unsigned int GetElementsNum() const override { return _el_num; }
-    inline IVertexDataType* GetDataType() const override { return _data_type; }
-    inline unsigned int GetShaderIndex() const override { return _shaderIndex; }
-
-    inline unsigned int GetDivisor() const override { return _divisor; }
-    inline void SetDivisor(unsigned int const& divisor) override { _divisor = divisor; }
-
-    inline bool IsEqual(IVertexAttribute* va) const override {
-        if(_size != va->GetByteSize()) return false;
-        if(_el_num != va->GetElementsNum()) return false;
-        if(_shaderIndex != va->GetShaderIndex()) return false;
-        if(_divisor != va->GetDivisor()) return false;
-        return _data_type->IsEqual(va->GetDataType());
-    }
-
-    IVertexAttribute* Cache();
-
-    VertexAttributeCustom();
-    VertexAttributeCustom(VertexAttributeCustom const& cpy);
-    VertexAttributeCustom(unsigned int const& elementsNum, IVertexDataType* dataType, unsigned int const& shaderIndex, unsigned const& divisor = 0);
-protected:
-    unsigned int _el_num;
-    IVertexDataType* _data_type;
-    unsigned int _size;
-    unsigned int _shaderIndex;
-    unsigned int _divisor;
-};
-
-class VertexFormatCustom : public IVertexFormat {
-public:
-    inline unsigned int GetSize() const override { return _size; }
-    void AddVertexAttribute(IVertexAttribute* a);
-    bool Bind() const override;
-    void UnBind() const override;
-    bool IsEqual(IVertexFormat* vf) const override;
-
-    IVertexFormat* Cache();
-
-    VertexFormatCustom();
-    VertexFormatCustom(VertexFormatCustom const& cpy);
-    virtual ~VertexFormatCustom();
-
-    inline mu::ArrayRef<IVertexAttribute*> GetAttributes() override { return mu::ArrayRef<IVertexAttribute*>(&_attribs[0], _attribs.size()); }
-    inline mu::ArrayRef<uint64_t> GetOffsets() override { return mu::ArrayRef<uint64_t>(&_pointers[0], _pointers.size()); }
-protected:
-    std::vector<IVertexAttribute*> _attribs;
-    std::vector<uint64_t> _pointers;
-    uint64_t _nextPtr;
-    unsigned int _size;
-};
-
-class VertexFormatCustomFixed : public IVertexFormat {
-public:
-    inline unsigned int GetSize() const override { return _size; }
-    void SetVertexAttribute(IVertexAttribute* a, const size_t& index);
-    bool Bind() const override;
-    void UnBind() const override;
-    bool IsEqual(IVertexFormat* vf) const override;
-
-    /// call this after creating new object of this type
-    /// resets all data
-    void SetAttributesNum(const size_t& num);
     void Complete();
+    VertexFormatPtr Cache();
 
-    IVertexFormat* Cache();
+    inline bool Equal(const VertexFormat* format) const {
+        if( format == nullptr ||
+            attribsNum == 0 ||
+            format->attribsNum == 0 ||
+            size == 0 || format->size == 0 ||
+            !(size == format->size && attribsNum == format->attribsNum)) return false;
+        for(size_t i = 0; i < attribsNum; ++i) {
+            if(!attributes.GetArray()[i].Equal(format->attributes.GetArray()[i])) return false;
+        }
+        return true;
+    }
 
-    VertexFormatCustomFixed();
-    VertexFormatCustomFixed(VertexFormatCustomFixed const& cpy);
-    virtual ~VertexFormatCustomFixed();
+    inline void SetAttribute(VertexAttributeDescPtr const& desc, unsigned int const& index) {
+        attributes.GetArray()[index].desc = desc;
+        attributes.GetArray()[index].offset = CalcOffset(index);
+    }
 
-    inline mu::ArrayRef<IVertexAttribute*> GetAttributes() override { return mu::ArrayRef<IVertexAttribute*>(&_attribs[0], _attribsNum); }
-    inline mu::ArrayRef<uint64_t> GetOffsets() override { return mu::ArrayRef<uint64_t>(&_pointers[0], _attribsNum); }
-protected:
-    IVertexAttribute** _attribs;
-    uint64_t* _pointers;
-    unsigned int _size;
-    size_t _attribsNum;
+    inline unsigned int CalcOffset(unsigned int const& index) const {
+        unsigned int offset = 0;
+        for(size_t i = 0; i < index; ++i) {
+            if(attributes.GetArray()[i].desc != nullptr)
+                offset += attributes.GetArray()[i].desc->size;
+        }
+        return offset;
+    }
 };
 
-class IndexFormatCustom : public IIndexFormat {
-public:
-    inline unsigned int GetSize() const override { return _dataType->GetSize(); }
-    inline void SetDataType(IVertexDataType* dataType) override { _dataType = dataType; }
-    inline IVertexDataType* GetDataType() const override { return _dataType; }
-    bool Bind() const override;
-    void UnBind() const override;
-    bool IsEqual(IIndexFormat* ifo) const override;
+struct IndexFormat {
+    GeomDataTypePtr dataType;
 
-    IIndexFormat* Cache();
+    IndexFormatPtr Cache();
 
-    IndexFormatCustom();
-    IndexFormatCustom(IndexFormatCustom const& cpy);
-    IndexFormatCustom(IVertexDataType* dataType);
-    virtual ~IndexFormatCustom();
-protected:
-    IVertexDataType* _dataType;
+    inline bool Equal(const IndexFormat* format) const {
+        if(dataType.get() == format->dataType.get()) return true;
+        if(dataType.get() == nullptr) return false;
+        if(format->dataType.get() == nullptr) return false;
+        return dataType->Equal(*(format->dataType.get()));
+    }
+
+    IndexFormat();
+    IndexFormat(GeomDataTypePtr const& dataType);
 };
-
 
 }
 

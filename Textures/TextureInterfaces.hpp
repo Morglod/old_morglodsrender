@@ -5,100 +5,11 @@
 
 #include "../Types.hpp"
 #include "../CoreObjects.hpp"
+#include "TextureSettings.hpp"
 
 #include <Containers.hpp>
 
 namespace mr {
-
-class ITextureSettings : public IGPUObjectHandle {
-public:
-    enum MinFilter : int {
-        MinFilter_NEAREST_MIPMAP_NEAREST = 0x2700,
-        MinFilter_LINEAR_MIPMAP_NEAREST = 0x2701,
-        MinFilter_NEAREST_MIPMAP_LINEAR = 0x2702,
-        MinFilter_LINEAR_MIPMAP_LINEAR = 0x2703,
-        MinFilter_NEAREST = 0x2600,
-        MinFilter_LINEAR = 0x2601
-    };
-
-    enum MagFilter : int {
-        MagFilter_NEAREST = 0x2600,
-        MagFilter_LINEAR = 0x2601
-    };
-
-    enum Wrap : int {
-        Wrap_CLAMP = 0x812F,
-        Wrap_REPEAT = 0x2901,
-        Wrap_MIRRORED_REPEAT = 0x8370,
-        Wrap_DECAL = 0x2101
-    };
-
-    enum CompareMode : int {
-        CompareMode_REF_TO_TEXTURE = 0x884E,
-        CompareMode_NONE = 0
-    };
-
-    enum CompareFunc : int {
-        CompareFunc_LEQUAL = 0x0203,
-        CompareFunc_GEQUAL = 0x0206,
-        CompareFunc_LESS = 0x0201,
-        CompareFunc_GREATHER = 0x0204,
-        CompareFunc_EQUAL = 0x0202,
-        CompareFunc_NOTEQUAL = 0x0205,
-        CompareFunc_ALWAYS = 0x0207,
-        CompareFunc_NEVER = 0x0200
-    };
-
-    /* SENDER - TextureSettings pointer */
-    mu::Event<ITextureSettings*, const float&> OnLodBiasChanged;
-    mu::Event<ITextureSettings*, float*> OnBorderColorChanged; //as param used pointer to _border_color
-    mu::Event<ITextureSettings*, const MinFilter&> OnMinFilterChanged;
-    mu::Event<ITextureSettings*, const MagFilter&> OnMagFilterChanged;
-    mu::Event<ITextureSettings*, const int&> OnMinLodChanged;
-    mu::Event<ITextureSettings*, const int&> OnMaxLodChanged;
-    mu::Event<ITextureSettings*, const Wrap&> OnWrapSChanged;
-    mu::Event<ITextureSettings*, const Wrap&> OnWrapRChanged;
-    mu::Event<ITextureSettings*, const Wrap&> OnWrapTChanged;
-    mu::Event<ITextureSettings*, const CompareMode&> OnCompareModeChanged;
-    mu::Event<ITextureSettings*, const CompareFunc&> OnCompareFuncChanged;
-
-    virtual void SetLodBias(const float& v) = 0;
-    virtual void SetBorderColor(float* rgba) = 0;
-    virtual void SetBorderColor(const float& r, const float& g, const float& b, const float& a) = 0;
-    virtual void SetMinFilter(const MinFilter& v) = 0;
-    virtual void SetMagFilter(const MagFilter& v) = 0;
-    virtual void SetMinLod(const int& v) = 0;
-    virtual void SetMaxLod(const int& v) = 0;
-    virtual void SetWrapS(const Wrap& v) = 0;
-    virtual void SetWrapR(const Wrap& v) = 0;
-    virtual void SetWrapT(const Wrap& v) = 0;
-    virtual void SetCompareMode(const CompareMode& v) = 0;
-    virtual void SetCompareFunc(const CompareFunc& v) = 0;
-
-    virtual float GetLodBias() = 0;
-    virtual float* GetBorderColor() = 0;
-    virtual MinFilter GetMinFilter() = 0;
-    virtual MagFilter GetMagFilter() = 0;
-    virtual int GetMinLod() = 0;
-    virtual int GetMaxLod() = 0;
-    virtual Wrap GetWrapS() = 0;
-    virtual Wrap GetWrapR() = 0;
-    virtual Wrap GetWrapT() = 0;
-    virtual CompareMode GetCompareMode() = 0;
-    virtual CompareFunc GetCompareFunc() = 0;
-
-    virtual void Create() = 0;
-
-    /* GPUObjectHandle */
-    //virtual unsigned int GetGPUHandle() = 0;
-
-    /* ObjectHandle */
-    //void Destroy();
-
-    virtual ITextureSettings* Copy() = 0;
-
-    virtual ~ITextureSettings() {}
-};
 
 struct TextureSizeInfo {
 public:
@@ -129,6 +40,7 @@ public:
 };
 
 class ITexture : public IGPUObjectHandle {
+    friend class TextureManager;
 public:
     enum StorageDataFormat {
         SDF_ALPHA = 0x1906,
@@ -220,8 +132,8 @@ public:
         ETC2
     };
 
-    virtual ITextureSettings* GetSettings() = 0; //May be nullptr
-    virtual void SetSettings(ITextureSettings* ts) = 0;
+    virtual TextureSettings* GetSettings() = 0; //May be nullptr
+    virtual void SetSettings(TextureSettings* ts) = 0;
 
     virtual int GetMipMapLevelsNum() = 0;
     virtual TextureSizeInfo GetSizesInfo(int const& mipMapLevel) = 0;
@@ -231,8 +143,6 @@ public:
     virtual ITexture::CompressionMode GetCompressionMode() = 0;
 
     virtual ITexture::Types GetType() = 0;
-
-    virtual bool Create(const ITexture::Types& type) = 0;
 
     virtual bool GetData(const int& mipMapLevel,
                          const ITexture::DataFormat& dformat, const ITexture::DataType& dtype, unsigned int const& dstBufferSize,
@@ -255,9 +165,17 @@ public:
                             const ITexture::DataFormat& dformat, const ITexture::DataType& dtype,
                             class IGPUBuffer* buffer) = 0;
 
+    /**  If ARB_bindless_texture or NV_bindless_texture is supported (mr::gl::IsBindlessTextureSupported),
+        Texture is locked by MakeTextureHandleResident. **/
     virtual bool Complete(bool mipMaps) = 0;
 
     virtual bool UpdateInfo() = 0;
+
+    //ARB_bindless_texture or NV_bindless_texture should be supported
+    virtual bool GetResidentHandle(uint64_t& out) = 0;
+
+    ///Unlock texture, before massive changes (e.g. SetData)
+    virtual void MakeNonResident() = 0;
 
     /* GPUObjectHandle */
     //virtual unsigned int GetGPUHandle();
@@ -267,6 +185,8 @@ public:
     //void Destroy();
 
     virtual ~ITexture() {}
+protected:
+    virtual bool Create(const ITexture::Types& type) = 0;
 };
 
 class ITextureBindList {

@@ -60,12 +60,12 @@
 			<Add directory="C:/Libs/assimp-3.1.1-win-binaries/mingw_build" />
 			<Add directory="C:/TDM-GCC-64/lib" />
 		</Linker>
+		<Unit filename="Buffers/BufferManager.cpp" />
+		<Unit filename="Buffers/BufferManager.hpp" />
 		<Unit filename="Buffers/Buffers.cpp" />
 		<Unit filename="Buffers/Buffers.hpp" />
 		<Unit filename="Buffers/BuffersConfig.hpp" />
 		<Unit filename="Buffers/BuffersInterfaces.hpp" />
-		<Unit filename="Buffers/BuffersManager.cpp" />
-		<Unit filename="Buffers/BuffersManager.hpp" />
 		<Unit filename="Buffers/VirtualBuffer.cpp" />
 		<Unit filename="Buffers/VirtualBuffer.hpp" />
 		<Unit filename="BuildConfig.hpp" />
@@ -164,6 +164,8 @@
 		<Unit filename="StateCache.hpp" />
 		<Unit filename="Textures/TextureInterfaces.cpp" />
 		<Unit filename="Textures/TextureInterfaces.hpp" />
+		<Unit filename="Textures/TextureManager.cpp" />
+		<Unit filename="Textures/TextureManager.hpp" />
 		<Unit filename="Textures/TextureObjects.cpp" />
 		<Unit filename="Textures/TextureObjects.hpp" />
 		<Unit filename="Textures/TextureSettings.cpp" />

@@ -161,11 +161,11 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
 
             material->GetTexture(textureType, 0, &colorTexturePath, &colorTextureMapping, &colorTextureUvIndex, &colorTextureBlend, &colorTextureOp, &colorTextureMapMode);
             matDescr.texColor = std::string(&colorTexturePath.data[0], colorTexturePath.length);
-            matDescr.texColorWrapMode = mr::ITextureSettings::Wrap_REPEAT;
-            if(colorTextureMapMode == aiTextureMapMode_Wrap) matDescr.texColorWrapMode = mr::ITextureSettings::Wrap_REPEAT;
-            if(colorTextureMapMode == aiTextureMapMode_Clamp) matDescr.texColorWrapMode = mr::ITextureSettings::Wrap_CLAMP;
-            if(colorTextureMapMode == aiTextureMapMode_Decal) matDescr.texColorWrapMode = mr::ITextureSettings::Wrap_DECAL;
-            if(colorTextureMapMode == aiTextureMapMode_Mirror) matDescr.texColorWrapMode = mr::ITextureSettings::Wrap_MIRRORED_REPEAT;
+            matDescr.texColorWrapMode = mr::TextureSettings::Wrap_REPEAT;
+            if(colorTextureMapMode == aiTextureMapMode_Wrap) matDescr.texColorWrapMode = mr::TextureSettings::Wrap_REPEAT;
+            else if(colorTextureMapMode == aiTextureMapMode_Clamp) matDescr.texColorWrapMode = mr::TextureSettings::Wrap_CLAMP;
+            else if(colorTextureMapMode == aiTextureMapMode_Decal) matDescr.texColorWrapMode = mr::TextureSettings::Wrap_DECAL;
+            else if(colorTextureMapMode == aiTextureMapMode_Mirror) matDescr.texColorWrapMode = mr::TextureSettings::Wrap_MIRRORED_REPEAT;
         }
 
         auto newMat = new mr::DefaultMaterial();
@@ -187,6 +187,8 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
     size_t debugIndeciesNum = 0;
 
     //Process geometry
+    GeomDataTypePtr float_DataType = std::make_shared<GeomDataType>(GeomDataType::Float, sizeof(float));
+    GeomDataTypePtr uint_DataType = std::make_shared<GeomDataType>(GeomDataType::UInt, sizeof(unsigned int));
     progressInfo.totalMeshes = scene->mNumMeshes;
     for(unsigned int i = 0; i < scene->mNumMeshes; ++i) {
         aiMesh* mesh = scene->mMeshes[i];
@@ -205,36 +207,38 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
             if(bAttrib[attr_i]) ++attributesNum;
         }
 
-        VertexFormatCustomFixed vertexFormat;
-        vertexFormat.SetAttributesNum(attributesNum);
+        VertexFormatPtr vertexFormatPtr = std::make_shared<VertexFormat>();
+        vertexFormatPtr->attributes = mu::ArrayHandle<VertexAttribute>(new VertexAttribute[attributesNum], attributesNum, true, false);
+        vertexFormatPtr->pointers = mu::ArrayHandle<uint64_t>(new uint64_t[attributesNum], attributesNum, true, false);
+        vertexFormatPtr->attribsNum = attributesNum;
 
         {
             size_t attr_index = 0;
             if(bAttrib[0]) {
-                vertexFormat.SetVertexAttribute(VertexAttributeCustom(3, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION).Cache(), attr_index);
+                vertexFormatPtr->SetAttribute(std::make_shared<VertexAttributeDesc>(3, sizeof(float)*3, MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION, 0, float_DataType), attr_index);
                 attr_index++;
             }
             if(bAttrib[1]) {
-                vertexFormat.SetVertexAttribute(VertexAttributeCustom(3, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION).Cache(), attr_index);
+                vertexFormatPtr->SetAttribute(std::make_shared<VertexAttributeDesc>(3, sizeof(float)*3, MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION, 0, float_DataType), attr_index);
                 attr_index++;
             }
             if(bAttrib[2]) {
-                vertexFormat.SetVertexAttribute(VertexAttributeCustom(4, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION).Cache(), attr_index);
+                vertexFormatPtr->SetAttribute(std::make_shared<VertexAttributeDesc>(4, sizeof(float)*4, MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION, 0, float_DataType), attr_index);
                 attr_index++;
             }
             if(bAttrib[3]) {
-                vertexFormat.SetVertexAttribute(VertexAttributeCustom(2, &VertexDataTypeFloat::GetInstance(), MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION).Cache(), attr_index);
+                vertexFormatPtr->SetAttribute(std::make_shared<VertexAttributeDesc>(2, sizeof(float)*2, MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION, 0, float_DataType), attr_index);
                 attr_index++;
             }
         }
 
-        vertexFormat.Complete();
+        vertexFormatPtr->Complete();
 
         ///Create index format
-        IndexFormatCustom indexFormat(&VertexDataTypeUInt::GetInstance());
+        IndexFormatPtr indexFormatPtr = std::make_shared<IndexFormat>(uint_DataType);
 
         ///Pack vertex data
-        mu::ArrayRef<uint64_t> vertexOffsetsRef = vertexFormat.GetOffsets();
+        mu::ArrayHandle<uint64_t> const& vertexOffsetsRef = vertexFormatPtr->pointers;
         uint64_t* vertexOffsets = vertexOffsetsRef.GetArray();
         size_t vertexOffsets_attribs_map[4] = {0,0,0,0};
 
@@ -245,10 +249,10 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
             }
         }
 
-        size_t vertexDataSize = mesh->mNumVertices * vertexFormat.GetSize();
+        size_t vertexDataSize = mesh->mNumVertices * vertexFormatPtr->size;
         unsigned char * vertexData = new unsigned char [vertexDataSize];
         for(size_t it = 0; it < mesh->mNumVertices; ++it) {
-            const size_t vertexOffset = vertexFormat.GetSize() * it;
+            const size_t vertexOffset = vertexFormatPtr->size * it;
 
             {
                 aiVector3D pos = mesh->mVertices[it];
@@ -274,8 +278,8 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
         ///Make geometry
         debugVerticiesNum += mesh->mNumVertices;
         debugIndeciesNum += mesh->mNumFaces;
-        _impl->_geoms.At(i) = mr::GeometryManager::GetInstance()->PlaceGeometry(vertexFormat.Cache(), &vertexData[0], mesh->mNumVertices,
-                                                                                indexFormat.Cache(), &indexData[0], mesh->mNumFaces*3,
+        _impl->_geoms.At(i) = mr::GeometryManager::GetInstance()->PlaceGeometry(vertexFormatPtr, &vertexData[0], mesh->mNumVertices,
+                                                                                indexFormatPtr, &indexData[0], mesh->mNumFaces*3,
                                                                                 mr::IGPUBuffer::Usage::Static, mr::IGeometryBuffer::DrawMode::Triangles);
 
         delete [] vertexData;

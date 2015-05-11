@@ -11,89 +11,17 @@
 
 namespace mr {
 
-class IVertexDataType {
-public:
-    enum DefaultDataType {
-        Int = 0x1404,
-        UInt = 0x1405,
-        Float = 0x1406
-    };
+struct GeomDataType;
+struct VertexAttributeDesc;
+struct VertexAttribute;
+struct VertexFormat;
+struct IndexFormat;
 
-    virtual bool IsEqual(IVertexDataType*) const = 0;
-    virtual unsigned int GetSize() const = 0; //one element of this data type size in bytes
-    virtual unsigned int GetDataTypeGL() const = 0; //opengl data type
-    virtual bool IsCached() const = 0;
-
-    virtual ~IVertexDataType() {}
-};
-
-class IVertexAttribute {
-public:
-    enum DefaultShaderIndex {
-        Position = MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION,
-        Normal = MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION,
-        Color = MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION,
-        TexCoord = MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION
-    };
-
-    virtual bool IsEqual(IVertexAttribute*) const = 0;
-    virtual unsigned int GetByteSize() const = 0; //one attrib size in bytes
-    virtual unsigned int GetElementsNum() const = 0; //num of elements used in attribute
-    virtual IVertexDataType* GetDataType() const  = 0;
-    virtual unsigned int GetShaderIndex() const = 0;
-
-    //Instancing
-    //Update this attribute in shader every (GetDivisor) instance
-    virtual unsigned int GetDivisor() const = 0;
-    virtual void SetDivisor(unsigned int const& divisor) = 0;
-
-    virtual ~IVertexAttribute() {}
-};
-
-class IVertexFormat {
-public:
-    virtual bool IsEqual(IVertexFormat*) const = 0;
-    virtual unsigned int GetSize() const = 0; //one vertex size in bytes
-    virtual bool Bind() const = 0;
-    virtual void UnBind() const = 0;
-
-    virtual mu::ArrayRef<IVertexAttribute*> GetAttributes() = 0;
-    virtual mu::ArrayRef<uint64_t> GetOffsets() = 0; //offsets of each attributes from starting point of vertex in bytes
-
-    virtual ~IVertexFormat() {}
-};
-
-class IIndexFormat {
-public:
-    virtual bool IsEqual(IIndexFormat*) const = 0;
-    virtual unsigned int GetSize() const = 0; //one index size in bytes
-    virtual void SetDataType(IVertexDataType* dataType) = 0;
-    virtual IVertexDataType* GetDataType() const = 0;
-    virtual bool Bind() const = 0;
-    virtual void UnBind() const = 0;
-
-    virtual ~IIndexFormat() {}
-};
-
-//When buffered is true, data may be deleted
-class VertexData {
-public:
-    unsigned int drawMode = 0;
-    IVertexFormat* vertexFormat = nullptr;
-    size_t dataSize = 0;
-    void* data = nullptr;
-    volatile bool buffered = false;
-};
-
-//When buffered is true, data may be deleted
-class IndexData {
-public:
-    unsigned int drawMode = 0;
-    IIndexFormat* indexFormat = nullptr;
-    size_t dataSize = 0;
-    void* data = nullptr;
-    volatile bool buffered = false;
-};
+typedef std::shared_ptr<GeomDataType> GeomDataTypePtr;
+typedef std::shared_ptr<VertexAttributeDesc> VertexAttributeDescPtr;
+typedef std::shared_ptr<VertexAttribute> VertexAttributePtr;
+typedef std::shared_ptr<VertexFormat> VertexFormatPtr;
+typedef std::shared_ptr<IndexFormat> IndexFormatPtr;
 
 class IGeometryBuffer {
 public:
@@ -107,12 +35,12 @@ public:
     struct CreationParams {
     public:
         IGPUBuffer* vb = nullptr,* ib = nullptr;
-        IVertexFormat* fv = nullptr;
-        IIndexFormat* fi = nullptr;
+        VertexFormatPtr fv = nullptr;
+        IndexFormatPtr fi = nullptr;
         IGeometryBuffer::DrawMode drawMode = DrawMode::Triangles;
 
         CreationParams() {}
-        CreationParams(IGPUBuffer* vb_, IGPUBuffer* ib_, IVertexFormat* fv_, IIndexFormat* fi_, IGeometryBuffer::DrawMode drawMode_) :
+        CreationParams(IGPUBuffer* vb_, IGPUBuffer* ib_, VertexFormatPtr fv_, IndexFormatPtr fi_, IGeometryBuffer::DrawMode drawMode_) :
             vb(vb_), ib(ib_), fv(fv_), fi(fi_), drawMode(drawMode_) {}
     };
 
@@ -134,12 +62,12 @@ public:
     virtual void SetDrawMode(const DrawMode& dm) = 0;
     virtual DrawMode GetDrawMode() const = 0;
 
-    virtual void SetFormat(IVertexFormat* f, IIndexFormat* fi) = 0;
-    virtual IVertexFormat* GetVertexFormat() const = 0;
-    virtual IIndexFormat* GetIndexFormat() const = 0;
+    virtual void SetFormat(VertexFormatPtr f, IndexFormatPtr fi) = 0;
+    virtual VertexFormatPtr GetVertexFormat() const = 0;
+    virtual IndexFormatPtr GetIndexFormat() const = 0;
 
-    virtual void SetAttribute(IVertexAttribute* attrib, IGPUBuffer* buf) = 0;
-    virtual IGPUBuffer* GetAttribute(IVertexAttribute* attrib) = 0;
+    virtual void SetAttribute(VertexAttribute const& attrib, IGPUBuffer* buf) = 0;
+    virtual IGPUBuffer* GetAttribute(VertexAttribute const& attrib) = 0;
 };
 
 class IGeometryDrawParams {

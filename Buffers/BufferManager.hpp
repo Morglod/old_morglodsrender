@@ -7,15 +7,15 @@
 
 namespace mr {
 
-class GPUBuffersManager : public mu::StaticSingleton<GPUBuffersManager> {
+class GPUBufferManager : public mu::StaticSingleton<GPUBufferManager> {
 public:
     IGPUBuffer* CreateBuffer(IGPUBuffer::Usage const& usage, size_t const& size);
     inline size_t GetUsedGPUMemory() { return _usedMem; }
 
     void DestroyAllBuffers();
 
-    GPUBuffersManager();
-    virtual ~GPUBuffersManager();
+    GPUBufferManager();
+    virtual ~GPUBufferManager();
 private:
     void _RegisterBuffer(IGPUBuffer* buf);
     void _UnRegisterBuffer(IGPUBuffer* buf);

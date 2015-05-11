@@ -3,6 +3,8 @@
 
 #include "../Utils/Log.hpp"
 
+#include "../Types.hpp"
+
 #include <SOIL.h>
 
 namespace mr {
@@ -19,6 +21,11 @@ IImagePtr ImageLoaderSOIL::Load(std::string const& path, Options const& options)
 
     if(data == 0) {
         mr::Log::LogString("Failed ImageLoaderSOIL::Load(). SOIL_load_image failed. SOIL: \"" + std::string(SOIL_last_result()) + "\"", MR_LOG_LEVEL_ERROR);
+        return nullptr;
+    }
+
+    if(width == 0) {
+        mr::Log::LogString("Failed ImageLoaderSOIL::Load(). width == 0. SOIL: \"" + std::string(SOIL_last_result()) + "\"", MR_LOG_LEVEL_ERROR);
         return nullptr;
     }
 

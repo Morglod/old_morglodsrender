@@ -293,6 +293,13 @@ const bool IsTextureStorageSupported() {
     return (bool)state;
 }
 
+const bool IsBindlessTextureSupported(bool& out_ARB) {
+    static bool stateARB = GLEW_ARB_bindless_texture;
+    static bool state = GLEW_ARB_bindless_texture || GLEW_NV_bindless_texture;
+    out_ARB = stateARB;
+    return state;
+}
+
 bool CheckError(std::string* errorOutput, int * glCode){
     GLenum er = glGetError();
     if(glCode) *glCode = er;

@@ -11,8 +11,8 @@ namespace mr {
 
 class GeometryManager : public mu::Singleton<GeometryManager> {
 public:
-    IGeometry* PlaceGeometry(IVertexFormat* vertexFormat, void* vertexData, const size_t& vertexNum,
-                             IIndexFormat* indexFormat, void* indexData, const size_t& indexNum,
+    IGeometry* PlaceGeometry(VertexFormatPtr const& vertexFormat, void* vertexData, const size_t& vertexNum,
+                             IndexFormatPtr const& indexFormat, void* indexData, const size_t& indexNum,
                              const IGPUBuffer::Usage& usage, const IGeometryBuffer::DrawMode& drawMode);
 
     inline bool GetBufferPerGeometry() { return _buffer_per_geom; }
@@ -32,14 +32,14 @@ protected:
     bool _buffer_per_geom;
 
     struct VertexFormatBuffer {
-        IVertexFormat* format;
+        VertexFormatPtr format;
         mr::IGPUBuffer::Usage usage;
         mr::VirtualGPUBufferManager* manager; //when memory is totally used, manager will be deleted.
         mr::IGPUBuffer* buffer; //ptr to real buffer
     };
 
     struct IndexFormatBuffer {
-        IIndexFormat* format;
+        IndexFormatPtr format;
         mr::IGPUBuffer::Usage usage;
         mr::VirtualGPUBufferManager* manager; //when memory is totally used, manager will be deleted.
         mr::IGPUBuffer* buffer; //ptr to real buffer
@@ -48,8 +48,8 @@ protected:
     std::vector<VertexFormatBuffer> _vertex_buffers;
     std::vector<IndexFormatBuffer> _index_buffers;
 
-    VertexFormatBuffer* _RequestVFBuffer(IVertexFormat* format, size_t const& dataSize, IGPUBuffer::Usage const& usage);
-    IndexFormatBuffer* _RequestIFBuffer(IIndexFormat* format, size_t const& dataSize, IGPUBuffer::Usage const& usage);
+    VertexFormatBuffer* _RequestVFBuffer(VertexFormatPtr const& format, size_t const& dataSize, IGPUBuffer::Usage const& usage);
+    IndexFormatBuffer* _RequestIFBuffer(IndexFormatPtr const& format, size_t const& dataSize, IGPUBuffer::Usage const& usage);
 };
 
 }

@@ -72,6 +72,7 @@ namespace gl {
     const bool IsNVVBUMSupported(); //direct access to gpu's addresses (for vertex buffers)
     const bool IsIndirectDrawSupported();
     const bool IndirectDraw_UseGPUBuffer();
+    const bool IsBindlessTextureSupported(bool& out_ARB);
 
     bool CheckError(std::string* errorOutput, int* glCode); //return true on error and print error's description in string; errorOutput and glCode can be nullptr
     void ClearError(); //set error status to no_error

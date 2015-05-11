@@ -47,6 +47,10 @@ namespace {
 }
 
 void StateCache::ResetCache() {
+    //Clear
+    _ubos.clear();
+    _transformFeedbacks.clear();
+
     //Buffers
     _buffers = mu::ArrayHandle<IGPUBuffer*>(new IGPUBuffer*[MR_BUFFERS_BIND_TARGETS_NUM], MR_BUFFERS_BIND_TARGETS_NUM, true);
     for(size_t i = 0; i < MR_BUFFERS_BIND_TARGETS_NUM; ++i) _buffers.GetArray()[i] = nullptr;
@@ -61,19 +65,19 @@ void StateCache::ResetCache() {
     }
 
     _textures = mu::ArrayHandle<mr::ITexture*>(new mr::ITexture*[textureUnits], textureUnits, true);
-    _textureSettings = mu::ArrayHandle<mr::ITextureSettings*>(new mr::ITextureSettings*[textureUnits], textureUnits, true);
+    _textureSettings = mu::ArrayHandle<mr::TextureSettings*>(new mr::TextureSettings*[textureUnits], textureUnits, true);
 
     ITexture** texturesArray = _textures.GetArray();
-    ITextureSettings** textureSettingsArray = _textureSettings.GetArray();
+    TextureSettings** textureSettingsArray = _textureSettings.GetArray();
 
     for(int i = 0; i < textureUnits; ++i){
         texturesArray[i] = nullptr;
         textureSettingsArray[i] = nullptr;
     }
 
-    //Clear
-    _ubos.clear();
-    _transformFeedbacks.clear();
+    //VertexFormat
+    size_t maxVertexAttribs = 16;
+    _vertexAttributes = mu::ArrayHandle<VertexAttribute>(new VertexAttribute[maxVertexAttribs], maxVertexAttribs, true, false);
 }
 
 bool StateCache::ReBindBuffers() {
@@ -112,7 +116,7 @@ bool StateCache::ReBindTransformFeedbacks() {
 bool StateCache::ReBindTextures() {
 	const size_t num = _textures.GetNum();
     ITexture** texArray = _textures.GetArray();
-    ITextureSettings** texSetArray = _textureSettings.GetArray();
+    TextureSettings** texSetArray = _textureSettings.GetArray();
 
 	if(num == 0) return true;
 
@@ -274,7 +278,7 @@ bool StateCache::BindTexture(ITexture* texture, unsigned int const& unit) {
         glActiveTexture(actived_tex);
     }
 
-    mr::ITextureSettings* ts = (texture != nullptr) ? texture->GetSettings() : nullptr;
+    mr::TextureSettings* ts = (texture != nullptr) ? texture->GetSettings() : nullptr;
     _textures.GetArray()[unit] = texture;
     _textureSettings.GetArray()[unit] = ts;
     glBindSampler(unit, (ts) ? ts->GetGPUHandle() : 0);
@@ -290,7 +294,7 @@ ITexture* StateCache::GetBindedTexture(unsigned int const& unit) {
     return _textures.GetArray()[unit];
 }
 
-ITextureSettings* StateCache::GetBindedTextureSettings(unsigned int const& unit) {
+TextureSettings* StateCache::GetBindedTextureSettings(unsigned int const& unit) {
     if(unit >= _textureSettings.GetNum()) {
         mr::Log::LogString("Trying to get " + std::to_string(unit) + " texture unit. Bigger than max ("+ std::to_string(_textureSettings.GetNum())+") texture unit. StateCache::GetBindedTextureSettings.", MR_LOG_LEVEL_ERROR);
         return nullptr;
@@ -390,26 +394,74 @@ IShaderProgram* StateCache::GetShaderProgram() {
     return _shaderProgram;
 }
 
-bool StateCache::SetVertexFormat(IVertexFormat* format) {
-    if(_vertexFormat && _vertexFormat->IsEqual(format)) return true;
+bool StateCache::SetVertexFormat(VertexFormatPtr const& format) {
+    if(format == _vertexFormat) return true;
+    bool result = true;
+    if(format == nullptr) {
+        for(size_t i = 0; i < _vertexAttributes.GetNum(); ++i) {
+            UnBindVertexAttribute(i);
+        }
+        if(mr::gl::IsNVVBUMSupported()){
+            glDisableClientState(GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
+        }
+    }
+    if(format->Equal(_vertexFormat.get())) return true;
+    //Bind
+    for(size_t i = 0; i < format->attribsNum; ++i) {
+        result = result && BindVertexAttribute(format->attributes.GetArray()[i], format->size);
+    }
+    //UnBind from last format if any
+    if(_vertexFormat != nullptr) {
+        for(size_t i = format->attribsNum; i < (format->attribsNum - _vertexFormat->attribsNum); ++i) {
+            UnBindVertexAttribute(i);
+        }
+    }
     _vertexFormat = format;
-    if(format) return format->Bind();
-    return true;
+    return result;
 }
 
-IVertexFormat* StateCache::GetVertexFormat() {
+VertexFormatPtr StateCache::GetVertexFormat() {
     return _vertexFormat;
 }
 
-bool StateCache::SetIndexFormat(IIndexFormat* format) {
-    if(_indexFormat && _indexFormat->IsEqual(format)) return true;
+bool StateCache::SetIndexFormat(IndexFormatPtr const& format) {
+    if(_indexFormat && _indexFormat->Equal(format.get())) return true;
     _indexFormat = format;
-    if(format) return format->Bind();
+
+    if(mr::gl::IsNVVBUMSupported()){
+        if(format)  glEnableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
+        else        glDisableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
+    }
     return true;
 }
 
-IIndexFormat* StateCache::GetIndexFormat() {
+IndexFormatPtr StateCache::GetIndexFormat() {
     return _indexFormat;
+}
+
+//TODO: assert for _vertexAttributes index
+
+bool StateCache::BindVertexAttribute(VertexAttribute const& attribute, unsigned int const& vertexSize) {
+    const unsigned int index = attribute.desc->shaderIndex;
+    if(attribute.Equal(_vertexAttributes.GetArray()[index])) return true;
+    if(mr::gl::IsNVVBUMSupported()) {
+        glVertexAttribFormatNV(index, (int) attribute.desc->elementsNum, attribute.desc->dataType->dataTypeGL, GL_FALSE, vertexSize);
+        glEnableVertexAttribArray(index);
+        glVertexAttribDivisor(index, attribute.desc->divisor);
+        glEnableClientState(GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
+    }
+    else {
+        glVertexAttribPointer(index, (int) attribute.desc->elementsNum, attribute.desc->dataType->dataTypeGL, GL_FALSE, vertexSize, (void*)attribute.offset);
+        glEnableVertexAttribArray(index);
+        glVertexAttribDivisor(index, attribute.desc->divisor);
+    }
+    _vertexAttributes.GetArray()[index] = attribute;
+    return true;
+}
+
+void StateCache::UnBindVertexAttribute(unsigned int const& index) {
+    glDisableVertexAttribArray(index);
+    _vertexAttributes.GetArray()[index] = VertexAttribute();
 }
 
 bool StateCache::SetVertexBuffer(IGPUBuffer* buf) {
@@ -417,7 +469,7 @@ bool StateCache::SetVertexBuffer(IGPUBuffer* buf) {
     return true;
 }
 
-bool StateCache::SetVertexBuffer(IGPUBuffer* buf, IVertexFormat* format) {
+bool StateCache::SetVertexBuffer(IGPUBuffer* buf, VertexFormatPtr const& format) {
     return SetVertexFormat(format) && SetVertexBuffer(buf);
 }
 
@@ -430,7 +482,7 @@ bool StateCache::SetIndexBuffer(IGPUBuffer* buf) {
     return true;
 }
 
-bool StateCache::SetIndexBuffer(IGPUBuffer* buf, IIndexFormat* format) {
+bool StateCache::SetIndexBuffer(IGPUBuffer* buf, IndexFormatPtr const& format) {
     return SetIndexFormat(format) && SetIndexBuffer(buf);
 }
 

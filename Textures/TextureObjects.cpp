@@ -14,8 +14,6 @@
 #   include <GL\glew.h>
 #endif
 
-mr::TDynamicArray<mr::ITexture*> _MR_REGISTERED_TEXTURES_;
-
 unsigned int MR_TEXTURE_TARGET2[]{
     GL_TEXTURE_1D,
     GL_TEXTURE_2D,
@@ -68,9 +66,9 @@ bool Texture::Create(ITexture::Types const& type) {
 bool Texture::GetData(const int& mipMapLevel,
                 const ITexture::DataFormat& dformat, const ITexture::DataType& dtype, unsigned int const& dstBufferSize,
                 void* dstBuffer) {
-    Assert(GetGPUHandle() != 0);
-    Assert(dstBufferSize != 0);
-    Assert(dstBuffer != nullptr);
+    Assert(GetGPUHandle() == 0);
+    Assert(dstBufferSize == 0);
+    Assert(dstBuffer == nullptr);
 
     if(mr::gl::IsOpenGL45()) {
         glGetTextureImage(GetGPUHandle(), mipMapLevel, (int)dformat, (int)dtype, dstBufferSize, dstBuffer);
@@ -96,10 +94,7 @@ bool mr::Texture::SetData(const int& mipMapLevel,
                          const ITexture::DataFormat& dformat, const ITexture::DataType& dtype, const ITexture::StorageDataFormat& sdFormat,
                          const int& width, const int& height, const int& depth,
                          void* data) {
-    Assert(GetGPUHandle() != 0);
-    Assert(width > 0);
-    Assert(data != nullptr);
-
+    Assert(GetGPUHandle() == 0);
 
     if(GLEW_EXT_direct_state_access) {
         unsigned int handle = GetGPUHandle();
@@ -147,9 +142,9 @@ bool Texture::UpdateData(const int& mipMapLevel,
                             const int& width, const int& height, const int& depth,
                             const ITexture::DataFormat& dformat, const ITexture::DataType& dtype,
                             void* data) {
-    Assert(GetGPUHandle() != 0);
-    Assert(width > 0);
-    Assert(xOffset > 0);
+    Assert(GetGPUHandle() == 0);
+    Assert(width == 0);
+    Assert(xOffset == 0);
 
 
     if(mr::gl::IsOpenGL45()) {
@@ -262,7 +257,28 @@ bool mr::Texture::Complete(bool mipMaps) {
 
     UpdateInfo();
 
+    bool arb_bindless = false;
+    if(mr::gl::IsBindlessTextureSupported(arb_bindless)) {
+        if(arb_bindless) {
+            _residentHandle = glGetTextureHandleARB(handle);
+            glMakeTextureHandleResidentARB(_residentHandle);
+        }
+        else {
+            _residentHandle = glGetTextureHandleNV(handle);
+            glMakeTextureHandleResidentNV(_residentHandle);
+        }
+    }
+
     return true;
+}
+
+void Texture::MakeNonResident() {
+    bool arb_bindless = false;
+    if(mr::gl::IsBindlessTextureSupported(arb_bindless)) {
+        if(arb_bindless) glMakeTextureHandleNonResidentARB(_residentHandle);
+        else glMakeTextureHandleNonResidentNV(_residentHandle);
+    }
+    _residentHandle = 0;
 }
 
 bool Texture::UpdateInfo() {
@@ -364,6 +380,7 @@ bool Texture::UpdateInfo() {
 }
 
 void mr::Texture::Destroy() {
+    MakeNonResident();
     unsigned int handle = GetGPUHandle();
     if(handle != 0) {
         glDeleteTextures(1, &handle);
@@ -372,11 +389,9 @@ void mr::Texture::Destroy() {
 }
 
 mr::Texture::Texture() {
-    _MR_REGISTERED_TEXTURES_.PushBack(dynamic_cast<ITexture*>(this));
 }
 
 mr::Texture::~Texture() {
-    _MR_REGISTERED_TEXTURES_.Erase(dynamic_cast<ITexture*>(this));
 }
 
 void mr::TextureBindList::Bind() {
@@ -400,7 +415,7 @@ void mr::TextureBindList::Bind() {
 
 void mr::TextureBindList::SetTexture(ITexture* tex, unsigned short const& index) {
     const size_t num = _textures.GetNum();
-    Assert(index < num)
+    Assert(index >= num)
     _textures.GetArray()[index] = tex;
     if(tex == nullptr) {
         _gpuHandles.GetArray()[index] = _gpuHandles.GetArray()[index + num] = 0;
@@ -424,58 +439,6 @@ void mr::TextureBindList::SetTextures(mu::ArrayHandle<ITexture*> tex) {
         _gpuHandles = mu::ArrayHandle<unsigned int>(handles, texNum * 2);
     } else {
         _gpuHandles = mu::ArrayHandle<unsigned int>();
-    }
-}
-
-ITexture* Texture::FromFile(std::string const& path) {
-    Texture* tex = new Texture();
-
-	const unsigned int handle =
-		SOIL_load_OGL_texture(	path.c_str(),
-                               SOIL_LOAD_AUTO,
-                               SOIL_CREATE_NEW_ID,
-                               SOIL_FLAG_MIPMAPS);
-
-	if(handle == 0) return nullptr;
-	tex->SetGPUHandle(handle);
-	tex->_texture_type = mr::ITexture::Base2D;
-	tex->Complete(true);
-	return dynamic_cast<mr::ITexture*>(tex);
-}
-
-float * __MR_CHECKER_NEW_IMAGE_(size_t const& sizes, float c) {
-    float * pixel_data = new float [sizes*sizes];
-    for(size_t i = 0; i < (sizes*sizes); ++i){
-        pixel_data[i] = c;
-    }
-    return pixel_data;
-}
-
-ITexture* Texture::CreateMipmapChecker() {
-    ITexture* tex = dynamic_cast<ITexture*>(new mr::Texture());
-    tex->Create(Base2D);
-
-    if(tex->GetGPUHandle() == 0) {
-        delete tex;
-        return nullptr;
-    }
-
-    for(int i = 0; i < 10; ++i) {
-        int sz = glm::pow(2, 10-i);
-        float* data = __MR_CHECKER_NEW_IMAGE_(sz, (float)(10-i) * 0.1f);
-        mr::Log::LogString(std::to_string((float)(10-i) * 0.1f));
-        tex->SetData(i, ITexture::DF_RED, ITexture::DT_FLOAT, ITexture::SDF_RGB, sz, sz, 0, &data[0]);
-        delete [] data;
-    }
-
-    tex->Complete(false);
-
-    return tex;
-}
-
-void DestroyAllTextures() {
-    for(size_t i = 0; i < _MR_REGISTERED_TEXTURES_.GetNum(); ++i) {
-        _MR_REGISTERED_TEXTURES_.At(i)->Destroy();
     }
 }
 

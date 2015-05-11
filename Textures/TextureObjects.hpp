@@ -18,8 +18,8 @@ public:
 
     inline Types GetType() override { return _texture_type; }
 
-    inline ITextureSettings* GetSettings() override { return _settings; }
-    inline void SetSettings(ITextureSettings* ts) override { _settings = ts; }
+    inline TextureSettings* GetSettings() override { return _settings; }
+    inline void SetSettings(TextureSettings* ts) override { _settings = ts; }
 
     inline size_t GetGPUMem() override { return _mem_size; }
 
@@ -51,11 +51,15 @@ public:
 
     void Destroy() override;
 
+    inline bool GetResidentHandle(uint64_t& out) override {
+        out = _residentHandle;
+        return (_residentHandle != 0);
+    }
+
+    void MakeNonResident() override;
+
     Texture();
     virtual ~Texture();
-
-    static ITexture* FromFile(std::string const& path);
-    static ITexture* CreateMipmapChecker();
 
 protected:
     mu::ArrayHandle<TextureSizeInfo> _sizes;
@@ -63,10 +67,11 @@ protected:
     size_t _mem_size;
     unsigned int _data_storage_format = 0;
     bool _compressed = false;
-    ITextureSettings* _settings = nullptr;
+    TextureSettings* _settings = nullptr;
     ITexture::CompressionMode _compression_mode;
     Types _texture_type;
     bool _mipmaps = false;
+    uint64_t _residentHandle = 0;
 };
 
 class TextureBindList : public ITextureBindList {
@@ -83,8 +88,6 @@ protected:
     mu::ArrayHandle<ITexture*> _textures;
     mu::ArrayHandle<unsigned int> _gpuHandles; // [_textures.GetNum()*2]{ texutre handles, sampler handles }
 };
-
-void DestroyAllTextures();
 
 }
 

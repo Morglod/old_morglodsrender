@@ -1,17 +1,18 @@
 #include "GeometryManager.hpp"
 
-#include "../Buffers/BuffersManager.hpp"
+#include "../Buffers/BufferManager.hpp"
 #include "GeometryBuffer.hpp"
 #include "GeometryObject.hpp"
 #include "GeometryDrawParams.hpp"
+#include "GeometryFormats.hpp"
 
 namespace mr {
 
 template<>
 mr::GeometryManager * mu::Singleton<mr::GeometryManager>::_singleton_instance = nullptr;
 
-IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* vertexData, const size_t& vertexNum,
-                             IIndexFormat* indexFormat, void* indexData, const size_t& indexNum,
+IGeometry* GeometryManager::PlaceGeometry(VertexFormatPtr const& vertexFormat, void* vertexData, const size_t& vertexNum,
+                             IndexFormatPtr const& indexFormat, void* indexData, const size_t& indexNum,
                              const IGPUBuffer::Usage& usage, const IGeometryBuffer::DrawMode& drawMode) {
     AssertAndExec(vertexFormat != nullptr, return nullptr);
     AssertAndExec(vertexData != nullptr, return nullptr);
@@ -21,11 +22,11 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
         AssertAndExec(indexNum != 0, return nullptr);
     }
 
-    const size_t vertexDataSize = vertexNum * vertexFormat->GetSize();
-    const size_t indexDataSize = (indexFormat) ? (indexNum * indexFormat->GetSize()) : 0;
+    const size_t vertexDataSize = vertexNum * vertexFormat->size;
+    const size_t indexDataSize = (indexFormat) ? (indexNum * indexFormat->dataType->size) : 0;
 
     if(_buffer_per_geom) {
-        IGPUBuffer* vertexBuffer = mr::GPUBuffersManager::GetInstance().CreateBuffer(usage, vertexDataSize);
+        IGPUBuffer* vertexBuffer = mr::GPUBufferManager::GetInstance().CreateBuffer(usage, vertexDataSize);
         if(vertexBuffer == nullptr) {
             mr::Log::LogString("Failed GeometryManager::PlaceGeometry. New vertexBuffer is null.", MR_LOG_LEVEL_ERROR);
             return nullptr;
@@ -44,7 +45,7 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
 
         IGPUBuffer* indexBuffer = nullptr;
         if(indexFormat) {
-            indexBuffer = mr::GPUBuffersManager::GetInstance().CreateBuffer(usage, indexDataSize);
+            indexBuffer = mr::GPUBufferManager::GetInstance().CreateBuffer(usage, indexDataSize);
             if(indexBuffer == nullptr) {
                 mr::Log::LogString("Failed GeometryManager::PlaceGeometry. New indexBuffer is null.", MR_LOG_LEVEL_ERROR);
                 return nullptr;
@@ -80,7 +81,7 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
 
         return dynamic_cast<mr::IGeometry*>(
                     new mr::Geometry(
-                        dynamic_cast<mr::IGeometryBuffer*>(geomBuffer), (indexFormat) ? GeometryDrawParams::DrawElements(0, indexDataSize / indexFormat->GetSize(), 0) : GeometryDrawParams::DrawArrays(0, vertexDataSize/vertexFormat->GetSize())
+                        dynamic_cast<mr::IGeometryBuffer*>(geomBuffer), (indexFormat) ? GeometryDrawParams::DrawElements(0, indexDataSize / indexFormat->dataType->size, 0) : GeometryDrawParams::DrawArrays(0, vertexDataSize/vertexFormat->size)
                     )
                 );
     }
@@ -138,15 +139,15 @@ IGeometry* GeometryManager::PlaceGeometry(IVertexFormat* vertexFormat, void* ver
     return dynamic_cast<mr::IGeometry*>(
                 new mr::Geometry(
                     dynamic_cast<mr::IGeometryBuffer*>(geomBuffer),
-                    (indexFormat) ? GeometryDrawParams::DrawElements(bufferedIndexDataInfo.offset / indexFormat->GetSize(), indexNum, bufferedVertexDataInfo.offset / vertexFormat->GetSize()) : GeometryDrawParams::DrawArrays(bufferedVertexDataInfo.offset / vertexFormat->GetSize(), vertexNum)
+                    (indexFormat) ? GeometryDrawParams::DrawElements(bufferedIndexDataInfo.offset / indexFormat->dataType->size, indexNum, bufferedVertexDataInfo.offset / vertexFormat->size) : GeometryDrawParams::DrawArrays(bufferedVertexDataInfo.offset / vertexFormat->size, vertexNum)
                 )
             );
 }
 
-GeometryManager::VertexFormatBuffer* GeometryManager::_RequestVFBuffer(IVertexFormat* vertexFormat, const size_t& vertexDataSize, const IGPUBuffer::Usage& usage) {
+GeometryManager::VertexFormatBuffer* GeometryManager::_RequestVFBuffer(VertexFormatPtr const& vertexFormat, const size_t& vertexDataSize, const IGPUBuffer::Usage& usage) {
 
     for(size_t i = 0; i < _vertex_buffers.size(); ++i) {
-        if(_vertex_buffers[i].format && !_vertex_buffers[i].format->IsEqual(vertexFormat)) continue;
+        if(_vertex_buffers[i].format && !_vertex_buffers[i].format->Equal(vertexFormat.get())) continue;
         if((_vertex_buffers[i].usage == usage) &&
            (_vertex_buffers[i].manager))
         {
@@ -156,7 +157,7 @@ GeometryManager::VertexFormatBuffer* GeometryManager::_RequestVFBuffer(IVertexFo
         }
     }
 
-    IGPUBuffer* gpuBuffer = mr::GPUBuffersManager::GetInstance().CreateBuffer(usage, std::max(vertexDataSize, _max_buffer_size));
+    IGPUBuffer* gpuBuffer = mr::GPUBufferManager::GetInstance().CreateBuffer(usage, std::max(vertexDataSize, _max_buffer_size));
     if(gpuBuffer == nullptr) {
         mr::Log::LogString("Failed GeometryManager::_RequestFormatBuffer. New gpuBuffer is null.", MR_LOG_LEVEL_ERROR);
         return nullptr;
@@ -172,9 +173,9 @@ GeometryManager::VertexFormatBuffer* GeometryManager::_RequestVFBuffer(IVertexFo
     return &_vertex_buffers[_vertex_buffers.size()-1];
 }
 
-GeometryManager::IndexFormatBuffer* GeometryManager::_RequestIFBuffer(IIndexFormat* indexFormat, const size_t& indexDataSize, const IGPUBuffer::Usage& usage) {
+GeometryManager::IndexFormatBuffer* GeometryManager::_RequestIFBuffer(IndexFormatPtr const& indexFormat, const size_t& indexDataSize, const IGPUBuffer::Usage& usage) {
     for(size_t i = 0; i < _index_buffers.size(); ++i) {
-        if(_index_buffers[i].format && !_index_buffers[i].format->IsEqual(indexFormat)) continue;
+        if(_index_buffers[i].format && !_index_buffers[i].format->Equal(indexFormat.get())) continue;
         if((_index_buffers[i].usage == usage) &&
            (_index_buffers[i].manager))
         {
@@ -184,7 +185,7 @@ GeometryManager::IndexFormatBuffer* GeometryManager::_RequestIFBuffer(IIndexForm
         }
     }
 
-    IGPUBuffer* gpuBuffer = mr::GPUBuffersManager::GetInstance().CreateBuffer(usage, std::max(indexDataSize, _max_buffer_size));
+    IGPUBuffer* gpuBuffer = mr::GPUBufferManager::GetInstance().CreateBuffer(usage, std::max(indexDataSize, _max_buffer_size));
     if(gpuBuffer == nullptr) {
         mr::Log::LogString("Failed GeometryManager::_RequestFormatBuffer. New gpuBuffer is null.", MR_LOG_LEVEL_ERROR);
         return nullptr;

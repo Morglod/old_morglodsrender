@@ -3,75 +3,74 @@
 #ifndef _MR_TEXTURE_SETTINGS_H_
 #define _MR_TEXTURE_SETTINGS_H_
 
-#include "TextureInterfaces.hpp"
+#include "../CoreObjects.hpp"
+#include <glm/glm.hpp>
 
 namespace mr {
 
-class TextureSettings : public ITextureSettings {
+class TextureSettings : public IGPUObjectHandle {
+    friend class TextureManager;
 public:
-    ITextureSettings* Copy() override;
+    enum MinFilter : int {
+        MinFilter_NEAREST_MIPMAP_NEAREST = 0x2700,
+        MinFilter_LINEAR_MIPMAP_NEAREST = 0x2701,
+        MinFilter_NEAREST_MIPMAP_LINEAR = 0x2702,
+        MinFilter_LINEAR_MIPMAP_LINEAR = 0x2703,
+        MinFilter_NEAREST = 0x2600,
+        MinFilter_LINEAR = 0x2601
+    };
 
-    void SetLodBias(const float& v) override;
-    void SetBorderColor(float* rgba) override;
-    void SetBorderColor(const float& r, const float& g, const float& b, const float& a) override;
-    void SetMinFilter(const MinFilter& v) override;
-    void SetMagFilter(const MagFilter& v) override;
-    void SetMinLod(const int& v) override;
-    void SetMaxLod(const int& v) override;
-    void SetWrapS(const Wrap& v) override;
-    void SetWrapR(const Wrap& v) override;
-    void SetWrapT(const Wrap& v) override;
-    void SetCompareMode(const CompareMode& v) override;
-    void SetCompareFunc(const CompareFunc& v) override;
+    enum MagFilter : int {
+        MagFilter_NEAREST = 0x2600,
+        MagFilter_LINEAR = 0x2601
+    };
 
-    inline float GetLodBias() override {
-        return _lod_bias;
-    }
-    inline float* GetBorderColor() override {
-        return _border_color;
-    }
-    inline MinFilter GetMinFilter() override {
-        return _min_filter;
-    }
-    inline MagFilter GetMagFilter() override {
-        return _mag_filter;
-    }
-    inline int GetMinLod() override {
-        return _min_lod;
-    }
-    inline int GetMaxLod() override {
-        return _max_lod;
-    }
-    inline Wrap GetWrapS() override {
-        return _wrap_s;
-    }
-    inline Wrap GetWrapR() override {
-        return _wrap_r;
-    }
-    inline Wrap GetWrapT() override {
-        return _wrap_t;
-    }
-    inline CompareMode GetCompareMode() override {
-        return _compare_mode;
-    }
-    inline CompareFunc GetCompareFunc() override {
-        return _compare_func;
-    }
+    enum Wrap : int {
+        Wrap_CLAMP = 0x812F,
+        Wrap_REPEAT = 0x2901,
+        Wrap_MIRRORED_REPEAT = 0x8370,
+        Wrap_DECAL = 0x2101
+    };
 
-    void Create() override;
-    void Destroy() override;
+    enum CompareMode : int {
+        CompareMode_REF_TO_TEXTURE = 0x884E,
+        CompareMode_NONE = 0
+    };
+
+    enum CompareFunc : int {
+        CompareFunc_LEQUAL = 0x0203,
+        CompareFunc_GEQUAL = 0x0206,
+        CompareFunc_LESS = 0x0201,
+        CompareFunc_GREATHER = 0x0204,
+        CompareFunc_EQUAL = 0x0202,
+        CompareFunc_NOTEQUAL = 0x0205,
+        CompareFunc_ALWAYS = 0x0207,
+        CompareFunc_NEVER = 0x0200
+    };
+
+    struct Desc {
+        float lod_bias;
+        glm::vec4 border_color;
+        MinFilter min_filter;
+        MagFilter mag_filter;
+        int lod_min, lod_max;
+        Wrap wrap_s, wrap_r, wrap_t;
+        CompareMode compare_mode;
+        CompareFunc compare_func;
+
+        Desc();
+    };
+
+    virtual bool Set(Desc const& desc);
+    virtual bool Get(Desc* desc);
+
+    virtual void Destroy();
 
     TextureSettings();
     virtual ~TextureSettings();
 protected:
-    float _lod_bias;
-    float _border_color[4];
-    MinFilter _min_filter;
-    MagFilter _mag_filter;
-    int _min_lod, _max_lod;
-    Wrap _wrap_s, _wrap_r, _wrap_t;
-    CompareMode _compare_mode;
-    CompareFunc _compare_func;
+    virtual bool Create();
+    Desc _desc;
 };
 
 }

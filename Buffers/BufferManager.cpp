@@ -1,12 +1,12 @@
-#include "BuffersManager.hpp"
+#include "BufferManager.hpp"
 #include "Buffers.hpp"
 
 namespace mr {
 
 template<>
-mr::GPUBuffersManager mu::StaticSingleton<mr::GPUBuffersManager>::_singleton_instance = mr::GPUBuffersManager();
+mr::GPUBufferManager mu::StaticSingleton<mr::GPUBufferManager>::_singleton_instance = mr::GPUBufferManager();
 
-IGPUBuffer* GPUBuffersManager::CreateBuffer(IGPUBuffer::Usage const& usage, size_t const& size) {
+IGPUBuffer* GPUBufferManager::CreateBuffer(IGPUBuffer::Usage const& usage, size_t const& size) {
     IGPUBuffer* buffer = dynamic_cast<IGPUBuffer*>(new GPUBuffer());
 
     if(!buffer->Allocate(usage, size)) {
@@ -17,7 +17,7 @@ IGPUBuffer* GPUBuffersManager::CreateBuffer(IGPUBuffer::Usage const& usage, size
     class COnGPUBufferAllocated : public mu::Event<IGPUBuffer*, size_t const&>::Listener {
     public:
         void Callback(IGPUBuffer*, size_t const& sz) override {
-            GPUBuffersManager::GetInstance()._usedMem += sz;
+            GPUBufferManager::GetInstance()._usedMem += sz;
         }
 
         COnGPUBufferAllocated() {}
@@ -29,11 +29,11 @@ IGPUBuffer* GPUBuffersManager::CreateBuffer(IGPUBuffer::Usage const& usage, size
         IGPUBuffer* currentBuffer = nullptr;
 
         virtual ~COnGPUBufferDestroy() {
-            GPUBuffersManager::GetInstance()._UnRegisterBuffer(currentBuffer);
+            GPUBufferManager::GetInstance()._UnRegisterBuffer(currentBuffer);
         }
 
         void Callback(IGPUObjectHandle* obj) override {
-            GPUBuffersManager::GetInstance()._usedMem -= currentBuffer->GetGPUMem();
+            GPUBufferManager::GetInstance()._usedMem -= currentBuffer->GetGPUMem();
         }
 
         COnGPUBufferDestroy(IGPUBuffer* curBuf) : currentBuffer(curBuf) {}
@@ -55,23 +55,23 @@ IGPUBuffer* GPUBuffersManager::CreateBuffer(IGPUBuffer::Usage const& usage, size
     return buffer;
 }
 
-void GPUBuffersManager::_RegisterBuffer(IGPUBuffer* buf) {
+void GPUBufferManager::_RegisterBuffer(IGPUBuffer* buf) {
     _buffers.insert(buf);
 }
 
-void GPUBuffersManager::_UnRegisterBuffer(IGPUBuffer* buf) {
+void GPUBufferManager::_UnRegisterBuffer(IGPUBuffer* buf) {
     _buffers.erase(buf);
 }
 
-void GPUBuffersManager::DestroyAllBuffers() {
+void GPUBufferManager::DestroyAllBuffers() {
     for(IGPUBuffer* buf : _buffers) buf->Destroy();
     _buffers.clear();
 }
 
-GPUBuffersManager::GPUBuffersManager() : _usedMem(0) {
+GPUBufferManager::GPUBufferManager() : _usedMem(0) {
 }
 
-GPUBuffersManager::~GPUBuffersManager() {
+GPUBufferManager::~GPUBufferManager() {
     DestroyAllBuffers();
 }
 

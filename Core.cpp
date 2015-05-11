@@ -4,13 +4,13 @@
 
 #include "Geometry/GeometryManager.hpp"
 #include "Utils/FilesIO.hpp"
-#include "Buffers/BuffersManager.hpp"
+#include "Buffers/BufferManager.hpp"
+#include "Textures/TextureManager.hpp"
 
 #include <GL/glew.h>
 
 namespace mr {
 
-void DestroyAllTextures();
 void DestroyAllShaderPrograms();
 
 bool Init() {
@@ -28,8 +28,8 @@ bool Init() {
 }
 
 void Shutdown() {
-    DestroyAllTextures();
-    GPUBuffersManager::GetInstance().DestroyAllBuffers();
+    TextureManager::GetInstance().DestroyAllTextures();
+    GPUBufferManager::GetInstance().DestroyAllBuffers();
     //DestroyAllShaderPrograms();
     GeometryManager::DestroyInstance();
 }

@@ -1,4 +1,5 @@
 #include "GeometryBuffer.hpp"
+#include "GeometryFormats.hpp"
 
 #include "../Utils/Debug.hpp"
 #include "../MachineInfo.hpp"
@@ -9,8 +10,8 @@
 
 mr::IGeometryBuffer* _MR_BINDED_GEOM_BUFFER_ = nullptr;
 
-void __MR_SET_VERTEX_FORMAT_AS_BINDED_(mr::IVertexFormat* vf);
-void __MR_SET_INDEX_FORMAT_AS_BINDED_(mr::IIndexFormat* fi);
+void __MR_SET_VERTEX_FORMAT_AS_BINDED_(mr::VertexFormatPtr vf);
+void __MR_SET_INDEX_FORMAT_AS_BINDED_(mr::IndexFormatPtr fi);
 
 namespace mr {
 
@@ -89,7 +90,7 @@ bool GeometryBuffer::SetIndexBuffer(IGPUBuffer* buf) {
     return true;
 }
 
-void GeometryBuffer::SetAttribute(IVertexAttribute* attr, IGPUBuffer* buf) {
+void GeometryBuffer::SetAttribute(VertexAttribute const& attr, IGPUBuffer* buf) {
     _customAttribs[attr] = buf;
     if(buf == nullptr) {
         auto it = _customAttribs.find(attr);
@@ -130,26 +131,15 @@ bool GeometryBuffer::Bind(bool useIndexBuffer) const {
         return false;
     }
 
-    for(std::pair<IVertexAttribute*, IGPUBuffer*> const& cAttrs : _customAttribs) {
+    for(std::pair<VertexAttribute, IGPUBuffer*> const& cAttrs : _customAttribs) {
         //cAttrs.second->Bind(IGPUBuffer::ArrayBuffer);
         stateCache->BindBuffer(cAttrs.second, StateCache::ArrayBuffer);
-
-        unsigned int sh_i = cAttrs.first->GetShaderIndex();
-        glEnableVertexAttribArray(sh_i);
-        int elNum = (int)(cAttrs.first->GetElementsNum());
-        auto dataTypePtr = cAttrs.first->GetDataType();
-
-        if(mr::gl::IsNVVBUMSupported())
-            glVertexAttribFormatNV(sh_i, elNum, dataTypePtr->GetDataTypeGL(), GL_FALSE, cAttrs.first->GetByteSize());
-        else
-            glVertexAttribPointer(sh_i, elNum, dataTypePtr->GetDataTypeGL(), GL_FALSE, cAttrs.first->GetByteSize(), 0);
-
-        glVertexAttribDivisor(sh_i, cAttrs.first->GetDivisor());
+        stateCache->BindVertexAttribute(cAttrs.first, cAttrs.first.desc->size);
     }
 
-    for(std::pair<IVertexAttribute*, BufferResidentPtr> const& cAttrsPtr : _customAttribNVPtr) {
+    for(std::pair<VertexAttribute, BufferResidentPtr> const& cAttrsPtr : _customAttribNVPtr) {
         glBufferAddressRangeNV(GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV,
-                                   cAttrsPtr.first->GetShaderIndex(),
+                                   cAttrsPtr.first.desc->shaderIndex,
                                    cAttrsPtr.second.ptr,
                                    cAttrsPtr.second.size
                                    );
@@ -158,19 +148,19 @@ bool GeometryBuffer::Bind(bool useIndexBuffer) const {
     stateCache->BindBuffer(_vb, StateCache::ArrayBuffer);
 
     if(mr::gl::IsNVVBUMSupported()) {
-        mu::ArrayRef<IVertexAttribute*> attrs = _format->GetAttributes();
-        mu::ArrayRef<uint64_t> ptrs = _format->GetOffsets();
+        mu::ArrayHandle<VertexAttribute> const& attrs = _format->attributes;
+        mu::ArrayHandle<uint64_t> const& ptrs = _format->pointers;
 
-        for(size_t i = 0; i < attrs.num; ++i) {
+        for(size_t i = 0; i < attrs.GetNum(); ++i) {
             glBufferAddressRangeNV(GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV,
-                                   attrs.elements[i]->GetShaderIndex(),
-                                   _vb_nv_resident_ptr + ptrs.elements[i],
+                                   attrs.GetArray()[i].desc->shaderIndex,
+                                   _vb_nv_resident_ptr + ptrs.GetArray()[i],
                                    _vb_nv_buffer_size
                                    );
         }
 
         if(_ib != nullptr && useIndexBuffer && _iformat != nullptr){
-            _iformat->Bind();
+            stateCache->SetIndexFormat(_iformat);
             glBufferAddressRangeNV(GL_ELEMENT_ARRAY_ADDRESS_NV, 0, _ib_nv_resident_ptr, _ib_nv_buffer_size);
         }
     } else {

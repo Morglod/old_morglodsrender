@@ -28,9 +28,9 @@ void Geometry::Draw() const {
     _buffer->Bind(_draw_params->GetUsingIndexBuffer());
 
     if(_buffer->GetIndexBuffer() != nullptr && _draw_params->GetUsingIndexBuffer()){
-        mr::IIndexFormat* iformat = _buffer->GetIndexFormat();
+        const mr::IndexFormat* iformat = _buffer->GetIndexFormat().get();
         if(mr::gl::IsIndirectDrawSupported()) {
-            glDrawElementsIndirect( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], iformat->GetDataType()->GetDataTypeGL(), _draw_params->GetIndirectPtr());
+            glDrawElementsIndirect( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], iformat->dataType->dataTypeGL, _draw_params->GetIndirectPtr());
         }
         else {
             /*glDrawElementsBaseVertex(  _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()],
@@ -41,8 +41,8 @@ void Geometry::Draw() const {
             if(GL_ARB_base_instance) {
                 glDrawElementsInstancedBaseVertexBaseInstance(_MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()],
                                                         _draw_params->GetIndexCount(),
-                                                        iformat->GetDataType()->GetDataTypeGL(),
-                                                        (void*)(size_t)(iformat->GetSize() * _draw_params->GetIndexStart()),
+                                                        iformat->dataType->dataTypeGL,
+                                                        (void*)(size_t)(iformat->dataType->size * _draw_params->GetIndexStart()),
                                                         _draw_params->GetInstancesNum(),
                                                         _draw_params->GetVertexStart(),
                                                         _draw_params->GetFirstInstance());
@@ -50,8 +50,8 @@ void Geometry::Draw() const {
                 MU_ONE_TIME(mr::Log::LogString("GL_ARB_base_instance not supported. May be problems with IGeometryDrawParams::FirstInstance.", MR_LOG_LEVEL_ERROR));
                 glDrawElementsInstancedBaseVertex(_MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()],
                                         _draw_params->GetIndexCount(),
-                                        iformat->GetDataType()->GetDataTypeGL(),
-                                        (void*)(size_t)(iformat->GetSize() * _draw_params->GetIndexStart()),
+                                        iformat->dataType->dataTypeGL,
+                                        (void*)(size_t)(iformat->dataType->size * _draw_params->GetIndexStart()),
                                         _draw_params->GetInstancesNum(),
                                         _draw_params->GetVertexStart());
             }
@@ -80,7 +80,7 @@ Geometry::~Geometry(){
 
 //DEFAULT GEOMETRY SHAPES
 IGeometry* Geometry::MakeTriangle(const float& scale, const glm::vec3& offset) {
-    mr::VertexFormatCustomFixed vformat;
+    /*mr::VertexFormatCustomFixed vformat;
     vformat.SetAttributesNum(1);
     vformat.SetVertexAttribute(&(mr::VertexAttributePos3F::GetInstance()), 0);
     vformat.Complete();
@@ -93,11 +93,11 @@ IGeometry* Geometry::MakeTriangle(const float& scale, const glm::vec3& offset) {
 
     return mr::GeometryManager::GetInstance()->PlaceGeometry(vformat.Cache(), &vdata[0], 3,
                                                                                 nullptr, 0, 0,
-                                                                                IGPUBuffer::Static, IGeometryBuffer::DrawMode::Triangles);
+                                                                                IGPUBuffer::Static, IGeometryBuffer::DrawMode::Triangles);*/
 }
 
 IGeometry* Geometry::MakeQuad(const glm::vec2& scale, const glm::vec3& offset, const bool& texCoords, const glm::vec2& texCoordsScale) {
-    mr::VertexFormatCustomFixed vformat;
+    /*mr::VertexFormatCustomFixed vformat;
     vformat.SetAttributesNum((texCoords) ? (2) : (1));
     vformat.SetVertexAttribute(&(mr::VertexAttributePos3F::GetInstance()), 0);
     if(texCoords) vformat.SetVertexAttribute(mr::VertexAttributeCustom(2, &(mr::VertexDataTypeFloat::GetInstance()), MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION).Cache(), 1);
@@ -136,11 +136,11 @@ IGeometry* Geometry::MakeQuad(const glm::vec2& scale, const glm::vec3& offset, c
 
     return mr::GeometryManager::GetInstance()->PlaceGeometry(vformat.Cache(), &vdata[0], 4,
                                                             iformat.Cache(), &idata[0], 6,
-                                                            IGPUBuffer::Static, IGeometryBuffer::DrawMode::Triangles);
+                                                            IGPUBuffer::Static, IGeometryBuffer::DrawMode::Triangles);*/
 }
 
 IGeometry* Geometry::MakeBox(const glm::vec3& scale, const glm::vec3& offset, const bool& inside) {
-    mr::VertexFormatCustomFixed vformat;
+    /*mr::VertexFormatCustomFixed vformat;
     vformat.SetAttributesNum(1);
     vformat.SetVertexAttribute(&(mr::VertexAttributePos3F::GetInstance()), 0);
     vformat.Complete();
@@ -207,7 +207,7 @@ IGeometry* Geometry::MakeBox(const glm::vec3& scale, const glm::vec3& offset, co
     //Geometry* geom = new MR::Geometry(buffer, GeometryDrawParams::DrawElements(0, 36));
     return mr::GeometryManager::GetInstance()->PlaceGeometry(vformat.Cache(), &vdata[0], 8,
                                                             iformat.Cache(), &idata[0], 36,
-                                                            IGPUBuffer::Static, IGeometryBuffer::DrawMode::Triangles);
+                                                            IGPUBuffer::Static, IGeometryBuffer::DrawMode::Triangles);*/
 }
 
 }

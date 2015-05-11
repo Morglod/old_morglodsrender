@@ -38,7 +38,7 @@ struct MaterialDescr {
 	glm::vec3 colorDiffuse;
 
 	std::string texColor;
-	ITextureSettings::Wrap texColorWrapMode;
+	TextureSettings::Wrap texColorWrapMode;
 };
 
 struct MaterialShaderParams {

@@ -7,131 +7,57 @@
 #   include <GL\glew.h>
 #endif
 
-void mr::TextureSettings::Create() {
+namespace mr {
+
+TextureSettings::Desc::Desc() :
+              lod_bias(MR_DEFAULT_TEXTURE_SETTINGS_LOD_BIAS),
+              border_color{MR_DEFAULT_TEXTURE_SETTINGS_BORDER_COLOR},
+              min_filter((MinFilter)MR_DEFAULT_TEXTURE_SETTINGS_MIN_FILTER),
+              mag_filter((MagFilter)MR_DEFAULT_TEXTURE_SETTINGS_MAG_FILTER),
+              lod_min(MR_DEFAULT_TEXTURE_SETTINGS_MIN_LOD),
+              lod_max(MR_DEFAULT_TEXTURE_SETTINGS_MAX_LOD),
+              wrap_s((Wrap)MR_DEFAULT_TEXTURE_SETTINGS_WRAP_S),
+              wrap_r((Wrap)MR_DEFAULT_TEXTURE_SETTINGS_WRAP_R),
+              wrap_t((Wrap)MR_DEFAULT_TEXTURE_SETTINGS_WRAP_T),
+              compare_mode((CompareMode)MR_DEFAULT_TEXTURE_SETTINGS_COMPARE_MODE),
+              compare_func((CompareFunc)MR_DEFAULT_TEXTURE_SETTINGS_COMPARE_FUNC)
+{  }
+
+bool TextureSettings::Create() {
     unsigned int handle = GetGPUHandle();
-    if(handle != 0) return;
+    if(handle != 0) return true;
     if(mr::gl::IsOpenGL45()) glCreateSamplers(1, &handle);
     else glGenSamplers(1, &handle);
     SetGPUHandle(handle);
-    glSamplerParameterf(handle, GL_TEXTURE_LOD_BIAS, _lod_bias);
-    glSamplerParameteri(handle, GL_TEXTURE_MAG_FILTER, (int)_mag_filter);
-    glSamplerParameteri(handle, GL_TEXTURE_MIN_FILTER, (int)_min_filter);
-    glSamplerParameteri(handle, GL_TEXTURE_MIN_LOD, _min_lod);
-    glSamplerParameteri(handle, GL_TEXTURE_MAX_LOD, _max_lod);
-    glSamplerParameteri(handle, GL_TEXTURE_WRAP_S, (int)_wrap_s);
-    glSamplerParameteri(handle, GL_TEXTURE_WRAP_R, (int)_wrap_r);
-    glSamplerParameteri(handle, GL_TEXTURE_WRAP_T, (int)_wrap_t);
-    glSamplerParameteri(handle, GL_TEXTURE_COMPARE_MODE, (int)_compare_mode);
-    glSamplerParameterf(handle, GL_TEXTURE_COMPARE_FUNC, (int)_compare_func);
+    return Set(Desc());
 }
 
-void mr::TextureSettings::SetLodBias(const float& v) {
-    Create();
-    glSamplerParameterf(GetGPUHandle(), GL_TEXTURE_LOD_BIAS, v);
-    _lod_bias = v;
-    OnLodBiasChanged(this, v);
+bool TextureSettings::Set(Desc const& desc) {
+    unsigned int handle = GetGPUHandle();
+    if(handle == 0) return false;
+    glSamplerParameterf(handle, GL_TEXTURE_LOD_BIAS, desc.lod_bias);
+    glSamplerParameteri(handle, GL_TEXTURE_MAG_FILTER, (int)desc.mag_filter);
+    glSamplerParameteri(handle, GL_TEXTURE_MIN_FILTER, (int)desc.min_filter);
+    glSamplerParameteri(handle, GL_TEXTURE_MIN_LOD, desc.lod_min);
+    glSamplerParameteri(handle, GL_TEXTURE_MAX_LOD, desc.lod_max);
+    glSamplerParameteri(handle, GL_TEXTURE_WRAP_S, (int)desc.wrap_s);
+    glSamplerParameteri(handle, GL_TEXTURE_WRAP_R, (int)desc.wrap_r);
+    glSamplerParameteri(handle, GL_TEXTURE_WRAP_T, (int)desc.wrap_t);
+    glSamplerParameteri(handle, GL_TEXTURE_COMPARE_MODE, (int)desc.compare_mode);
+    glSamplerParameterf(handle, GL_TEXTURE_COMPARE_FUNC, (int)desc.compare_func);
+    glSamplerParameterfv(GetGPUHandle(), GL_TEXTURE_BORDER_COLOR, &desc.border_color[0]);
+    _desc = desc;
+    return true;
 }
 
-void mr::TextureSettings::SetBorderColor(float* rgba) {
-    Create();
-    glSamplerParameterfv(GetGPUHandle(), GL_TEXTURE_BORDER_COLOR, rgba);
-    _border_color[0] = rgba[0];
-    _border_color[1] = rgba[1];
-    _border_color[2] = rgba[2];
-    _border_color[3] = rgba[3];
-    OnBorderColorChanged(this, _border_color);
+bool TextureSettings::Get(Desc* desc) {
+    unsigned int handle = GetGPUHandle();
+    if(handle == 0) return false;
+    *desc = _desc;
+    return true;
 }
 
-void mr::TextureSettings::SetBorderColor(const float& r, const float& g, const float& b, const float& a) {
-    Create();
-    _border_color[0] = r;
-    _border_color[1] = g;
-    _border_color[2] = b;
-    _border_color[3] = a;
-    glSamplerParameterfv(GetGPUHandle(), GL_TEXTURE_BORDER_COLOR, _border_color);
-    OnBorderColorChanged(this, _border_color);
-}
-
-void mr::TextureSettings::SetMagFilter(const mr::TextureSettings::MagFilter& v) {
-    Create();
-    glSamplerParameteri(GetGPUHandle(), GL_TEXTURE_MAG_FILTER, (int)v);
-    _mag_filter = v;
-    OnMagFilterChanged(this, v);
-}
-
-void mr::TextureSettings::SetMinFilter(const mr::TextureSettings::MinFilter& v) {
-    Create();
-    glSamplerParameteri(GetGPUHandle(), GL_TEXTURE_MIN_FILTER, (int)v);
-    _min_filter = v;
-    OnMinFilterChanged(this, v);
-}
-
-void mr::TextureSettings::SetMinLod(const int& v) {
-    Create();
-    glSamplerParameteri(GetGPUHandle(), GL_TEXTURE_MIN_LOD, v);
-    _min_lod = v;
-    OnMinLodChanged(this, v);
-}
-
-void mr::TextureSettings::SetMaxLod(const int& v) {
-    Create();
-    glSamplerParameteri(GetGPUHandle(), GL_TEXTURE_MAX_LOD, v);
-    _max_lod = v;
-    OnMaxLodChanged(this, v);
-}
-
-void mr::TextureSettings::SetWrapS(const Wrap& v) {
-    Create();
-    glSamplerParameteri(GetGPUHandle(), GL_TEXTURE_WRAP_S, (int)v);
-    _wrap_s = v;
-    OnWrapSChanged(this, v);
-}
-
-void mr::TextureSettings::SetWrapR(const Wrap& v) {
-    Create();
-    glSamplerParameteri(GetGPUHandle(), GL_TEXTURE_WRAP_R, (int)v);
-    _wrap_r = v;
-    OnWrapRChanged(this, v);
-}
-
-void mr::TextureSettings::SetWrapT(const Wrap& v) {
-    Create();
-    glSamplerParameteri(GetGPUHandle(), GL_TEXTURE_WRAP_T, (int)v);
-    _wrap_t = v;
-    OnWrapTChanged(this, v);
-}
-
-void mr::TextureSettings::SetCompareMode(const CompareMode& v) {
-    Create();
-    glSamplerParameteri(GetGPUHandle(), GL_TEXTURE_COMPARE_MODE, (int)v);
-    _compare_mode = v;
-    OnCompareModeChanged(this, v);
-}
-
-void mr::TextureSettings::SetCompareFunc(const CompareFunc& v) {
-    Create();
-    glSamplerParameterf(GetGPUHandle(), GL_TEXTURE_COMPARE_FUNC, (int)v);
-    _compare_func = v;
-    OnCompareFuncChanged(this, v);
-}
-
-mr::ITextureSettings* mr::TextureSettings::Copy(){
-    TextureSettings* ts = new TextureSettings();
-    ts->SetLodBias(_lod_bias);
-    ts->SetBorderColor(&_border_color[0]);
-    ts->SetMagFilter(_mag_filter);
-    ts->SetMinFilter(_min_filter);
-    ts->SetMinLod(_min_lod);
-    ts->SetMaxLod(_max_lod);
-    ts->SetWrapS(_wrap_s);
-    ts->SetWrapT(_wrap_t);
-    ts->SetWrapR(_wrap_r);
-    ts->SetCompareMode(_compare_mode);
-    ts->SetCompareFunc(_compare_func);
-    return ts;
-}
-
-void mr::TextureSettings::Destroy() {
+void TextureSettings::Destroy() {
     unsigned int handle = GetGPUHandle();
     if(handle != 0) {
         glDeleteBuffers(1, &handle);
@@ -139,19 +65,10 @@ void mr::TextureSettings::Destroy() {
     }
 }
 
-mr::TextureSettings::TextureSettings() :
-    _lod_bias(MR_DEFAULT_TEXTURE_SETTINGS_LOD_BIAS),
-    _border_color{MR_DEFAULT_TEXTURE_SETTINGS_BORDER_COLOR},
-              _min_filter((MinFilter)MR_DEFAULT_TEXTURE_SETTINGS_MIN_FILTER),
-              _mag_filter((MagFilter)MR_DEFAULT_TEXTURE_SETTINGS_MAG_FILTER),
-              _min_lod(MR_DEFAULT_TEXTURE_SETTINGS_MIN_LOD),
-              _max_lod(MR_DEFAULT_TEXTURE_SETTINGS_MAX_LOD),
-              _wrap_s((Wrap)MR_DEFAULT_TEXTURE_SETTINGS_WRAP_S),
-              _wrap_r((Wrap)MR_DEFAULT_TEXTURE_SETTINGS_WRAP_R),
-              _wrap_t((Wrap)MR_DEFAULT_TEXTURE_SETTINGS_WRAP_T),
-              _compare_mode((CompareMode)MR_DEFAULT_TEXTURE_SETTINGS_COMPARE_MODE),
-_compare_func((CompareFunc)MR_DEFAULT_TEXTURE_SETTINGS_COMPARE_FUNC) {
+TextureSettings::TextureSettings() {
 }
 
-mr::TextureSettings::~TextureSettings() {
+TextureSettings::~TextureSettings() {
+}
+
 }

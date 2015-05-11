@@ -20,7 +20,7 @@ protected:
 };
 
 class GPUBuffer : public IGPUBuffer {
-    friend class GPUBuffersManager;
+    friend class GPUBufferManager;
 public:
     inline Usage GetUsage() override { return _usage; }
     bool Write(void* __restrict__ srcData, const size_t& srcOffset, const size_t& dstOffset, const size_t& size, size_t* __restrict__ out_realOffset, BufferedDataInfo* __restrict__ out_info) override;

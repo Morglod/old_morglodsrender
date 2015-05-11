@@ -1,6 +1,6 @@
 #include "Serialization.hpp"
 #include "Debug.hpp"
-#include "../Buffers/BuffersManager.hpp"
+#include "../Buffers/BufferManager.hpp"
 #include "../Shaders/ShaderManager.hpp"
 
 namespace mr {
@@ -18,7 +18,7 @@ TStaticArray<unsigned char> SerializeMRTypes::GPUBufferToBytes(IGPUBuffer* buf) 
 IGPUBuffer* SerializeMRTypes::GPUBufferFromBytes(TStaticArray<unsigned char> bytes) {
     Assert(bytes.GetNum() != 0);
 
-    IGPUBuffer* buf = mr::GPUBuffersManager::GetInstance().CreateBuffer(IGPUBuffer::Static, bytes.GetNum());
+    IGPUBuffer* buf = mr::GPUBufferManager::GetInstance().CreateBuffer(IGPUBuffer::Static, bytes.GetNum());
     if(buf == nullptr) {
         mr::Log::LogString("Failed SerializeMRTypes::GPUBufferFromBytes. buf is null.", MR_LOG_LEVEL_ERROR);
         return nullptr;

@@ -5,6 +5,7 @@
 
 #include "../Config.hpp"
 #include "GeometryInterfaces.hpp"
+#include "GeometryFormats.hpp"
 
 #include <map>
 
@@ -21,12 +22,12 @@ public:
     inline IGeometryBuffer::DrawMode GetDrawMode() const override { return _draw_mode; }
     inline void SetDrawMode(const IGeometryBuffer::DrawMode& dm) override { _draw_mode = dm; }
 
-    inline void SetFormat(IVertexFormat* f, IIndexFormat* fi) override { _format = f; _iformat = fi; }
-    inline IVertexFormat* GetVertexFormat() const override { return _format; }
-    inline IIndexFormat* GetIndexFormat() const override { return _iformat; }
+    inline void SetFormat(VertexFormatPtr f, IndexFormatPtr fi) override { _format = f; _iformat = fi; }
+    inline VertexFormatPtr GetVertexFormat() const override { return _format; }
+    inline IndexFormatPtr GetIndexFormat() const override { return _iformat; }
 
-    inline void SetAttribute(IVertexAttribute* attrib, IGPUBuffer* buf) override;
-    inline IGPUBuffer* GetAttribute(IVertexAttribute* attrib) override { if(_customAttribs.count(attrib) == 0) return nullptr; else return _customAttribs[attrib]; }
+    inline void SetAttribute(VertexAttribute const& attrib, IGPUBuffer* buf) override;
+    inline IGPUBuffer* GetAttribute(VertexAttribute const& attrib) override { if(_customAttribs.count(attrib) == 0) return nullptr; else return _customAttribs[attrib]; }
 
     inline bool Good() const override { return _created && (_vb != nullptr) && (_format != nullptr); }
 
@@ -61,20 +62,20 @@ protected:
 
     IGPUBuffer* _vb;
     IGPUBuffer* _ib;
-    IVertexFormat* _format;
-    IIndexFormat* _iformat;
+    VertexFormatPtr _format;
+    IndexFormatPtr _iformat;
     IGeometryBuffer::DrawMode _draw_mode;
 
     uint64_t _vb_nv_resident_ptr, _ib_nv_resident_ptr;
     int _vb_nv_buffer_size, _ib_nv_buffer_size;
 
-    std::map<IVertexAttribute*, IGPUBuffer*> _customAttribs;
+    std::map<VertexAttribute, IGPUBuffer*> _customAttribs;
 
     struct BufferResidentPtr {
         uint64_t ptr;
         int size;
     };
-    std::map<IVertexAttribute*, BufferResidentPtr> _customAttribNVPtr;
+    std::map<VertexAttribute, BufferResidentPtr> _customAttribNVPtr;
 };
 
 IGeometryBuffer* GeometryBufferGetBinded();

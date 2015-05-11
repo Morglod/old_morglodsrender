@@ -27,7 +27,7 @@ typedef std::shared_ptr<IGPUBufferRangeHandle> IGPUBufferRangeHandlePtr;
 typedef std::weak_ptr<IGPUBufferRangeHandle> IGPUBufferRangeHandleWeakPtr;
 
 class IGPUBuffer : public IGPUObjectHandle {
-    friend class GPUBuffersManager;
+    friend class GPUBufferManager;
     friend class IGPUBufferRangeHandle;
     friend class VirtualGPUBuffer;
 public:

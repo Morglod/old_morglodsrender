@@ -6,6 +6,7 @@
 #include "../Utils/Debug.hpp"
 #include "../Textures/TextureObjects.hpp"
 #include "../Textures/TextureSettings.hpp"
+#include "../Textures/TextureManager.hpp"
 #include "../StateCache.hpp"
 
 #define GLEW_STATIC
@@ -25,18 +26,16 @@ void DefaultMaterial::Create(MaterialDescr const& descr) {
     _program = shaderManager->DefaultShaderProgram();
 
     if((!_descr.texColor.empty()) && _descr.texColor != "") {
-        texColorPtr = mr::Texture::FromFile(_descr.texColor);
+        texColorPtr = mr::TextureManager::GetInstance().FromFile(_descr.texColor);
 
         if(texColorPtr) {
-            mr::ITextureSettings* texSettings = new mr::TextureSettings();
-            texSettings->Create();
-            texSettings->SetWrapT(descr.texColorWrapMode);
-            texSettings->SetWrapS(descr.texColorWrapMode);
-            texSettings->SetWrapR(descr.texColorWrapMode);
+            mr::TextureSettings* texSettings = mr::TextureManager::GetInstance().CreateSettings();
+            mr::TextureSettings::Desc texSettingsDesc;
+            texSettingsDesc.wrap_r = texSettingsDesc.wrap_s = texSettingsDesc.wrap_t = descr.texColorWrapMode;
+            texSettings->Set(texSettingsDesc);
             texColorPtr->SetSettings(texSettings);
             _shaderParams.texColor.handle = texColorPtr->GetGPUHandle();
         }
-
     }
 }
 
