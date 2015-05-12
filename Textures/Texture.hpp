@@ -109,7 +109,9 @@ public:
         DF_BGR_EXT = 0x80E0,
         DF_BGRA_EXT = 0x80E1,
         DF_LUMINANCE = 0x1909,
-        DF_LUMINANCE_ALPHA = 0x190A
+        DF_LUMINANCE_ALPHA = 0x190A,
+        DF_BGR = 0x80E0,
+        DF_BGRA = 0x80E1
     };
 
     enum DataType : unsigned int {

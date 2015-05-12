@@ -86,12 +86,12 @@ bool Texture2D::SetData(TextureDataPtr const& data, Texture::StorageDataFormat c
     const unsigned int texType = GetType();
     const unsigned int sdf = (unsigned int)sdf_;
     const glm::uvec2 size = data->GetSize();
-    const unsigned int dataFormat = (unsigned int)data->GetDataFormat();
-    const unsigned int dataType = (unsigned int)data->GetDataType();
+    const unsigned int dataFormat = (unsigned int) data->GetDataFormat();
+    const unsigned int dataType =   (unsigned int) data->GetDataType();
 
     if(GLEW_EXT_direct_state_access) {
         glPushClientAttribDefaultEXT(GL_CLIENT_PIXEL_STORE_BIT);
-        glTextureImage2DEXT(handle, texType, mipMapLevel, sdf, size.x, size.y, 0, dataFormat, /*dataType*/GL_UNSIGNED_BYTE, data->GetData());
+        glTextureImage2DEXT(handle, texType, mipMapLevel, sdf, size.x, size.y, 0, dataFormat, dataType, data->GetData());
         glPopClientAttrib();
     } else {
         StateCache* stateCache = StateCache::GetDefault();

@@ -96,11 +96,6 @@
 		<Unit filename="Geometry/Mesh.cpp" />
 		<Unit filename="Geometry/Mesh.hpp" />
 		<Unit filename="Geometry/MeshInterfaces.hpp" />
-		<Unit filename="Images/Image.cpp" />
-		<Unit filename="Images/Image.hpp" />
-		<Unit filename="Images/ImageInterfaces.hpp" />
-		<Unit filename="Images/SOILwrapper.cpp" />
-		<Unit filename="Images/SOILwrapper.hpp" />
 		<Unit filename="MachineInfo.cpp" />
 		<Unit filename="MachineInfo.hpp" />
 		<Unit filename="Materials/Material.cpp" />

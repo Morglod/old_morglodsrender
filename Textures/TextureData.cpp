@@ -22,43 +22,10 @@ FI_ENUM(FREE_IMAGE_COLOR_TYPE) {
 Texture::DataFormat MAP_FORMAT[6] = {
     Texture::DF_RED,
     Texture::DF_RED,
-    Texture::DF_RGB,
+    Texture::DF_BGR,
     Texture::DF_COLOR_INDEX,
-    Texture::DF_RGBA,
+    Texture::DF_BGRA,
     Texture::DF_NONE
-};
-
-/*
-FI_ENUM(FREE_IMAGE_TYPE) {
-	FIT_UNKNOWN = 0,	//! unknown type
-	FIT_BITMAP  = 1,	//! standard image			: 1-, 4-, 8-, 16-, 24-, 32-bit
-	FIT_UINT16	= 2,	//! array of unsigned short	: unsigned 16-bit
-	FIT_INT16	= 3,	//! array of short			: signed 16-bit
-	FIT_UINT32	= 4,	//! array of unsigned long	: unsigned 32-bit
-	FIT_INT32	= 5,	//! array of long			: signed 32-bit
-	FIT_FLOAT	= 6,	//! array of float			: 32-bit IEEE floating point
-	FIT_DOUBLE	= 7,	//! array of double			: 64-bit IEEE floating point
-	FIT_COMPLEX	= 8,	//! array of FICOMPLEX		: 2 x 64-bit IEEE floating point
-	FIT_RGB16	= 9,	//! 48-bit RGB image			: 3 x 16-bit
-	FIT_RGBA16	= 10,	//! 64-bit RGBA image		: 4 x 16-bit
-	FIT_RGBF	= 11,	//! 96-bit RGB float image	: 3 x 32-bit IEEE floating point
-	FIT_RGBAF	= 12	//! 128-bit RGBA float image	: 4 x 32-bit IEEE floating point
-};
-*/
-Texture::DataType MAP_TYPE[13] = {
-    Texture::DT_NONE,
-    Texture::DT_INT,
-    Texture::DT_UNSIGNED_SHORT,
-    Texture::DT_SHORT,
-    Texture::DT_UNSIGNED_INT,
-    Texture::DT_INT,
-    Texture::DT_FLOAT,
-    Texture::DT_NONE,
-    Texture::DT_NONE,
-    Texture::DT_SHORT,
-    Texture::DT_SHORT,
-    Texture::DT_FLOAT,
-    Texture::DT_FLOAT
 };
 
 }
@@ -115,7 +82,7 @@ TextureDataPtr TextureData::FromFile(std::string const& file) {
     textureImpl->image = dib;
     textureImpl->imageType = imageType;
     textureImpl->imageFormat = imageFormat;
-    textureData->_dataType = MAP_TYPE[imageType];
+    textureData->_dataType = Texture::DT_UNSIGNED_BYTE; //MAP_TYPE[imageType];
     textureData->_dataFormat = MAP_FORMAT[imageFormat];
     textureData->_size = glm::uvec2(width, height);
     textureData->_impl = std::shared_ptr<TextureData::Impl>(textureImpl);

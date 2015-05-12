@@ -1,11 +1,18 @@
-#version 400
-#extension GL_ARB_uniform_buffer_object : require
-#extension GL_ARB_bindless_texture : require
+#version 330
+#extension GL_ARB_uniform_buffer_object : enable
+
+/*#extension GL_ARB_separate_shader_objects : enable
+#pragma optimize (on)
+#pragma optionNV(fastmath on)
+#pragma optionNV(fastprecision on)
+#pragma optionNV(ifcvt none)
+#pragma optionNV(inline all)
+#pragma optionNV(strict on)
+#pragma optionNV(unroll all)*/
 
 #define EPSILON 0.0000001
 
 #define MAX_POINT_LIGHTS 100
-#define MAX_TEXTURES 1000
 
 //precision mediump float;
 
@@ -13,7 +20,8 @@ in vec4 MR_VertexPos;
 in vec4 MR_LocalVertexPos;
 smooth in vec3 MR_VertexNormal;
 in vec4 MR_VertexColor;
-in vec2 MR_VertexTexCoord;in vec3 MR_VertexInstancedPos;
+in vec2 MR_VertexTexCoord;
+in vec3 MR_VertexInstancedPos;
 
 uniform vec3 MR_CAM_POS;
 uniform vec3 MR_CAM_DIR;
@@ -23,13 +31,10 @@ uniform mat4 MR_MAT_MODEL;
 uniform mat4 MR_MAT_VIEW;
 uniform mat4 MR_MAT_PROJ;
 
-uniform int MR_TEX_COLOR;
-
-layout(location = 1, std140) uniform MR_Textures_Block {
-    sampler2D MR_textures[MAX_TEXTURES];
-};
-
+uniform sampler2D MR_TEX_COLOR;
 uniform vec4 MR_MATERIAL_COLOR;
+
+uniform sampler2D testSphericalLightMap;
 
 out vec4 MR_fragSceneColorNothing;
 
@@ -42,7 +47,7 @@ struct MR_PointLight {
 
 uniform int MR_numPointLights;
 
-layout(location = 0, std140) uniform MR_pointLights_block
+layout(std140) uniform MR_pointLights_block
 {
     MR_PointLight MR_pointLights[MAX_POINT_LIGHTS];
 };
@@ -94,6 +99,6 @@ vec3 ApplyLights(in vec3 surfaceColor, in vec3 surfaceNormal) {
 
 void main() {
     vec4 surface_normal = normalize((vec4(MR_VertexNormal,0) * MR_MAT_MODEL));
-    vec3 albedoColor = ApplyLights(texture(MR_textures[MR_TEX_COLOR], MR_VertexTexCoord).xyz, surface_normal.xyz);
+    vec3 albedoColor = ApplyLights(texture(MR_TEX_COLOR, MR_VertexTexCoord).xyz, surface_normal.xyz);
     MR_fragSceneColorNothing = vec4(albedoColor, 1.0);
 }
