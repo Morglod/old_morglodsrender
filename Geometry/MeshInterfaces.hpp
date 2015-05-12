@@ -4,7 +4,7 @@
 #define _MR_MESH_INTERFACES_H_
 
 #include "../Utils/Containers.hpp"
-#include <Events.hpp>
+#include <mu/Events.hpp>
 
 #include <glm/glm.hpp>
 

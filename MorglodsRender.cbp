@@ -46,6 +46,7 @@
 			<Add option="-std=c++11" />
 			<Add directory="C:/Libs/assimp-3.1.1-win-binaries/include" />
 			<Add directory="C:/Libs/Projects/MorglodsUtils" />
+			<Add directory="C:/Libs/FreeImage/Dist" />
 		</Compiler>
 		<Linker>
 			<Add library="libglew32.a" />
@@ -57,8 +58,10 @@
 			<Add library="winmm" />
 			<Add library="pthread" />
 			<Add library="libassimp.dll.a" />
+			<Add library="C:\Libs\FreeImage\Dist\FreeImage.a" />
 			<Add directory="C:/Libs/assimp-3.1.1-win-binaries/mingw_build" />
 			<Add directory="C:/TDM-GCC-64/lib" />
+			<Add directory="C:/Libs/FreeImage/Dist" />
 		</Linker>
 		<Unit filename="Buffers/BufferManager.cpp" />
 		<Unit filename="Buffers/BufferManager.hpp" />
@@ -162,12 +165,14 @@
 		<Unit filename="SimpleApp/SimpleApp.hpp" />
 		<Unit filename="StateCache.cpp" />
 		<Unit filename="StateCache.hpp" />
-		<Unit filename="Textures/TextureInterfaces.cpp" />
-		<Unit filename="Textures/TextureInterfaces.hpp" />
+		<Unit filename="Textures/Texture.cpp" />
+		<Unit filename="Textures/Texture.hpp" />
+		<Unit filename="Textures/Texture2D.cpp" />
+		<Unit filename="Textures/Texture2D.hpp" />
+		<Unit filename="Textures/TextureData.cpp" />
+		<Unit filename="Textures/TextureData.hpp" />
 		<Unit filename="Textures/TextureManager.cpp" />
 		<Unit filename="Textures/TextureManager.hpp" />
-		<Unit filename="Textures/TextureObjects.cpp" />
-		<Unit filename="Textures/TextureObjects.hpp" />
 		<Unit filename="Textures/TextureSettings.cpp" />
 		<Unit filename="Textures/TextureSettings.hpp" />
 		<Unit filename="Types.cpp" />

@@ -6,7 +6,7 @@
 
 namespace mr {
 
-bool RenderBuffer::Create(mr::ITexture::StorageDataFormat const& storageDataFormat, unsigned int const& width, unsigned int const& height, unsigned int const& samples) {
+bool RenderBuffer::Create(mr::Texture::StorageDataFormat const& storageDataFormat, unsigned int const& width, unsigned int const& height, unsigned int const& samples) {
     unsigned int handle = 0;
     if(mr::gl::IsOpenGL45()) glCreateRenderbuffers(1, &handle);
     else glGenRenderbuffers(1, &handle);

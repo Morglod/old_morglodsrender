@@ -1,5 +1,5 @@
 #include "FilesIO.hpp"
-#include "Singleton.hpp"
+#include <mu/Singleton.hpp>
 #include "Debug.hpp"
 
 namespace mr {

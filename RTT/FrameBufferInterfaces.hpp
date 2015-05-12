@@ -3,13 +3,13 @@
 #include "../Utils/Memory.hpp"
 #include "../CoreObjects.hpp"
 
-#include <Containers.hpp>
+#include <mu/Containers.hpp>
 
 #include <glm/glm.hpp>
 
 namespace mr {
 
-class ITexture;
+class Texture;
 class IRenderBuffer;
 
 class IFrameBuffer : public IGPUObjectHandle {
@@ -73,8 +73,8 @@ public:
 
     virtual CompletionStatus CheckCompletion(BindTarget const& target) = 0;
 
-    virtual bool SetTextureMipmap(ITexture* tex, Attachment const& attachment, unsigned int const& mipmapLevel) = 0;
-    virtual bool SetTextureMipmapToColor(ITexture* tex, unsigned int const& colorSlot, unsigned int const& mipmapLevel) = 0;
+    virtual bool SetTextureMipmap(Texture* tex, Attachment const& attachment, unsigned int const& mipmapLevel) = 0;
+    virtual bool SetTextureMipmapToColor(Texture* tex, unsigned int const& colorSlot, unsigned int const& mipmapLevel) = 0;
     virtual bool SetRenderBuffer(IRenderBuffer* renderBuffer, Attachment const& attachment) = 0;
     virtual bool SetRenderBufferToColor(IRenderBuffer* renderBuffer, unsigned int const& colorSlot) = 0;
 

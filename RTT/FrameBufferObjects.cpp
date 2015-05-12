@@ -90,7 +90,7 @@ IFrameBuffer::CompletionStatus FrameBuffer::CheckCompletion(BindTarget const& ta
     }
 }
 
-bool FrameBuffer::SetTextureMipmap(ITexture* tex, Attachment const& attachment, unsigned int const& mipmapLevel) {
+bool FrameBuffer::SetTextureMipmap(Texture* tex, Attachment const& attachment, unsigned int const& mipmapLevel) {
     unsigned int texHandle = (tex != nullptr) ? tex->GetGPUHandle() : 0;
 
     if(GLEW_EXT_direct_state_access) {
@@ -104,7 +104,7 @@ bool FrameBuffer::SetTextureMipmap(ITexture* tex, Attachment const& attachment, 
     return true;
 }
 
-bool FrameBuffer::SetTextureMipmapToColor(ITexture* tex, unsigned int const& colorSlot, unsigned int const& mipmapLevel) {
+bool FrameBuffer::SetTextureMipmapToColor(Texture* tex, unsigned int const& colorSlot, unsigned int const& mipmapLevel) {
     unsigned int texHandle = (tex != nullptr) ? tex->GetGPUHandle() : 0;
 
     if(GLEW_EXT_direct_state_access) {

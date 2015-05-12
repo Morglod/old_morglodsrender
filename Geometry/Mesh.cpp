@@ -4,7 +4,7 @@
 #include "GeometryInterfaces.hpp"
 #include "../Utils/Debug.hpp"
 #include "../Shaders/ShaderUniforms.hpp"
-#include <Macro.hpp>
+#include <mu/Macro.hpp>
 #include "../StateCache.hpp"
 
 void mr::Mesh::Draw(glm::mat4* modelMat) {

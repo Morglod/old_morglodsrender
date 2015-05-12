@@ -2,7 +2,7 @@
 
 #include "Geometry/GeometryFormats.hpp"
 
-#include <Containers.hpp>
+#include <mu/Containers.hpp>
 #include <vector>
 #include <unordered_map>
 
@@ -10,7 +10,7 @@ namespace mr {
 
 class IGPUBuffer;
 
-class ITexture;
+class Texture;
 class TextureSettings;
 class IFrameBuffer;
 class IShaderProgram;
@@ -69,12 +69,15 @@ public:
     bool ReBindBuffer(IGPUBuffer* __restrict__ buffer, BufferBindTarget const& target, IGPUBuffer** __restrict__ was);
 
     void TextureUnitNotUsed(unsigned int const& unit);
-    bool BindTexture(ITexture* texture, unsigned int const& unit);
-    ITexture* GetBindedTexture(unsigned int const& unit);
+    bool BindTexture(Texture* texture, unsigned int const& unit);
+    Texture* GetBindedTexture(unsigned int const& unit);
     TextureSettings* GetBindedTextureSettings(unsigned int const& unit);
-    bool ReBindTexture(ITexture* __restrict__ texture, unsigned int const& unit, ITexture** __restrict__ was);
+    bool ReBindTexture(Texture* __restrict__ texture, unsigned int const& unit, Texture** __restrict__ was);
     bool GetFreeTextureUnit(unsigned int& outFreeUnit);
     bool IsTextureUnitFree(unsigned int const& unit);
+
+    bool BindTextureNotCached(unsigned int const& unit, unsigned int const& gpu_handle, unsigned int const& tex_type);
+    bool GetBindedTextureNotCached(unsigned int const& unit, unsigned int& out_GPUHandle, unsigned int& out_TexType);
 
 	bool BindFramebuffer(IFrameBuffer* frameBuffer);
 	IFrameBuffer* GetBindedFramebuffer();
@@ -118,7 +121,7 @@ private:
     mu::ArrayHandle<IGPUBuffer*> _buffers;
     std::unordered_map<unsigned int, IGPUBuffer*> _ubos;
     std::unordered_map<unsigned int, IGPUBuffer*> _transformFeedbacks;
-    mu::ArrayHandle<ITexture*> _textures;
+    mu::ArrayHandle<Texture*> _textures;
     mu::ArrayHandle<TextureSettings*> _textureSettings;
     IFrameBuffer* _framebuffer;
     IShaderProgram* _shaderProgram;

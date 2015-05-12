@@ -4,8 +4,6 @@
 #include "../Shaders/ShaderManager.hpp"
 #include "MaterialsConfig.hpp"
 #include "../Utils/Debug.hpp"
-#include "../Textures/TextureObjects.hpp"
-#include "../Textures/TextureSettings.hpp"
 #include "../Textures/TextureManager.hpp"
 #include "../StateCache.hpp"
 
@@ -26,16 +24,16 @@ void DefaultMaterial::Create(MaterialDescr const& descr) {
     _program = shaderManager->DefaultShaderProgram();
 
     if((!_descr.texColor.empty()) && _descr.texColor != "") {
-        texColorPtr = mr::TextureManager::GetInstance().FromFile(_descr.texColor);
-
-        if(texColorPtr) {
+        texColorPtr = static_cast<mr::Texture*>(mr::TextureManager::GetInstance().LoadTexture2DFromFile(_descr.texColor));
+        //TODO
+        /*if(texColorPtr) {
             mr::TextureSettings* texSettings = mr::TextureManager::GetInstance().CreateSettings();
             mr::TextureSettings::Desc texSettingsDesc;
             texSettingsDesc.wrap_r = texSettingsDesc.wrap_s = texSettingsDesc.wrap_t = descr.texColorWrapMode;
             texSettings->Set(texSettingsDesc);
             texColorPtr->SetSettings(texSettings);
             _shaderParams.texColor.handle = texColorPtr->GetGPUHandle();
-        }
+        }*/
     }
 }
 

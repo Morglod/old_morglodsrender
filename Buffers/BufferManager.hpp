@@ -1,7 +1,7 @@
 #pragma once
 
 #include "BuffersInterfaces.hpp"
-#include <Singleton.hpp>
+#include <mu/Singleton.hpp>
 
 #include <unordered_set>
 

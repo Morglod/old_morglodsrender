@@ -4,7 +4,7 @@
 #include "MachineInfo.hpp"
 #include "RTT/FrameBufferInterfaces.hpp"
 #include "Buffers/BuffersInterfaces.hpp"
-#include "Textures/TextureInterfaces.hpp"
+#include "Textures/Texture.hpp"
 #include "Shaders/ShaderProgramObject.hpp"
 #include "Geometry/GeometryInterfaces.hpp"
 
@@ -64,10 +64,10 @@ void StateCache::ResetCache() {
         textureUnits = 4;
     }
 
-    _textures = mu::ArrayHandle<mr::ITexture*>(new mr::ITexture*[textureUnits], textureUnits, true);
+    _textures = mu::ArrayHandle<mr::Texture*>(new mr::Texture*[textureUnits], textureUnits, true);
     _textureSettings = mu::ArrayHandle<mr::TextureSettings*>(new mr::TextureSettings*[textureUnits], textureUnits, true);
 
-    ITexture** texturesArray = _textures.GetArray();
+    Texture** texturesArray = _textures.GetArray();
     TextureSettings** textureSettingsArray = _textureSettings.GetArray();
 
     for(int i = 0; i < textureUnits; ++i){
@@ -115,7 +115,7 @@ bool StateCache::ReBindTransformFeedbacks() {
 
 bool StateCache::ReBindTextures() {
 	const size_t num = _textures.GetNum();
-    ITexture** texArray = _textures.GetArray();
+    Texture** texArray = _textures.GetArray();
     TextureSettings** texSetArray = _textureSettings.GetArray();
 
 	if(num == 0) return true;
@@ -256,14 +256,14 @@ void StateCache::TextureUnitNotUsed(unsigned int const& unit) {
     _textures.GetArray()[unit] = nullptr;
 }
 
-bool StateCache::BindTexture(ITexture* texture, unsigned int const& unit) {
+bool StateCache::BindTexture(Texture* texture, unsigned int const& unit) {
     AssertAndExec(unit < _textures.GetNum(), return false);
 
     if(texture != nullptr)
         if(_textures.GetArray()[unit] == texture) return true;
 
     unsigned int handle = ((texture != nullptr) ? texture->GetGPUHandle() : 0);
-    unsigned int texType = MR_TEXTURE_TARGET[((texture != nullptr) ? texture->GetType() : ITexture::Base2D)];
+    unsigned int texType = MR_TEXTURE_TARGET[((texture != nullptr) ? texture->GetType() : Texture::Base2D)];
 
     if(mr::gl::IsOpenGL45()) {
         glBindTextureUnit(unit, handle);
@@ -271,22 +271,19 @@ bool StateCache::BindTexture(ITexture* texture, unsigned int const& unit) {
     else if(GLEW_EXT_direct_state_access) {
         glBindMultiTextureEXT(GL_TEXTURE0+unit, texType, handle);
     } else {
-        int actived_tex = 0;
-        glGetIntegerv(GL_ACTIVE_TEXTURE, &actived_tex);
         glActiveTexture(GL_TEXTURE0+unit);
         glBindTexture(texType, handle);
-        glActiveTexture(actived_tex);
     }
-
-    mr::TextureSettings* ts = (texture != nullptr) ? texture->GetSettings() : nullptr;
+    //TODO
+    //mr::TextureSettings* ts = (texture != nullptr) ? texture->GetSettings() : nullptr;
     _textures.GetArray()[unit] = texture;
-    _textureSettings.GetArray()[unit] = ts;
-    glBindSampler(unit, (ts) ? ts->GetGPUHandle() : 0);
+    //_textureSettings.GetArray()[unit] = ts;
+    //glBindSampler(unit, (ts) ? ts->GetGPUHandle() : 0);
 
     return true;
 }
 
-ITexture* StateCache::GetBindedTexture(unsigned int const& unit) {
+Texture* StateCache::GetBindedTexture(unsigned int const& unit) {
     if(unit >= _textures.GetNum()) {
         mr::Log::LogString("Trying to get " + std::to_string(unit) + " texture unit. Bigger than max ("+ std::to_string(_textures.GetNum())+") texture unit. StateCache::GetBindedTexture.", MR_LOG_LEVEL_ERROR);
         return nullptr;
@@ -302,12 +299,12 @@ TextureSettings* StateCache::GetBindedTextureSettings(unsigned int const& unit) 
     return _textureSettings.GetArray()[unit];
 }
 
-bool StateCache::ReBindTexture(ITexture* __restrict__ texture, unsigned int const& unit, ITexture** __restrict__ was) {
+bool StateCache::ReBindTexture(Texture* __restrict__ texture, unsigned int const& unit, Texture** __restrict__ was) {
     if(unit >= _textures.GetNum()) {
         mr::Log::LogString("Trying to get " + std::to_string(unit) + " texture unit. Bigger than max ("+ std::to_string(_textures.GetNum())+") texture unit. StateCache::ReBindTexture.", MR_LOG_LEVEL_ERROR);
         return false;
     }
-    ITexture* binded = _textures.GetArray()[unit];
+    Texture* binded = _textures.GetArray()[unit];
     if(binded == texture) return true;
     *was = binded;
     if(BindTexture(texture, unit)) return true;
@@ -318,7 +315,7 @@ bool StateCache::ReBindTexture(ITexture* __restrict__ texture, unsigned int cons
 }
 
 bool StateCache::GetFreeTextureUnit(unsigned int& outFreeUnit) {
-    ITexture** texArray = _textures.GetArray();
+    Texture** texArray = _textures.GetArray();
     for(unsigned int i = 0; i < _textures.GetNum(); ++i) {
         if(texArray == nullptr) {
             outFreeUnit = i;
@@ -330,8 +327,40 @@ bool StateCache::GetFreeTextureUnit(unsigned int& outFreeUnit) {
 
 bool StateCache::IsTextureUnitFree(unsigned int const& unit) {
     if(_textures.GetNum() <= unit) return false;
-    ITexture** texArray = _textures.GetArray();
+    Texture** texArray = _textures.GetArray();
     return (texArray[unit] == nullptr);
+}
+
+bool StateCache::BindTextureNotCached(unsigned int const& unit, unsigned int const& gpu_handle, unsigned int const& tex_type) {
+    if(_textures.GetNum() <= unit) {
+        mr::Log::LogString("Failed StateCache::BindTextureNotCached. unit > maxTextureUnits.", MR_LOG_LEVEL_ERROR);
+        return false;
+    }
+    if(mr::gl::IsOpenGL45()) {
+        glBindTextureUnit(unit, gpu_handle);
+    }
+    else if(GLEW_EXT_direct_state_access) {
+        glBindMultiTextureEXT(GL_TEXTURE0+unit, tex_type, gpu_handle);
+    } else {
+        glActiveTexture(GL_TEXTURE0+unit);
+        glBindTexture(tex_type, gpu_handle);
+    }
+    return true;
+}
+
+bool StateCache::GetBindedTextureNotCached(unsigned int const& unit, unsigned int& out_GPUHandle, unsigned int& out_TexType) {
+    if(_textures.GetNum() <= unit) {
+        mr::Log::LogString("Failed StateCache::GetBindedTextureNotCached. unit > maxTextureUnits.", MR_LOG_LEVEL_ERROR);
+        return false;
+    }
+    if(_textures.GetArray()[unit] == nullptr) {
+        out_GPUHandle = 0;
+        out_TexType = 0;
+    } else {
+        out_GPUHandle = _textures.GetArray()[unit]->GetGPUHandle();
+        out_TexType = _textures.GetArray()[unit]->GetType();
+    }
+    return true;
 }
 
 bool StateCache::BindFramebuffer(IFrameBuffer* frameBuffer) {

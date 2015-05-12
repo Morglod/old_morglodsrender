@@ -5,8 +5,8 @@
 
 #include "ShaderInterfaces.hpp"
 
-#include <Containers.hpp>
-#include <Singleton.hpp>
+#include <mu/Containers.hpp>
+#include <mu/Singleton.hpp>
 
 #include <string>
 

@@ -4,7 +4,7 @@
 #include "GeometryManager.hpp"
 #include "../Utils/Debug.hpp"
 
-#include <Macro.hpp>
+#include <mu/Macro.hpp>
 
 #define GLEW_STATIC
 #include <GL/glew.h>

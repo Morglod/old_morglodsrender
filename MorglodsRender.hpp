@@ -33,7 +33,7 @@ zlib http://www.zlib.net
 #include "Shaders/ShaderUniforms.hpp"
 #include "Shaders/ShaderObjects.hpp"
 #include "Core.hpp"
-#include "Textures/TextureInterfaces.hpp"
+#include "Textures/Texture.hpp"
 #include "Resources/ResourceManager.hpp"
 #include "Scene/Transformation.hpp"
 #include "Query.hpp"

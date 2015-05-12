@@ -6,7 +6,7 @@ namespace mr {
 
 class RenderBuffer : public IRenderBuffer {
 public:
-    bool Create(mr::ITexture::StorageDataFormat const& storageDataFormat, unsigned int const& width, unsigned int const& height, unsigned int const& samples = 0) override;
+    bool Create(mr::Texture::StorageDataFormat const& storageDataFormat, unsigned int const& width, unsigned int const& height, unsigned int const& samples = 0) override;
     void Bind() override;
 
     void Destroy() override;

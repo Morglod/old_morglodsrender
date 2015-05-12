@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Events.hpp"
+#include <mu/Events.hpp>
 #include <glm/glm.hpp>
 
 namespace mr {

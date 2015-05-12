@@ -4,7 +4,7 @@
 #define _MR_MATERIAL_INTERFACES_H_
 
 #include "../Utils/Containers.hpp"
-#include "../Textures/TextureInterfaces.hpp"
+#include "../Textures/Texture.hpp"
 
 #include <string>
 
@@ -15,7 +15,6 @@
 namespace mr {
 
 class IShaderProgram;
-class ITexture;
 
 typedef unsigned int MaterialFlag;
 const MaterialFlag MaterialFlag_Default = 0;

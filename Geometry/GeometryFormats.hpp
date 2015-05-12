@@ -6,7 +6,7 @@
 #include "../Types.hpp"
 #include "../Config.hpp"
 #include "GeometryInterfaces.hpp"
-#include "Singleton.hpp"
+#include <mu/Singleton.hpp>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

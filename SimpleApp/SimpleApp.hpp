@@ -4,7 +4,7 @@
 #define _MR_SIMPLE_APP_H_
 
 #include "Utils/Exception.hpp"
-#include "ConfigClass.hpp"
+#include <mu/ConfigClass.hpp>
 #include "Config.hpp"
 #include "Core.hpp"
 #include "Scene/PerspectiveCamera.hpp"
