@@ -178,6 +178,20 @@ void ShaderUniformMap::SetUniform(int const& location, int const& value) {
     }
 }
 
+void ShaderUniformMap::SetUniform(int const& location, unsigned int const& value) {
+    if(GLEW_EXT_direct_state_access) glProgramUniform1ui(_program->GetGPUHandle(), location, value);
+    else {
+        StateCache* cache = StateCache::GetDefault();
+        IShaderProgram* was = nullptr;
+        if(cache->ReSetShaderProgram(_program, &was)) {
+            glUniform1ui(location, value);
+        } else {
+            mr::Log::LogString("Failed ShaderUniformMap::SetUniform. Failed set shader program.", MR_LOG_LEVEL_ERROR);
+        }
+        cache->SetShaderProgram(_program);
+    }
+}
+
 void ShaderUniformMap::SetUniform(int const& location, float const& value) {
     if(GLEW_EXT_direct_state_access) glProgramUniform1f(_program->GetGPUHandle(), location, value);
     else {
@@ -248,6 +262,20 @@ void ShaderUniformMap::SetUniform(int const& location, glm::mat4 const& value) {
     }
 }
 
+void ShaderUniformMap::SetUniform(int const& location, uint64_t const& value) {
+    if(GLEW_EXT_direct_state_access) glProgramUniformui64NV(_program->GetGPUHandle(), location, value);
+    else {
+        StateCache* cache = StateCache::GetDefault();
+        IShaderProgram* was = nullptr;
+        if(cache->ReSetShaderProgram(_program, &was)) {
+            glUniformui64NV(location, value);
+        } else {
+            mr::Log::LogString("Failed ShaderUniformMap::SetUniform. Failed set shader program.", MR_LOG_LEVEL_ERROR);
+        }
+        cache->SetShaderProgram(_program);
+    }
+}
+
 void ShaderUniformMap::Reset(bool saveRefs) {
     unsigned int handle = _program->GetGPUHandle();
 
@@ -270,6 +298,11 @@ void ShaderUniformMap::Reset(bool saveRefs) {
 
         int ub_uniforms_num = 0;
         glGetActiveUniformBlockiv(handle, iu, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &ub_uniforms_num);
+
+        int ub_size = 0;
+        glGetActiveUniformBlockiv(handle, iu, GL_UNIFORM_BLOCK_DATA_SIZE, &ub_size);
+
+        _uniformBlocks[name].bufferSize = ub_size;
 
         if(ub_uniforms_num > 0) {
             ub_inds.reserve(ub_uniforms_num);

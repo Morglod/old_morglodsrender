@@ -15,7 +15,7 @@ void mr::Mesh::Draw(glm::mat4* modelMat) {
     mr::IShaderProgram* usedShaderProgram = stateCache->GetShaderProgram();
 
     if(usedShaderProgram) {
-        usedShaderProgram->GetMap()->SetUniform(MR_SHADER_MODEL_MAT4, *modelMat);
+        usedShaderProgram->GetMap()->SetUniformT(MR_SHADER_MODEL_MAT4, *modelMat);
     }
     for(size_t i = 0; i < _geom.GetNum(); ++i){
         _geom.GetRaw()[i]->Draw();

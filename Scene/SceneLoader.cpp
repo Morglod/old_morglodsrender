@@ -10,6 +10,9 @@
 
 #include "../Geometry/Mesh.hpp"
 
+#include "../Textures/TextureManager.hpp"
+#include "../MachineInfo.hpp"
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -129,10 +132,13 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
     //Process materials
     _impl->_materials = mr::TStaticArray<IMaterial*>(scene->mNumMaterials);
     progressInfo.totalMaterials = scene->mNumMaterials;
+    mu::ArrayHandle<MaterialDescr> materialDescriptions(new MaterialDescr[scene->mNumMaterials], scene->mNumMaterials);
+    std::vector<Texture*> bindlessTexturesCache;
+    mr::TextureManager& textureManager = mr::TextureManager::GetInstance();
+
     for(unsigned int i = 0; i < scene->mNumMaterials; ++i) {
         aiMaterial* material = scene->mMaterials[i];
         MaterialDescr matDescr;
-
         {
             //Colors
             aiColor4D colA, colD;
@@ -160,20 +166,40 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
             aiTextureMapMode colorTextureMapMode;
 
             material->GetTexture(textureType, 0, &colorTexturePath, &colorTextureMapping, &colorTextureUvIndex, &colorTextureBlend, &colorTextureOp, &colorTextureMapMode);
-            matDescr.texColor = std::string(&colorTexturePath.data[0], colorTexturePath.length);
+            matDescr.colorTexture.texture = static_cast<mr::Texture*>(textureManager.LoadTexture2DFromFile(std::string(&colorTexturePath.data[0], colorTexturePath.length)));
             matDescr.texColorWrapMode = mr::TextureSettings::Wrap_REPEAT;
             if(colorTextureMapMode == aiTextureMapMode_Wrap) matDescr.texColorWrapMode = mr::TextureSettings::Wrap_REPEAT;
             else if(colorTextureMapMode == aiTextureMapMode_Clamp) matDescr.texColorWrapMode = mr::TextureSettings::Wrap_CLAMP;
             else if(colorTextureMapMode == aiTextureMapMode_Decal) matDescr.texColorWrapMode = mr::TextureSettings::Wrap_DECAL;
             else if(colorTextureMapMode == aiTextureMapMode_Mirror) matDescr.texColorWrapMode = mr::TextureSettings::Wrap_MIRRORED_REPEAT;
-        }
 
-        auto newMat = new mr::DefaultMaterial();
-        newMat->Create(matDescr);
-        _impl->_materials.At(i) = dynamic_cast<IMaterial*>(newMat);
+            bool arb_bindless;
+            if(mr::gl::IsBindlessTextureSupported(arb_bindless)) {
+                matDescr.colorTexture.texture->MakeResident();
+                bindlessTexturesCache.push_back(matDescr.colorTexture.texture);
+            }
+        }
+        materialDescriptions.GetArray()[i] = matDescr;
 
         progressInfo.materials = i+1;
         if(options.progressCallback) options.progressCallback(progressInfo);
+    }
+
+    IGPUBuffer* bindlessTexturesUBO = nullptr;
+    bool arb_bindless;
+    if(mr::gl::IsBindlessTextureSupported(arb_bindless)) {
+        bindlessTexturesUBO = textureManager.MakeBindlessTexUbo(IGPUBuffer::Static, mu::ArrayHandle<Texture*>(bindlessTexturesCache.data(), bindlessTexturesCache.size(), false, false));
+    }
+
+    for(unsigned int i = 0; i < scene->mNumMaterials; ++i) {
+        MaterialDescr& matDescr = materialDescriptions.GetArray()[i];
+        matDescr.colorTexture.ubo = bindlessTexturesUBO;
+        if(bindlessTexturesUBO != nullptr) {
+            matDescr.colorTexture.index = i;
+        }
+        auto newMat = new mr::DefaultMaterial();
+        newMat->Create(matDescr);
+        _impl->_materials.At(i) = static_cast<IMaterial*>(newMat);
     }
 
     //Process nodes

@@ -36,7 +36,7 @@ struct MaterialDescr {
 	glm::vec4 colorAmbient; //rgba
 	glm::vec3 colorDiffuse;
 
-	std::string texColor;
+	TextureBindlessBindable colorTexture;
 	TextureSettings::Wrap texColorWrapMode;
 };
 

@@ -35,7 +35,7 @@ protected:
     MaterialDescr _descr;
     MaterialShaderParams _shaderParams;
     bool _twoSided;
-	Texture* texColorPtr;
+	TextureBindlessBindable colorTexture;
 };
 
 MaterialFlag MaterialFlagGetUsed();

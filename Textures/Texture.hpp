@@ -8,8 +8,10 @@
 
 namespace mr {
 
+class IGPUBuffer;
+class Texture;
+
 struct TextureSizeInfo {
-public:
     unsigned short width, height, depth;
 
     inline unsigned long long CalcMaxVolume() { return ((unsigned long long)width * (unsigned long long)height * (unsigned long long)depth); }
@@ -24,7 +26,6 @@ public:
 };
 
 struct TextureBitsInfo {
-public:
     unsigned char r, g, b, d, a; //red, green, blue, depth, alpha
 
     inline unsigned int CalcTotalBits() { return ((unsigned int)r + (unsigned int)g + (unsigned int)b + (unsigned int)d + (unsigned int)a); }
@@ -34,6 +35,12 @@ public:
 
     TextureBitsInfo();
     TextureBitsInfo(unsigned char r_, unsigned char g_, unsigned char b_, unsigned char d_, unsigned char a_);
+};
+
+struct TextureBindlessBindable {
+    Texture* texture = nullptr;
+    unsigned int index = 0;
+    IGPUBuffer* ubo = nullptr;
 };
 
 //Base texutre class

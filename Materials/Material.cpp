@@ -6,6 +6,7 @@
 #include "../Utils/Debug.hpp"
 #include "../Textures/TextureManager.hpp"
 #include "../StateCache.hpp"
+#include "../MachineInfo.hpp"
 
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -22,8 +23,9 @@ void DefaultMaterial::Create(MaterialDescr const& descr) {
 
     ShaderManager* shaderManager = mr::ShaderManager::GetInstance();
     _program = shaderManager->DefaultShaderProgram();
+    colorTexture = _descr.colorTexture;
 
-    if((!_descr.texColor.empty()) && _descr.texColor != "") {
+    /*if((!_descr.texColor.empty()) && _descr.texColor != "") {
         texColorPtr = static_cast<mr::Texture*>(mr::TextureManager::GetInstance().LoadTexture2DFromFile(_descr.texColor));
         //TODO
         /*if(texColorPtr) {
@@ -34,15 +36,24 @@ void DefaultMaterial::Create(MaterialDescr const& descr) {
             texColorPtr->SetSettings(texSettings);
             _shaderParams.texColor.handle = texColorPtr->GetGPUHandle();
         }*/
-    }
+    //}
 }
 
 bool DefaultMaterial::Use() {
     StateCache* stateCache = StateCache::GetDefault();
     if(_program) {
         stateCache->SetShaderProgram(_program);
+
+        bool arb;
+        if(mr::gl::IsBindlessTextureSupported(arb)) {
+            ShaderUniformMap* umap = _program->GetMap();
+            umap->SetUniformT("MR_TEX_COLOR", colorTexture.index);
+            stateCache->BindUniformBuffer(colorTexture.ubo, 1);
+        } else {
+            stateCache->BindTexture(colorTexture.texture, 0);
+        }
     }
-    if(texColorPtr != nullptr) stateCache->BindTexture(texColorPtr, 0);
+
     return true;
 }
 
@@ -50,7 +61,7 @@ void DefaultMaterial::OnMaterialFlagChanged(MaterialFlag const& newFlag) {
     this->Use();
 }
 
-DefaultMaterial::DefaultMaterial() : _program(nullptr), texColorPtr(nullptr) {
+DefaultMaterial::DefaultMaterial() : _program(nullptr) {
 }
 
 DefaultMaterial::~DefaultMaterial() {

@@ -31,7 +31,8 @@ struct ShaderUniformBlockInfo {
     mu::ArrayHandle<std::string> uniform_names;
     mu::ArrayHandle<size_t> uniform_hash_names;
     mu::ArrayHandle<int> uniform_offsets;
-    int location;
+    int location = -1;
+    int bufferSize = -1;
 
     inline int GetOffset(std::string const& name) {
         static std::hash<std::string> str_hash;
@@ -78,6 +79,10 @@ public:
         return _uniformBlocks[name];
     }
 
+    virtual inline int GetUniformBlockGPULocation(std::string const& name) {
+        return _uniformBlocks[name].location;
+    }
+
     virtual void Reset(bool saveRefs); //reset uniforms map
 
     virtual void UpdateRefs();
@@ -85,52 +90,54 @@ public:
     inline virtual IShaderProgram* GetShaderProgram() { return _program; }
 
     template<typename T>
-    inline void SetUniform(std::string const& name, T const& value) {
-        SetUniform(GetUniformGPULocation(name), value);
+    inline void SetUniformT(std::string const& name, T const& value) {
+        SetUniformT(GetUniformGPULocation(name), value);
     }
 
     template<typename T>
-    inline void SetUniform(int location, T const& value) {
+    inline void SetUniformT(int location, T const& value) {
         SetUniform(location, value);
     }
 
     template<typename T>
-    inline void SetUniform(int location, T* valuePtr) {
+    inline void SetUniformT(int location, T* valuePtr) {
         SetUniform(location, *valuePtr);
     }
 
     inline void SetUniform(int location, IShaderUniformRef::Type const& type, const void* value) {
         switch(type){
         case IShaderUniformRef::Type::Float:
-            SetUniform(location, (float*)value);
+            SetUniformT(location, (float*)value);
             break;
         case IShaderUniformRef::Type::Sampler1D:
         case IShaderUniformRef::Type::Sampler2D:
         case IShaderUniformRef::Type::Sampler3D:
         case IShaderUniformRef::Type::Int:
-            SetUniform(location, (int*)value);
+            SetUniformT(location, (int*)value);
         break;
         case IShaderUniformRef::Type::Mat4:
-            SetUniform(location, (glm::mat4*)value);
+            SetUniformT(location, (glm::mat4*)value);
             break;
         case IShaderUniformRef::Type::Vec2:
-            SetUniform(location, (glm::vec2*)value);
+            SetUniformT(location, (glm::vec2*)value);
             break;
         case IShaderUniformRef::Type::Vec3:
-            SetUniform(location, (glm::vec3*)value);
+            SetUniformT(location, (glm::vec3*)value);
             break;
         case IShaderUniformRef::Type::Vec4:
-            SetUniform(location, (glm::vec4*)value);
+            SetUniformT(location, (glm::vec4*)value);
             break;
         }
     }
 
     virtual void SetUniform(int const& location, int const& value);
+    virtual void SetUniform(int const& location, unsigned int const& value);
     virtual void SetUniform(int const& location, float const& value);
     virtual void SetUniform(int const& location, glm::vec2 const& value);
     virtual void SetUniform(int const& location, glm::vec3 const& value);
     virtual void SetUniform(int const& location, glm::vec4 const& value);
     virtual void SetUniform(int const& location, glm::mat4 const& value);
+    virtual void SetUniform(int const& location, uint64_t const& value);
 
     ShaderUniformMap(IShaderProgram* program);
 protected:
