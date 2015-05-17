@@ -20,24 +20,40 @@ Texture2D* TextureManager::CreateTexture2D(Texture::CreationParams const& params
     return tex2d;
 }
 
+Texture2D* TextureManager::CreateTexture2D(glm::uvec2 const& size, Texture::DataType const& dataType, Texture::DataFormat const& dataFormat, Texture::StorageDataFormat const& sdf, Texture::CreationParams const& params) {
+    Texture2D* tex2d = CreateTexture2D(params);
+    if(tex2d == nullptr) {
+        mr::Log::LogString("Failed TextureManager::CreateTexture2D. Failed create 2d texture.", MR_LOG_LEVEL_ERROR);
+        return nullptr;
+    }
+    if(!tex2d->Storage(size, dataType, dataFormat, sdf)) {
+        mr::Log::LogString("Failed TextureManager::CreateTexture2D. Failed make 2d texture storage.", MR_LOG_LEVEL_ERROR);
+        delete tex2d;
+        return nullptr;
+    }
+    return tex2d;
+}
+
 Texture2D* TextureManager::LoadTexture2DFromFile(std::string const& file, Texture::CreationParams const& params) {
     Texture2D* tex2d = CreateTexture2D(params);
     if(tex2d == nullptr) {
         mr::Log::LogString("Failed TextureManager::LoadTexture2DFromFile. Failed create 2d texture.", MR_LOG_LEVEL_ERROR);
         return nullptr;
     }
-    TextureDataPtr texData = TextureData::FromFile(file);
-    if(texData == nullptr) {
-        mr::Log::LogString("Failed TextureManager::LoadTexture2DFromFile. Failed load texture data from file.", MR_LOG_LEVEL_ERROR);
-        _UnRegisterTexture(tex2d);
-        delete tex2d;
-        return nullptr;
-    }
-    if(!tex2d->SetData(texData, Texture::SDF_RGB)) {
-        mr::Log::LogString("Failed TextureManager::LoadTexture2DFromFile. Failed set texture data.", MR_LOG_LEVEL_ERROR);
-        _UnRegisterTexture(tex2d);
-        delete tex2d;
-        return nullptr;
+    {
+        TextureDataPtr texData = TextureData::FromFile(file);
+        if(texData == nullptr) {
+            mr::Log::LogString("Failed TextureManager::LoadTexture2DFromFile. Failed load texture data from file.", MR_LOG_LEVEL_ERROR);
+            _UnRegisterTexture(tex2d);
+            delete tex2d;
+            return nullptr;
+        }
+        if(!tex2d->SetData(texData, Texture::SDF_RGB)) {
+            mr::Log::LogString("Failed TextureManager::LoadTexture2DFromFile. Failed set texture data.", MR_LOG_LEVEL_ERROR);
+            _UnRegisterTexture(tex2d);
+            delete tex2d;
+            return nullptr;
+        }
     }
     if(!tex2d->Complete(true)) {
         mr::Log::LogString("Failed TextureManager::LoadTexture2DFromFile. Failed complete texture.", MR_LOG_LEVEL_ERROR);

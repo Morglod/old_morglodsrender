@@ -15,6 +15,7 @@ class TextureSettings;
 class TextureManager : public mu::StaticSingleton<TextureManager> {
 public:
     Texture2D* CreateTexture2D(Texture::CreationParams const& params = Texture::CreationParams());
+    Texture2D* CreateTexture2D(glm::uvec2 const& size, Texture::DataType const& dataType, Texture::DataFormat const& dataFormat, Texture::StorageDataFormat const& sdf, Texture::CreationParams const& params = Texture::CreationParams());
     Texture2D* LoadTexture2DFromFile(std::string const& file, Texture::CreationParams const& params = Texture::CreationParams());
     IGPUBuffer* MakeBindlessTexUbo(IGPUBuffer::Usage const& usage, mu::ArrayHandle<Texture*> const& textures);
 

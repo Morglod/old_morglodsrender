@@ -2,7 +2,8 @@
 #include "Utils/Log.hpp"
 #include "Utils/Debug.hpp"
 #include "MachineInfo.hpp"
-#include "RTT/FrameBufferInterfaces.hpp"
+#include "RTT/FrameBuffer.hpp"
+#include "RTT/RenderBuffer.hpp"
 #include "Buffers/BuffersInterfaces.hpp"
 #include "Textures/Texture.hpp"
 #include "Shaders/ShaderProgramObject.hpp"
@@ -37,6 +38,12 @@ unsigned int MR_TEXTURE_TARGET[]{
     GL_TEXTURE_3D
 };
 
+unsigned int MR_FRAMEBUFFER_TARGET[mr::StateCache::FBO_TARGETS_NUM] {
+    GL_FRAMEBUFFER,
+    GL_DRAW_FRAMEBUFFER,
+    GL_READ_FRAMEBUFFER
+};
+
 }
 
 namespace mr {
@@ -48,7 +55,6 @@ namespace {
 
 void StateCache::ResetCache() {
     //Clear
-    _ubos.clear();
     _transformFeedbacks.clear();
 
     //Buffers
@@ -78,6 +84,20 @@ void StateCache::ResetCache() {
     //VertexFormat
     size_t maxVertexAttribs = 16;
     _vertexAttributes = mu::ArrayHandle<VertexAttribute>(new VertexAttribute[maxVertexAttribs], maxVertexAttribs, true, false);
+
+    //Ubos
+    size_t maxUBOs = 16;
+    _ubos = mu::ArrayHandle<IGPUBuffer*>(new IGPUBuffer*[maxUBOs], maxUBOs, true, false);
+    for(size_t i = 0; i < maxUBOs; ++i){
+        _ubos.GetArray()[i] = nullptr;
+    }
+
+    //FBOs
+    const size_t fbosNum = StateCache::FBO_TARGETS_NUM;
+    _fbs = mu::ArrayHandle<FrameBuffer*>(new FrameBuffer*[fbosNum], fbosNum, true, false);
+    for(size_t i = 0; i < fbosNum; ++i){
+        _fbs.GetArray()[i] = nullptr;
+    }
 }
 
 bool StateCache::ReBindBuffers() {
@@ -92,10 +112,10 @@ bool StateCache::ReBindBuffers() {
 }
 
 bool StateCache::ReBindUBOs() {
-    if(_ubos.size() == 0) return true;
     MR_BUFFERS_CHECK_BIND_ERRORS_CATCH(
-        for(auto const& ubo_pair : _ubos) {
-            glBindBufferBase(GL_UNIFORM_BUFFER, ubo_pair.first, (ubo_pair.second == nullptr) ? 0 : ubo_pair.second->GetGPUHandle());
+        IGPUBuffer** ubos = _ubos.GetArray();
+        for(size_t i = 0; i < _ubos.GetNum(); ++i) {
+            glBindBufferBase(GL_UNIFORM_BUFFER, i, (ubos[i] == nullptr) ? 0 : ubos[i]->GetGPUHandle());
         },
         return false;
     )
@@ -145,7 +165,9 @@ bool StateCache::ReBindTextures() {
 }
 
 bool StateCache::ReBindFrameBuffers() {
-	return BindFramebuffer(_framebuffer);
+    //TODO
+    return false;
+	//return BindFramebuffer(_framebuffer);
 }
 
 bool StateCache::ReBindAll() {
@@ -186,8 +208,9 @@ bool StateCache::BindBuffer(IGPUBuffer* buffer, BufferBindTarget const& target) 
 }
 
 bool StateCache::BindUniformBuffer(IGPUBuffer* buffer, unsigned int const& index) {
+    IGPUBuffer** ubos = _ubos.GetArray();
     if(buffer == nullptr || buffer == 0 || buffer->GetGPUHandle() == 0) {
-        _ubos[index] = nullptr;
+        ubos[index] = nullptr;
         MR_BUFFERS_CHECK_BIND_ERRORS_CATCH(
             glBindBufferBase(GL_UNIFORM_BUFFER, index, 0); ,
             return false;
@@ -195,9 +218,9 @@ bool StateCache::BindUniformBuffer(IGPUBuffer* buffer, unsigned int const& index
         return true;
     }
 
-    if(_ubos[index] == buffer) return true;
+    if(ubos[index] == buffer) return true;
 
-    _ubos[index] = buffer;
+    ubos[index] = buffer;
     MR_BUFFERS_CHECK_BIND_ERRORS_CATCH(
         glBindBufferBase(GL_UNIFORM_BUFFER, index, buffer->GetGPUHandle()); ,
         return false;
@@ -231,8 +254,7 @@ IGPUBuffer* StateCache::GetBindedBuffer(BufferBindTarget const& target) {
 }
 
 IGPUBuffer* StateCache::GetBindedUniformBuffer(unsigned int const& index) {
-    if(_ubos.count(index) == 0) return nullptr;
-    return _ubos[index];
+    return _ubos.GetArray()[index];
 }
 
 IGPUBuffer* StateCache::GetBindedTransformFeedbackBuffer(unsigned int const& index) {
@@ -268,7 +290,7 @@ bool StateCache::BindTexture(Texture* texture, unsigned int const& unit) {
     if(mr::gl::IsOpenGL45()) {
         glBindTextureUnit(unit, handle);
     }
-    else if(GLEW_EXT_direct_state_access) {
+    else if(mr::gl::IsDSA_EXT()) {
         glBindMultiTextureEXT(GL_TEXTURE0+unit, texType, handle);
     } else {
         glActiveTexture(GL_TEXTURE0+unit);
@@ -339,7 +361,7 @@ bool StateCache::BindTextureNotCached(unsigned int const& unit, unsigned int con
     if(mr::gl::IsOpenGL45()) {
         glBindTextureUnit(unit, gpu_handle);
     }
-    else if(GLEW_EXT_direct_state_access) {
+    else if(mr::gl::IsDSA_EXT()) {
         glBindMultiTextureEXT(GL_TEXTURE0+unit, tex_type, gpu_handle);
     } else {
         glActiveTexture(GL_TEXTURE0+unit);
@@ -363,23 +385,64 @@ bool StateCache::GetBindedTextureNotCached(unsigned int const& unit, unsigned in
     return true;
 }
 
-bool StateCache::BindFramebuffer(IFrameBuffer* frameBuffer) {
-	if(frameBuffer == _framebuffer) return true;
-	//TODO error catch.
-	glBindFramebuffer(GL_FRAMEBUFFER, (frameBuffer) ? frameBuffer->GetGPUHandle() : 0);
-	_framebuffer = frameBuffer;
+bool StateCache::BindFramebuffer(FrameBuffer* frameBuffer, FrameBufferBindTarget const& target) {
+    FrameBuffer** fbos = _fbs.GetArray();
+    const unsigned char index = (unsigned char)target;
+    if(fbos[index] == frameBuffer) return true;
+
+    const unsigned int handle = (frameBuffer == nullptr) ? 0 : frameBuffer->GetGPUHandle();
+    glBindFramebuffer(MR_FRAMEBUFFER_TARGET[index], handle);
+	fbos[index] = frameBuffer;
+
 	return true;
 }
 
-IFrameBuffer* StateCache::GetBindedFramebuffer() {
-	return _framebuffer;
+FrameBuffer* StateCache::GetBindedFramebuffer(FrameBufferBindTarget const& target) {
+    FrameBuffer** fbos = _fbs.GetArray();
+    const unsigned char index = (unsigned char)target;
+	return fbos[index];
 }
 
-bool StateCache::ReBindFramebuffer(IFrameBuffer* __restrict__ frameBuffer, IFrameBuffer** __restrict__ was) {
-	IFrameBuffer* binded = GetBindedFramebuffer();
+bool StateCache::ReBindFramebuffer(FrameBuffer* __restrict__ frameBuffer, FrameBufferBindTarget const& target, FrameBuffer** __restrict__ was) {
+	FrameBuffer* binded = GetBindedFramebuffer(target);
 	if(binded == frameBuffer) return true;
-	if(!BindFramebuffer(frameBuffer)) {
-		BindFramebuffer(binded);
+	if(!BindFramebuffer(frameBuffer, target)) {
+		BindFramebuffer(binded, target);
+		return false;
+	}
+	if(binded) *was = binded;
+	return true;
+}
+
+bool StateCache::DrawTo(FrameBuffer* target) {
+    if(_drawTo == target) return true;
+    if(target == nullptr) {
+        glDrawBuffer(GL_BACK);
+    } else {
+        mu::ArrayRef<unsigned int> targets = target->GetTargets();
+        glDrawBuffers(targets.num, targets.elements);
+    }
+    _drawTo = target;
+    return BindFramebuffer(target, DrawFrameBuffer);
+}
+
+bool StateCache::BindRenderbuffer(RenderBuffer* renderBuffer) {
+    if(_renderBuffer == renderBuffer) return true;
+    const unsigned int handle = (renderBuffer == nullptr) ? 0 : renderBuffer->GetGPUHandle();
+    glBindRenderbuffer(GL_RENDERBUFFER, handle);
+    _renderBuffer = renderBuffer;
+    return true;
+}
+
+RenderBuffer* StateCache::GetBindedRenderbuffer() {
+    return _renderBuffer;
+}
+
+bool StateCache::ReBindRenderbuffer(RenderBuffer* __restrict__ renderBuffer, RenderBuffer** __restrict__ was) {
+	RenderBuffer* binded = GetBindedRenderbuffer();
+	if(binded == renderBuffer) return true;
+	if(!BindRenderbuffer(renderBuffer)) {
+		BindRenderbuffer(binded);
 		return false;
 	}
 	if(binded) *was = binded;
@@ -520,7 +583,6 @@ IGPUBuffer* StateCache::GetIndexBuffer() {
 }
 
 StateCache::StateCache() {
-    _framebuffer = nullptr;
     _shaderProgram = nullptr;
     _vertexFormat = nullptr;
     _indexFormat = nullptr;

@@ -39,7 +39,7 @@ struct TextureBitsInfo {
 
 struct TextureBindlessBindable {
     Texture* texture = nullptr;
-    unsigned int index = 0;
+    unsigned int index = 0; //(index in array of textures) or (texture unit)
     IGPUBuffer* ubo = nullptr;
 };
 
@@ -101,7 +101,16 @@ public:
         SDF_RGBA8 = 0x8058,
         SDF_RGB10_A2 = 0x8059,
         SDF_RGBA12 = 0x805A,
-        SDF_RGBA16 = 0x805B
+        SDF_RGBA16 = 0x805B,
+
+        /** RENDER BUFFER **/
+        SDF_DEPTH24_STENCIL8 = 0x88F0,
+        //SDF_RGBA4,
+        SDF_DEPTH_COMPONENT = 0x1902,
+        SDF_DEPTH_COMPONENT16 = 0x81A5,
+        SDF_DEPTH_COMPONENT24 = 0x81A6,
+        SDF_DEPTH_COMPONENT32 = 0x81A7,
+        SDF_DEPTH_COMPONENT32_F = 0x8CAC /// GL_ARB_depth_buffer_float
     };
 
     enum DataFormat : unsigned int {
@@ -148,7 +157,7 @@ public:
         TextureSettings::Wrap   wrapS = TextureSettings::Wrap_REPEAT,
                                 wrapT = TextureSettings::Wrap_REPEAT,
                                 wrapR = TextureSettings::Wrap_REPEAT;
-        TextureSettings::MinFilter minFilter = TextureSettings::MinFilter_LINEAR;
+        TextureSettings::MinFilter minFilter = TextureSettings::MinFilter_LINEAR_MIPMAP_LINEAR;
         TextureSettings::MagFilter magFilter = TextureSettings::MagFilter_LINEAR;
         CreationParams() = default;
     };

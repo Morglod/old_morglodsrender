@@ -24,33 +24,20 @@ void DefaultMaterial::Create(MaterialDescr const& descr) {
     ShaderManager* shaderManager = mr::ShaderManager::GetInstance();
     _program = shaderManager->DefaultShaderProgram();
     colorTexture = _descr.colorTexture;
-
-    /*if((!_descr.texColor.empty()) && _descr.texColor != "") {
-        texColorPtr = static_cast<mr::Texture*>(mr::TextureManager::GetInstance().LoadTexture2DFromFile(_descr.texColor));
-        //TODO
-        /*if(texColorPtr) {
-            mr::TextureSettings* texSettings = mr::TextureManager::GetInstance().CreateSettings();
-            mr::TextureSettings::Desc texSettingsDesc;
-            texSettingsDesc.wrap_r = texSettingsDesc.wrap_s = texSettingsDesc.wrap_t = descr.texColorWrapMode;
-            texSettings->Set(texSettingsDesc);
-            texColorPtr->SetSettings(texSettings);
-            _shaderParams.texColor.handle = texColorPtr->GetGPUHandle();
-        }*/
-    //}
 }
 
 bool DefaultMaterial::Use() {
     StateCache* stateCache = StateCache::GetDefault();
     if(_program) {
         stateCache->SetShaderProgram(_program);
+        ShaderUniformMap* umap = _program->GetMap();
+        umap->SetUniformT("MR_TEX_COLOR", colorTexture.index);
 
         bool arb;
         if(mr::gl::IsBindlessTextureSupported(arb)) {
-            ShaderUniformMap* umap = _program->GetMap();
-            umap->SetUniformT("MR_TEX_COLOR", colorTexture.index);
             stateCache->BindUniformBuffer(colorTexture.ubo, 1);
         } else {
-            stateCache->BindTexture(colorTexture.texture, 0);
+            stateCache->BindTexture(colorTexture.texture, colorTexture.index);
         }
     }
 

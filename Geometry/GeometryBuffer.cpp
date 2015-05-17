@@ -37,7 +37,7 @@ bool GeometryBuffer::SetVertexBuffer(IGPUBuffer* buf) {
 
     if(buf != nullptr) {
         if(mr::gl::IsNVVBUMSupported()){
-            if(GLEW_EXT_direct_state_access){
+            if(mr::gl::IsDSA_EXT()){
                 glGetNamedBufferParameterui64vNV(buf->GetGPUHandle(), GL_BUFFER_GPU_ADDRESS_NV, &_vb_nv_resident_ptr);
                 glGetNamedBufferParameterivEXT(buf->GetGPUHandle(), GL_BUFFER_SIZE, &_vb_nv_buffer_size);
             } else {
@@ -66,7 +66,7 @@ bool GeometryBuffer::SetIndexBuffer(IGPUBuffer* buf) {
 
     if(buf != nullptr) {
         if(mr::gl::IsNVVBUMSupported()){
-            if(GLEW_EXT_direct_state_access){
+            if(mr::gl::IsDSA_EXT()){
                 glGetNamedBufferParameterui64vNV(buf->GetGPUHandle(), GL_BUFFER_GPU_ADDRESS_NV, &_ib_nv_resident_ptr);
                 glGetNamedBufferParameterivEXT(buf->GetGPUHandle(), GL_BUFFER_SIZE, &_ib_nv_buffer_size);
             } else {
@@ -101,7 +101,7 @@ void GeometryBuffer::SetAttribute(VertexAttribute const& attr, IGPUBuffer* buf) 
     }
     if(mr::gl::IsNVVBUMSupported()) {
         BufferResidentPtr brp;
-        if(GLEW_EXT_direct_state_access){
+        if(mr::gl::IsDSA_EXT()){
             glGetNamedBufferParameterui64vNV(buf->GetGPUHandle(), GL_BUFFER_GPU_ADDRESS_NV, &brp.ptr);
             glGetNamedBufferParameterivEXT(buf->GetGPUHandle(), GL_BUFFER_SIZE, &brp.size);
         } else {

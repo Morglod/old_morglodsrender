@@ -12,7 +12,8 @@ class IGPUBuffer;
 
 class Texture;
 class TextureSettings;
-class IFrameBuffer;
+class FrameBuffer;
+class RenderBuffer;
 class IShaderProgram;
 
 struct GeomDataType;
@@ -52,6 +53,14 @@ public:
         NotBinded = 255
     };
 
+    enum FrameBufferBindTarget : unsigned char {
+        TargetFrameBuffer = 0,
+        DrawFrameBuffer = 1,
+        ReadFrameBuffer,
+
+        FBO_TARGETS_NUM
+    };
+
     void ResetCache();
     bool ReBindBuffers();
     bool ReBindUBOs();
@@ -79,9 +88,15 @@ public:
     bool BindTextureNotCached(unsigned int const& unit, unsigned int const& gpu_handle, unsigned int const& tex_type);
     bool GetBindedTextureNotCached(unsigned int const& unit, unsigned int& out_GPUHandle, unsigned int& out_TexType);
 
-	bool BindFramebuffer(IFrameBuffer* frameBuffer);
-	IFrameBuffer* GetBindedFramebuffer();
-	bool ReBindFramebuffer(IFrameBuffer* __restrict__ frameBuffer, IFrameBuffer** __restrict__ was);
+	bool BindFramebuffer(FrameBuffer* frameBuffer, FrameBufferBindTarget const& target);
+	FrameBuffer* GetBindedFramebuffer(FrameBufferBindTarget const& target);
+	bool ReBindFramebuffer(FrameBuffer* __restrict__ frameBuffer, FrameBufferBindTarget const& target, FrameBuffer** __restrict__ was);
+
+    bool DrawTo(FrameBuffer* target);
+
+	bool BindRenderbuffer(RenderBuffer* renderBuffer);
+	RenderBuffer* GetBindedRenderbuffer();
+	bool ReBindRenderbuffer(RenderBuffer* __restrict__ renderBuffer, RenderBuffer** __restrict__ was);
 
     bool SetShaderProgram(IShaderProgram* shaderProgram);
     bool ReSetShaderProgram(IShaderProgram* __restrict__ shaderProgram, IShaderProgram** __restrict__ was);
@@ -119,16 +134,18 @@ private:
     void _Init();
 
     mu::ArrayHandle<IGPUBuffer*> _buffers;
-    std::unordered_map<unsigned int, IGPUBuffer*> _ubos;
     std::unordered_map<unsigned int, IGPUBuffer*> _transformFeedbacks;
     mu::ArrayHandle<Texture*> _textures;
     mu::ArrayHandle<TextureSettings*> _textureSettings;
-    IFrameBuffer* _framebuffer;
+    mu::ArrayHandle<FrameBuffer*> _fbs;
+    FrameBuffer* _drawTo;
+    RenderBuffer* _renderBuffer;
     IShaderProgram* _shaderProgram;
     VertexFormatPtr _vertexFormat;
     IndexFormatPtr _indexFormat;
 
     mu::ArrayHandle<VertexAttribute> _vertexAttributes; // attribute[shader index]
+    mu::ArrayHandle<IGPUBuffer*> _ubos;
     unsigned int _vertexSize;
 };
 

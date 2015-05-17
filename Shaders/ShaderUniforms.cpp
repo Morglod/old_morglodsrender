@@ -131,14 +131,14 @@ void ShaderUniformMap::DeleteAllRefs() {
 }
 
 bool ShaderUniformMap::_GetUniformGPULocation(std::string const& uniformName, int* out) {
-#ifdef MR_CHECK_SMALL_GL_ERRORS
+/*#ifdef MR_CHECK_SMALL_GL_ERRORS
     int gl_er = 0;
     mr::gl::ClearError();
-#endif
+#endif*/
 
     *out = glGetUniformLocation(_program->GetGPUHandle(), uniformName.c_str());
 
-#ifdef MR_CHECK_SMALL_GL_ERRORS
+/*#ifdef MR_CHECK_SMALL_GL_ERRORS
     if(mr::gl::CheckError(0, &gl_er)) {
         std::string err_str = "Error in ShaderUniformMap::_GetUniformGPULocation : glGetUniformLocation("+std::to_string(_program->GetGPUHandle())+", \""+uniformName+"\") ended with \"" + std::to_string(gl_er) + "\" code. ";
         switch(gl_er) {
@@ -152,12 +152,13 @@ bool ShaderUniformMap::_GetUniformGPULocation(std::string const& uniformName, in
         mr::Log::LogString(err_str, MR_LOG_LEVEL_ERROR);
         return false;
     }
-#endif
+#endif*/
 
     if((*out) == -1) {
-#ifdef MR_CHECK_SMALL_GL_ERRORS
         mr::Log::LogString("Error in ShaderUniformMap::_GetUniformGPULocation : glGetUniformLocation("+std::to_string(_program->GetGPUHandle())+", \""+uniformName+"\") == -1.", MR_LOG_LEVEL_ERROR);
-#endif
+/*#ifdef MR_CHECK_SMALL_GL_ERRORS
+        mr::Log::LogString("Error in ShaderUniformMap::_GetUniformGPULocation : glGetUniformLocation("+std::to_string(_program->GetGPUHandle())+", \""+uniformName+"\") == -1.", MR_LOG_LEVEL_ERROR);
+#endif*/
         return false;
     }
 
@@ -165,7 +166,7 @@ bool ShaderUniformMap::_GetUniformGPULocation(std::string const& uniformName, in
 }
 
 void ShaderUniformMap::SetUniform(int const& location, int const& value) {
-    if(GLEW_EXT_direct_state_access) glProgramUniform1i(_program->GetGPUHandle(), location, value);
+    if(mr::gl::IsDSA_EXT()) glProgramUniform1i(_program->GetGPUHandle(), location, value);
     else {
         StateCache* cache = StateCache::GetDefault();
         IShaderProgram* was = nullptr;
@@ -179,7 +180,7 @@ void ShaderUniformMap::SetUniform(int const& location, int const& value) {
 }
 
 void ShaderUniformMap::SetUniform(int const& location, unsigned int const& value) {
-    if(GLEW_EXT_direct_state_access) glProgramUniform1ui(_program->GetGPUHandle(), location, value);
+    if(mr::gl::IsDSA_EXT()) glProgramUniform1ui(_program->GetGPUHandle(), location, value);
     else {
         StateCache* cache = StateCache::GetDefault();
         IShaderProgram* was = nullptr;
@@ -193,7 +194,7 @@ void ShaderUniformMap::SetUniform(int const& location, unsigned int const& value
 }
 
 void ShaderUniformMap::SetUniform(int const& location, float const& value) {
-    if(GLEW_EXT_direct_state_access) glProgramUniform1f(_program->GetGPUHandle(), location, value);
+    if(mr::gl::IsDSA_EXT()) glProgramUniform1f(_program->GetGPUHandle(), location, value);
     else {
         StateCache* cache = StateCache::GetDefault();
         IShaderProgram* was = nullptr;
@@ -207,7 +208,7 @@ void ShaderUniformMap::SetUniform(int const& location, float const& value) {
 }
 
 void ShaderUniformMap::SetUniform(int const& location, glm::vec2 const& value) {
-    if(GLEW_EXT_direct_state_access) glProgramUniform2fv(_program->GetGPUHandle(), location, 1, &value.x);
+    if(mr::gl::IsDSA_EXT()) glProgramUniform2fv(_program->GetGPUHandle(), location, 1, &value.x);
     else {
         StateCache* cache = StateCache::GetDefault();
         IShaderProgram* was = nullptr;
@@ -221,7 +222,7 @@ void ShaderUniformMap::SetUniform(int const& location, glm::vec2 const& value) {
 }
 
 void ShaderUniformMap::SetUniform(int const& location, glm::vec3 const& value) {
-    if(GLEW_EXT_direct_state_access) glProgramUniform3fv(_program->GetGPUHandle(), location, 1, &value.x);
+    if(mr::gl::IsDSA_EXT()) glProgramUniform3fv(_program->GetGPUHandle(), location, 1, &value.x);
     else {
         StateCache* cache = StateCache::GetDefault();
         IShaderProgram* was = nullptr;
@@ -235,7 +236,7 @@ void ShaderUniformMap::SetUniform(int const& location, glm::vec3 const& value) {
 }
 
 void ShaderUniformMap::SetUniform(int const& location, glm::vec4 const& value) {
-    if(GLEW_EXT_direct_state_access) glProgramUniform4fv(_program->GetGPUHandle(), location, 1, &value.x);
+    if(mr::gl::IsDSA_EXT()) glProgramUniform4fv(_program->GetGPUHandle(), location, 1, &value.x);
     else {
         StateCache* cache = StateCache::GetDefault();
         IShaderProgram* was = nullptr;
@@ -249,7 +250,7 @@ void ShaderUniformMap::SetUniform(int const& location, glm::vec4 const& value) {
 }
 
 void ShaderUniformMap::SetUniform(int const& location, glm::mat4 const& value) {
-    if(GLEW_EXT_direct_state_access) glProgramUniformMatrix4fv(_program->GetGPUHandle(), location, 1, false, &value[0][0]);
+    if(mr::gl::IsDSA_EXT()) glProgramUniformMatrix4fv(_program->GetGPUHandle(), location, 1, false, &value[0][0]);
     else {
         StateCache* cache = StateCache::GetDefault();
         IShaderProgram* was = nullptr;
@@ -263,7 +264,7 @@ void ShaderUniformMap::SetUniform(int const& location, glm::mat4 const& value) {
 }
 
 void ShaderUniformMap::SetUniform(int const& location, uint64_t const& value) {
-    if(GLEW_EXT_direct_state_access) glProgramUniformui64NV(_program->GetGPUHandle(), location, value);
+    if(mr::gl::IsDSA_EXT()) glProgramUniformui64NV(_program->GetGPUHandle(), location, value);
     else {
         StateCache* cache = StateCache::GetDefault();
         IShaderProgram* was = nullptr;
@@ -378,12 +379,12 @@ void ShaderUniformMap::UpdateRefs() {
     for(IShaderUniformRef* uref : _refs) {
         void* value = uref->GetValuePtr();
         if(value) {
-#ifdef MR_CHECK_SMALL_GL_ERRORS
+/*#ifdef MR_CHECK_SMALL_GL_ERRORS
             int gl_er = 0;
             mr::gl::ClearError();
-#endif
+#endif*/
             uref->Update();
-#ifdef MR_CHECK_SMALL_GL_ERRORS
+/*#ifdef MR_CHECK_SMALL_GL_ERRORS
             if(mr::gl::CheckError(0, &gl_er)) {
                 std::string err_str = "Error in ShaderUniformMap::Update GL \""+ std::to_string(gl_er) + "\" code. ";
                 switch(gl_er) {
@@ -396,7 +397,7 @@ void ShaderUniformMap::UpdateRefs() {
                 }
                 mr::Log::LogString(err_str, MR_LOG_LEVEL_ERROR);
             }
-#endif
+#endif*/
         }
     }
 }

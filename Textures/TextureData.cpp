@@ -65,6 +65,7 @@ TextureDataPtr TextureData::FromFile(std::string const& file) {
 		dib = FreeImage_Load(fif, file.c_str());
 	if(!dib)
 		return nullptr;
+    FreeImage_FlipVertical(dib);
 
 	bits = FreeImage_GetBits(dib);
 	width = FreeImage_GetWidth(dib);

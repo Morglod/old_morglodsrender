@@ -26,7 +26,7 @@ public:
     inline VertexFormatPtr GetVertexFormat() const override { return _format; }
     inline IndexFormatPtr GetIndexFormat() const override { return _iformat; }
 
-    inline void SetAttribute(VertexAttribute const& attrib, IGPUBuffer* buf) override;
+    void SetAttribute(VertexAttribute const& attrib, IGPUBuffer* buf) override;
     inline IGPUBuffer* GetAttribute(VertexAttribute const& attrib) override { if(_customAttribs.count(attrib) == 0) return nullptr; else return _customAttribs[attrib]; }
 
     inline bool Good() const override { return _created && (_vb != nullptr) && (_format != nullptr); }

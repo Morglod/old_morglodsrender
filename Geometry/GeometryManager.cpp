@@ -6,6 +6,8 @@
 #include "GeometryDrawParams.hpp"
 #include "GeometryFormats.hpp"
 
+#include "../Utils/Debug.hpp"
+
 namespace mr {
 
 template<>

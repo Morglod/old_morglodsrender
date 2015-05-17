@@ -2,6 +2,7 @@
 #include "../MachineInfo.hpp"
 #include "../Utils/Log.hpp"
 #include "../StateCache.hpp"
+#include "../Utils/Debug.hpp"
 
 #ifndef __glew_h__
 #   include <GL\glew.h>
@@ -43,7 +44,7 @@ bool Texture::UpdateInfo() {
         unsigned int binded_gpu_handle = 0;
         unsigned int binded_tex_type = 0;
 
-        if((mr::gl::IsOpenGL45() || GLEW_EXT_direct_state_access) == false) {
+        if((mr::gl::IsDSA_ARB() || mr::gl::IsDSA_EXT()) == false) {
             if(!stateCache->GetBindedTextureNotCached(0, binded_gpu_handle, binded_tex_type)) {
                 mr::Log::LogString("Failed in Texture::UpdateInfo. Failed bind texture.", MR_LOG_LEVEL_ERROR);
                 return false;
@@ -55,11 +56,11 @@ bool Texture::UpdateInfo() {
         }
 
         int maxW = 0, maxH = 0, maxD = 0;
-        if(mr::gl::IsOpenGL45()) {
+        if(mr::gl::IsDSA_ARB()) {
             glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_WIDTH, &maxW);
             glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_HEIGHT, &maxH);
             glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_DEPTH, &maxD);
-        } else if(GLEW_EXT_direct_state_access) {
+        } else if(mr::gl::IsDSA_EXT()) {
             glGetTextureLevelParameterivEXT(handle, texType, 0, GL_TEXTURE_WIDTH, &maxW);
             glGetTextureLevelParameterivEXT(handle, texType, 0, GL_TEXTURE_HEIGHT, &maxH);
             glGetTextureLevelParameterivEXT(handle, texType, 0, GL_TEXTURE_DEPTH, &maxD);
@@ -74,7 +75,7 @@ bool Texture::UpdateInfo() {
         TextureSizeInfo* szAr = _sizes.GetArray();
 
         int fi = 0, rs = 0, gs = 0, bs = 0, ds = 0, as = 0, cm = 0;
-        if(mr::gl::IsOpenGL45()) {
+        if(mr::gl::IsDSA_ARB()) {
             glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_INTERNAL_FORMAT, &fi);
             glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_RED_SIZE, &rs);
             glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_GREEN_SIZE, &gs);
@@ -82,7 +83,7 @@ bool Texture::UpdateInfo() {
             glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_DEPTH_SIZE, &ds);
             glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_ALPHA_SIZE, &as);
             glGetTextureLevelParameteriv(handle, 0, GL_TEXTURE_COMPRESSED, &cm);
-        } else if(GLEW_EXT_direct_state_access) {
+        } else if(mr::gl::IsDSA_EXT()) {
             glGetTextureLevelParameterivEXT(handle, texType, 0, GL_TEXTURE_INTERNAL_FORMAT, &fi);
             glGetTextureLevelParameterivEXT(handle, texType, 0, GL_TEXTURE_RED_SIZE, &rs);
             glGetTextureLevelParameterivEXT(handle, texType, 0, GL_TEXTURE_GREEN_SIZE, &gs);
@@ -104,11 +105,11 @@ bool Texture::UpdateInfo() {
 
         for(int i = 0; i < numMipMaps; ++i) {
             int w = 0, h = 0, d = 0;
-            if(mr::gl::IsOpenGL45()) {
+            if(mr::gl::IsDSA_ARB()) {
                 glGetTextureLevelParameteriv(handle, i, GL_TEXTURE_WIDTH, &w);
                 glGetTextureLevelParameteriv(handle, i, GL_TEXTURE_HEIGHT, &h);
                 glGetTextureLevelParameteriv(handle, i, GL_TEXTURE_DEPTH, &d);
-            } else if(GLEW_EXT_direct_state_access) {
+            } else if(mr::gl::IsDSA_EXT()) {
                 glGetTextureLevelParameterivEXT(handle, texType, i, GL_TEXTURE_WIDTH, &w);
                 glGetTextureLevelParameterivEXT(handle, texType, i, GL_TEXTURE_HEIGHT, &h);
                 glGetTextureLevelParameterivEXT(handle, texType, i, GL_TEXTURE_DEPTH, &d);
@@ -140,9 +141,9 @@ bool Texture::Complete(bool mipMaps) {
     int gl_er = 0;
     mr::gl::ClearError();
 #endif
-        if(mr::gl::IsOpenGL45()) {
+        if(mr::gl::IsDSA_ARB()) {
             glGenerateTextureMipmap(handle);
-        } else if(GLEW_EXT_direct_state_access) {
+        } else if(mr::gl::IsDSA_EXT()) {
             glGenerateTextureMipmapEXT(handle, texType);
         } else {
 
@@ -150,7 +151,7 @@ bool Texture::Complete(bool mipMaps) {
             unsigned int binded_gpu_handle = 0;
             unsigned int binded_tex_type = 0;
 
-            if((mr::gl::IsOpenGL45() || GLEW_EXT_direct_state_access) == false) {
+            if((mr::gl::IsDSA_ARB() || mr::gl::IsDSA_EXT()) == false) {
                 if(!stateCache->GetBindedTextureNotCached(0, binded_gpu_handle, binded_tex_type)) {
                     mr::Log::LogString("Failed Texture::Complete. Failed bind texture.", MR_LOG_LEVEL_ERROR);
                     return false;
@@ -192,16 +193,16 @@ bool Texture::GetData(  int const& mipMapLevel,
     }
 
     unsigned int texType = GetType();
-    if(mr::gl::IsOpenGL45()) {
+    if(mr::gl::IsDSA_ARB()) {
         glGetTextureImage(handle, mipMapLevel, dformat, dtype, dstBufferSize, dstBuffer);
-    } else if(GLEW_EXT_direct_state_access) {
+    } else if(mr::gl::IsDSA_EXT()) {
         glGetTextureImageEXT(handle, texType, mipMapLevel, dformat, dtype, dstBuffer);
     } else {
         StateCache* stateCache = StateCache::GetDefault();
         unsigned int binded_gpu_handle = 0;
         unsigned int binded_tex_type = 0;
 
-        if((mr::gl::IsOpenGL45() || GLEW_EXT_direct_state_access) == false) {
+        if((mr::gl::IsDSA_ARB() || mr::gl::IsDSA_EXT()) == false) {
             if(!stateCache->GetBindedTextureNotCached(0, binded_gpu_handle, binded_tex_type)) {
                 mr::Log::LogString("Failed Texture::GetData. Failed bind texture.", MR_LOG_LEVEL_ERROR);
                 return false;
