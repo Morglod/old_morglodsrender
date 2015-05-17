@@ -22,11 +22,20 @@ public:
     inline Usage GetUsage() override { return _realBuffer->GetUsage(); }
 
     inline IMappedRangePtr Map(size_t const& offset, size_t const& length, unsigned int const& flags) override { return _realBuffer->Map(offset + _realBuffer_offset, length, flags); }
-    inline IMappedRangeWeakPtr GetMapped() { return _realBuffer->GetMapped(); }
-    inline bool IsMapped() { return _realBuffer->IsMapped(); }
+    inline IMappedRangeWeakPtr GetMapped() override { return _realBuffer->GetMapped(); }
+    inline bool IsMapped() override { return _realBuffer->IsMapped(); }
 
     inline IGPUBufferRangeHandleWeakPtr UseRange(size_t const& offset, size_t const& size) override { return _realBuffer->UseRange(GetRealOffset()+offset, size); }
     inline mu::ArrayHandle<IGPUBufferRangeHandle*> GetRangeHandles() override { return _realBuffer->GetRangeHandles(); }
+
+    inline bool MakeResident() override { return _realBuffer->MakeResident(); }
+    inline void MakeNonResident() override { _realBuffer->MakeNonResident(); }
+    inline bool GetGPUAddress(uint64_t& out) const override {
+        if(!_realBuffer->GetGPUAddress(out)) return false;
+        out += GetRealOffset();
+        return true;
+    }
+    bool IsResident() const override { return _realBuffer->IsResident(); }
 
     /* GPUObjectHandle */
     inline unsigned int GetGPUHandle() override { return (_realBuffer) ? _realBuffer->GetGPUHandle() : 0; }
@@ -36,7 +45,7 @@ public:
     void Destroy() override;
 
     inline virtual IGPUBuffer* GetRealBuffer() { return _realBuffer; }
-    inline virtual size_t GetRealOffset() { return _realBuffer_offset; }
+    inline virtual size_t GetRealOffset() const { return _realBuffer_offset; }
 
     VirtualGPUBuffer(IGPUBuffer* realBuffer, size_t const& offset, size_t const& size);
     virtual ~VirtualGPUBuffer();

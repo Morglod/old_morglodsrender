@@ -277,6 +277,59 @@ GPUBuffer::MappedRange::~MappedRange() {
     UnMap();
 }
 
+bool GPUBuffer::MakeResident() {
+    const unsigned int handle = GetGPUHandle();
+    if(handle == 0) {
+        mr::Log::LogString("Failed GPUBuffer::MakeResident. Handle is null.", MR_LOG_LEVEL_ERROR);
+        return false;
+    }
+
+    if(mr::gl::IsNVVBUMSupported()) {
+        if(mr::gl::IsDSA_ARB()) {
+            glGetNamedBufferParameterui64vNV(handle, GL_BUFFER_GPU_ADDRESS_NV, &_residentPtr);
+            glMakeNamedBufferResidentNV(handle, GL_READ_ONLY);
+        } else {
+            StateCache* stateCache = StateCache::GetDefault();
+            IGPUBuffer* binded = nullptr;
+            if(!stateCache->ReBindBuffer(this, StateCache::ArrayBuffer, &binded)) {
+                mr::Log::LogString("Failed GPUBuffer::MakeResident. Bind buffer failed.", MR_LOG_LEVEL_ERROR);
+                return false;
+            }
+
+            glGetBufferParameterui64vNV(GL_ARRAY_BUFFER, GL_BUFFER_GPU_ADDRESS_NV, &_residentPtr);
+            glMakeBufferResidentNV(GL_ARRAY_BUFFER, GL_READ_ONLY);
+
+            if(binded) stateCache->BindBuffer(binded, StateCache::ArrayBuffer);
+        }
+        return true;
+    }
+    return false;
+}
+
+void GPUBuffer::MakeNonResident() {
+    const unsigned int handle = GetGPUHandle();
+    if(handle == 0) {
+        mr::Log::LogString("Failed GPUBuffer::MakeResident. Handle is null.", MR_LOG_LEVEL_ERROR);
+        return;
+    }
+    if(mr::gl::IsNVVBUMSupported()) {
+        if(mr::gl::IsDSA_ARB()) {
+            glMakeNamedBufferNonResidentNV(handle);
+        } else {
+            StateCache* stateCache = StateCache::GetDefault();
+            IGPUBuffer* binded = nullptr;
+            if(!stateCache->ReBindBuffer(this, StateCache::ArrayBuffer, &binded)) {
+                mr::Log::LogString("Failed GPUBuffer::MakeResident. Bind buffer failed.", MR_LOG_LEVEL_ERROR);
+                return;
+            }
+
+            glMakeBufferNonResidentNV(GL_ARRAY_BUFFER);
+
+            if(binded) stateCache->BindBuffer(binded, StateCache::ArrayBuffer);
+        }
+    }
+}
+
 /** GLOBAL **/
 
 bool GPUBufferCopy(IGPUBuffer* src, IGPUBuffer* dst, const unsigned int& srcOffset, const unsigned int& dstOffset, const unsigned int& size) {

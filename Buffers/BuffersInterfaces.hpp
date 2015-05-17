@@ -91,8 +91,15 @@ public:
     virtual IGPUBufferRangeHandleWeakPtr UseRange(size_t const& offset, size_t const& size) = 0;
     virtual mu::ArrayHandle<IGPUBufferRangeHandle*> GetRangeHandles() = 0;
 
-    virtual ~IGPUBuffer() {}
+    //NV_shader_buffer_load should be supported
+    ///Unlock buffer, before massive changes (e.g. SetData)
+    virtual bool MakeResident() = 0;
+    virtual void MakeNonResident() = 0;
+    virtual bool GetGPUAddress(uint64_t& out) const = 0;
+    virtual bool IsResident() const = 0;
+    //-
 
+    virtual ~IGPUBuffer() {}
 protected:
     virtual bool Allocate(const IGPUBuffer::Usage& usage, const size_t& size) = 0;
     virtual void _RangeFree(IGPUBufferRangeHandle* handle) = 0;

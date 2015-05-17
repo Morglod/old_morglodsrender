@@ -11,6 +11,7 @@ Import most (33+) model formats. Assimp import library.
 Import most (37+) texture formats. FreeImage library.
 Imported geomtry optimization. Assimp import library.
 NV_vertex_buffer_unified_memory full support.
+NV_shader_buffer_load full support.
 Indirect draw full support.
 Bindless textures full support.
 [/enum]

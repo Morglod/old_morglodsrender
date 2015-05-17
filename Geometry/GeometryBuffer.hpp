@@ -78,8 +78,6 @@ protected:
     std::map<VertexAttribute, BufferResidentPtr> _customAttribNVPtr;
 };
 
-IGeometryBuffer* GeometryBufferGetBinded();
-
 }
 
 #endif

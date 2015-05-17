@@ -139,6 +139,8 @@ public:
     virtual void SetUniform(int const& location, glm::mat4 const& value);
     virtual void SetUniform(int const& location, uint64_t const& value);
 
+    virtual void SetNVVBUMPointer(int const& vertexAttributeLocation, uint64_t const& residentPointer);
+
     ShaderUniformMap(IShaderProgram* program);
 protected:
     virtual bool _GetUniformGPULocation(std::string const& uniformName, int* out); //not cached, get directly from gl

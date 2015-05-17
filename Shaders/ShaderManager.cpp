@@ -23,6 +23,7 @@ void ShaderManager::SetGlobalUniform(ShaderUniformDesc const& desc, const void* 
             ShaderUniformMap* map = prog->GetMap();
             map->SetUniform(map->GetUniformGPULocation(desc.name), desc.type, value);
         }
+        return;
     }
 
     _globalUniforms[desc.name] = value;
@@ -64,6 +65,13 @@ void ShaderManager::UpdateAllGlobalUniforms() {
         for(std::pair<const std::string, const void*>& u : _globalUniforms) {
             map->SetUniform(map->GetUniformGPULocation(u.first), _globalUniformsDesc[u.first].type, u.second);
         }
+    }
+}
+
+void ShaderManager::SetNVVBUMPointer(int const& vertexAttributeLocation, uint64_t const& residentPointer) {
+    for(IShaderProgram* prog : _programs) {
+        ShaderUniformMap* map = prog->GetMap();
+        map->SetNVVBUMPointer(vertexAttributeLocation, residentPointer);
     }
 }
 

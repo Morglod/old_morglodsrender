@@ -42,6 +42,19 @@ public:
     IGPUBufferRangeHandleWeakPtr UseRange(size_t const& offset, size_t const& size) override;
     mu::ArrayHandle<IGPUBufferRangeHandle*> GetRangeHandles() override;
 
+    //-
+    bool MakeResident() override;
+    void MakeNonResident() override;
+    inline bool GetGPUAddress(uint64_t& out) const override {
+        if(_residentPtr == 0) return false;
+        out = _residentPtr;
+        return true;
+    }
+    bool IsResident() const override {
+        return (_residentPtr != 0);
+    }
+    //-
+
     /* GPUObjectHandle */
     //unsigned int GetGPUHandle() override;
     size_t GetGPUMem() override { return _size; }
@@ -82,6 +95,7 @@ protected:
     size_t _size;
     Usage _usage;
     IMappedRangeWeakPtr _mapped;
+    uint64_t _residentPtr = 0;
 
     std::vector<IGPUBufferRangeHandlePtr> _rangeHandles;
 };

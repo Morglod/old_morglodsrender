@@ -8,11 +8,6 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 
-mr::IGeometryBuffer* _MR_BINDED_GEOM_BUFFER_ = nullptr;
-
-void __MR_SET_VERTEX_FORMAT_AS_BINDED_(mr::VertexFormatPtr vf);
-void __MR_SET_INDEX_FORMAT_AS_BINDED_(mr::IndexFormatPtr fi);
-
 namespace mr {
 
 bool GeometryBuffer::Create(IGeometryBuffer::CreationParams const& params) {
@@ -120,8 +115,7 @@ void GeometryBuffer::SetAttribute(VertexAttribute const& attr, IGPUBuffer* buf) 
 }
 
 bool GeometryBuffer::Bind(bool useIndexBuffer) const {
-    //if(_MR_BINDED_GEOM_BUFFER_ == dynamic_cast<const mr::IGeometryBuffer*>(this)) return true;
-
+    //TODO cache
     if(!_format) return false;
     if(!_vb) return false;
 
@@ -169,7 +163,6 @@ bool GeometryBuffer::Bind(bool useIndexBuffer) const {
         }
     }
 
-    _MR_BINDED_GEOM_BUFFER_ = (mr::IGeometryBuffer*)dynamic_cast<const mr::IGeometryBuffer*>(this);
     return true;
 }
 
@@ -183,10 +176,6 @@ GeometryBuffer::GeometryBuffer() :
 {  }
 
 GeometryBuffer::~GeometryBuffer(){
-}
-
-IGeometryBuffer* GeometryBufferGetBinded() {
-    return _MR_BINDED_GEOM_BUFFER_;
 }
 
 }

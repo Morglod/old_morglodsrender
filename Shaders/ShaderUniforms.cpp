@@ -277,6 +277,17 @@ void ShaderUniformMap::SetUniform(int const& location, uint64_t const& value) {
     }
 }
 
+void ShaderUniformMap::SetNVVBUMPointer(int const& vertexAttributeLocation, uint64_t const& residentPointer) {
+    /*
+    https://www.opengl.org/registry/specs/NV/shader_buffer_load.txt
+    and
+    NvidiaGameWorks/gl_samples_2_11/BindlessApp example
+    */
+    glVertexAttribI2i(vertexAttributeLocation,
+                    (int)(residentPointer & 0xFFFFFFFF),
+                    (int)((residentPointer >> 32) & 0xFFFFFFFF));
+}
+
 void ShaderUniformMap::Reset(bool saveRefs) {
     unsigned int handle = _program->GetGPUHandle();
 

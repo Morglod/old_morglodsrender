@@ -29,6 +29,8 @@ public:
     virtual void SetUniformBufferObject(unsigned int const& index, IGPUBuffer* buffer);
     virtual void RemoveUniformBufferObject(unsigned int const& index, IGPUBuffer* buffer);
 
+    virtual void SetNVVBUMPointer(int const& vertexAttributeLocation, uint64_t const& residentPointer);
+
     inline void SetCompiler(IShaderCompiler* shaderCompiler) { _shaderCompiler = shaderCompiler; }
     inline IShaderCompiler* GetCompiler() { return _shaderCompiler; }
 
