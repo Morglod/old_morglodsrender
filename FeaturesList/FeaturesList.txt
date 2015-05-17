@@ -1,0 +1,36 @@
+[filebegin][/filebegin]
+[heading]Default things:[/heading]
+[enum]
+OpenGL 4.0 required
+OpenGL 4.5 supported
+Direct State Access EXT and ARB
+Uniform Buffer Objects
+Point lights
+Render to texture
+Import most (33+) model formats. Assimp import library.
+Import most (37+) texture formats. FreeImage library.
+Imported geomtry optimization. Assimp import library.
+NV_vertex_buffer_unified_memory full support.
+Indirect draw full support.
+Bindless textures full support.
+[/enum]
+[split][/split]
+[heading]Benchmarks:[/heading]
+[enum]
+GPU: ASUS Nvidia GTX 760
+NVIDIA Driver: 350.12 driver
+CPU: Intel Core i3 3240
+Mem: DDR3 8Gb 686MHz
+
+1500fps sponza 1point light
+3sec importing crytek sponza (with textures) and ready for rendering from obj
+[/enum]
+[split][/split]
+[heading]3rd pary libs:[/heading]
+[enum]
+Assimp import
+FreeImage
+GLEW
+GLFW (in examples)
+[/enum]
+[fileend][/fileend]

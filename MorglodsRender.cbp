@@ -51,7 +51,6 @@
 		<Linker>
 			<Add library="libglew32.a" />
 			<Add library="libglew32mx.a" />
-			<Add library="libSOIL.a" />
 			<Add library="opengl32" />
 			<Add library="glu32" />
 			<Add library="gdi32" />
