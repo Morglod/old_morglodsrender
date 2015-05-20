@@ -87,7 +87,7 @@ IGPUBuffer* TextureManager::MakeBindlessTexUbo(IGPUBuffer::Usage const& usage, m
     if(mapped == nullptr) {
         if(!ubo->Write(residentHandles, 0, 0, bufSize, nullptr, nullptr)) {
             mr::Log::LogString("Failed TextureManager::MakeBindlessTexUbo. Failed write data to gpu buffer.", MR_LOG_LEVEL_ERROR);
-            delete ubo;
+            bufferManager.Delete(ubo);
             delete [] residentHandles;
             return nullptr;
         }
@@ -104,6 +104,14 @@ IGPUBuffer* TextureManager::MakeBindlessTexUbo(IGPUBuffer::Usage const& usage, m
 void TextureManager::DestroyAllTextures() {
     for(Texture* tex : _textures) tex->Destroy();
     _textures.clear();
+}
+
+void TextureManager::Delete(Texture*& texture) {
+    if(texture == nullptr) return;
+    _UnRegisterTexture(texture);
+    texture->Destroy();
+    delete texture;
+    texture = nullptr;
 }
 
 void TextureManager::_RegisterTexture(Texture* tex) {

@@ -62,8 +62,8 @@ public:
     /* ObjectHandle */
     void Destroy() override;
 
-    virtual ~GPUBuffer();
 protected:
+    virtual ~GPUBuffer();
     GPUBuffer();
     bool Allocate(const Usage& usage, const size_t& size) override;
     void _RangeFree(IGPUBufferRangeHandle* handle) override;

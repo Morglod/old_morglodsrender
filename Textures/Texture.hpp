@@ -199,10 +199,10 @@ public:
     ///Unlock texture, before massive changes (e.g. SetData)
     virtual void MakeNonResident();
 
-    virtual ~Texture();
-
 protected:
     Texture() = default;
+    virtual ~Texture();
+
     void _CalcMemSize();
     virtual bool Create(CreationParams const& params) = 0;
     inline virtual void SetType(Texture::Type const& type) { _type = type; }

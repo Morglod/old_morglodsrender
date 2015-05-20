@@ -99,7 +99,6 @@ public:
     virtual bool IsResident() const = 0;
     //-
 
-    virtual ~IGPUBuffer() {}
 protected:
     virtual bool Allocate(const IGPUBuffer::Usage& usage, const size_t& size) = 0;
     virtual void _RangeFree(IGPUBufferRangeHandle* handle) = 0;

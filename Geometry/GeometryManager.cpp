@@ -73,10 +73,10 @@ IGeometry* GeometryManager::PlaceGeometry(VertexFormatPtr const& vertexFormat, v
                 drawMode
             )
         )) {
-            vertexBuffer->Destroy();
-            if(indexBuffer) indexBuffer->Destroy();
-            delete vertexBuffer;
-            delete indexBuffer;
+            mr::GPUBufferManager& bufferMgr = mr::GPUBufferManager::GetInstance();
+            bufferMgr.Delete(vertexBuffer);
+            bufferMgr.Delete(indexBuffer);
+
             delete geomBuffer;
             return nullptr;
         }
@@ -207,15 +207,14 @@ GeometryManager::GeometryManager() : _max_buffer_size(5242880), _buffer_per_geom
 }
 
 GeometryManager::~GeometryManager() {
+    mr::GPUBufferManager& bufferMgr = GPUBufferManager::GetInstance();
+
     while(!_vertex_buffers.empty()) {
         VertexFormatBuffer& fbuf = _vertex_buffers.back();
         if(fbuf.manager) {
             delete fbuf.manager;
         }
-        if(fbuf.buffer) {
-            fbuf.buffer->Destroy();
-            delete fbuf.buffer;
-        }
+        bufferMgr.Delete(fbuf.buffer);
         _vertex_buffers.pop_back();
     }
     while(!_index_buffers.empty()) {
@@ -223,10 +222,7 @@ GeometryManager::~GeometryManager() {
         if(fbuf.manager) {
             delete fbuf.manager;
         }
-        if(fbuf.buffer) {
-            fbuf.buffer->Destroy();
-            delete fbuf.buffer;
-        }
+        bufferMgr.Delete(fbuf.buffer);
         _index_buffers.pop_back();
     }
 }

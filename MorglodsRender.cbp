@@ -80,6 +80,7 @@
 		<Unit filename="CoreObjects.cpp" />
 		<Unit filename="CoreObjects.hpp" />
 		<Unit filename="FeaturesList/FeaturesList.txt" />
+		<Unit filename="GPUObjectManager.hpp" />
 		<Unit filename="Geometry/GeometryBuffer.cpp" />
 		<Unit filename="Geometry/GeometryBuffer.hpp" />
 		<Unit filename="Geometry/GeometryBuilder.cpp" />
@@ -154,6 +155,8 @@
 		<Unit filename="Shaders/ShaderUniforms.cpp" />
 		<Unit filename="Shaders/ShaderUniforms.hpp" />
 		<Unit filename="Shaders/build_shader_resources.py" />
+		<Unit filename="Shadows/ShadowMap.cpp" />
+		<Unit filename="Shadows/ShadowMap.hpp" />
 		<Unit filename="SimpleApp/ContextGLFW.hpp" />
 		<Unit filename="SimpleApp/SimpleApp.hpp" />
 		<Unit filename="StateCache.cpp" />

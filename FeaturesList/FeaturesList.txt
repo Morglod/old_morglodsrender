@@ -33,5 +33,6 @@ Assimp import
 FreeImage
 GLEW
 GLFW (in examples)
+glm
 [/enum]
 [fileend][/fileend]

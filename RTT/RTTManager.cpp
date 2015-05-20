@@ -16,7 +16,7 @@ FrameBuffer* RTTManager::CreateFrameBuffer() {
         delete fb;
         return nullptr;
     }
-    _RegisterFrameBuffer(fb);
+    TGPUObjectManager<FrameBuffer>::_Register(fb);
     return fb;
 }
 
@@ -30,34 +30,8 @@ RenderBuffer* RTTManager::CreateRenderBuffer(Texture::StorageDataFormat const& s
         delete rb;
         return nullptr;
     }
-    _RegisterRenderBuffer(rb);
+    TGPUObjectManager<RenderBuffer>::_Register(rb);
     return rb;
-}
-
-void RTTManager::DestroyAllFrameBuffers() {
-    for(FrameBuffer* fb : _fbs) fb->Destroy();
-    _fbs.clear();
-}
-
-void RTTManager::DestroyAllRenderBuffers() {
-    for(RenderBuffer* rb : _rbs) rb->Destroy();
-    _rbs.clear();
-}
-
-void RTTManager::_RegisterFrameBuffer(FrameBuffer* tex) {
-    _fbs.insert(tex);
-}
-
-void RTTManager::_UnRegisterFrameBuffer(FrameBuffer* tex) {
-    _fbs.erase(tex);
-}
-
-void RTTManager::_RegisterRenderBuffer(RenderBuffer* rb) {
-    _rbs.insert(rb);
-}
-
-void RTTManager::_UnRegisterRenderBuffer(RenderBuffer* rb) {
-    _rbs.erase(rb);
 }
 
 RTTManager::RTTManager() {

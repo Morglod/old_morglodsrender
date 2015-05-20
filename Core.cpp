@@ -29,8 +29,7 @@ bool Init() {
 
 void Shutdown() {
     TextureManager::GetInstance().DestroyAllTextures();
-    GPUBufferManager::GetInstance().DestroyAllBuffers();
-    //DestroyAllShaderPrograms();
+    GPUBufferManager::GetInstance().DestroyAll();
     GeometryManager::DestroyInstance();
 }
 

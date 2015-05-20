@@ -29,7 +29,6 @@ IGPUBuffer* GPUBufferManager::CreateBuffer(IGPUBuffer::Usage const& usage, size_
         IGPUBuffer* currentBuffer = nullptr;
 
         virtual ~COnGPUBufferDestroy() {
-            GPUBufferManager::GetInstance()._UnRegisterBuffer(currentBuffer);
         }
 
         void Callback(IGPUObjectHandle* obj) override {
@@ -47,7 +46,7 @@ IGPUBuffer* GPUBufferManager::CreateBuffer(IGPUBuffer::Usage const& usage, size_
 
     buffer->OnGPUBufferAllocated.RegisterListener(new COnGPUBufferAllocated());
     buffer->OnDestroy.RegisterListener(new COnGPUBufferDestroy(buffer));
-    _RegisterBuffer(buffer);
+    _Register(buffer);
 
     ///GPUBuffer is already allocated, so OnGPUBufferAllocated event isn't Invoked.
     buffer->OnGPUBufferAllocated.Invoke(buffer, size);
@@ -55,24 +54,10 @@ IGPUBuffer* GPUBufferManager::CreateBuffer(IGPUBuffer::Usage const& usage, size_
     return buffer;
 }
 
-void GPUBufferManager::_RegisterBuffer(IGPUBuffer* buf) {
-    _buffers.insert(buf);
-}
-
-void GPUBufferManager::_UnRegisterBuffer(IGPUBuffer* buf) {
-    _buffers.erase(buf);
-}
-
-void GPUBufferManager::DestroyAllBuffers() {
-    for(IGPUBuffer* buf : _buffers) buf->Destroy();
-    _buffers.clear();
-}
-
-GPUBufferManager::GPUBufferManager() : _usedMem(0) {
+GPUBufferManager::GPUBufferManager() {
 }
 
 GPUBufferManager::~GPUBufferManager() {
-    DestroyAllBuffers();
 }
 
 }

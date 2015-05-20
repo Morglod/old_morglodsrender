@@ -21,6 +21,8 @@ public:
 
     void DestroyAllTextures();
 
+    void Delete(Texture*& texture);
+
     TextureManager();
     virtual ~TextureManager();
 private:
