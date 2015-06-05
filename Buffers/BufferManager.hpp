@@ -3,7 +3,7 @@
 #include "BuffersInterfaces.hpp"
 #include <mu/Singleton.hpp>
 
-#include "../GPUObjectManager.hpp"
+#include "../TGPUObjectManager.hpp"
 
 namespace mr {
 

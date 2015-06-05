@@ -43,7 +43,7 @@ Texture2D* TextureManager::LoadTexture2DFromFile(std::string const& file, Textur
     {
         TextureDataPtr texData = TextureData::FromFile(file);
         if(texData == nullptr) {
-            mr::Log::LogString("Failed TextureManager::LoadTexture2DFromFile. Failed load texture data from file.", MR_LOG_LEVEL_ERROR);
+            mr::Log::LogString("Failed TextureManager::LoadTexture2DFromFile. Failed load texture data from file \""+file+"\".", MR_LOG_LEVEL_ERROR);
             _UnRegisterTexture(tex2d);
             delete tex2d;
             return nullptr;

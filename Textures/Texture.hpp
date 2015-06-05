@@ -41,6 +41,8 @@ struct TextureBindlessBindable {
     Texture* texture = nullptr;
     unsigned int index = 0; //(index in array of textures) or (texture unit)
     IGPUBuffer* ubo = nullptr;
+
+    TextureBindlessBindable() = default;
 };
 
 //Base texutre class
@@ -206,6 +208,7 @@ protected:
     void _CalcMemSize();
     virtual bool Create(CreationParams const& params) = 0;
     inline virtual void SetType(Texture::Type const& type) { _type = type; }
+    mu::ArrayHandle<TextureSizeInfo> _sizes;
 
 private:
     Texture::Type _type = Type_None;
@@ -215,7 +218,6 @@ private:
     Texture::DataType _dataType = DT_NONE;
     uint64_t _residentHandle = 0;
     size_t _memSize = 0;
-    mu::ArrayHandle<TextureSizeInfo> _sizes;
     TextureBitsInfo _bits;
     bool _mipmaps = false; //mipmap generated?
 };

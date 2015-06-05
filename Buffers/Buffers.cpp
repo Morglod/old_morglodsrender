@@ -260,14 +260,17 @@ bool GPUBuffer::MappedRange::Map(GPUBuffer* buf, size_t const& offset, size_t co
     MR_BUFFERS_CHECK_MAPPINGS_ERRORS_CATCH(
         _mem = (char*)glMapBufferRange(GL_ARRAY_BUFFER, offset, length, flags);
         ,
-        mr::Log::LogString("Failed glMapBufferRange in GPUBuffer::MappedRange::Map.", MR_LOG_LEVEL_WARNING);
+        mr::Log::LogString("Failed glMapBufferRange in GPUBuffer::MappedRange::Map.", MR_LOG_LEVEL_ERROR);
         return false;
     )
         if(binded) {
             stateCache->BindBuffer(binded, StateCache::ArrayBuffer);
         }
     }
-    if(_mem == 0) return false;
+    if(_mem == 0) {
+        mr::Log::LogString("Failed glMapBufferRange in GPUBuffer::MappedRange::Map. Mapped mem is zero.", MR_LOG_LEVEL_ERROR);
+        return false;
+    }
     return true;
 }
 

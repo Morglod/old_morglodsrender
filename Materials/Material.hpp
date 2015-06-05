@@ -36,6 +36,8 @@ protected:
     MaterialShaderParams _shaderParams;
     bool _twoSided;
 	TextureBindlessBindable colorTexture;
+	TextureBindlessBindable normalTexture;
+	TextureBindlessBindable specularTexture;
 };
 
 MaterialFlag MaterialFlagGetUsed();

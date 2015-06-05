@@ -2,7 +2,7 @@
 
 #include "../Textures/Texture.hpp"
 #include "RenderBuffer.hpp"
-#include "../GPUObjectManager.hpp"
+#include "../TGPUObjectManager.hpp"
 #include <mu/Singleton.hpp>
 
 #include <unordered_set>

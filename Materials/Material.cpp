@@ -24,6 +24,8 @@ void DefaultMaterial::Create(MaterialDescr const& descr) {
     ShaderManager* shaderManager = mr::ShaderManager::GetInstance();
     _program = shaderManager->DefaultShaderProgram();
     colorTexture = _descr.colorTexture;
+    normalTexture = _descr.normalTexture;
+    specularTexture = _descr.specularTexture;
 }
 
 bool DefaultMaterial::Use() {
@@ -32,6 +34,14 @@ bool DefaultMaterial::Use() {
         stateCache->SetShaderProgram(_program);
         ShaderUniformMap* umap = _program->GetMap();
         umap->SetUniformT("MR_TEX_COLOR", colorTexture.index);
+        umap->SetUniformT("MR_TEX_NORMAL", normalTexture.index);
+        umap->SetUniformT("MR_TEX_SPECULAR", specularTexture.index);
+
+        if(normalTexture.texture == nullptr) umap->SetUniformT("MR_TEX_NORMAL_F", 0.0f);
+        else umap->SetUniformT("MR_TEX_NORMAL_F", 1.0f);
+
+        if(specularTexture.texture == nullptr) umap->SetUniformT("MR_TEX_SPECULAR_F", 0.0f);
+        else umap->SetUniformT("MR_TEX_SPECULAR_F", 1.0f);
 
         bool arb;
         if(mr::gl::IsBindlessTextureSupported(arb)) {

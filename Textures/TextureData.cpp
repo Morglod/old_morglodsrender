@@ -5,6 +5,16 @@
 
 namespace mr {
 
+TextureDataPtr TextureData::FromMemory(mu::ArrayHandle<unsigned char> data, glm::uvec2 const& size, Texture::DataFormat const& dformat, Texture::DataType const& dtype) {
+    TextureData* textureData = new TextureData();
+    textureData->_dataFormat = dformat;
+    textureData->_dataType = dtype;
+    textureData->_size = size;
+    textureData->_data = data;
+
+    return TextureDataPtr(textureData);
+}
+
 #ifdef MR_USE_FREE_IMAGE
 
 namespace {
@@ -30,29 +40,8 @@ Texture::DataFormat MAP_FORMAT[6] = {
 
 }
 
-class TextureData::Impl {
-public:
-    FIBITMAP* image = 0;
-    FREE_IMAGE_FORMAT fileFormat = FIF_UNKNOWN;
-    FREE_IMAGE_TYPE imageType = FIT_UNKNOWN;
-    FREE_IMAGE_COLOR_TYPE imageFormat;
-
-    Impl() = default;
-    ~Impl() {
-        if(image != 0) FreeImage_Unload(image);
-        image = 0;
-    }
-};
-
-unsigned char* TextureData::GetData() const {
-    if(_impl == nullptr) return 0;
-    return FreeImage_GetBits(_impl->image);
-}
-
 TextureDataPtr TextureData::FromFile(std::string const& file) {
 	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
-	BYTE* bits = 0; //image data
-	unsigned int width = 0, height = 0;
 
 	fif = FreeImage_GetFileType(file.c_str(), 0);
 	if(fif == FIF_UNKNOWN)
@@ -67,26 +56,24 @@ TextureDataPtr TextureData::FromFile(std::string const& file) {
 		return nullptr;
     FreeImage_FlipVertical(dib);
 
-	bits = FreeImage_GetBits(dib);
-	width = FreeImage_GetWidth(dib);
-	height = FreeImage_GetHeight(dib);
+	BYTE* bits = FreeImage_GetBits(dib);
+	unsigned int width = FreeImage_GetWidth(dib);
+	unsigned int height = FreeImage_GetHeight(dib);
+	size_t dataSize = FreeImage_GetMemorySize(dib);
 
-	FREE_IMAGE_TYPE imageType = FreeImage_GetImageType(dib);
+	//FREE_IMAGE_TYPE imageType = FreeImage_GetImageType(dib);
 	FREE_IMAGE_COLOR_TYPE imageFormat = FreeImage_GetColorType(dib);
 
 	if((bits == 0) || (width == 0) || (height == 0))
 		return nullptr;
 
     TextureData* textureData = new TextureData();
-    TextureData::Impl* textureImpl = new TextureData::Impl();
-    textureImpl->fileFormat = fif;
-    textureImpl->image = dib;
-    textureImpl->imageType = imageType;
-    textureImpl->imageFormat = imageFormat;
-    textureData->_dataType = Texture::DT_UNSIGNED_BYTE; //MAP_TYPE[imageType];
+    textureData->_data = mu::ArrayHandle<unsigned char>(bits, dataSize, true, true);
     textureData->_dataFormat = MAP_FORMAT[imageFormat];
+    textureData->_dataType = Texture::DT_UNSIGNED_BYTE;
     textureData->_size = glm::uvec2(width, height);
-    textureData->_impl = std::shared_ptr<TextureData::Impl>(textureImpl);
+
+	FreeImage_Unload(dib);
 
 	return TextureDataPtr(textureData);
 }

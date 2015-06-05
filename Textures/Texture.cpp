@@ -151,15 +151,13 @@ bool Texture::Complete(bool mipMaps) {
             unsigned int binded_gpu_handle = 0;
             unsigned int binded_tex_type = 0;
 
-            if((mr::gl::IsDSA_ARB() || mr::gl::IsDSA_EXT()) == false) {
-                if(!stateCache->GetBindedTextureNotCached(0, binded_gpu_handle, binded_tex_type)) {
-                    mr::Log::LogString("Failed Texture::Complete. Failed bind texture.", MR_LOG_LEVEL_ERROR);
-                    return false;
-                }
-                if(!stateCache->BindTextureNotCached(0, handle, texType)) {
-                    mr::Log::LogString("Failed Texture::Complete. Failed bind texture.", MR_LOG_LEVEL_ERROR);
-                    return false;
-                }
+            if(!stateCache->GetBindedTextureNotCached(0, binded_gpu_handle, binded_tex_type)) {
+                mr::Log::LogString("Failed Texture::Complete. Failed bind texture.", MR_LOG_LEVEL_ERROR);
+                return false;
+            }
+            if(!stateCache->BindTextureNotCached(0, handle, texType)) {
+                mr::Log::LogString("Failed Texture::Complete. Failed bind texture.", MR_LOG_LEVEL_ERROR);
+                return false;
             }
 
             glGenerateMipmap(texType);
@@ -202,15 +200,13 @@ bool Texture::GetData(  int const& mipMapLevel,
         unsigned int binded_gpu_handle = 0;
         unsigned int binded_tex_type = 0;
 
-        if((mr::gl::IsDSA_ARB() || mr::gl::IsDSA_EXT()) == false) {
-            if(!stateCache->GetBindedTextureNotCached(0, binded_gpu_handle, binded_tex_type)) {
-                mr::Log::LogString("Failed Texture::GetData. Failed bind texture.", MR_LOG_LEVEL_ERROR);
-                return false;
-            }
-            if(!stateCache->BindTextureNotCached(0, handle, texType)) {
-                mr::Log::LogString("Failed Texture::GetData. Failed bind texture.", MR_LOG_LEVEL_ERROR);
-                return false;
-            }
+        if(!stateCache->GetBindedTextureNotCached(0, binded_gpu_handle, binded_tex_type)) {
+            mr::Log::LogString("Failed Texture::GetData. Failed bind texture.", MR_LOG_LEVEL_ERROR);
+            return false;
+        }
+        if(!stateCache->BindTextureNotCached(0, handle, texType)) {
+            mr::Log::LogString("Failed Texture::GetData. Failed bind texture.", MR_LOG_LEVEL_ERROR);
+            return false;
         }
 
         glGetTexImage(texType, mipMapLevel, dformat, dtype, dstBuffer);

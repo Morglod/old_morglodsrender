@@ -99,6 +99,45 @@ public:
     virtual ~_AssimpLogStream() {}
 };
 
+Texture* _AssimpLoadTexture(aiMaterial* material, aiTextureType const& texType, TextureManager& textureManager, TextureSettings::Wrap& out_Wrap, std::function<bool (Texture2D* texture, TextureDataPtr const& data)> customTextureLoad) {
+    aiString path;
+    aiTextureMapping mapping;
+    unsigned int uvIndex = 0;
+    float blend = 0.0f;
+    aiTextureOp op;
+    aiTextureMapMode mapMode;
+
+    material->GetTexture(texType, 0, &path, &mapping, &uvIndex, &blend, &op, &mapMode);
+
+    Texture2D* tex = nullptr;
+
+    const std::string texturePath = std::string(&path.data[0], path.length);
+    if(customTextureLoad != nullptr) {
+        TextureDataPtr texData = TextureData::FromFile(texturePath);
+        if(texData == nullptr) {
+            mr::Log::LogString("Failed SceneLoader::Import. Failed load texture data from file \""+texturePath+"\".", MR_LOG_LEVEL_ERROR);
+            return nullptr;
+        }
+        tex = textureManager.CreateTexture2D(texData->GetSize(), texData->GetDataType(), texData->GetDataFormat(), Texture::SDF_RGB, Texture::CreationParams());
+        if(!customTextureLoad(tex, texData)) {
+            mr::Log::LogString("Failed SceneLoader::Import. Failed load texture with customTextureLoad method.", MR_LOG_LEVEL_ERROR);
+
+            Texture* toDelete = static_cast<mr::Texture*>(tex);
+            textureManager.Delete(toDelete);
+            return nullptr;
+        }
+    } else {
+        tex = textureManager.LoadTexture2DFromFile(texturePath);
+    }
+
+    out_Wrap = mr::TextureSettings::Wrap_REPEAT;
+    if(mapMode == aiTextureMapMode_Wrap) out_Wrap = mr::TextureSettings::Wrap_REPEAT;
+    else if(mapMode == aiTextureMapMode_Clamp) out_Wrap = mr::TextureSettings::Wrap_CLAMP;
+    else if(mapMode == aiTextureMapMode_Decal) out_Wrap = mr::TextureSettings::Wrap_DECAL;
+    else if(mapMode == aiTextureMapMode_Mirror) out_Wrap = mr::TextureSettings::Wrap_MIRRORED_REPEAT;
+    return static_cast<mr::Texture*>(tex);
+}
+
 }
 
 bool SceneLoader::Import(std::string const& file, ImportOptions const& options) {
@@ -149,34 +188,55 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
             matDescr.colorAmbient = glm::vec4(colA.r, colA.g, colA.b, colAlpha);
             matDescr.colorDiffuse = glm::vec3(colD.r, colD.g, colD.b);
 
-            //Get texture
+            //Get deffuse texture
+            bool noDiffuseTexture = false;
             aiTextureType textureType;
             if(material->GetTextureCount(aiTextureType_AMBIENT) != 0) textureType = aiTextureType_AMBIENT;
             else if(material->GetTextureCount(aiTextureType_DIFFUSE) != 0) textureType = aiTextureType_DIFFUSE;
             else {
+                noDiffuseTexture = true;
                 textureType = aiTextureType_AMBIENT;
                 mr::Log::LogString("No AMBIENT or DIFFUSE textures in mateiral.", MR_LOG_LEVEL_WARNING);
             }
 
-            aiString colorTexturePath;
-            aiTextureMapping colorTextureMapping;
-            unsigned int colorTextureUvIndex = 0;
-            float colorTextureBlend = 0.0f;
-            aiTextureOp colorTextureOp;
-            aiTextureMapMode colorTextureMapMode;
+            if(!noDiffuseTexture) {
+                TextureSettings::Wrap wrapMode;
 
-            material->GetTexture(textureType, 0, &colorTexturePath, &colorTextureMapping, &colorTextureUvIndex, &colorTextureBlend, &colorTextureOp, &colorTextureMapMode);
-            matDescr.colorTexture.texture = static_cast<mr::Texture*>(textureManager.LoadTexture2DFromFile(std::string(&colorTexturePath.data[0], colorTexturePath.length)));
-            matDescr.texColorWrapMode = mr::TextureSettings::Wrap_REPEAT;
-            if(colorTextureMapMode == aiTextureMapMode_Wrap) matDescr.texColorWrapMode = mr::TextureSettings::Wrap_REPEAT;
-            else if(colorTextureMapMode == aiTextureMapMode_Clamp) matDescr.texColorWrapMode = mr::TextureSettings::Wrap_CLAMP;
-            else if(colorTextureMapMode == aiTextureMapMode_Decal) matDescr.texColorWrapMode = mr::TextureSettings::Wrap_DECAL;
-            else if(colorTextureMapMode == aiTextureMapMode_Mirror) matDescr.texColorWrapMode = mr::TextureSettings::Wrap_MIRRORED_REPEAT;
+                //TODO: Check if successfull loaded
+                Texture* tex = _AssimpLoadTexture(material, textureType, textureManager, wrapMode, options.customTextureLoad);
+                matDescr.colorTexture.texture = tex;
+                bool arb_bindless;
+                if(mr::gl::IsBindlessTextureSupported(arb_bindless)) {
+                    matDescr.colorTexture.texture->MakeResident();
+                    matDescr.colorTexture.index = bindlessTexturesCache.size();
+                    bindlessTexturesCache.push_back(matDescr.colorTexture.texture);
+                }
+            }
 
-            bool arb_bindless;
-            if(mr::gl::IsBindlessTextureSupported(arb_bindless)) {
-                matDescr.colorTexture.texture->MakeResident();
-                bindlessTexturesCache.push_back(matDescr.colorTexture.texture);
+            //Get normal texture
+            if(material->GetTextureCount(aiTextureType_NORMALS) != 0) {
+                TextureSettings::Wrap wrapMode;
+                Texture* tex = _AssimpLoadTexture(material, aiTextureType_NORMALS, textureManager, wrapMode, options.customTextureLoad);
+                matDescr.normalTexture.texture = tex;
+                bool arb_bindless;
+                if(mr::gl::IsBindlessTextureSupported(arb_bindless)) {
+                    matDescr.normalTexture.texture->MakeResident();
+                    matDescr.normalTexture.index = bindlessTexturesCache.size();
+                    bindlessTexturesCache.push_back(matDescr.normalTexture.texture);
+                }
+            }
+
+            //Get specular texture
+            if(material->GetTextureCount(aiTextureType_SHININESS) != 0) {
+                TextureSettings::Wrap wrapMode;
+                Texture* tex = _AssimpLoadTexture(material, aiTextureType_SHININESS, textureManager, wrapMode, options.customTextureLoad);
+                matDescr.specularTexture.texture = tex;
+                bool arb_bindless;
+                if(mr::gl::IsBindlessTextureSupported(arb_bindless)) {
+                    matDescr.specularTexture.texture->MakeResident();
+                    matDescr.specularTexture.index = bindlessTexturesCache.size();
+                    bindlessTexturesCache.push_back(matDescr.specularTexture.texture);
+                }
             }
         }
         materialDescriptions.GetArray()[i] = matDescr;
@@ -194,9 +254,6 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
     for(unsigned int i = 0; i < scene->mNumMaterials; ++i) {
         MaterialDescr& matDescr = materialDescriptions.GetArray()[i];
         matDescr.colorTexture.ubo = bindlessTexturesUBO;
-        if(bindlessTexturesUBO != nullptr) {
-            matDescr.colorTexture.index = i;
-        }
         auto newMat = new mr::DefaultMaterial();
         newMat->Create(matDescr);
         _impl->_materials.At(i) = static_cast<IMaterial*>(newMat);

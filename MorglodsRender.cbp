@@ -80,7 +80,6 @@
 		<Unit filename="CoreObjects.cpp" />
 		<Unit filename="CoreObjects.hpp" />
 		<Unit filename="FeaturesList/FeaturesList.txt" />
-		<Unit filename="GPUObjectManager.hpp" />
 		<Unit filename="Geometry/GeometryBuffer.cpp" />
 		<Unit filename="Geometry/GeometryBuffer.hpp" />
 		<Unit filename="Geometry/GeometryBuilder.cpp" />
@@ -119,10 +118,6 @@
 		<Unit filename="RTT/RTTManager.hpp" />
 		<Unit filename="RTT/RenderBuffer.cpp" />
 		<Unit filename="RTT/RenderBuffer.hpp" />
-		<Unit filename="Resources/ResourceInterfaces.hpp" />
-		<Unit filename="Resources/ResourceManager.hpp" />
-		<Unit filename="Resources/ResourceType.cpp" />
-		<Unit filename="Resources/ResourceType.hpp" />
 		<Unit filename="Scene/Entity.cpp" />
 		<Unit filename="Scene/Entity.hpp" />
 		<Unit filename="Scene/Node.cpp" />
@@ -159,8 +154,10 @@
 		<Unit filename="Shadows/ShadowMap.hpp" />
 		<Unit filename="SimpleApp/ContextGLFW.hpp" />
 		<Unit filename="SimpleApp/SimpleApp.hpp" />
+		<Unit filename="SimpleApp/SimpleGLFWApp.hpp" />
 		<Unit filename="StateCache.cpp" />
 		<Unit filename="StateCache.hpp" />
+		<Unit filename="TGPUObjectManager.hpp" />
 		<Unit filename="Textures/Texture.cpp" />
 		<Unit filename="Textures/Texture.hpp" />
 		<Unit filename="Textures/Texture2D.cpp" />
@@ -171,6 +168,8 @@
 		<Unit filename="Textures/TextureManager.hpp" />
 		<Unit filename="Textures/TextureSettings.cpp" />
 		<Unit filename="Textures/TextureSettings.hpp" />
+		<Unit filename="Textures/TextureStreamer2D.cpp" />
+		<Unit filename="Textures/TextureStreamer2D.hpp" />
 		<Unit filename="Types.cpp" />
 		<Unit filename="Types.hpp" />
 		<Unit filename="Utils/Containers.cpp" />

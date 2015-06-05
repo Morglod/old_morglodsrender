@@ -37,7 +37,8 @@ struct MaterialDescr {
 	glm::vec3 colorDiffuse;
 
 	TextureBindlessBindable colorTexture;
-	TextureSettings::Wrap texColorWrapMode;
+	TextureBindlessBindable normalTexture;
+	TextureBindlessBindable specularTexture;
 };
 
 struct MaterialShaderParams {

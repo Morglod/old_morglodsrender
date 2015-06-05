@@ -17,7 +17,6 @@ in vec2 MR_VertexTexCoord;
 in vec3 MR_VertexInstancedPos;
 
 uniform vec3 MR_CAM_POS;
-uniform vec3 MR_CAM_DIR;
 
 uniform mat4 MR_MAT_MVP;
 uniform mat4 MR_MAT_MODEL;
@@ -25,6 +24,10 @@ uniform mat4 MR_MAT_VIEW;
 uniform mat4 MR_MAT_PROJ;
 
 uniform unsigned int MR_TEX_COLOR;
+uniform unsigned int MR_TEX_NORMAL;
+uniform unsigned int MR_TEX_SPECULAR;
+uniform float MR_TEX_NORMAL_F;
+uniform float MR_TEX_SPECULAR_F;
 
 struct MR_TextureHandle {
 	uint64_t handle;
@@ -79,27 +82,46 @@ float ScalarInterp(in float x1, in float x2, in float x) {
     return (x-x1) / (x2-x1 + EPSILON);
 }
 
-vec3 ApplyPointLights(in vec3 surfaceColor, in vec3 surfaceNormal) {
+vec3 ApplyPointLights(in vec3 surfaceColor, in vec3 surfaceDirection) {
     vec3 result = vec3(0,0,0);
     vec3 surfPos = (MR_MAT_MODEL * MR_LocalVertexPos).xyz + MR_VertexInstancedPos;
     for(int i = 0; i < MR_numPointLights; i++){
+        vec3 lightNormal = normalize(MR_pointLights[i].pos - surfPos);
         float dist = length(surfPos - MR_pointLights[i].pos);
         float inv_dist = 1.0 / (dist + EPSILON);
         float inv_innerR = 1.0 / MR_pointLights[i].innerRange;
-        float il = max(inv_dist, inv_innerR) - inv_innerR;
-        il = ZeroOrOne(il); // 1.0 or 0.0
-        float al = 1.0 - ScalarInterp(MR_pointLights[i].innerRange, MR_pointLights[i].outerRange, dist);
-        result += MR_pointLights[i].color * clamp(il + al, 0.0, 1.0);
+        float innerRangeLight = max(inv_dist, inv_innerR) - inv_innerR;
+        innerRangeLight = ZeroOrOne(innerRangeLight); // 1.0 or 0.0
+        float outerRangeLight = 1.0 - ScalarInterp(MR_pointLights[i].innerRange, MR_pointLights[i].outerRange, dist);
+        float sphereLight = clamp(innerRangeLight + outerRangeLight, 0.0, 1.0);
+        //float backFaceFactor = (dot(surfaceNormal, -lightNormal) + 1.0) / 2.0;
+        float resultLight = sphereLight;
+        //calc normal
+        vec3 normalMap = texture(sampler2D(MR_textures[MR_TEX_NORMAL].handle), MR_VertexTexCoord).rgb;
+        normalMap = mix(vec3(1,1,1), normalMap, MR_TEX_NORMAL_F);
+        vec3 normalMap_ = normalMap * surfaceDirection;
+        vec3 normal = normalMap_;
+
+        //Specular
+        vec3 viewDir = normalize(MR_CAM_POS - surfPos);
+
+        vec3 incidenceVector = -lightNormal; //a unit vector
+        vec3 reflectionVector = reflect(incidenceVector, normal); //also a unit vector
+        float cosAngle = max(0.0, dot(viewDir, reflectionVector));
+        float specularCoefficient = pow(cosAngle, 3.0);
+        float specularMap = mix(0.0, texture(sampler2D(MR_textures[MR_TEX_SPECULAR].handle), MR_VertexTexCoord).r, MR_TEX_SPECULAR_F);
+
+        result += (MR_pointLights[i].color * resultLight * (max(dot(normal, lightNormal), 0.0))) + resultLight * vec3(specularMap * specularCoefficient);
     }
     return result * surfaceColor;
 }
 
-vec3 ApplyLights(in vec3 surfaceColor, in vec3 surfaceNormal) {
-    return ApplyPointLights(surfaceColor, surfaceNormal);
+vec3 ApplyLights(in vec3 surfaceColor, in vec3 surfaceDirection) {
+    return ApplyPointLights(surfaceColor, surfaceDirection);
 }
 
 void main() {
-    vec4 surface_normal = normalize((vec4(MR_VertexNormal,0) * MR_MAT_MODEL));
-    vec3 albedoColor = ApplyLights(texture(sampler2D(MR_textures[MR_TEX_COLOR].handle), MR_VertexTexCoord).xyz, surface_normal.xyz);
+    vec4 surface_direction = normalize((vec4(MR_VertexNormal,0) * MR_MAT_MODEL));
+    vec3 albedoColor = ApplyLights(texture(sampler2D(MR_textures[MR_TEX_COLOR].handle), MR_VertexTexCoord).xyz, surface_direction.xyz);
     MR_fragSceneColorNothing = vec4(albedoColor, 1.0);
 }

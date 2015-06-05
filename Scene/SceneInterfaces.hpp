@@ -40,6 +40,8 @@ public:
     virtual glm::vec3 GetRotation() = 0;
     virtual glm::vec3 GetTarget() = 0;
 
+    virtual glm::vec3* GetPositionPtr() = 0;
+
     virtual float GetFovY() = 0;
     virtual float GetNearZ() = 0;
     virtual float GetFarZ() = 0;

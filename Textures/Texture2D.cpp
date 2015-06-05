@@ -43,15 +43,13 @@ bool Texture2D::Create(CreationParams const& params) {
         unsigned int binded_gpu_handle = 0;
         unsigned int binded_tex_type = 0;
 
-        if((mr::gl::IsDSA_ARB() || mr::gl::IsDSA_EXT()) == false) {
-            if(!stateCache->GetBindedTextureNotCached(0, binded_gpu_handle, binded_tex_type)) {
-                mr::Log::LogString("Failed in Texture2D::Create. Failed bind texture.", MR_LOG_LEVEL_ERROR);
-                return false;
-            }
-            if(!stateCache->BindTextureNotCached(0, handle, texType)) {
-                mr::Log::LogString("Failed in Texture2D::Create. Failed bind texture.", MR_LOG_LEVEL_ERROR);
-                return false;
-            }
+        if(!stateCache->GetBindedTextureNotCached(0, binded_gpu_handle, binded_tex_type)) {
+            mr::Log::LogString("Failed in Texture2D::Create. Failed bind texture.", MR_LOG_LEVEL_ERROR);
+            return false;
+        }
+        if(!stateCache->BindTextureNotCached(0, handle, texType)) {
+            mr::Log::LogString("Failed in Texture2D::Create. Failed bind texture.", MR_LOG_LEVEL_ERROR);
+            return false;
         }
 
         glTexParameteri(texType, GL_TEXTURE_WRAP_S, params.wrapS);
@@ -88,30 +86,34 @@ bool Texture2D::SetData(TextureDataPtr const& data, Texture::StorageDataFormat c
     const unsigned int dataFormat = (unsigned int) data->GetDataFormat();
     const unsigned int dataType =   (unsigned int) data->GetDataType();
 
-    if(mr::gl::IsDSA_EXT()) {
-        glPushClientAttribDefaultEXT(GL_CLIENT_PIXEL_STORE_BIT);
-        glTextureImage2DEXT(handle, texType, mipMapLevel, sdf, size.x, size.y, 0, dataFormat, dataType, data->GetData());
-        glPopClientAttrib();
+    if(mr::gl::IsDSA_ARB()) {
+        //glPushClientAttribDefaultEXT(GL_CLIENT_PIXEL_STORE_BIT);
+        glTextureImage2DEXT(handle, texType, mipMapLevel, sdf, size.x, size.y, 0, dataFormat, dataType, data->GetData().GetArray());
+        //glPopClientAttrib();
     } else {
         StateCache* stateCache = StateCache::GetDefault();
         unsigned int binded_gpu_handle = 0;
         unsigned int binded_tex_type = 0;
 
-        if((mr::gl::IsDSA_ARB() || mr::gl::IsDSA_EXT()) == false) {
-            if(!stateCache->GetBindedTextureNotCached(0, binded_gpu_handle, binded_tex_type)) {
-                mr::Log::LogString("Failed Texture2D::SetData. Failed bind texture.", MR_LOG_LEVEL_ERROR);
-                return false;
-            }
-            if(!stateCache->BindTextureNotCached(0, handle, texType)) {
-                mr::Log::LogString("Failed Texture2D::SetData. Failed bind texture.", MR_LOG_LEVEL_ERROR);
-                return false;
-            }
+        if(!stateCache->GetBindedTextureNotCached(0, binded_gpu_handle, binded_tex_type)) {
+            mr::Log::LogString("Failed Texture2D::SetData. Failed bind texture.", MR_LOG_LEVEL_ERROR);
+            return false;
+        }
+        if(!stateCache->BindTextureNotCached(0, handle, texType)) {
+            mr::Log::LogString("Failed Texture2D::SetData. Failed bind texture.", MR_LOG_LEVEL_ERROR);
+            return false;
         }
 
-        glTexImage2D(texType, mipMapLevel, sdf, size.x, size.y, 0, dataFormat, dataType, data->GetData());
+        glTexImage2D(texType, mipMapLevel, sdf, size.x, size.y, 0, dataFormat, dataType, data->GetData().GetArray());
 
         if(binded_gpu_handle != 0) stateCache->BindTextureNotCached(0, binded_gpu_handle, binded_tex_type);
     }
+
+    TextureSizeInfo* sizes = new TextureSizeInfo[1];
+    sizes[0].width = size.x;
+    sizes[0].width = size.y;
+    sizes[0].depth = 1;
+    _sizes = mu::ArrayHandle<TextureSizeInfo>(sizes, 1, true, false);
 
     return true;
 }
@@ -124,27 +126,59 @@ bool Texture2D::Storage(glm::uvec2 const& size, Texture::DataType const& dataTyp
     const unsigned int dataFormat = (unsigned int) dataFormat_;
     const unsigned int dataType =   (unsigned int) dataType_;
 
-    if(mr::gl::IsDSA_EXT()) {
-        glPushClientAttribDefaultEXT(GL_CLIENT_PIXEL_STORE_BIT);
+    if(mr::gl::IsDSA_ARB()) {
+        //glPushClientAttribDefaultEXT(GL_CLIENT_PIXEL_STORE_BIT);
         glTextureImage2DEXT(handle, texType, mipMapLevel, sdf, size.x, size.y, 0, dataFormat, dataType, 0);
-        glPopClientAttrib();
+        //glPopClientAttrib();
     } else {
         StateCache* stateCache = StateCache::GetDefault();
         unsigned int binded_gpu_handle = 0;
         unsigned int binded_tex_type = 0;
 
-        if((mr::gl::IsDSA_ARB() || mr::gl::IsDSA_EXT()) == false) {
-            if(!stateCache->GetBindedTextureNotCached(0, binded_gpu_handle, binded_tex_type)) {
-                mr::Log::LogString("Failed Texture2D::Storage. Failed bind texture.", MR_LOG_LEVEL_ERROR);
-                return false;
-            }
-            if(!stateCache->BindTextureNotCached(0, handle, texType)) {
-                mr::Log::LogString("Failed Texture2D::Storage. Failed bind texture.", MR_LOG_LEVEL_ERROR);
-                return false;
-            }
+        if(!stateCache->GetBindedTextureNotCached(0, binded_gpu_handle, binded_tex_type)) {
+            mr::Log::LogString("Failed Texture2D::Storage. Failed bind texture.", MR_LOG_LEVEL_ERROR);
+            return false;
+        }
+        if(!stateCache->BindTextureNotCached(0, handle, texType)) {
+            mr::Log::LogString("Failed Texture2D::Storage. Failed bind texture.", MR_LOG_LEVEL_ERROR);
+            return false;
         }
 
         glTexImage2D(texType, mipMapLevel, sdf, size.x, size.y, 0, dataFormat, dataType, 0);
+
+        if(binded_gpu_handle != 0) stateCache->BindTextureNotCached(0, binded_gpu_handle, binded_tex_type);
+    }
+
+    TextureSizeInfo* sizes = new TextureSizeInfo[1];
+    sizes[0].width = size.x;
+    sizes[0].height = size.y;
+    sizes[0].depth = 1;
+    _sizes = mu::ArrayHandle<TextureSizeInfo>(sizes, 1, true, false);
+
+    return true;
+}
+
+bool Texture2D::UpdateData(TextureDataPtr const& data, int const& mipMapLevel, glm::ivec2 const& offset) {
+    const unsigned int handle = GetGPUHandle();
+    if(gl::IsDSA_ARB()) {
+        glTextureSubImage2D(handle, mipMapLevel, offset.x, offset.y, data->GetSize().x, data->GetSize().y, data->GetDataFormat(), data->GetDataType(), data->GetData().GetArray());
+    } else if(gl::IsDSA_EXT()) {
+        glTextureSubImage2DEXT(handle, (unsigned int)GetType(), mipMapLevel, offset.x, offset.y, data->GetSize().x, data->GetSize().y, data->GetDataFormat(), data->GetDataType(), data->GetData().GetArray());
+    } else {
+        StateCache* stateCache = StateCache::GetDefault();
+        unsigned int binded_gpu_handle = 0;
+        unsigned int binded_tex_type = 0;
+
+        if(!stateCache->GetBindedTextureNotCached(0, binded_gpu_handle, binded_tex_type)) {
+            mr::Log::LogString("Failed Texture2D::UpdateData. Failed bind texture.", MR_LOG_LEVEL_ERROR);
+            return false;
+        }
+        if(!stateCache->BindTextureNotCached(0, handle, (unsigned int)GetType())) {
+            mr::Log::LogString("Failed Texture2D::UpdateData. Failed bind texture.", MR_LOG_LEVEL_ERROR);
+            return false;
+        }
+
+        glTexSubImage2D((unsigned int)GetType(), mipMapLevel, offset.x, offset.y, data->GetSize().x, data->GetSize().y, data->GetDataFormat(), data->GetDataType(), data->GetData().GetArray());
 
         if(binded_gpu_handle != 0) stateCache->BindTextureNotCached(0, binded_gpu_handle, binded_tex_type);
     }

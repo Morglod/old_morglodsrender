@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef _MR_SIMPLE_APP_H_
-#define _MR_SIMPLE_APP_H_
-
 #include "Utils/Exception.hpp"
 #include <mu/ConfigClass.hpp>
 #include "Config.hpp"
@@ -10,16 +7,8 @@
 #include "Scene/PerspectiveCamera.hpp"
 #include "Utils/Log.hpp"
 
-#define GLEW_STATIC
-#include <GL\glew.h>
-
-#include "ContextGLFW.hpp"
-
 #include <iostream>
 #include <fstream>
-#include <windows.h>
-
-#undef CreateWindow //FUCKING WINDOWS SDK, BURN IN HELL
 
 std::ofstream __simple_app__log_file("log.txt");
 
@@ -51,47 +40,35 @@ public:
         __simple_app__log_file.flush();
     }
 
-    static void glfwError(int level, const char* desc) {
-        mr::Log::LogString("glfw error. level " + std::to_string(level) + ". " + std::string(desc), MR_LOG_LEVEL_ERROR);
+    virtual bool ContextInit() {
+        return false;
     }
 
-    virtual bool Go(std::string const& WindowName = "MorglodsRender", unsigned short const& WindowWidth = 800, unsigned short const& WindowHeight = 600, GLFWWindowHints const& hints = GLFWWindowHints(), bool const& multithreaded = false) {
+    virtual void ContextDestroy() {
+    }
+
+    virtual void MainLoop() {
+    }
+
+    bool Go(std::string const& WindowName = "MorglodsRender", unsigned short const& WindowWidth = 800, unsigned short const& WindowHeight = 600, bool const& multithreaded_ = false) {
         aspect = (float)WindowWidth / (float)WindowHeight;
         window_width = WindowWidth;
         window_height = WindowHeight;
+        multithreaded = multithreaded_;
+        windowName = WindowName;
 
         mr::Log::Add(LogString);
-        glfwSetErrorCallback(glfwError);
 
-        if(!glfwInit()){
-            mr::Log::LogString("Failed glfwInit in SimpleApp::Go.", MR_LOG_LEVEL_ERROR);
-        }
-
-        mr::ContextGLFWPtr mtCtx = nullptr;
-        if(multithreaded) {
-            hints.Setup(true);
-            if((mtCtx = contextMgr.CreateWindow(1, 1, WindowName.c_str())) == nullptr) {
-                mr::Log::LogString("Failed glfw multithred window creation failed in SimpleApp::Go.", MR_LOG_LEVEL_ERROR);
-                contextMgr.Destroy();
-                return false;
-            }
-        }
-
-        context = nullptr;
-        hints.Setup(false);
-        if((context = contextMgr.CreateWindow(window_width, window_height, WindowName.c_str(), mtCtx)) == nullptr) {
-            mr::Log::LogString("Failed glfw main window creation failed in SimpleApp::Go.", MR_LOG_LEVEL_ERROR);
-            contextMgr.Destroy();
+        if(!ContextInit()) {
+            mr::Log::LogString("Failed ContextInit in SimpleApp::Go.", MR_LOG_LEVEL_ERROR);
             return false;
         }
 
-        context->MakeCurrent();
-
         if(!mr::Init()) {
             if(ThrowExceptions()) {
-                throw mr::Exception("Failed context initialization SimpleApp::Go. Check log.");
+                throw mr::Exception("Failed render initialization SimpleApp::Go. Check log.");
             }
-            mr::Log::LogString("Failed context initialization SimpleApp::Go.", MR_LOG_LEVEL_ERROR);
+            mr::Log::LogString("Failed render initialization SimpleApp::Go.", MR_LOG_LEVEL_ERROR);
             return false;
         }
 
@@ -102,28 +79,15 @@ public:
             if(ThrowExceptions()) {
                 throw mr::Exception("Failed SimpleApp::Setup.");
             }
+            mr::Log::LogString("Failed SimpleApp::Setup.", MR_LOG_LEVEL_ERROR);
             return false;
         }
 
-        float lTime = glfwGetTime();
-        float delta = 0.00000001f;
-
-        GLFWwindow* mainWindow = context->GetWindow();
-        while(!glfwWindowShouldClose(mainWindow)) {
-            Frame(delta);
-
-            glfwPollEvents();
-            glfwSwapBuffers(mainWindow);
-
-            float nTime = glfwGetTime();
-            delta = nTime - lTime;
-            lTime = nTime;
-        }
-
+        MainLoop();
         Free();
 
         delete camera;
-        contextMgr.Destroy();
+        ContextDestroy();
 
         return true;
     }
@@ -133,7 +97,6 @@ public:
     }
 
     virtual void Frame(const float& delta) {
-        //scene.Draw();
     }
 
     virtual void Free() {
@@ -141,16 +104,14 @@ public:
 
     SimpleApp() : window_width(1), window_height(1), aspect(1.0f) {}
     virtual ~SimpleApp() {}
-
-    mr::ContextGLFWPtr context = nullptr;
-    mr::ContextManagerGLFW contextMgr;
 protected:
     unsigned short window_width, window_height;
     float aspect;
+    bool multithreaded = false;
+    std::string windowName = "";
 
     mr::ICamera* camera;
 };
 
 }
 
-#endif // _MR_SIMPLE_APP_H_

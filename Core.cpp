@@ -29,8 +29,8 @@ bool Init() {
 
 void Shutdown() {
     TextureManager::GetInstance().DestroyAllTextures();
+    GeometryManager::DestroyInstance(); //here gpuBuffers is used, so destroy it before gpuBuffers.
     GPUBufferManager::GetInstance().DestroyAll();
-    GeometryManager::DestroyInstance();
 }
 
 }

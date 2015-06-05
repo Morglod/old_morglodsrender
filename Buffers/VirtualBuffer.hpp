@@ -54,10 +54,10 @@ protected:
     bool Allocate(const Usage& usage, const size_t& size) override;
     void _RangeFree(IGPUBufferRangeHandle* handle) override { return _realBuffer->_RangeFree(handle); }
 
-    IGPUBuffer* _realBuffer;
-    size_t _realBuffer_offset;
-    size_t _size;
-    size_t _eventHandle;
+    IGPUBuffer* _realBuffer = nullptr;
+    size_t _realBuffer_offset = 0;
+    size_t _size = 0;
+    size_t _eventHandle = 0;
 };
 
 class VirtualGPUBufferManager {

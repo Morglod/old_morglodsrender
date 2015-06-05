@@ -11,6 +11,10 @@ namespace mr {
 class IMesh;
 class IMaterial;
 class IGeometry;
+class Texture2D;
+
+class TextureData;
+typedef std::shared_ptr<TextureData> TextureDataPtr;
 
 class SceneLoader final {
 public:
@@ -28,6 +32,7 @@ public:
         bool debugLog = false;
         std::function<bool (float percentage)> assimpProcessCallback = nullptr;
         std::function<void (ProgressInfo const& info)> progressCallback = nullptr;
+        std::function<bool (Texture2D* texture, TextureDataPtr const& data)> customTextureLoad = nullptr; //it should load and call Complete function on already allocated texture
     };
 
     bool Import(std::string const& file, ImportOptions const& options);

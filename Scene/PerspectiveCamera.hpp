@@ -20,6 +20,8 @@ public:
     inline glm::vec3 GetRotation() override { return _rot; }
     inline glm::vec3 GetTarget() override { return GetPosition()+GetForward(); }
 
+    inline glm::vec3* GetPositionPtr() override { return &_pos; }
+
     inline float GetFovY() override { return _fovy; }
     inline float GetNearZ() override { return _near_z; }
     inline float GetFarZ() override { return _far_z; }
