@@ -45,6 +45,8 @@ public:
     virtual IShaderProgram* CreateDefaultShaderProgram();
     virtual IShaderProgram* DefaultShaderProgram();
 
+    virtual bool CompleteShaderProgram(IShaderProgram* shaderProgram); //Set default bindings, etc
+
     virtual void RegisterShaderProgram(IShaderProgram* shaderProgram);
     virtual void UnRegisterShaderProgram(IShaderProgram* shaderProgram);
 

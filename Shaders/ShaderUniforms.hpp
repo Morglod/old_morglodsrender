@@ -33,6 +33,7 @@ struct ShaderUniformBlockInfo {
     mu::ArrayHandle<int> uniform_offsets;
     int location = -1;
     int bufferSize = -1;
+    int binding = -1;
 
     inline int GetOffset(std::string const& name) {
         static std::hash<std::string> str_hash;
@@ -71,17 +72,13 @@ public:
     virtual mu::ArrayHandle<IShaderUniformRef*> GetRefs();
     virtual void DeleteAllRefs();
 
-    virtual mu::ArrayHandle<ShaderUniformInfo> GetCompiledUniforms();
+    virtual mu::ArrayHandle<ShaderUniformInfo> GetUniforms();
     virtual bool IsUniform(std::string const& uniformName);
     virtual int GetUniformGPULocation(std::string const& uniformName);
 
-    virtual inline ShaderUniformBlockInfo& GetUniformBlock(std::string const& name) {
-        return _uniformBlocks[name];
-    }
-
-    virtual inline int GetUniformBlockGPULocation(std::string const& name) {
-        return _uniformBlocks[name].location;
-    }
+    virtual mu::ArrayHandle<ShaderUniformBlockInfo> GetUniformBlocks();
+    virtual inline ShaderUniformBlockInfo& GetUniformBlock(std::string const& name) { return _uniformBlocks[name]; }
+    virtual inline int GetUniformBlockGPULocation(std::string const& name) { return _uniformBlocks[name].location; }
 
     virtual void Reset(bool saveRefs); //reset uniforms map
 

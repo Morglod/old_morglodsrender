@@ -1,4 +1,6 @@
 #include "PerspectiveCamera.hpp"
+#include "../Shaders/ShaderManager.hpp"
+
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "../Utils/Log.hpp"
@@ -86,13 +88,6 @@ void PerspectiveCamera::Pitch(const float& v)  {
     MR_DEBUG_LOG_CAM("Pitch for " + std::to_string(v))
 }
 
-void PerspectiveCamera::SetModelMatrixPtr(glm::mat4* m)  {
-    _mat_model_ptr = m;
-    if(GetAutoRecalc()) Calc();
-
-    MR_DEBUG_LOG_CAM("New ModelMatrix ptr")
-}
-
 void PerspectiveCamera::SetPosition(const glm::vec3& p)  {
     _pos = p;
 
@@ -130,17 +125,9 @@ void PerspectiveCamera::CalcProjectionMatrix()  {
     MR_DEBUG_LOG_CAM("Projection matrix calculated")
 }
 
-void PerspectiveCamera::CalcMVP()  {
-    _mat_mvp = _mat_proj * _mat_view * ((_mat_model_ptr != nullptr) ? (*_mat_model_ptr) : glm::mat4(1.0f));
-    OnMatUpdated_MVP(this, this->GetMVPPtr());
-
-    MR_DEBUG_LOG_CAM("MVP matrix calculated")
-}
-
 void PerspectiveCamera::Calc()  {
     CalcViewMatrix();
     CalcProjectionMatrix();
-    CalcMVP();
 }
 
 void PerspectiveCamera::_CalcDirectionsFromRot() {
@@ -150,11 +137,18 @@ void PerspectiveCamera::_CalcDirectionsFromRot() {
     OnDirectionsChanged(this);
 }
 
+bool PerspectiveCamera::Use(ShaderManager* shaderManager) {
+    shaderManager->SetGlobalUniform("MR_MAT_VIEW", mr::IShaderUniformRef::Mat4, GetViewMatrixPtr());
+    shaderManager->SetGlobalUniform("MR_MAT_PROJ", mr::IShaderUniformRef::Mat4, GetProjectMatrixPtr());
+    shaderManager->SetGlobalUniform("MR_CAM_POS", mr::IShaderUniformRef::Vec3, GetPositionPtr());
+    return true;
+}
+
 PerspectiveCamera::PerspectiveCamera() {
 }
 
 PerspectiveCamera::PerspectiveCamera(const glm::vec3& pos, const glm::vec3& rotation, const float& fovY, const float& aspectR, const float& nearZ, const float& farZ)
- : _auto_recalc(false), _dir_forward(0,0,0), _dir_left(0,0,0), _dir_up(0,0,0), _pos(0,0,0), _rot(0,0,0), _fovy(0.0f), _near_z(0.0f), _far_z(0.0f), _aspectr(0.0f), _mat_view(1.0f), _mat_proj(1.0f), _mat_mvp(1.0f), _mat_model_ptr(nullptr)
+ : _auto_recalc(false), _dir_forward(0,0,0), _dir_left(0,0,0), _dir_up(0,0,0), _pos(0,0,0), _rot(0,0,0), _fovy(0.0f), _near_z(0.0f), _far_z(0.0f), _aspectr(0.0f), _mat_view(1.0f), _mat_proj(1.0f)
 {
     _pos = pos;
     SetRotation(rotation);

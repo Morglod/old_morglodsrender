@@ -13,6 +13,23 @@ typedef std::shared_ptr<IModel> ModelPtr;
 typedef std::shared_ptr<SceneNode> SceneNodePtr;
 typedef std::weak_ptr<IModel> ModelWeakPtr;
 
+struct PointLightDesc {
+    glm::vec3 pos, color;
+    float innerR, outerR;
+    inline PointLightDesc(glm::vec3 const& p, glm::vec3 const& c, float iR, float oR) : pos(p), color(c), innerR(iR), outerR(oR) {}
+};
+
+struct PointLightDescList {
+    int num = 0;
+    std::vector<PointLightDesc> pointLights;
+
+    inline PointLightDesc& Create(glm::vec3 const& pos, glm::vec3 const& color, float innerR, float outerR) {
+        pointLights.push_back(PointLightDesc(pos, color, innerR, outerR));
+        num++;
+        return pointLights[pointLights.size()-1];
+    }
+};
+
 class ISceneManager {
 public:
     virtual size_t PickLod(float distance, IModel*) const = 0;
@@ -26,6 +43,9 @@ public:
     virtual mr::TStaticArray<EntityPtr> FindEntities(ModelWeakPtr model) const = 0;
     virtual void Draw() const = 0;
     virtual void Optimize() = 0;
+
+    virtual PointLightDesc& CreatePointLight(glm::vec3 const& pos, glm::vec3 const& color, float innerR, float outerR) = 0;
+    virtual bool CompleteLights() = 0;
 
     virtual ~ISceneManager() {}
 protected:

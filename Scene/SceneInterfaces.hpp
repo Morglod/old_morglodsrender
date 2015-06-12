@@ -17,6 +17,9 @@ public:
     virtual MR::BoundingBox* GetBBPtr() = 0;
 };
 */
+
+class ShaderManager;
+
 class ICamera {
 public:
     mu::Event<ICamera*, const glm::vec3&> OnPositionChanged;
@@ -24,8 +27,6 @@ public:
     //mu::Event<ICamera*, const glm::vec3&> OnTargetChanged;
     mu::Event<ICamera*> OnDirectionsChanged;
 
-    mu::Event<ICamera*, glm::mat4*> OnMatUpdated_MVP;
-    mu::Event<ICamera*, glm::mat4*> OnMatUpdated_Model;
     mu::Event<ICamera*, glm::mat4*> OnMatUpdated_View;
     mu::Event<ICamera*, glm::mat4*> OnMatUpdated_Projection;
 
@@ -52,10 +53,8 @@ public:
     virtual void SetFarZ(const float& f) = 0;
     virtual void SetAspectRatio(const float& f) = 0;
 
-    virtual glm::mat4* GetModelMatrixPtr() = 0;
     virtual glm::mat4* GetViewMatrixPtr() = 0;
     virtual glm::mat4* GetProjectMatrixPtr() = 0;
-    virtual glm::mat4* GetMVPPtr() = 0;
 
     virtual void MoveForward(const float& v) = 0;
     virtual void MoveLeft(const float& v) = 0;
@@ -69,12 +68,12 @@ public:
 
     virtual void SetPosition(const glm::vec3& p) = 0;
     virtual void SetRotation(const glm::vec3& p) = 0;
-    virtual void SetModelMatrixPtr(glm::mat4* m) = 0;
 
     virtual void CalcViewMatrix() = 0;
     virtual void CalcProjectionMatrix() = 0;
-    virtual void CalcMVP() = 0;
     virtual void Calc() = 0;
+
+    virtual bool Use(ShaderManager* shaderManager) = 0;
 
     virtual ~ICamera() {}
 };

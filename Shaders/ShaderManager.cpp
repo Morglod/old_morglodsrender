@@ -209,7 +209,10 @@ IShaderProgram* ShaderManager::CreateDefaultShaderProgram() {
             mr::BaseShaderFS_glsl_s
         );
     if(!sp) mr::Log::LogString("Failed ShaderManager::CreateDefaultShaderProgram. Shader program not created.", MR_LOG_LEVEL_ERROR);
-    else RegisterShaderProgram(sp);
+    else {
+        RegisterShaderProgram(sp);
+        CompleteShaderProgram(sp);
+    }
     return sp;
 }
 
@@ -263,6 +266,27 @@ IShaderProgram* ShaderManager::CreateShaderProgramFromCache(ShaderProgramCache c
     ShaderProgram* shaderProgram = static_cast<ShaderProgram*>(ishaderProgram);
     shaderProgram->_linked = true;
     return ishaderProgram;
+}
+
+bool ShaderManager::CompleteShaderProgram(IShaderProgram* shaderProgram) {
+    if(shaderProgram == nullptr || shaderProgram->GetGPUHandle() == 0) {
+        mr::Log::LogString("Failed ShaderManager::CompleteShaderProgram. Shader program is null or not created.", MR_LOG_LEVEL_ERROR);
+        return false;
+    }
+
+    //Need enumerator for ublocks
+    mu::ArrayHandle<ShaderUniformBlockInfo> ublocks = shaderProgram->GetMap()->GetUniformBlocks();
+    for(size_t i = 0; i < ublocks.GetNum(); ++i) {
+        if(ublocks.GetArray()[i].name == MR_SHADER_TEXTURE_BLOCK) {
+            shaderProgram->GetMap()->GetUniformBlock(ublocks.GetArray()[i].name).binding = MR_SHADER_TEXTURE_BLOCK_BINDING;
+            glUniformBlockBinding(shaderProgram->GetGPUHandle(), ublocks.GetArray()[i].location, MR_SHADER_TEXTURE_BLOCK_BINDING);
+        } else if(ublocks.GetArray()[i].name == MR_SHADER_POINTLIGHTS_BLOCK) {
+            shaderProgram->GetMap()->GetUniformBlock(ublocks.GetArray()[i].name).binding = MR_SHADER_POINTLIGHTS_BLOCK_BINDING;
+            glUniformBlockBinding(shaderProgram->GetGPUHandle(), ublocks.GetArray()[i].location, MR_SHADER_POINTLIGHTS_BLOCK_BINDING);
+        }
+    }
+
+    return true;
 }
 
 void ShaderManager::RegisterShaderProgram(IShaderProgram* shaderProgram) {

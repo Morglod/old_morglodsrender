@@ -45,7 +45,7 @@ bool DefaultMaterial::Use() {
 
         bool arb;
         if(mr::gl::IsBindlessTextureSupported(arb)) {
-            stateCache->BindUniformBuffer(colorTexture.ubo, 1);
+            stateCache->BindUniformBuffer(colorTexture.ubo, umap->GetUniformBlock(MR_SHADER_TEXTURE_BLOCK).binding);
         } else {
             stateCache->BindTexture(colorTexture.texture, colorTexture.index);
         }

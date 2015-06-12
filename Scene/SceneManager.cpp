@@ -1,4 +1,8 @@
 #include "SceneManager.hpp"
+#include "../Buffers/BufferManager.hpp"
+#include "../Shaders/ShaderManager.hpp"
+#include "../Shaders/ShaderConfig.hpp"
+#include "../StateCache.hpp"
 
 #include "Node.hpp"
 #include "Entity.hpp"
@@ -55,6 +59,36 @@ void SceneManager::Draw() const {
             }
         }
     }*/
+}
+
+bool SceneManager::CompleteLights() {
+    //TODO test for errors
+
+    if(lightsGpuBuff != nullptr) {
+        mr::GPUBufferManager::GetInstance().Delete(lightsGpuBuff);
+        lightsGpuBuff = nullptr;
+    }
+
+    mr::ShaderManager* shaderManager = mr::ShaderManager::GetInstance();
+    mr::ShaderUniformMap* shaderUniformMap = shaderManager->DefaultShaderProgram()->GetMap();
+    mr::ShaderUniformBlockInfo* blockInfo = &(shaderUniformMap->GetUniformBlock(MR_SHADER_POINTLIGHTS_BLOCK));
+
+    if((_pointLights.num = _pointLights.pointLights.size()) != 0) {
+        lightsGpuBuff = mr::GPUBufferManager::GetInstance().CreateBuffer(mr::IGPUBuffer::FastChange, 16777216); //16mb
+
+        for(int i = 0; i < _pointLights.num; ++i) {
+            const std::string uniform_name = "MR_pointLights["+std::to_string(i)+"].";
+            lightsGpuBuff->Write(&_pointLights.pointLights[i].pos, 0, blockInfo->GetOffset(uniform_name+"pos"), sizeof(glm::vec3), nullptr, nullptr);
+            lightsGpuBuff->Write(&_pointLights.pointLights[i].color, 0, blockInfo->GetOffset(uniform_name+"color"), sizeof(glm::vec3), nullptr, nullptr);
+            lightsGpuBuff->Write(&_pointLights.pointLights[i].innerR, 0, blockInfo->GetOffset(uniform_name+"innerRange"), sizeof(float), nullptr, nullptr);
+            lightsGpuBuff->Write(&_pointLights.pointLights[i].outerR, 0, blockInfo->GetOffset(uniform_name+"outerRange"), sizeof(float), nullptr, nullptr);
+        }
+    }
+
+    mr::StateCache::GetDefault()->BindUniformBuffer(lightsGpuBuff, blockInfo->binding);
+    shaderManager->SetGlobalUniform("MR_numPointLights", mr::IShaderUniformRef::Int, &_pointLights.num);
+
+    return true;
 }
 
 void SceneManager::_OnSceneChanged() {

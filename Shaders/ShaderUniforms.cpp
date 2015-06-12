@@ -100,7 +100,7 @@ mu::ArrayHandle<IShaderUniformRef*> ShaderUniformMap::GetRefs() {
     return mu::ArrayHandle<IShaderUniformRef*>(refs, _refs.size(), true, false);
 }
 
-mu::ArrayHandle<ShaderUniformInfo> ShaderUniformMap::GetCompiledUniforms() {
+mu::ArrayHandle<ShaderUniformInfo> ShaderUniformMap::GetUniforms() {
     ShaderUniformInfo* info = new ShaderUniformInfo[_uniforms.size()];
     size_t i = 0;
     for(auto const& inf_pair : _uniforms) {
@@ -122,6 +122,16 @@ int ShaderUniformMap::GetUniformGPULocation(std::string const& uniformName) {
         }
     }
     return _uniforms[uniformName].location;
+}
+
+mu::ArrayHandle<ShaderUniformBlockInfo> ShaderUniformMap::GetUniformBlocks() {
+    ShaderUniformBlockInfo* info = new ShaderUniformBlockInfo[_uniformBlocks.size()];
+    size_t i = 0;
+    for(auto const& inf_pair : _uniformBlocks) {
+        info[i] = inf_pair.second;
+        ++i;
+    }
+    return mu::ArrayHandle<ShaderUniformBlockInfo>(info, _uniformBlocks.size(), true, false);
 }
 
 void ShaderUniformMap::DeleteAllRefs() {

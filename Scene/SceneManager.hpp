@@ -5,6 +5,7 @@
 namespace mr {
 
 class IVertexFormat;
+class IGPUBuffer;
 
 class SceneManager : public ISceneManager {
 public:
@@ -23,6 +24,12 @@ public:
     void Optimize() override;
     void Draw() const override;
 
+    inline PointLightDesc& CreatePointLight(glm::vec3 const& pos, glm::vec3 const& color, float innerR, float outerR) override {
+        return _pointLights.Create(pos, color, innerR, outerR);
+    }
+
+    bool CompleteLights() override;
+
     SceneManager();
     virtual ~SceneManager();
 protected:
@@ -31,6 +38,8 @@ protected:
     mr::TDynamicArray<EntityPtr> _entities;
     //std::unordered_map<mr::IVertexFormat*, mr::TDynamicArray<Entity*>> _sort_entity;
     SceneNodePtr _rootNode;
+    PointLightDescList _pointLights;
+    IGPUBuffer* lightsGpuBuff = nullptr;
 };
 
 }

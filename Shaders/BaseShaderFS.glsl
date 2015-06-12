@@ -9,8 +9,8 @@
 
 //precision mediump float;
 
-in vec4 MR_VertexPos;
-in vec4 MR_LocalVertexPos;
+in vec3 MR_VertexPos;
+in vec3 MR_LocalVertexPos;
 smooth in vec3 MR_VertexNormal;
 in vec4 MR_VertexColor;
 in vec2 MR_VertexTexCoord;
@@ -66,7 +66,7 @@ vec2 SphericalTexCoord(in vec3 normal) {
 }
 
 void GeometryClipSphere(in vec3 pos, in float r) {
-    vec3 surfPos = (MR_MAT_MODEL * MR_LocalVertexPos).xyz + MR_VertexInstancedPos;
+    vec3 surfPos = (MR_MAT_MODEL * vec4(MR_LocalVertexPos,1.0)).xyz + MR_VertexInstancedPos;
     float inv_dist = 1.0 / (length(surfPos - pos) + EPSILON);
     float inv_r = 1.0 / r;
     float il = max(inv_dist, inv_r) - inv_r;
@@ -84,7 +84,7 @@ float ScalarInterp(in float x1, in float x2, in float x) {
 
 vec3 ApplyPointLights(in vec3 surfaceColor, in vec3 surfaceDirection) {
     vec3 result = vec3(0,0,0);
-    vec3 surfPos = (MR_MAT_MODEL * MR_LocalVertexPos).xyz + MR_VertexInstancedPos;
+    vec3 surfPos = (MR_MAT_MODEL * vec4(MR_LocalVertexPos,1.0)).xyz + MR_VertexInstancedPos;
     for(int i = 0; i < MR_numPointLights; i++){
         vec3 lightNormal = normalize(MR_pointLights[i].pos - surfPos);
         float dist = length(surfPos - MR_pointLights[i].pos);
