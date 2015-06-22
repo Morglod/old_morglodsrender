@@ -24,6 +24,8 @@ public:
     void Optimize() override;
     void Draw() const override;
 
+    void SetMainCamera(ICamera* camera) override;
+
     inline PointLightDesc& CreatePointLight(glm::vec3 const& pos, glm::vec3 const& color, float innerR, float outerR) override {
         return _pointLights.Create(pos, color, innerR, outerR);
     }

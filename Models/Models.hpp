@@ -6,8 +6,8 @@ namespace mr {
 
 class SubModel : public ISubModel {
 public:
-    mr::TStaticArray<MeshWeakPtr> GetMeshes() const override { return _meshes; }
-    void SetMeshes(mr::TStaticArray<MeshWeakPtr> newMeshes) override { _meshes = newMeshes; }
+    mr::TStaticArray<MeshPtr> GetMeshes() const override { return _meshes; }
+    void SetMeshes(mr::TStaticArray<MeshPtr> newMeshes) override { _meshes = newMeshes; }
 
     //may be nullptr
     MaterialWeakPtr GetMaterial() const override { return _material; }
@@ -23,7 +23,7 @@ public:
     SubModel();
     virtual ~SubModel();
 protected:
-    mr::TStaticArray<MeshWeakPtr> _meshes;
+    mr::TStaticArray<MeshPtr> _meshes;
     MaterialWeakPtr _material;
     float _dist = 1.0f;
 };

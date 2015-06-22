@@ -73,7 +73,7 @@ public:
     virtual void CalcProjectionMatrix() = 0;
     virtual void Calc() = 0;
 
-    virtual bool Use(ShaderManager* shaderManager) = 0;
+    virtual bool SetUniformsRef(ShaderManager* shaderManager) = 0;
 
     virtual ~ICamera() {}
 };

@@ -7,6 +7,7 @@ namespace mr {
 class SceneNode;
 class Entity;
 class IModel;
+class ICamera;
 
 typedef std::shared_ptr<Entity> EntityPtr;
 typedef std::shared_ptr<IModel> ModelPtr;
@@ -43,8 +44,11 @@ public:
     virtual mr::TStaticArray<EntityPtr> FindEntities(ModelWeakPtr model) const = 0;
     virtual void Draw() const = 0;
     virtual void Optimize() = 0;
+    virtual void SetMainCamera(ICamera* camera) = 0;
 
     virtual PointLightDesc& CreatePointLight(glm::vec3 const& pos, glm::vec3 const& color, float innerR, float outerR) = 0;
+    //TODO: virtual void SetLight(index, PointLightDesc)
+    //TODO: virtual void TouchLight(index, PointLightDesc); update light info in gpu buffer
     virtual bool CompleteLights() = 0;
 
     virtual ~ISceneManager() {}

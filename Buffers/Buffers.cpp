@@ -19,8 +19,8 @@ GPUBufferRangeHandle::~GPUBufferRangeHandle() {
 }
 
 
-bool GPUBuffer::Allocate(const Usage& usage, const size_t& size) {
-    AssertAndExec(size != 0, return false);
+bool GPUBuffer::Allocate(const Usage& usage, const size_t& allocationSize) {
+    AssertAndExec(allocationSize != 0, return false);
 
     if(GetGPUHandle() == 0) {
         unsigned int handle = 0;
@@ -29,25 +29,19 @@ bool GPUBuffer::Allocate(const Usage& usage, const size_t& size) {
         SetGPUHandle(handle);
     }
 
-    if(_size > size) {
-        mr::Log::LogString("Try GPUBuffer::Allocate, but already allocated for bigger size.", MR_LOG_LEVEL_WARNING);
+    if(_size > allocationSize) {
+        mr::Log::LogString("Try GPUBuffer::Allocate, but already allocated for bigger allocationSize.", MR_LOG_LEVEL_WARNING);
         return true;
     }
 
-    _size = size;
+    _size = allocationSize;
     _usage = usage;
 
     unsigned int usageFlags = 0;
     switch(usage) {
-    case Static:
-        usageFlags = GL_STATIC_DRAW;
-        break;
-    case FastChange:
-        usageFlags = GL_DYNAMIC_DRAW;
-        break;
-    case FastReadWrite:
-        usageFlags = GL_STREAM_DRAW;
-        break;
+    case Static:        usageFlags = GL_STATIC_DRAW;    break;
+    case FastChange:    usageFlags = GL_DYNAMIC_DRAW;   break;
+    case FastReadWrite: usageFlags = GL_STREAM_DRAW;    break;
     default:
         mr::Log::LogString("GPUBuffer::Allocate. Unknown usage option ("+std::to_string((int)usage)+"), Static will be used.", MR_LOG_LEVEL_WARNING);
         usageFlags = GL_STATIC_DRAW;
@@ -74,7 +68,7 @@ bool GPUBuffer::Allocate(const Usage& usage, const size_t& size) {
         return false;
     )
 
-    OnGPUBufferAllocated.Invoke(dynamic_cast<IGPUBuffer*>(this), size);
+    OnGPUBufferAllocated.Invoke(dynamic_cast<IGPUBuffer*>(this), allocationSize);
 
     if(binded) stateCache->BindBuffer(binded, StateCache::ArrayBuffer);
 

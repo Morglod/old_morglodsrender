@@ -2,25 +2,31 @@
 #extension GL_NV_shader_buffer_load : enable#pragma optimize (on)
 
 /** BUILD CONFIG **/
+
 #define MR_CUSTOM_INSTANCE_DATA 0
-#define MR_UNIFORM_INSTANCE_DATA 0
+#define MR_UNIFORM_INSTANCE_DATA 1
 #define MR_USE_ATTRIBUTE_TEXCOORD 1
 #define MR_USE_ATTRIBUTE_NORMAL 1
 #define MR_USE_ATTRIBUTE_COLOR 1
 #define MR_USE_CUSTOM_VERTEX_PROCESSOR 0
 
-/** VERTEX **/layout (location = 0) in vec3 MR_VERTEX_POSITION_ATTRIBUTE;
+/** VERTEX **/
+layout (location = 0) in vec3 MR_VERTEX_POSITION_ATTRIBUTE;
 #if MR_USE_ATTRIBUTE_TEXCOORD == 1layout (location = 1) in vec2 MR_VERTEX_TEXCOORD_ATTRIBUTE;
 #endif
 #if MR_USE_ATTRIBUTE_NORMAL == 1layout (location = 2) in vec3 MR_VERTEX_NORMAL_ATTRIBUTE;
 #endif
 #if MR_USE_ATTRIBUTE_COLOR == 1layout (location = 3) in vec4 MR_VERTEX_COLOR_ATTRIBUTE;
 #endif
-/** PER ENTITY **/uniform mat4 MR_MAT_MODEL;
+/** PER ENTITY **/
+uniform mat4 MR_MAT_MODEL;
 
-/** CAMERA INFO **/uniform mat4 MR_MAT_VIEW;uniform mat4 MR_MAT_PROJ;
+/** CAMERA INFO **/
+uniform mat4 MR_MAT_VIEW;uniform mat4 MR_MAT_PROJ;
+uniform vec3 MR_CAM_POS;
 
-/** INSTANCING **/#if MR_CUSTOM_INSTANCE_DATA == 0
+/** INSTANCING **/
+#if MR_CUSTOM_INSTANCE_DATA == 0
 struct MR_InstanceData {
     float pos_x;
     float pos_y;
@@ -34,6 +40,7 @@ uniform MR_InstanceData* MR_VERTEX_INSTANCED_POSITION;
 #endif
 
 /** OUTPUT DATA **/
+
 out vec3 MR_VertexPos;out vec3 MR_LocalVertexPos;
 #if MR_USE_ATTRIBUTE_NORMAL == 1smooth out vec3 MR_VertexNormal;
 #endifout vec4 MR_VertexColor;

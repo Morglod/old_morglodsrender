@@ -5,8 +5,7 @@ namespace mr {
 
 void SubModel::Draw(glm::mat4* modelMatrix) const {
     for(size_t i = 0; i < _meshes.GetNum(); ++i) {
-        if(_meshes[i].expired()) continue;
-        _meshes[i].lock()->Draw(modelMatrix);
+        _meshes[i]->Draw(modelMatrix);
     }
 }
 

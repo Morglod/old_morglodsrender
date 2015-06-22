@@ -24,9 +24,10 @@ public:
         Vec4 = 3, //glm::vec4 float[4]
         Mat4 = 4, //glm::mat4 float[4][4]
         Int = 5,  //int
-        Sampler1D,//int
-        Sampler2D,//int
-        Sampler3D //int
+        UInt64 = 6, //uint64_t
+        Sampler1D = 7,//int
+        Sampler2D = 8,//int
+        Sampler3D = 9 //int
     };
 
     static std::string TypeToString(IShaderUniformRef::Type const& t);

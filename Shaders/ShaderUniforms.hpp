@@ -111,7 +111,7 @@ public:
         case IShaderUniformRef::Type::Sampler3D:
         case IShaderUniformRef::Type::Int:
             SetUniformT(location, (int*)value);
-        break;
+            break;
         case IShaderUniformRef::Type::Mat4:
             SetUniformT(location, (glm::mat4*)value);
             break;
@@ -123,6 +123,9 @@ public:
             break;
         case IShaderUniformRef::Type::Vec4:
             SetUniformT(location, (glm::vec4*)value);
+            break;
+        case IShaderUniformRef::Type::UInt64:
+            SetUniformT(location, (uint64_t*)value);
             break;
         }
     }

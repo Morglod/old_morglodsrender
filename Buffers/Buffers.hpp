@@ -50,9 +50,7 @@ public:
         out = _residentPtr;
         return true;
     }
-    bool IsResident() const override {
-        return (_residentPtr != 0);
-    }
+    inline bool IsResident() const override { return (_residentPtr != 0); }
     //-
 
     /* GPUObjectHandle */

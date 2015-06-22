@@ -3,6 +3,7 @@
 #include "../Shaders/ShaderManager.hpp"
 #include "../Shaders/ShaderConfig.hpp"
 #include "../StateCache.hpp"
+#include "SceneInterfaces.hpp"
 
 #include "Node.hpp"
 #include "Entity.hpp"
@@ -93,6 +94,11 @@ bool SceneManager::CompleteLights() {
 
 void SceneManager::_OnSceneChanged() {
     //_sort_entity.clear();
+}
+
+void SceneManager::SetMainCamera(ICamera* camera) {
+    mr::ShaderManager* shaderManager = mr::ShaderManager::GetInstance();
+    camera->SetUniformsRef(shaderManager);
 }
 
 SceneManager::SceneManager() : _rootNode(new mr::SceneNode()) {

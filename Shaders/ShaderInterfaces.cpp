@@ -9,6 +9,7 @@ const std::string __MR_SHADER_UNIFORM_TYPE_NAMES[] {
     std::string("vec2"),
     std::string("vec3"),
     std::string("vec4"),
+    std::string("uint64"),
     std::string("sampler1D"),
     std::string("sampler2D"),
     std::string("sampler3D")

@@ -13,6 +13,9 @@ class IMaterial;
 class IGeometry;
 class Texture2D;
 
+class IModel;
+typedef std::shared_ptr<IModel> ModelPtr;
+
 class TextureData;
 typedef std::shared_ptr<TextureData> TextureDataPtr;
 
@@ -45,6 +48,8 @@ public:
 
     unsigned int GetMaterialsNum();
     TStaticArray<IMaterial*> GetMaterials();
+
+    ModelPtr GetModel();
 
     SceneLoader();
     ~SceneLoader();

@@ -13,6 +13,8 @@
 #include "../Textures/TextureManager.hpp"
 #include "../MachineInfo.hpp"
 
+#include "../Models/Models.hpp"
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -48,6 +50,7 @@ public:
     mr::TStaticArray<IMaterial*> _materials;
     mr::TStaticArray<IMesh*> _meshes;
     SceneLoaderProgressHandler progressHandler;
+    ModelPtr _model = nullptr;
 
     Impl() {
         importer.SetProgressHandler(&progressHandler);
@@ -381,6 +384,23 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
         mr::Log::LogString("Total indecies: " + std::to_string(debugIndeciesNum));
     }
 
+    //Pack all data to model
+    {
+        mr::ModelPtr model = mr::ModelPtr(new mr::Model());
+        mr::SubModel* subModel = new mr::SubModel();
+
+        auto sceneMeshes = GetMeshes();
+        mr::TStaticArray<mr::MeshPtr> subModelMeshes(sceneMeshes.GetNum());
+        for(size_t i = 0; i < sceneMeshes.GetNum(); ++i) {
+            subModelMeshes.At(i) = mr::MeshPtr(sceneMeshes.At(i));
+        }
+
+        subModel->SetMeshes( subModelMeshes );
+
+        model->SetLods( mr::TStaticArray<mr::SubModelPtr> { mr::SubModelPtr(subModel) } );
+        _impl->_model = model;
+    }
+
     return !anyError;
 }
 
@@ -402,6 +422,10 @@ TStaticArray<IMaterial*> SceneLoader::GetMaterials() {
 
 TStaticArray<IMesh*> SceneLoader::GetMeshes() {
     return _impl->_meshes;
+}
+
+ModelPtr SceneLoader::GetModel() {
+    return _impl->_model;
 }
 
 SceneLoader::SceneLoader() : _impl(new SceneLoader::Impl()) {

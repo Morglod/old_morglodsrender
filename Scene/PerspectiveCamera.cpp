@@ -137,7 +137,7 @@ void PerspectiveCamera::_CalcDirectionsFromRot() {
     OnDirectionsChanged(this);
 }
 
-bool PerspectiveCamera::Use(ShaderManager* shaderManager) {
+bool PerspectiveCamera::SetUniformsRef(ShaderManager* shaderManager) {
     shaderManager->SetGlobalUniform("MR_MAT_VIEW", mr::IShaderUniformRef::Mat4, GetViewMatrixPtr());
     shaderManager->SetGlobalUniform("MR_MAT_PROJ", mr::IShaderUniformRef::Mat4, GetProjectMatrixPtr());
     shaderManager->SetGlobalUniform("MR_CAM_POS", mr::IShaderUniformRef::Vec3, GetPositionPtr());

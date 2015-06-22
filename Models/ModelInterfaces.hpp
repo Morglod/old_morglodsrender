@@ -13,6 +13,7 @@ class IMaterial;
 typedef std::weak_ptr<IMaterial> MaterialWeakPtr;
 
 class IMesh;
+typedef std::shared_ptr<IMesh> MeshPtr;
 typedef std::weak_ptr<IMesh> MeshWeakPtr;
 
 /*
@@ -20,8 +21,8 @@ typedef std::weak_ptr<IMesh> MeshWeakPtr;
 */
 class ISubModel {
 public:
-    virtual mr::TStaticArray<MeshWeakPtr> GetMeshes() const = 0;
-    virtual void SetMeshes(mr::TStaticArray<MeshWeakPtr>) = 0;
+    virtual mr::TStaticArray<MeshPtr> GetMeshes() const = 0;
+    virtual void SetMeshes(mr::TStaticArray<MeshPtr>) = 0;
 
     virtual MaterialWeakPtr GetMaterial() const = 0; //may be nullptr
     virtual void SetMaterial(MaterialWeakPtr) = 0; //override all meshes materials

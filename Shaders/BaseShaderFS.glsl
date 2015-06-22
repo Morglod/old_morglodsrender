@@ -2,32 +2,59 @@
 #extension GL_ARB_bindless_texture : require
 #extension GL_NV_gpu_shader5 : enable
 
+/** BUILD CONFIG **/
+
+#define MR_CUSTOM_INSTANCE_DATA 0
+#define MR_UNIFORM_INSTANCE_DATA 0
+#define MR_USE_ATTRIBUTE_TEXCOORD 1
+#define MR_USE_ATTRIBUTE_NORMAL 1
+#define MR_USE_ATTRIBUTE_COLOR 1
+
+/** BUILD CONST **/
+
 #define EPSILON 0.0000001
 
 #define MAX_POINT_LIGHTS 100
 #define MAX_TEXTURES 1000
 
-//precision mediump float;
+/** INPUT DATA **/
 
 in vec3 MR_VertexPos;
 in vec3 MR_LocalVertexPos;
+
+#if MR_USE_ATTRIBUTE_NORMAL == 1
 smooth in vec3 MR_VertexNormal;
+#endif
+
+#if MR_USE_ATTRIBUTE_COLOR == 1
 in vec4 MR_VertexColor;
+#endif
+
+#if MR_USE_ATTRIBUTE_TEXCOORD == 1
 in vec2 MR_VertexTexCoord;
+#endif
+
 in vec3 MR_VertexInstancedPos;
 
-uniform vec3 MR_CAM_POS;
+/** PER ENTITY **/
 
-uniform mat4 MR_MAT_MVP;
 uniform mat4 MR_MAT_MODEL;
+
+/** CAMERA INFO **/
+
+uniform vec3 MR_CAM_POS;
 uniform mat4 MR_MAT_VIEW;
 uniform mat4 MR_MAT_PROJ;
+
+/** MATERIAL INFO **/
 
 uniform unsigned int MR_TEX_COLOR;
 uniform unsigned int MR_TEX_NORMAL;
 uniform unsigned int MR_TEX_SPECULAR;
 uniform float MR_TEX_NORMAL_F;
 uniform float MR_TEX_SPECULAR_F;
+
+/** TEXTURES **/
 
 struct MR_TextureHandle {
 	uint64_t handle;
@@ -38,9 +65,7 @@ layout(std140) uniform MR_Textures_Block
     MR_TextureHandle MR_textures[MAX_TEXTURES];
 };
 
-uniform vec4 MR_MATERIAL_COLOR;
-
-out vec4 MR_fragSceneColorNothing;
+/** LIGHTS **/
 
 struct MR_PointLight {
    vec3 pos;
@@ -55,6 +80,12 @@ layout(std140) uniform MR_pointLights_block
 {
     MR_PointLight MR_pointLights[MAX_POINT_LIGHTS];
 };
+
+/** OUTPUT DATA **/
+
+out vec4 MR_fragSceneColorNothing;
+
+/** BUILT-IN FUNCTIONS **/
 
 vec2 SphericalTexCoord(in vec3 normal) {
     float m = 2.0 * sqrt(
@@ -119,6 +150,9 @@ vec3 ApplyPointLights(in vec3 surfaceColor, in vec3 surfaceDirection) {
 vec3 ApplyLights(in vec3 surfaceColor, in vec3 surfaceDirection) {
     return ApplyPointLights(surfaceColor, surfaceDirection);
 }
+
+
+/** MAIN **/
 
 void main() {
     vec4 surface_direction = normalize((vec4(MR_VertexNormal,0) * MR_MAT_MODEL));

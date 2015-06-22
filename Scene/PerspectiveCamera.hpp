@@ -52,7 +52,7 @@ public:
     void CalcProjectionMatrix() override;
     void Calc() override;
 
-    bool Use(ShaderManager* shaderManager) override;
+    bool SetUniformsRef(ShaderManager* shaderManager) override;
 
     PerspectiveCamera();
     PerspectiveCamera(const glm::vec3& pos, const glm::vec3& rotation, const float& fovY, const float& aspectR, const float& nearZ, const float& farZ);
