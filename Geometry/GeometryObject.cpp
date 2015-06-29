@@ -18,7 +18,7 @@ unsigned int _MR_DRAW_MODE_FLAG_TO_GL_[4] {
 
 namespace mr {
 
-void Geometry::SetGeometryBuffer(IGeometryBuffer* buffer) {
+void Geometry::SetGeometryBuffer(IGeometryBufferPtr const& buffer) {
     _buffer = buffer;
 }
 
@@ -30,7 +30,7 @@ void Geometry::Draw() const {
     if(_buffer->GetIndexBuffer() != nullptr && _draw_params->GetUsingIndexBuffer()){
         const mr::IndexFormat* iformat = _buffer->GetIndexFormat().get();
         if(mr::gl::IsIndirectDrawSupported()) {
-            glDrawElementsIndirect( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], iformat->dataType->dataTypeGL, _draw_params->GetIndirectPtr());
+            glDrawElementsIndirect( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], iformat->dataType->dataTypeGL, _draw_params->GetPtr());
         }
         else {
             /*glDrawElementsBaseVertex(  _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()],
@@ -58,7 +58,7 @@ void Geometry::Draw() const {
         }
     }
     else {
-        if(mr::gl::IsIndirectDrawSupported()) glDrawArraysIndirect( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], _draw_params->GetIndirectPtr());
+        if(mr::gl::IsIndirectDrawSupported()) glDrawArraysIndirect( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], _draw_params->GetPtr());
         else {
             if(GL_ARB_base_instance) {
                 glDrawArraysInstancedBaseInstance(_MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], _draw_params->GetVertexStart(), _draw_params->GetVertexCount(), _draw_params->GetInstancesNum(), _draw_params->GetFirstInstance());
@@ -71,7 +71,7 @@ void Geometry::Draw() const {
     }
 }
 
-Geometry::Geometry(IGeometryBuffer* buffer, IGeometryDrawParamsPtr params)
+Geometry::Geometry(IGeometryBufferPtr const& buffer, IGeometryDrawParamsPtr const& params)
  : _buffer(buffer), _draw_params(params) {
 }
 

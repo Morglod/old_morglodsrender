@@ -2,7 +2,7 @@
 [heading]Default things:[/heading]
 [enum]
 OpenGL 4.0 required
-OpenGL 4.5 supported
+up to OpenGL 4.5 features
 Direct State Access EXT and ARB
 Uniform Buffer Objects
 Point lights

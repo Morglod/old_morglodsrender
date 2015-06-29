@@ -3,81 +3,37 @@
 
 namespace mr {
 
-void GeometryDrawParams::SetIndexStart(const unsigned int& i) {
-    _istart = i;
-    if(mr::gl::IsIndirectDrawSupported()) _MakeDrawCmd();
+IGeometryDrawParamsPtr GeometryDrawParamsArrays::Create(unsigned int const& vStart, unsigned int const& vCount, unsigned int const& instancesNum, unsigned int const& firstInstance) {
+    auto* dp = new GeometryDrawParamsArrays(vStart, vCount, instancesNum, firstInstance);
+    auto* idp = static_cast<IGeometryDrawParams*>(dp);
+    return IGeometryDrawParamsPtr(idp);
 }
 
-void GeometryDrawParams::SetVertexStart(const unsigned int& v) {
-    _vstart = v;
-    if(mr::gl::IsIndirectDrawSupported()) _MakeDrawCmd();
+GeometryDrawParamsArrays::GeometryDrawParamsArrays
+                        (unsigned int const& vStart,
+                         unsigned int const& vCount,
+                         unsigned int const& instancesNum,
+                         unsigned int const& firstInstance)
+: _cmd( DrawArraysIndirectCmd {vCount, instancesNum, vStart, firstInstance} ) {}
+
+GeometryDrawParamsArrays::~GeometryDrawParamsArrays() {}
+
+
+
+IGeometryDrawParamsPtr GeometryDrawParamsElements::Create(unsigned int const& iStart, unsigned int const& iCount, unsigned int const& vStart, unsigned int const& instancesNum, unsigned int const& firstInstance) {
+    auto* dp = new GeometryDrawParamsElements(iStart, iCount, vStart, instancesNum, firstInstance);
+    auto* idp = static_cast<IGeometryDrawParams*>(dp);
+    return IGeometryDrawParamsPtr(idp);
 }
 
-void GeometryDrawParams::SetIndexCount(const unsigned int& i) {
-    _icount = i;
-    if(mr::gl::IsIndirectDrawSupported()) _MakeDrawCmd();
-}
+GeometryDrawParamsElements::GeometryDrawParamsElements
+                          (unsigned int const& iStart,
+                           unsigned int const& iCount,
+                           unsigned int const& vStart,
+                           unsigned int const& instancesNum,
+                           unsigned int const& firstInstance)
+: _cmd( DrawElementsIndirectCmd {iCount, instancesNum, iStart, vStart, firstInstance} ) {}
 
-void GeometryDrawParams::SetVertexCount(const unsigned int& i) {
-    _vcount = i;
-    if(mr::gl::IsIndirectDrawSupported()) _MakeDrawCmd();
-}
-
-void GeometryDrawParams::SetInstancesNum(unsigned int const& num) {
-    _instNum = num;
-    if(mr::gl::IsIndirectDrawSupported()) _MakeDrawCmd();
-}
-
-void GeometryDrawParams::SetFirstInstance(unsigned int const& index) {
-    _firstInstance = index;
-    if(mr::gl::IsIndirectDrawSupported()) _MakeDrawCmd();
-}
-
-void GeometryDrawParams::SetUsingIndexBuffer(const bool& state) {
-    _index_buffer = state;
-    if(mr::gl::IsIndirectDrawSupported()) _MakeDrawCmd();
-}
-
-bool GeometryDrawParams::GetUsingIndexBuffer() const {
-    return _index_buffer;
-}
-
-void GeometryDrawParams::_MakeDrawCmd() {
-    if(_index_buffer) {
-        if(drawCmd) {
-            delete ((mr::IGeometryDrawParams::DrawElementsIndirectCmd*)drawCmd);
-        }
-        drawCmd = new mr::IGeometryDrawParams::DrawElementsIndirectCmd {_icount, _instNum, _istart, _vstart, _firstInstance};
-    } else {
-        if(drawCmd) {
-            delete ((mr::IGeometryDrawParams::DrawArraysIndirectCmd*)drawCmd);
-        }
-        drawCmd = new mr::IGeometryDrawParams::DrawArraysIndirectCmd {_vcount, _instNum, _vstart, _firstInstance};
-    }
-}
-
-GeometryDrawParams::GeometryDrawParams(const bool& indexBuffer, const unsigned int& istart, const unsigned int& vstart, const unsigned int& icount, const unsigned int& vcount, unsigned int const& instancesNum, unsigned int const& firstInstance)
- : drawCmd(0), _istart(istart), _vstart(vstart), _icount(icount), _vcount(vcount), _instNum(instancesNum), _index_buffer(indexBuffer), _firstInstance(firstInstance) {
-     if(mr::gl::IsIndirectDrawSupported()) _MakeDrawCmd();
-}
-
-GeometryDrawParams::~GeometryDrawParams() {
-    if(drawCmd) {
-        if(_index_buffer) {
-            delete ((mr::IGeometryDrawParams::DrawElementsIndirectCmd*)drawCmd);
-        } else {
-            delete ((mr::IGeometryDrawParams::DrawArraysIndirectCmd*)drawCmd);
-        }
-        drawCmd = 0;
-    }
-}
-
-IGeometryDrawParamsPtr GeometryDrawParams::DrawArrays(const unsigned int& vstart, const unsigned int& vcount, unsigned int const& instancesNum, unsigned int const& firstInstance) {
-    return IGeometryDrawParamsPtr(new GeometryDrawParams(false, 0, vstart, 0, vcount, instancesNum, firstInstance));
-}
-
-IGeometryDrawParamsPtr GeometryDrawParams::DrawElements(const unsigned int& istart, const unsigned int& icount, const unsigned int& vstart, unsigned int const& instancesNum, unsigned int const& firstInstance) {
-    return IGeometryDrawParamsPtr(new GeometryDrawParams(true, istart, vstart, icount, 0, instancesNum, firstInstance));
-}
+GeometryDrawParamsElements::~GeometryDrawParamsElements() {}
 
 }

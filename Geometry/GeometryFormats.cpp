@@ -23,10 +23,11 @@ VertexAttributeDesc::VertexAttributeDesc(unsigned int const& elementsNum_, unsig
 void VertexFormat::Complete() {
     size = 0;
     attribsNum = attributes.GetNum();
+    VertexAttribute* attributesArray = attributes.GetArray();
     for(size_t i = 0; i < attribsNum; ++i) {
-        attributes.GetArray()[i].offset = CalcOffset(i);
+        attributesArray[i].offset = CalcOffset(attributesArray, i);
         pointers.GetArray()[i] = (uint64_t)size;
-        size += attributes.GetArray()[i].desc->size;
+        size += attributesArray[i].desc->size;
     }
 }
 

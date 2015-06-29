@@ -1,6 +1,6 @@
 #include "TextureManager.hpp"
 #include "Texture2D.hpp"
-#include "../Buffers/BufferManager.hpp"
+#include "TextureUBO.hpp"
 
 #include "../Utils/Log.hpp"
 
@@ -64,46 +64,25 @@ Texture2D* TextureManager::LoadTexture2DFromFile(std::string const& file, Textur
     return tex2d;
 }
 
-IGPUBuffer* TextureManager::MakeBindlessTexUbo(IGPUBuffer::Usage const& usage, mu::ArrayHandle<Texture*> const& textures) {
-    GPUBufferManager& bufferManager = GPUBufferManager::GetInstance();
-    const size_t bufSize = sizeof(uint64_t) * textures.GetNum() * 2;
-    IGPUBuffer* ubo = bufferManager.CreateBuffer(usage, bufSize);
-    if(ubo == nullptr) {
-        mr::Log::LogString("Failed TextureManager::MakeBindlessTexUbo. Failed create gpu buffer.", MR_LOG_LEVEL_ERROR);
+TextureUBO* TextureManager::MakeTextureUbo(mu::ArrayHandle<Texture*> const& textures, const bool fastChange) {
+    TextureUBO* textureUbo = new TextureUBO();
+    if(!textureUbo->Init(textures, fastChange)) {
+        delete textureUbo;
         return nullptr;
     }
 
-    uint64_t* residentHandles = new uint64_t[textures.GetNum()*2]; //packed as [handle 8byte, none 8byte]
-    Texture** texArray = textures.GetArray();
-    bool result = true;
-    size_t handle_i = 0;
-    for(size_t i = 0; i < textures.GetNum(); ++i) {
-        result = result && texArray[i]->GetResidentHandle(residentHandles[handle_i]);
-        handle_i += 2;
-    }
-    if(!result) mr::Log::LogString("One or more textures failed returning resident handle in TextureManager::MakeBindlessTexUbo.", MR_LOG_LEVEL_WARNING);
-
-    mr::IGPUBuffer::IMappedRangePtr mapped = ubo->Map(0, bufSize, mr::IGPUBuffer::IMappedRange::Write | mr::IGPUBuffer::IMappedRange::Unsynchronized | mr::IGPUBuffer::IMappedRange::Invalidate);
-    if(mapped == nullptr) {
-        if(!ubo->Write(residentHandles, 0, 0, bufSize, nullptr, nullptr)) {
-            mr::Log::LogString("Failed TextureManager::MakeBindlessTexUbo. Failed write data to gpu buffer.", MR_LOG_LEVEL_ERROR);
-            bufferManager.Delete(ubo);
-            delete [] residentHandles;
-            return nullptr;
-        }
-    } else {
-        uint64_t* mappedMem = (uint64_t*)(mapped->Get());
-        memcpy(mappedMem, residentHandles, bufSize);
-        mapped->UnMap();
-    }
-    delete [] residentHandles;
-
-    return ubo;
+    _RegisterUBO(textureUbo);
+    return textureUbo;
 }
 
 void TextureManager::DestroyAllTextures() {
     for(Texture* tex : _textures) tex->Destroy();
     _textures.clear();
+}
+
+void TextureManager::DestroyAllUBOs() {
+    for(TextureUBO* tex : _ubos) tex->Destroy();
+    _ubos.clear();
 }
 
 void TextureManager::Delete(Texture*& texture) {
@@ -114,12 +93,28 @@ void TextureManager::Delete(Texture*& texture) {
     texture = nullptr;
 }
 
+void TextureManager::Delete(TextureUBO*& textureUbo) {
+    if(textureUbo == nullptr) return;
+    _UnRegisterUBO(textureUbo);
+    textureUbo->Destroy();
+    delete textureUbo;
+    textureUbo = nullptr;
+}
+
 void TextureManager::_RegisterTexture(Texture* tex) {
     _textures.insert(tex);
 }
 
 void TextureManager::_UnRegisterTexture(Texture* tex) {
     _textures.erase(tex);
+}
+
+void TextureManager::_RegisterUBO(TextureUBO* tex) {
+    _ubos.insert(tex);
+}
+
+void TextureManager::_UnRegisterUBO(TextureUBO* tex){
+    _ubos.erase(tex);
 }
 
 TextureManager::TextureManager() {

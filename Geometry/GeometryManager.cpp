@@ -16,6 +16,7 @@ mr::GeometryManager * mu::Singleton<mr::GeometryManager>::_singleton_instance = 
 IGeometry* GeometryManager::PlaceGeometry(VertexFormatPtr const& vertexFormat, void* vertexData, const size_t& vertexNum,
                              IndexFormatPtr const& indexFormat, void* indexData, const size_t& indexNum,
                              const IGPUBuffer::Usage& usage, const IGeometryBuffer::DrawMode& drawMode) {
+
     AssertAndExec(vertexFormat != nullptr, return nullptr);
     AssertAndExec(vertexData != nullptr, return nullptr);
     AssertAndExec(vertexNum != 0, return nullptr);
@@ -65,10 +66,10 @@ IGeometry* GeometryManager::PlaceGeometry(VertexFormatPtr const& vertexFormat, v
             }
         }
 
-        mr::GeometryBuffer* geomBuffer = new mr::GeometryBuffer();
+        IGeometryBufferPtr geomBuffer = IGeometryBufferPtr(static_cast<IGeometryBuffer*>(new mr::GeometryBuffer()));
         if(!geomBuffer->Create  (
             IGeometryBuffer::CreationParams(
-                dynamic_cast<IGPUBuffer*>(vertexBuffer), (indexFormat) ? (dynamic_cast<IGPUBuffer*>(indexBuffer)) : nullptr,
+                static_cast<IGPUBuffer*>(vertexBuffer), (indexFormat) ? (static_cast<IGPUBuffer*>(indexBuffer)) : nullptr,
                 vertexFormat, indexFormat,
                 drawMode
             )
@@ -77,13 +78,12 @@ IGeometry* GeometryManager::PlaceGeometry(VertexFormatPtr const& vertexFormat, v
             bufferMgr.Delete(vertexBuffer);
             bufferMgr.Delete(indexBuffer);
 
-            delete geomBuffer;
             return nullptr;
         }
 
-        return dynamic_cast<mr::IGeometry*>(
+        return static_cast<mr::IGeometry*>(
                     new mr::Geometry(
-                        dynamic_cast<mr::IGeometryBuffer*>(geomBuffer), (indexFormat) ? GeometryDrawParams::DrawElements(0, indexDataSize / indexFormat->dataType->size, 0) : GeometryDrawParams::DrawArrays(0, vertexDataSize/vertexFormat->size)
+                        geomBuffer, (indexFormat) ? GeometryDrawParamsElements::Create(0, indexDataSize / indexFormat->dataType->size, 0) : GeometryDrawParamsArrays::Create(0, vertexDataSize/vertexFormat->size)
                     )
                 );
     }
@@ -126,7 +126,7 @@ IGeometry* GeometryManager::PlaceGeometry(VertexFormatPtr const& vertexFormat, v
         }
     }
 
-    mr::GeometryBuffer* geomBuffer = new mr::GeometryBuffer();
+    IGeometryBufferPtr geomBuffer = IGeometryBufferPtr(static_cast<IGeometryBuffer*>(new mr::GeometryBuffer()));
     if(!geomBuffer->Create  (
         IGeometryBuffer::CreationParams(
             vfbuf->manager->GetRealBuffer(), ((indexFormat) ? (ifbuf->manager->GetRealBuffer()) : nullptr),
@@ -134,16 +134,15 @@ IGeometry* GeometryManager::PlaceGeometry(VertexFormatPtr const& vertexFormat, v
             drawMode
         )
     )) {
-        delete geomBuffer;
         return nullptr;
     }
 
-    return dynamic_cast<mr::IGeometry*>(
-                new mr::Geometry(
-                    dynamic_cast<mr::IGeometryBuffer*>(geomBuffer),
-                    (indexFormat) ? GeometryDrawParams::DrawElements(bufferedIndexDataInfo.offset / indexFormat->dataType->size, indexNum, bufferedVertexDataInfo.offset / vertexFormat->size) : GeometryDrawParams::DrawArrays(bufferedVertexDataInfo.offset / vertexFormat->size, vertexNum)
-                )
-            );
+    IGeometry* geom = static_cast<IGeometry*>(new mr::Geometry(
+                    geomBuffer,
+                    (indexFormat) ? GeometryDrawParamsElements::Create(bufferedIndexDataInfo.offset / indexFormat->dataType->size, indexNum, bufferedVertexDataInfo.offset / vertexFormat->size) : GeometryDrawParamsArrays::Create(bufferedVertexDataInfo.offset / vertexFormat->size, vertexNum)
+                ));
+
+    return geom;
 }
 
 GeometryManager::VertexFormatBuffer* GeometryManager::_RequestVFBuffer(VertexFormatPtr const& vertexFormat, const size_t& vertexDataSize, const IGPUBuffer::Usage& usage) {

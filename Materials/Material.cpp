@@ -7,6 +7,7 @@
 #include "../Textures/TextureManager.hpp"
 #include "../StateCache.hpp"
 #include "../MachineInfo.hpp"
+#include "../Textures/TextureUBO.hpp"
 
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -45,7 +46,7 @@ bool DefaultMaterial::Use() {
 
         bool arb;
         if(mr::gl::IsBindlessTextureSupported(arb)) {
-            stateCache->BindUniformBuffer(colorTexture.ubo, umap->GetUniformBlock(MR_SHADER_TEXTURE_BLOCK).binding);
+            stateCache->BindUniformBuffer(colorTexture.ubo->GetBuffer(), umap->GetUniformBlock(MR_SHADER_TEXTURE_BLOCK).binding);
         } else {
             stateCache->BindTexture(colorTexture.texture, colorTexture.index);
         }

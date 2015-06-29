@@ -115,15 +115,16 @@ struct VertexFormat {
     }
 
     inline void SetAttribute(VertexAttributeDescPtr const& desc, unsigned int const& index) {
-        attributes.GetArray()[index].desc = desc;
-        attributes.GetArray()[index].offset = CalcOffset(index);
+        VertexAttribute* attributeArray = attributes.GetArray();
+        attributeArray[index].desc = desc;
+        attributeArray[index].offset = CalcOffset(attributeArray, index);
     }
 
-    inline unsigned int CalcOffset(unsigned int const& index) const {
+    inline static unsigned int CalcOffset(VertexAttribute* attributeArray, unsigned int const& index) {
         unsigned int offset = 0;
         for(size_t i = 0; i < index; ++i) {
-            if(attributes.GetArray()[i].desc != nullptr)
-                offset += attributes.GetArray()[i].desc->size;
+            if(attributeArray[i].desc != nullptr)
+                offset += attributeArray[i].desc->size;
         }
         return offset;
     }

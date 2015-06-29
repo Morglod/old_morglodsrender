@@ -6,9 +6,11 @@
 #include <mu/Macro.hpp>
 #include <mu/Containers.hpp>
 
+#include <functional>
+
 namespace mr {
 
-class IGPUBuffer;
+class TextureUBO;
 class Texture;
 
 struct TextureSizeInfo {
@@ -40,7 +42,7 @@ struct TextureBitsInfo {
 struct TextureBindlessBindable {
     Texture* texture = nullptr;
     unsigned int index = 0; //(index in array of textures) or (texture unit)
-    IGPUBuffer* ubo = nullptr;
+    TextureUBO* ubo = nullptr;
 
     TextureBindlessBindable() = default;
 };
@@ -201,6 +203,8 @@ public:
     ///Unlock texture, before massive changes (e.g. SetData)
     virtual void MakeNonResident();
 
+    std::function<void (Texture* texture)> OnDataChanged = nullptr;
+    std::function<void (Texture* texture)> OnDataUpdated = nullptr;
 protected:
     Texture() = default;
     virtual ~Texture();

@@ -248,15 +248,15 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
         if(options.progressCallback) options.progressCallback(progressInfo);
     }
 
-    IGPUBuffer* bindlessTexturesUBO = nullptr;
+    TextureUBO* texturesUBO = nullptr;
     bool arb_bindless;
     if(mr::gl::IsBindlessTextureSupported(arb_bindless)) {
-        bindlessTexturesUBO = textureManager.MakeBindlessTexUbo(IGPUBuffer::Static, mu::ArrayHandle<Texture*>(bindlessTexturesCache.data(), bindlessTexturesCache.size(), false, false));
+        texturesUBO = textureManager.MakeTextureUbo(mu::ArrayHandle<Texture*>(bindlessTexturesCache.data(), bindlessTexturesCache.size(), false, false));
     }
 
     for(unsigned int i = 0; i < scene->mNumMaterials; ++i) {
         MaterialDescr& matDescr = materialDescriptions.GetArray()[i];
-        matDescr.colorTexture.ubo = bindlessTexturesUBO;
+        matDescr.colorTexture.ubo = texturesUBO;
         auto newMat = new mr::DefaultMaterial();
         newMat->Create(matDescr);
         _impl->_materials.At(i) = static_cast<IMaterial*>(newMat);

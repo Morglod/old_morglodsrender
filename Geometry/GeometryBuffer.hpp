@@ -27,9 +27,7 @@ public:
     inline IndexFormatPtr GetIndexFormat() const override { return _iformat; }
 
     void SetAttribute(VertexAttribute const& attrib, IGPUBuffer* buf) override;
-    inline IGPUBuffer* GetAttribute(VertexAttribute const& attrib) override { if(_customAttribs.count(attrib) == 0) return nullptr; else return _customAttribs[attrib]; }
-
-    inline bool Good() const override { return _created && (_vb != nullptr) && (_format != nullptr); }
+    inline IGPUBuffer* GetAttribute(VertexAttribute const& attrib) override { if(_customAttribs.count(attrib) == 0) return nullptr; else return _customAttribs[attrib].buffer; }
 
     bool Bind(bool useIndexBuffer) const override;
 
@@ -58,8 +56,6 @@ public:
         #
     */
 protected:
-    bool _created;
-
     IGPUBuffer* _vb;
     IGPUBuffer* _ib;
     VertexFormatPtr _format;
@@ -69,13 +65,13 @@ protected:
     uint64_t _vb_nv_resident_ptr, _ib_nv_resident_ptr;
     int _vb_nv_buffer_size, _ib_nv_buffer_size;
 
-    std::map<VertexAttribute, IGPUBuffer*> _customAttribs;
-
-    struct BufferResidentPtr {
-        uint64_t ptr;
-        int size;
+    struct CustomAttribute {
+        IGPUBuffer* buffer = nullptr;
+        uint64_t ptr = 0;
+        int size = 0;
     };
-    std::map<VertexAttribute, BufferResidentPtr> _customAttribNVPtr;
+
+    std::map<VertexAttribute, CustomAttribute> _customAttribs;
 };
 
 }

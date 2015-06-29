@@ -90,10 +90,10 @@ protected:
         unsigned int _flags;
     };
 
-    size_t _size;
-    Usage _usage;
-    IMappedRangeWeakPtr _mapped;
     uint64_t _residentPtr = 0;
+    size_t _size;
+    IMappedRangeWeakPtr _mapped;
+    Usage _usage;
 
     std::vector<IGPUBufferRangeHandlePtr> _rangeHandles;
 };

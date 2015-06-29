@@ -7,7 +7,7 @@ void IGPUObjectHandle::Destroy() {
 }
 
 IGPUObjectHandle::~IGPUObjectHandle() {
-    if(GetGPUMem() > 0) Destroy();
+    Destroy();
 }
 
 }

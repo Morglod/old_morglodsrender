@@ -7,41 +7,66 @@
 
 namespace mr {
 
-class GeometryDrawParams : public IGeometryDrawParams {
+class GeometryDrawParamsArrays : public IGeometryDrawParams {
 public:
-    void SetIndexStart(const unsigned int& i) override;
-    void SetVertexStart(const unsigned int& v) override;
-    void SetIndexCount(const unsigned int& i) override;
-    void SetVertexCount(const unsigned int& i) override;
+    inline void SetVertexStart(const unsigned int& v) override { _cmd.first = v; }
+    inline void SetVertexCount(const unsigned int& i) override { _cmd.count = i; }
+    inline unsigned int GetVertexStart() const override { return _cmd.first; }
+    inline unsigned int GetVertexCount() const override { return _cmd.count; }
+    inline void SetInstancesNum(unsigned int const& num) override { _cmd.instanceCount; }
+    inline unsigned int GetInstancesNum() const override { return _cmd.instanceCount; }
+    inline void SetFirstInstance(unsigned int const& index) override { _cmd.baseInstance = index; }
+    inline unsigned int GetFirstInstance() const override { return _cmd.baseInstance; }
 
-    unsigned int GetIndexStart() const override { return _istart; }
-    unsigned int GetVertexStart() const override { return _vstart; }
-    unsigned int GetIndexCount() const override { return _icount; }
-    unsigned int GetVertexCount() const override { return _vcount; }
+    inline void SetIndexStart(const unsigned int& i) override {}
+    inline void SetIndexCount(const unsigned int& i) override {}
+    inline unsigned int GetIndexStart() const override {return 0;}
+    inline unsigned int GetIndexCount() const override {return 0;}
 
-    void SetInstancesNum(unsigned int const& num) override;
-    inline unsigned int GetInstancesNum() const override { return _instNum; }
+    //inline void* GetIndirectPtr() const override { return 0; }
+    inline const void* GetPtr() const override { return &_cmd; }
 
-    void SetFirstInstance(unsigned int const& index) override;
-    unsigned int GetFirstInstance() const override { return _firstInstance; }
+    inline bool GetUsingIndexBuffer() const override { return false; }
 
-    void* GetIndirectPtr() const override { return drawCmd; }
+    GeometryDrawParamsArrays(unsigned int const& vStart, unsigned int const& vCount, unsigned int const& instancesNum = 1, unsigned int const& firstInstance = 0);
+    virtual ~GeometryDrawParamsArrays();
 
-    void SetUsingIndexBuffer(const bool& state) override;
-    bool GetUsingIndexBuffer() const override;
-
-    static IGeometryDrawParamsPtr DrawArrays(const unsigned int& vstart, const unsigned int& vcount, unsigned int const& instancesNum = 1, unsigned int const& firstInstance = 0);
-    static IGeometryDrawParamsPtr DrawElements(const unsigned int& vstart, const unsigned int& istart, const unsigned int& icount, unsigned int const& instancesNum = 1, unsigned int const& firstInstance = 0);
-
-    GeometryDrawParams(const bool& indexBuffer, const unsigned int& istart, const unsigned int& vstart, const unsigned int& icount, const unsigned int& vcount, unsigned int const& instancesNum, unsigned int const& firstInstance);
-    virtual ~GeometryDrawParams();
+    static IGeometryDrawParamsPtr Create(unsigned int const& vStart, unsigned int const& vCount, unsigned int const& instancesNum = 1, unsigned int const& firstInstance = 0);
 protected:
-    void _MakeDrawCmd();
+    DrawArraysIndirectCmd _cmd;
+};
 
-    void* drawCmd;
-    unsigned int _istart, _vstart, _icount, _vcount, _instNum;
-    bool _index_buffer;
-    unsigned int _firstInstance;
+class GeometryDrawParamsElements : public IGeometryDrawParams {
+public:
+    inline void SetVertexStart(const unsigned int& v) override { _cmd.baseVertex = v; }
+    inline unsigned int GetVertexStart() const override { return _cmd.baseVertex; }
+
+    inline void SetInstancesNum(unsigned int const& num) override { _cmd.primCount; }
+    inline unsigned int GetInstancesNum() const override { return _cmd.primCount; }
+
+    inline void SetFirstInstance(unsigned int const& index) override { _cmd.baseInstance = index; }
+    inline unsigned int GetFirstInstance() const override { return _cmd.baseInstance; }
+
+    inline void SetIndexStart(const unsigned int& i) override { _cmd.firstIndex = i; }
+    inline unsigned int GetIndexStart() const override { return _cmd.firstIndex; }
+
+    inline void SetIndexCount(const unsigned int& i) override { _cmd.count = i; }
+    inline unsigned int GetIndexCount() const override { return _cmd.count; }
+
+    inline void SetVertexCount(const unsigned int& i) override {}
+    inline unsigned int GetVertexCount() const override { return 0; }
+
+    //inline void* GetIndirectPtr() const override { return 0; }
+    inline const void* GetPtr() const override { return &_cmd; }
+
+    inline bool GetUsingIndexBuffer() const override { return true; }
+
+    GeometryDrawParamsElements(unsigned int const& iStart, unsigned int const& iCount, unsigned int const& vStart, unsigned int const& instancesNum = 1, unsigned int const& firstInstance = 0);
+    virtual ~GeometryDrawParamsElements();
+
+    static IGeometryDrawParamsPtr Create(unsigned int const& iStart, unsigned int const& iCount, unsigned int const& vStart, unsigned int const& instancesNum = 1, unsigned int const& firstInstance = 0);
+protected:
+    DrawElementsIndirectCmd _cmd;
 };
 
 }

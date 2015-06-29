@@ -23,6 +23,9 @@ typedef std::shared_ptr<VertexAttribute> VertexAttributePtr;
 typedef std::shared_ptr<VertexFormat> VertexFormatPtr;
 typedef std::shared_ptr<IndexFormat> IndexFormatPtr;
 
+class IGeometryBuffer;
+typedef std::shared_ptr<IGeometryBuffer> IGeometryBufferPtr;
+
 class IGeometryBuffer {
 public:
     enum DrawMode {
@@ -56,8 +59,6 @@ public:
     virtual bool GetIndexBuffer_NVGPUPTR(uint64_t* nv_resident_ptr, int* nv_buffer_size) = 0;
 
     virtual bool Bind(bool useIndexBuffer) const = 0;
-
-    virtual bool Good() const = 0;
 
     virtual void SetDrawMode(const DrawMode& dm) = 0;
     virtual DrawMode GetDrawMode() const = 0;
@@ -105,9 +106,10 @@ public:
     virtual void SetFirstInstance(unsigned int const& index) = 0;
     virtual unsigned int GetFirstInstance() const = 0;
 
-    virtual void* GetIndirectPtr() const = 0;
+    //Pointers may be '0' if not supported or no any.
+    //virtual void* GetIndirectPtr() const = 0;
+    virtual const void* GetPtr() const = 0; //get pointer to struct (DrawArraysIndirectCmd or DrawElementsIndirectCmd).
 
-    virtual void SetUsingIndexBuffer(const bool& state) = 0;
     virtual bool GetUsingIndexBuffer() const = 0;
 
     virtual ~IGeometryDrawParams() {}
@@ -117,11 +119,11 @@ typedef std::shared_ptr<IGeometryDrawParams> IGeometryDrawParamsPtr;
 
 class IGeometry {
 public:
-    virtual IGeometryBuffer* GetGeometryBuffer() const = 0;
-    virtual void SetGeometryBuffer(IGeometryBuffer* buffer) = 0;
+    virtual IGeometryBufferPtr GetGeometryBuffer() const = 0;
+    virtual void SetGeometryBuffer(IGeometryBufferPtr const& buffer) = 0;
 
     virtual IGeometryDrawParamsPtr GetDrawParams() const = 0;
-    virtual void SetDrawParams(IGeometryDrawParamsPtr params) = 0;
+    virtual void SetDrawParams(IGeometryDrawParamsPtr const&params) = 0;
 
     virtual void Draw() const = 0;
     virtual ~IGeometry() {}

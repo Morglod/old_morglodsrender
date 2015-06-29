@@ -115,6 +115,8 @@ bool Texture2D::SetData(TextureDataPtr const& data, Texture::StorageDataFormat c
     sizes[0].depth = 1;
     _sizes = mu::ArrayHandle<TextureSizeInfo>(sizes, 1, true, false);
 
+    if(OnDataChanged != nullptr) OnDataChanged(static_cast<Texture*>(this));
+
     return true;
 }
 
@@ -182,6 +184,8 @@ bool Texture2D::UpdateData(TextureDataPtr const& data, int const& mipMapLevel, g
 
         if(binded_gpu_handle != 0) stateCache->BindTextureNotCached(0, binded_gpu_handle, binded_tex_type);
     }
+
+    if(OnDataUpdated != nullptr) OnDataUpdated(static_cast<Texture*>(this));
 
     return true;
 }
