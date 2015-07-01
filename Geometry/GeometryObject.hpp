@@ -20,9 +20,6 @@ public:
     Geometry(IGeometryBufferPtr const& buffer, IGeometryDrawParamsPtr const& params);
     virtual ~Geometry();
 
-    static IGeometry* MakeTriangle(const float& scale = 1.0f, const glm::vec3& offset = glm::vec3(0.0f, 0.0f, 0.0f));
-    static IGeometry* MakeQuad(const glm::vec2& scale = glm::vec2(1.0f, 1.0f), const glm::vec3& offset = glm::vec3(0.0f, 0.0f, 0.0f), const bool& texCoords = true, const glm::vec2& texCoordsScale = glm::vec2(1.0f, 1.0f));
-    static IGeometry* MakeBox(const glm::vec3& scale = glm::vec3(1.0f, 1.0f, 1.0f), const glm::vec3& offset = glm::vec3(0.0f, 0.0f, 0.0f), const bool& inside = false);
 protected:
     IGeometryBufferPtr _buffer;
     IGeometryDrawParamsPtr _draw_params;

@@ -36,34 +36,12 @@ public:
     GeometryBuffer();
     virtual ~GeometryBuffer();
 
-    /*
-        NVIDIA EXT
-    */
-    inline bool GetVertexBuffer_NVGPUPTR(uint64_t* nv_resident_ptr, int* nv_buffer_size) override {
-        if(_vb_nv_buffer_size == 0) return false;
-        if(nv_resident_ptr) *nv_resident_ptr = _vb_nv_resident_ptr;
-        if(nv_buffer_size) *nv_buffer_size = _vb_nv_buffer_size;
-        return true;
-    }
-
-    inline bool GetIndexBuffer_NVGPUPTR(uint64_t* nv_resident_ptr, int* nv_buffer_size) override {
-        if(_ib_nv_buffer_size == 0) return false;
-        if(nv_resident_ptr) *nv_resident_ptr = _ib_nv_resident_ptr;
-        if(nv_buffer_size) *nv_buffer_size = _ib_nv_buffer_size;
-        return true;
-    }
-    /*
-        #
-    */
 protected:
     IGPUBuffer* _vb;
     IGPUBuffer* _ib;
     VertexFormatPtr _format;
     IndexFormatPtr _iformat;
     IGeometryBuffer::DrawMode _draw_mode;
-
-    uint64_t _vb_nv_resident_ptr, _ib_nv_resident_ptr;
-    int _vb_nv_buffer_size, _ib_nv_buffer_size;
 
     struct CustomAttribute {
         IGPUBuffer* buffer = nullptr;

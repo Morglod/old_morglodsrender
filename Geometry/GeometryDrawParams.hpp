@@ -13,7 +13,7 @@ public:
     inline void SetVertexCount(const unsigned int& i) override { _cmd.count = i; }
     inline unsigned int GetVertexStart() const override { return _cmd.first; }
     inline unsigned int GetVertexCount() const override { return _cmd.count; }
-    inline void SetInstancesNum(unsigned int const& num) override { _cmd.instanceCount; }
+    inline void SetInstancesNum(unsigned int const& num) override { _cmd.instanceCount = num; }
     inline unsigned int GetInstancesNum() const override { return _cmd.instanceCount; }
     inline void SetFirstInstance(unsigned int const& index) override { _cmd.baseInstance = index; }
     inline unsigned int GetFirstInstance() const override { return _cmd.baseInstance; }
@@ -41,7 +41,7 @@ public:
     inline void SetVertexStart(const unsigned int& v) override { _cmd.baseVertex = v; }
     inline unsigned int GetVertexStart() const override { return _cmd.baseVertex; }
 
-    inline void SetInstancesNum(unsigned int const& num) override { _cmd.primCount; }
+    inline void SetInstancesNum(unsigned int const& num) override { _cmd.primCount = num; }
     inline unsigned int GetInstancesNum() const override { return _cmd.primCount; }
 
     inline void SetFirstInstance(unsigned int const& index) override { _cmd.baseInstance = index; }

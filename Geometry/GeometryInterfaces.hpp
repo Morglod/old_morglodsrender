@@ -55,9 +55,6 @@ public:
     virtual bool SetIndexBuffer(IGPUBuffer* buf) = 0;
     virtual IGPUBuffer* GetIndexBuffer() const = 0;
 
-    virtual bool GetVertexBuffer_NVGPUPTR(uint64_t* nv_resident_ptr, int* nv_buffer_size) = 0;
-    virtual bool GetIndexBuffer_NVGPUPTR(uint64_t* nv_resident_ptr, int* nv_buffer_size) = 0;
-
     virtual bool Bind(bool useIndexBuffer) const = 0;
 
     virtual void SetDrawMode(const DrawMode& dm) = 0;

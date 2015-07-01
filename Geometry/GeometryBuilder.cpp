@@ -66,6 +66,11 @@ ManualGeometry::IndexType ManualGeometry::AddIndexData(IndexType const& index) {
 }
 
 IGeometry* ManualGeometry::Build(IGPUBuffer::Usage const& usage) {
+    mr::Log::LogString("ManualGeometry::Build NOT IMPLEMENTED YET");
+    mr::Log::LogString("ManualGeometry::Build NOT IMPLEMENTED YET");
+    mr::Log::LogString("ManualGeometry::Build NOT IMPLEMENTED YET");
+    mr::Log::LogString("ManualGeometry::Build NOT IMPLEMENTED YET");
+    return nullptr;
     /*VertexFormatCustomFixed vformat;
     vformat.SetAttributesNum(_vertexAttributes.size());
 
