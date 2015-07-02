@@ -34,8 +34,8 @@ public:
     inline void SetCompiler(IShaderCompiler* shaderCompiler) { _shaderCompiler = shaderCompiler; }
     inline IShaderCompiler* GetCompiler() { return _shaderCompiler; }
 
-    virtual IShader* CreateShader(IShader::Type const& type);
-    virtual IShader* CreateAndCompile(IShader::Type const& type, std::string const& code);
+    virtual IShader* CreateShader(ShaderType const& type);
+    virtual IShader* CreateAndCompile(ShaderType const& type, std::string const& code);
 
     virtual IShaderProgram* CreateShaderProgram();
     virtual IShaderProgram* CreateShaderProgramFromCache(ShaderProgramCache cache);

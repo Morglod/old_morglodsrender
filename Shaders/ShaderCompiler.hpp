@@ -72,7 +72,7 @@ public:
     virtual ShaderCompilationOutput LinkToByteCode(IShaderProgram* shaderProgramObject, mu::ArrayHandle<IShader*> shaderObjects, int* __restrict__ outLength, unsigned int* __restrict__ outFromat, void** __restrict__ outData, bool* __restrict__ byteCode) = 0;
 
     /// IShaderCompiler::Compile calls this methods before compilation
-    virtual std::string _Optimize(IShader::Type const& type, std::string const& code) = 0;
+    virtual std::string _Optimize(ShaderType const& type, std::string const& code) = 0;
     //virtual std::string PreProcess(std::string code, ShaderType const& type, std::string const& shaderDirectory) = 0;
 
     virtual ~IShaderCompiler() {}
@@ -84,7 +84,7 @@ public:
     ShaderCompilationOutput Compile(IShader* shaderObject, std::string const& code) override;
     ShaderCompilationOutput Link(IShaderProgram* shaderProgramObject, mu::ArrayHandle<IShader*> shaderObjects) override;
     ShaderCompilationOutput LinkToByteCode(IShaderProgram* shaderProgramObject, mu::ArrayHandle<IShader*> shaderObjects, int* outLength, unsigned int* outFromat, void** outData, bool* byteCode) override;
-    std::string _Optimize(IShader::Type const& type, std::string const& code) override;
+    std::string _Optimize(ShaderType const& type, std::string const& code) override;
     //std::string PreProcess(std::string code, ShaderType const& type, std::string const& shaderDirectory) override;
     bool debug_log = true;
     virtual ~ShaderCompiler();

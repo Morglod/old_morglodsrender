@@ -12,7 +12,7 @@ namespace mr {
 
 /** SHADER CLASS **/
 
-bool Shader::Create(IShader::Type const& type) {
+bool Shader::Create(ShaderType const& type) {
     unsigned int handle = GetGPUHandle();
     if(handle == 0) {
 #ifdef MR_CHECK_LARGE_GL_ERRORS
@@ -52,7 +52,7 @@ void Shader::Destroy() {
     }
 }
 
-Shader::Shader() : _type(None), _compiled(false) {
+Shader::Shader() : _type(ShaderType::None), _compiled(false) {
 }
 
 Shader::~Shader() {

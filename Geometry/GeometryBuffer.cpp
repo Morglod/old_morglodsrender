@@ -25,13 +25,25 @@ bool GeometryBuffer::Create(IGeometryBuffer::CreationParams const& params) {
 bool GeometryBuffer::SetVertexBuffer(IGPUBuffer* buf) {
     AssertAndExec(buf != nullptr, return false);
     _vb = buf;
-    _vb->MakeResident();
+
+    if(mr::gl::IsNVVBUMSupported()) {
+        uint64_t residentPtr = 0;
+        if(_vb->GetGPUAddress(residentPtr)) ;
+        else _vb->MakeResident();
+    }
+
     return true;
 }
 
 bool GeometryBuffer::SetIndexBuffer(IGPUBuffer* buf) {
     _ib = buf;
-    _ib->MakeResident();
+
+    if(mr::gl::IsNVVBUMSupported()) {
+        uint64_t residentPtr = 0;
+        if(_ib->GetGPUAddress(residentPtr)) ;
+        else _ib->MakeResident();
+    }
+
     return true;
 }
 

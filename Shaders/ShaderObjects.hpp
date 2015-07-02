@@ -10,7 +10,7 @@ namespace mr {
 class Shader : public IShader {
     friend class ShaderManager;
 public:
-    inline IShader::Type GetType() override { return _type; }
+    inline ShaderType GetType() override { return _type; }
     inline bool IsCompiled() override { return _compiled; }
 
     //ObjectHandle
@@ -18,9 +18,9 @@ public:
 
     virtual ~Shader();
 protected:
-    bool Create(IShader::Type const& type) override;
+    bool Create(ShaderType const& type) override;
     Shader();
-    IShader::Type _type;
+    ShaderType _type;
     bool _compiled;
 };
 

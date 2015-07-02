@@ -82,7 +82,7 @@ void StateCache::ResetCache() {
     }
 
     //VertexFormat
-    size_t maxVertexAttribs = 16;
+    size_t maxVertexAttribs = mr::gl::GetMaxVertexAttribsNum();
     _vertexAttributes = mu::ArrayHandle<VertexAttribute>(new VertexAttribute[maxVertexAttribs], maxVertexAttribs, true, false);
 
     //Ubos
@@ -503,9 +503,9 @@ bool StateCache::SetVertexFormat(VertexFormatPtr const& format) {
         result = result && BindVertexAttribute(format->attributes.GetArray()[i], format->size);
     }
     //UnBind from last format if any
-    if(_vertexFormat != nullptr) {
-        for(size_t i = format->attribsNum; i < (format->attribsNum - _vertexFormat->attribsNum); ++i) {
-            UnBindVertexAttribute(i);
+    if((_vertexFormat != nullptr) && (_vertexFormat->attribsNum > format->attribsNum)) {
+        for(size_t i = 0; i < (_vertexFormat->attribsNum - format->attribsNum); ++i) {
+            UnBindVertexAttribute(i+format->attribsNum);
         }
     }
     _vertexFormat = format;

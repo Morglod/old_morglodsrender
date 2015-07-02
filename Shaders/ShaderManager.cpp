@@ -75,7 +75,7 @@ void ShaderManager::SetNVVBUMPointer(int const& vertexAttributeLocation, uint64_
     }
 }
 
-IShader* ShaderManager::CreateShader(IShader::Type const& type) {
+IShader* ShaderManager::CreateShader(ShaderType const& type) {
     Shader* shader = new Shader();
     if(!shader->Create(type)) {
         mr::Log::LogString("Failed ShaderManager::CreateShader. Shader object not created.", MR_LOG_LEVEL_ERROR);
@@ -86,7 +86,7 @@ IShader* ShaderManager::CreateShader(IShader::Type const& type) {
     return static_cast<IShader*>(shader);
 }
 
-IShader* ShaderManager::CreateAndCompile(IShader::Type const& type, std::string const& code) {
+IShader* ShaderManager::CreateAndCompile(ShaderType const& type, std::string const& code) {
     IShader* ishader = CreateShader(type);
     if(!ishader) {
         mr::Log::LogString("Failed ShaderManager::CreateAndCompile. Shader object not created.", MR_LOG_LEVEL_ERROR);
@@ -167,8 +167,8 @@ ShaderManager::~ShaderManager() {
 
 IShaderProgram* ShaderManager::CreateSimpleShaderProgram(std::string const& vertexShaderCode, std::string const& fragmentShaderCode) {
     IShader* sh[2] {
-        CreateAndCompile(IShader::Type::Vertex, vertexShaderCode),
-        CreateAndCompile(IShader::Type::Fragment, fragmentShaderCode)
+        CreateAndCompile(ShaderType::Vertex, vertexShaderCode),
+        CreateAndCompile(ShaderType::Fragment, fragmentShaderCode)
     };
 
     //Delete shaders if one of them isn't compiled.

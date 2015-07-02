@@ -8,6 +8,8 @@
 #include "Node.hpp"
 #include "Entity.hpp"
 
+#include <iostream>
+
 namespace mr {
 
 size_t SceneManager::PickLod(float distance, IModel* model) const {
@@ -21,13 +23,13 @@ EntityPtr SceneManager::CreateEntity(ModelPtr model, std::string const& name) {
 EntityPtr SceneManager::CreateEntity(ModelPtr model, SceneNodePtr parentSceneNode, std::string const& name) {
     EntityPtr ent = EntityPtr(new Entity(ModelWeakPtr(model), name));
     parentSceneNode->AddChild(std::static_pointer_cast<SceneNode>(ent));
-    _entities.PushBack(ent);
+    _entities.push_back(ent);
     _OnSceneChanged();
     return ent;
 }
 
 EntityPtr SceneManager::FindEntity(std::string const& name) const {
-    for(size_t i = 0; i < _entities.GetNum(); ++i) {
+    for(size_t i = 0; i < _entities.size(); ++i) {
         if(_entities[i]->GetName() == name) return _entities[i];
     }
     return nullptr;
@@ -35,7 +37,7 @@ EntityPtr SceneManager::FindEntity(std::string const& name) const {
 
 mr::TStaticArray<EntityPtr> SceneManager::FindEntities(ModelWeakPtr model) const {
     mr::TDynamicArray<EntityPtr> found;
-    for(size_t i = 0; i < _entities.GetNum(); ++i) {
+    for(size_t i = 0; i < _entities.size(); ++i) {
         if(_entities[i]->GetModel().lock() == model.lock()) found.PushBack( _entities[i] );
     }
     return found.ConvertToStaticArray();
@@ -50,7 +52,7 @@ void SceneManager::Optimize() {
 
 void SceneManager::Draw() const {
     //if(_sort_entity.empty()) {
-        for(size_t i = 0; i < _entities.GetNum(); ++i) {
+        for(size_t i = 0; i < _entities.size(); ++i) {
             _entities[i]->Draw();
         }
     /*} else {

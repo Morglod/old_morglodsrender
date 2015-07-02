@@ -80,6 +80,8 @@
 		<Unit filename="CoreObjects.cpp" />
 		<Unit filename="CoreObjects.hpp" />
 		<Unit filename="FeaturesList/FeaturesList.txt" />
+		<Unit filename="Geometry/BuiltInGeometry.cpp" />
+		<Unit filename="Geometry/BuiltInGeometry.hpp" />
 		<Unit filename="Geometry/GeometryBuffer.cpp" />
 		<Unit filename="Geometry/GeometryBuffer.hpp" />
 		<Unit filename="Geometry/GeometryBuilder.cpp" />
@@ -138,6 +140,8 @@
 		<Unit filename="Shaders/ShaderCompiler.cpp" />
 		<Unit filename="Shaders/ShaderCompiler.hpp" />
 		<Unit filename="Shaders/ShaderConfig.hpp" />
+		<Unit filename="Shaders/ShaderGenerator.cpp" />
+		<Unit filename="Shaders/ShaderGenerator.hpp" />
 		<Unit filename="Shaders/ShaderInterfaces.cpp" />
 		<Unit filename="Shaders/ShaderInterfaces.hpp" />
 		<Unit filename="Shaders/ShaderManager.cpp" />
@@ -146,7 +150,9 @@
 		<Unit filename="Shaders/ShaderObjects.hpp" />
 		<Unit filename="Shaders/ShaderProgramObject.cpp" />
 		<Unit filename="Shaders/ShaderProgramObject.hpp" />
-		<Unit filename="Shaders/ShaderUniformBuffer.hpp" />
+		<Unit filename="Shaders/ShaderTypes.hpp" />
+		<Unit filename="Shaders/ShaderUBO.cpp" />
+		<Unit filename="Shaders/ShaderUBO.hpp" />
 		<Unit filename="Shaders/ShaderUniforms.cpp" />
 		<Unit filename="Shaders/ShaderUniforms.hpp" />
 		<Unit filename="Shaders/build_shader_resources.py" />

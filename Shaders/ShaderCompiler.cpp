@@ -295,7 +295,7 @@ ShaderCompilationOutput ShaderCompiler::LinkToByteCode(IShaderProgram* shaderPro
     OPTIMIZE
 **/
 
-std::string ShaderCompiler::_Optimize(IShader::Type const& type, std::string const& code) {
+std::string ShaderCompiler::_Optimize(ShaderType const& type, std::string const& code) {
     return code;
 }
 /*

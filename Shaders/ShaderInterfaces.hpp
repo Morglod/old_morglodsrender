@@ -4,6 +4,8 @@
 #define _MR_SHADER_INTERFACES_H_
 
 #include "../CoreObjects.hpp"
+#include "ShaderTypes.hpp"
+
 #include <mu/Containers.hpp>
 
 #include <glm/glm.hpp>
@@ -46,23 +48,12 @@ public:
 
 class IShader : public IGPUObjectHandle {
 public:
-    enum Type {
-        None = 0,
-        Vertex = 0x8B31,
-        Fragment = 0x8B30,
-        Compute = 0x91B9,
-        TessControl = 0x8E88,
-        TessEvaluation = 0x8E87,
-        Geometry = 0x8DD9,
-        TypesNum = 8
-    };
-
-    virtual IShader::Type GetType() = 0;
+    virtual ShaderType GetType() = 0;
     virtual bool IsCompiled() = 0;
 
     virtual ~IShader() {}
 protected:
-    virtual bool Create(IShader::Type const& type) = 0;
+    virtual bool Create(ShaderType const& type) = 0;
 };
 
 struct ShaderProgramCache {

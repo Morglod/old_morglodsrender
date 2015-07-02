@@ -19,7 +19,6 @@ public:
 
     Geometry(IGeometryBufferPtr const& buffer, IGeometryDrawParamsPtr const& params);
     virtual ~Geometry();
-
 protected:
     IGeometryBufferPtr _buffer;
     IGeometryDrawParamsPtr _draw_params;

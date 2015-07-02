@@ -2,6 +2,8 @@
 
 #include "SceneManagerInterfaces.hpp"
 
+#include <vector>
+
 namespace mr {
 
 class IVertexFormat;
@@ -17,7 +19,7 @@ public:
     EntityPtr CreateEntity(ModelPtr model, std::string const& name = "noname") override;
     EntityPtr CreateEntity(ModelPtr model, SceneNodePtr parentSceneNode, std::string const& name = "noname") override;
 
-    size_t GetEntityNum() const override { return _entities.GetNum(); }
+    size_t GetEntityNum() const override { return _entities.size(); }
     EntityPtr FindEntity(std::string const& name) const override;
     mr::TStaticArray<EntityPtr> FindEntities(ModelWeakPtr model) const override;
 
@@ -37,7 +39,7 @@ public:
 protected:
     void _OnSceneChanged() override;
 
-    mr::TDynamicArray<EntityPtr> _entities;
+    std::vector<EntityPtr> _entities;
     //std::unordered_map<mr::IVertexFormat*, mr::TDynamicArray<Entity*>> _sort_entity;
     SceneNodePtr _rootNode;
     PointLightDescList _pointLights;

@@ -32,7 +32,8 @@ struct GeomDataType {
     enum DefaultDataType {
         Int = 0x1404,
         UInt = 0x1405,
-        Float = 0x1406
+        Float = 0x1406,
+        UShort = 0x1403
     };
 
     unsigned int dataTypeGL;
