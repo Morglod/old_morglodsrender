@@ -37,11 +37,11 @@ void ShaderManager::DeleteGlobalUniform(ShaderUniformDesc const& desc) {
     _globalUniformsDesc.erase(desc.name);
 }
 
-void ShaderManager::SetUniformBufferObject(unsigned int const& index, IGPUBuffer* buffer) {
+void ShaderManager::SetUniformBufferObject(unsigned int const& index, IBuffer* buffer) {
     _globalUbos[index] = buffer;
 }
 
-void ShaderManager::RemoveUniformBufferObject(unsigned int const& index, IGPUBuffer* buffer) {
+void ShaderManager::RemoveUniformBufferObject(unsigned int const& index, IBuffer* buffer) {
     _globalUbos.erase(index);
 }
 

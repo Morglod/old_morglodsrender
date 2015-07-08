@@ -22,9 +22,9 @@ bool TextureStreamer2D::Reset(Texture2D* newTarget, IDataSourcePtr const& dataSo
     auto textureSizes = newTarget->GetSizesInfo(0);
     _pageSize = glm::uvec2(textureSizes.width, textureSizes.height / _totalIterations);
 
-    GPUBufferManager& manager = GPUBufferManager::GetInstance();
+    BufferManager& manager = BufferManager::GetInstance();
     for(size_t i = 0; i < 2; ++i) {
-        IGPUBuffer* buf = manager.CreateBuffer(IGPUBuffer::FastReadWrite, _pageSize.x * _pageSize.y * 3);
+        IBuffer* buf = manager.CreateBuffer(_pageSize.x * _pageSize.y * 3, BufferUsage::FastReadWrite);
 
         if(buf == nullptr) {
             Destroy();
@@ -39,7 +39,7 @@ bool TextureStreamer2D::Reset(Texture2D* newTarget, IDataSourcePtr const& dataSo
 }
 
 void TextureStreamer2D::Destroy() {
-    GPUBufferManager& manager = GPUBufferManager::GetInstance();
+    BufferManager& manager = BufferManager::GetInstance();
     for(size_t i = 0; i < 2; ++i) {
         manager.Delete(_pbos[i]);
     }
@@ -50,7 +50,7 @@ bool TextureStreamer2D::Sync() {
 
     StateCache* stateCache = StateCache::GetDefault();
 
-    IGPUBuffer* was = nullptr;
+    IBuffer* was = nullptr;
     stateCache->ReBindBuffer(_pbos[_curPbo], StateCache::PixelUnpackBuffer, &was);
     _target->UpdateData(TextureData::FromMemory(mu::ArrayHandle<unsigned char>(0, 0, false, false), _pageSize, _target->GetDataFormat(), _target->GetDataType()), 0, glm::ivec2(_pageSize.x, _pageSize.y * _iterations));
     if(was) stateCache->BindBuffer(was, StateCache::PixelUnpackBuffer);

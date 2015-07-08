@@ -5,7 +5,7 @@
 
 namespace mr {
 
-class IGPUBuffer;
+class IBuffer;
 class Texture;
 
 /**
@@ -25,13 +25,13 @@ public:
     void Destroy() override;
     size_t GetGPUMem() override;
     unsigned int GetGPUHandle() override;
-    virtual IGPUBuffer* GetBuffer() const;
+    virtual IBuffer* GetBuffer() const;
 
     virtual ~TextureUBO();
 protected:
     TextureUBO();
 
-    IGPUBuffer* _buffer = nullptr;
+    IBuffer* _buffer = nullptr;
     mu::ArrayHandle<Texture*> _textures;
 };
 

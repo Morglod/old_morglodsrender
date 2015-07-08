@@ -366,7 +366,7 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
         debugIndeciesNum += mesh->mNumFaces;
         _impl->_geoms.At(i) = mr::GeometryManager::GetInstance()->PlaceGeometry(vertexFormatPtr, &vertexData[0], mesh->mNumVertices,
                                                                                 indexFormatPtr, &indexData[0], mesh->mNumFaces*3,
-                                                                                mr::IGPUBuffer::Usage::Static, mr::IGeometryBuffer::DrawMode::Triangles);
+                                                                                BufferUsage::Static, DrawMode::Triangles);
 
         delete [] vertexData;
         delete [] indexData;

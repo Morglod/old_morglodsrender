@@ -5,7 +5,7 @@
 
 namespace mr {
 
-TStaticArray<unsigned char> SerializeMRTypes::GPUBufferToBytes(IGPUBuffer* buf) {
+TStaticArray<unsigned char> SerializeMRTypes::GPUBufferToBytes(IBuffer* buf) {
     Assert(buf != nullptr);
     Assert(buf->GetGPUMem() != 0);
     TStaticArray<unsigned char> _dst = TStaticArray<unsigned char>(new unsigned char [buf->GetGPUMem()], buf->GetGPUMem(), true);
@@ -15,10 +15,10 @@ TStaticArray<unsigned char> SerializeMRTypes::GPUBufferToBytes(IGPUBuffer* buf) 
     return _dst;
 }
 
-IGPUBuffer* SerializeMRTypes::GPUBufferFromBytes(TStaticArray<unsigned char> bytes) {
+IBuffer* SerializeMRTypes::GPUBufferFromBytes(TStaticArray<unsigned char> bytes) {
     Assert(bytes.GetNum() != 0);
 
-    IGPUBuffer* buf = mr::GPUBufferManager::GetInstance().CreateBuffer(IGPUBuffer::Static, bytes.GetNum());
+    IBuffer* buf = mr::BufferManager::GetInstance().CreateBuffer(bytes.GetNum(), BufferUsage::Static);
     if(buf == nullptr) {
         mr::Log::LogString("Failed SerializeMRTypes::GPUBufferFromBytes. buf is null.", MR_LOG_LEVEL_ERROR);
         return nullptr;

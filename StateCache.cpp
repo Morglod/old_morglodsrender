@@ -58,7 +58,7 @@ void StateCache::ResetCache() {
     _transformFeedbacks.clear();
 
     //Buffers
-    _buffers = mu::ArrayHandle<IGPUBuffer*>(new IGPUBuffer*[MR_BUFFERS_BIND_TARGETS_NUM], MR_BUFFERS_BIND_TARGETS_NUM, true);
+    _buffers = mu::ArrayHandle<IBuffer*>(new IBuffer*[MR_BUFFERS_BIND_TARGETS_NUM], MR_BUFFERS_BIND_TARGETS_NUM, true);
     for(size_t i = 0; i < MR_BUFFERS_BIND_TARGETS_NUM; ++i) _buffers.GetArray()[i] = nullptr;
 
     //Textures
@@ -87,7 +87,7 @@ void StateCache::ResetCache() {
 
     //Ubos
     size_t maxUBOs = 16;
-    _ubos = mu::ArrayHandle<IGPUBuffer*>(new IGPUBuffer*[maxUBOs], maxUBOs, true, false);
+    _ubos = mu::ArrayHandle<IBuffer*>(new IBuffer*[maxUBOs], maxUBOs, true, false);
     for(size_t i = 0; i < maxUBOs; ++i){
         _ubos.GetArray()[i] = nullptr;
     }
@@ -113,7 +113,7 @@ bool StateCache::ReBindBuffers() {
 
 bool StateCache::ReBindUBOs() {
     MR_BUFFERS_CHECK_BIND_ERRORS_CATCH(
-        IGPUBuffer** ubos = _ubos.GetArray();
+        IBuffer** ubos = _ubos.GetArray();
         for(size_t i = 0; i < _ubos.GetNum(); ++i) {
             glBindBufferBase(GL_UNIFORM_BUFFER, i, (ubos[i] == nullptr) ? 0 : ubos[i]->GetGPUHandle());
         },
@@ -178,7 +178,7 @@ bool StateCache::ReBindAll() {
 			ReBindFrameBuffers();
 }
 
-bool StateCache::BindBuffer(IGPUBuffer* buffer, BufferBindTarget const& target) {
+bool StateCache::BindBuffer(IBuffer* buffer, BufferBindTarget const& target) {
     /*if(target == IGPUBuffer::NotBinded) {
         mr::Log::LogString("Strange \"NotBinded\" target in StateCache::BindBuffer.", MR_LOG_LEVEL_WARNING);
         return false;
@@ -207,8 +207,8 @@ bool StateCache::BindBuffer(IGPUBuffer* buffer, BufferBindTarget const& target) 
     return true;
 }
 
-bool StateCache::BindUniformBuffer(IGPUBuffer* buffer, unsigned int const& index) {
-    IGPUBuffer** ubos = _ubos.GetArray();
+bool StateCache::BindUniformBuffer(IBuffer* buffer, unsigned int const& index) {
+    IBuffer** ubos = _ubos.GetArray();
     if(buffer == nullptr || buffer == 0 || buffer->GetGPUHandle() == 0) {
         ubos[index] = nullptr;
         MR_BUFFERS_CHECK_BIND_ERRORS_CATCH(
@@ -228,7 +228,7 @@ bool StateCache::BindUniformBuffer(IGPUBuffer* buffer, unsigned int const& index
     return true;
 }
 
-bool StateCache::BindTransformFeedbackBuffer(IGPUBuffer* buffer, unsigned int const& index) {
+bool StateCache::BindTransformFeedbackBuffer(IBuffer* buffer, unsigned int const& index) {
     if(buffer == nullptr || buffer == 0 || buffer->GetGPUHandle() == 0) {
         _transformFeedbacks[index] = nullptr;
         MR_BUFFERS_CHECK_BIND_ERRORS_CATCH(
@@ -248,22 +248,22 @@ bool StateCache::BindTransformFeedbackBuffer(IGPUBuffer* buffer, unsigned int co
     return true;
 }
 
-IGPUBuffer* StateCache::GetBindedBuffer(BufferBindTarget const& target) {
+IBuffer* StateCache::GetBindedBuffer(BufferBindTarget const& target) {
     AssertAndExec((size_t)target < MR_BUFFERS_BIND_TARGETS_NUM, return nullptr);
     return _buffers.GetArray()[(size_t)target];
 }
 
-IGPUBuffer* StateCache::GetBindedUniformBuffer(unsigned int const& index) {
+IBuffer* StateCache::GetBindedUniformBuffer(unsigned int const& index) {
     return _ubos.GetArray()[index];
 }
 
-IGPUBuffer* StateCache::GetBindedTransformFeedbackBuffer(unsigned int const& index) {
+IBuffer* StateCache::GetBindedTransformFeedbackBuffer(unsigned int const& index) {
     if(_transformFeedbacks.count(index) == 0) return nullptr;
     return _transformFeedbacks[index];
 }
 
-bool StateCache::ReBindBuffer(IGPUBuffer* __restrict__ buffer, BufferBindTarget const& target, IGPUBuffer** __restrict__ was) {
-    IGPUBuffer* binded = GetBindedBuffer(target);
+bool StateCache::ReBindBuffer(IBuffer* __restrict__ buffer, BufferBindTarget const& target, IBuffer** __restrict__ was) {
+    IBuffer* binded = GetBindedBuffer(target);
     if(binded == buffer) return true;
     *was = binded;
     if(BindBuffer(buffer, target)) return true;
@@ -556,29 +556,29 @@ void StateCache::UnBindVertexAttribute(unsigned int const& index) {
     _vertexAttributes.GetArray()[index] = VertexAttribute();
 }
 
-bool StateCache::SetVertexBuffer(IGPUBuffer* buf) {
+bool StateCache::SetVertexBuffer(IBuffer* buf) {
     if(!BindBuffer(buf, BufferBindTarget::ArrayBuffer)) return false;
     return true;
 }
 
-bool StateCache::SetVertexBuffer(IGPUBuffer* buf, VertexFormatPtr const& format) {
+bool StateCache::SetVertexBuffer(IBuffer* buf, VertexFormatPtr const& format) {
     return SetVertexFormat(format) && SetVertexBuffer(buf);
 }
 
-IGPUBuffer* StateCache::GetVertexBuffer() {
+IBuffer* StateCache::GetVertexBuffer() {
     return GetBindedBuffer(BufferBindTarget::ArrayBuffer);
 }
 
-bool StateCache::SetIndexBuffer(IGPUBuffer* buf) {
+bool StateCache::SetIndexBuffer(IBuffer* buf) {
     if(!BindBuffer(buf, BufferBindTarget::ElementArrayBuffer)) return false;
     return true;
 }
 
-bool StateCache::SetIndexBuffer(IGPUBuffer* buf, IndexFormatPtr const& format) {
+bool StateCache::SetIndexBuffer(IBuffer* buf, IndexFormatPtr const& format) {
     return SetIndexFormat(format) && SetIndexBuffer(buf);
 }
 
-IGPUBuffer* StateCache::GetIndexBuffer() {
+IBuffer* StateCache::GetIndexBuffer() {
     return GetBindedBuffer(BufferBindTarget::ElementArrayBuffer);
 }
 

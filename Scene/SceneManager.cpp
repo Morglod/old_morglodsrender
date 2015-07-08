@@ -1,5 +1,6 @@
 #include "SceneManager.hpp"
 #include "../Buffers/BufferManager.hpp"
+#include "../Buffers/BufferUsage.hpp"
 #include "../Shaders/ShaderManager.hpp"
 #include "../Shaders/ShaderConfig.hpp"
 #include "../StateCache.hpp"
@@ -68,7 +69,7 @@ bool SceneManager::CompleteLights() {
     //TODO test for errors
 
     if(lightsGpuBuff != nullptr) {
-        mr::GPUBufferManager::GetInstance().Delete(lightsGpuBuff);
+        mr::BufferManager::GetInstance().Delete(lightsGpuBuff);
         lightsGpuBuff = nullptr;
     }
 
@@ -77,7 +78,7 @@ bool SceneManager::CompleteLights() {
     mr::ShaderUniformBlockInfo* blockInfo = &(shaderUniformMap->GetUniformBlock(MR_SHADER_POINTLIGHTS_BLOCK));
 
     if((_pointLights.num = _pointLights.pointLights.size()) != 0) {
-        lightsGpuBuff = mr::GPUBufferManager::GetInstance().CreateBuffer(mr::IGPUBuffer::FastChange, 16777216); //16mb
+        lightsGpuBuff = mr::BufferManager::GetInstance().CreateBuffer(16777216, BufferUsage::FastChange); //16mb
 
         for(int i = 0; i < _pointLights.num; ++i) {
             const std::string uniform_name = "MR_pointLights["+std::to_string(i)+"].";

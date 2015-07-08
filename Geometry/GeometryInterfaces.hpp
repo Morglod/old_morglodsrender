@@ -1,13 +1,17 @@
+/**
+
+IGeometryBuffer is interface providing methods working with 'geometry source'.
+
+**/
+
 #pragma once
 
 #ifndef _MR_GEOMETRY_INTERFACES_
 #define _MR_GEOMETRY_INTERFACES_
 
-#include "../Types.hpp"
-#include "../Shaders/ShaderConfig.hpp"
-#include "../Buffers/BuffersInterfaces.hpp"
+#include "DrawModes.hpp"
 
-#include <mu/Containers.hpp>
+#include <memory>
 
 namespace mr {
 
@@ -26,46 +30,39 @@ typedef std::shared_ptr<IndexFormat> IndexFormatPtr;
 class IGeometryBuffer;
 typedef std::shared_ptr<IGeometryBuffer> IGeometryBufferPtr;
 
+class VertexBuffer;
+typedef std::shared_ptr<VertexBuffer> VertexBufferPtr;
+
+class IndexBuffer;
+typedef std::shared_ptr<IndexBuffer> IndexBufferPtr;
+
+class IBuffer;
+
 class IGeometryBuffer {
 public:
-    enum DrawMode {
-        Points = 0,
-        Lines = 1,
-        Triangles,
-        Quads
-    };
-
     struct CreationParams {
     public:
-        IGPUBuffer* vb = nullptr,* ib = nullptr;
-        VertexFormatPtr fv = nullptr;
-        IndexFormatPtr fi = nullptr;
-        IGeometryBuffer::DrawMode drawMode = DrawMode::Triangles;
+        VertexBufferPtr vertexBuffer = nullptr;
+        VertexFormatPtr vertexFormat = nullptr;
+        IndexBufferPtr indexBuffer = nullptr;
+        IndexFormatPtr indexFormat = nullptr;
+        DrawMode drawMode = DrawMode::Triangles;
 
         CreationParams() {}
-        CreationParams(IGPUBuffer* vb_, IGPUBuffer* ib_, VertexFormatPtr fv_, IndexFormatPtr fi_, IGeometryBuffer::DrawMode drawMode_) :
-            vb(vb_), ib(ib_), fv(fv_), fi(fi_), drawMode(drawMode_) {}
+        CreationParams(VertexBufferPtr const& vb, IndexBufferPtr const& ib, VertexFormatPtr const& fv, IndexFormatPtr const& fi, DrawMode const& dm) :
+            vertexBuffer(vb), vertexFormat(fv), indexBuffer(ib), indexFormat(fi), drawMode(dm) {}
     };
 
     virtual bool Create(CreationParams const& params) = 0;
 
-    virtual bool SetVertexBuffer(IGPUBuffer* buf) = 0;
-    virtual IGPUBuffer* GetVertexBuffer() const = 0;
-
-    virtual bool SetIndexBuffer(IGPUBuffer* buf) = 0;
-    virtual IGPUBuffer* GetIndexBuffer() const = 0;
+    virtual VertexBufferPtr GetVertexBuffer() const = 0;
+    virtual IndexBufferPtr GetIndexBuffer() const = 0;
+    virtual DrawMode GetDrawMode() const = 0;
 
     virtual bool Bind(bool useIndexBuffer) const = 0;
 
-    virtual void SetDrawMode(const DrawMode& dm) = 0;
-    virtual DrawMode GetDrawMode() const = 0;
-
-    virtual void SetFormat(VertexFormatPtr f, IndexFormatPtr fi) = 0;
-    virtual VertexFormatPtr GetVertexFormat() const = 0;
-    virtual IndexFormatPtr GetIndexFormat() const = 0;
-
-    virtual void SetAttribute(VertexAttribute const& attrib, IGPUBuffer* buf) = 0;
-    virtual IGPUBuffer* GetAttribute(VertexAttribute const& attrib) = 0;
+    virtual void SetAttribute(VertexAttribute const& attrib, IBuffer* buf) = 0;
+    virtual IBuffer* GetAttribute(VertexAttribute const& attrib) = 0;
 };
 
 class IGeometryDrawParams {

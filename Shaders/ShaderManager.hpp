@@ -10,7 +10,7 @@
 
 namespace mr {
 
-class IGPUBuffer;
+class IBuffer;
 class IShaderCompiler;
 
 class ShaderManager : public mu::Singleton<ShaderManager> {
@@ -26,8 +26,8 @@ public:
     virtual void UpdateGlobalUniform(std::string const& name, const void* value);
     virtual void UpdateAllGlobalUniforms();
 
-    virtual void SetUniformBufferObject(unsigned int const& index, IGPUBuffer* buffer);
-    virtual void RemoveUniformBufferObject(unsigned int const& index, IGPUBuffer* buffer);
+    virtual void SetUniformBufferObject(unsigned int const& index, IBuffer* buffer);
+    virtual void RemoveUniformBufferObject(unsigned int const& index, IBuffer* buffer);
 
     virtual void SetNVVBUMPointer(int const& vertexAttributeLocation, uint64_t const& residentPointer);
 
@@ -58,7 +58,7 @@ protected:
 
     std::unordered_map<std::string, const void*> _globalUniforms; //<name, data>
     std::unordered_map<std::string, ShaderUniformDesc> _globalUniformsDesc; //<name, desc>
-    std::unordered_map<unsigned int, IGPUBuffer*> _globalUbos;
+    std::unordered_map<unsigned int, IBuffer*> _globalUbos;
 
     IShaderProgram* _defaultShaderProgram;
 

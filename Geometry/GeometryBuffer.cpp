@@ -1,6 +1,9 @@
 #include "GeometryBuffer.hpp"
 #include "GeometryFormats.hpp"
 
+#include "VertexBuffer.hpp"
+#include "IndexBuffer.hpp"
+
 #include "../Utils/Debug.hpp"
 #include "../MachineInfo.hpp"
 #include "../StateCache.hpp"
@@ -11,43 +14,46 @@
 namespace mr {
 
 bool GeometryBuffer::Create(IGeometryBuffer::CreationParams const& params) {
-    if(params.vb == nullptr) return false;
-    if(params.fv == nullptr) return false;
+    if(params.vertexBuffer == nullptr) return false;
+    if(params.indexBuffer == nullptr) return false;
 
-    SetVertexBuffer(params.vb);
-    SetIndexBuffer(params.ib);
-    SetFormat(params.fv, params.fi);
-    SetDrawMode(params.drawMode);
+    if(! (_SetVertexBuffer(params.vertexBuffer) && _SetIndexBuffer(params.indexBuffer)) ) return false;
+
+    _drawMode = params.drawMode;
 
     return true;
 }
 
-bool GeometryBuffer::SetVertexBuffer(IGPUBuffer* buf) {
-    AssertAndExec(buf != nullptr, return false);
-    _vb = buf;
+bool GeometryBuffer::_SetVertexBuffer(VertexBufferPtr const& vb) {
+    AssertAndExec(vb != nullptr, return false);
+    _vb = vb;
 
     if(mr::gl::IsNVVBUMSupported()) {
         uint64_t residentPtr = 0;
-        if(_vb->GetGPUAddress(residentPtr)) ;
-        else _vb->MakeResident();
+        auto* buf = vb->GetBufferRange()->GetBuffer();
+        if(buf->GetGPUAddress(residentPtr)) ;
+        else buf->MakeResident();
     }
 
     return true;
 }
 
-bool GeometryBuffer::SetIndexBuffer(IGPUBuffer* buf) {
-    _ib = buf;
+bool GeometryBuffer::_SetIndexBuffer(IndexBufferPtr const& ib) {
+    _ib = ib;
 
-    if(mr::gl::IsNVVBUMSupported()) {
-        uint64_t residentPtr = 0;
-        if(_ib->GetGPUAddress(residentPtr)) ;
-        else _ib->MakeResident();
+    if(ib != nullptr) {
+        if(mr::gl::IsNVVBUMSupported()) {
+            uint64_t residentPtr = 0;
+            auto* buf = ib->GetBufferRange()->GetBuffer();
+            if(buf->GetGPUAddress(residentPtr)) ;
+            else buf->MakeResident();
+        }
     }
 
     return true;
 }
 
-void GeometryBuffer::SetAttribute(VertexAttribute const& attr, IGPUBuffer* buf) {
+void GeometryBuffer::SetAttribute(VertexAttribute const& attr, IBuffer* buf) {
     if(buf == nullptr) {
         auto it = _customAttribs.find(attr);
         if(it != _customAttribs.end()) _customAttribs.erase(it);
@@ -63,7 +69,7 @@ void GeometryBuffer::SetAttribute(VertexAttribute const& attr, IGPUBuffer* buf) 
             glGetNamedBufferParameterivEXT(buf->GetGPUHandle(), GL_BUFFER_SIZE, &customAttrib.size);
         } else {
             StateCache* stateCache = StateCache::GetDefault();
-            IGPUBuffer* binded = nullptr;
+            IBuffer* binded = nullptr;
             if(!stateCache->ReBindBuffer(buf, StateCache::ArrayBuffer, &binded)) {
                 mr::Log::LogString("Bind buffer failed in GeometryBuffer::SetAttribute.", MR_LOG_LEVEL_ERROR);
                 return;
@@ -78,11 +84,14 @@ void GeometryBuffer::SetAttribute(VertexAttribute const& attr, IGPUBuffer* buf) 
 
 bool GeometryBuffer::Bind(bool useIndexBuffer) const {
     //TODO cache
-    if(!_format) return false;
     if(!_vb) return false;
 
     StateCache* stateCache = StateCache::GetDefault();
-    if(!stateCache->SetVertexBuffer(_vb, _format)) {
+
+    auto* buffer = _vb->GetBufferRange()->GetBuffer();
+    auto vformat = _vb->GetFormat();
+
+    if(!stateCache->SetVertexBuffer(buffer, vformat)) {
         mr::Log::LogString("Bind vertex buffer failed in GeometryBuffer::Bind.", MR_LOG_LEVEL_ERROR);
         return false;
     }
@@ -101,33 +110,41 @@ bool GeometryBuffer::Bind(bool useIndexBuffer) const {
         }
     }
 
-    stateCache->BindBuffer(_vb, StateCache::ArrayBuffer);
+    stateCache->BindBuffer(buffer, StateCache::ArrayBuffer);
 
     if(mr::gl::IsNVVBUMSupported()) {
-        mu::ArrayHandle<VertexAttribute> const& attrs = _format->attributes;
-        mu::ArrayHandle<uint64_t> const& ptrs = _format->pointers;
+        mu::ArrayHandle<VertexAttribute> const& attrs = vformat->attributes;
+        mu::ArrayHandle<uint64_t> const& ptrs = vformat->pointers;
 
         for(size_t i = 0; i < attrs.GetNum(); ++i) {
             uint64_t residentPtr = 0;
-            if(_vb->GetGPUAddress(residentPtr)) {
+            if(buffer->GetGPUAddress(residentPtr)) {
                 glBufferAddressRangeNV(GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV,
                                        attrs.GetArray()[i].desc->shaderIndex,
                                        residentPtr + ptrs.GetArray()[i],
-                                       _vb->GetGPUMem()
+                                       buffer->GetGPUMem()
                                        );
             }
         }
 
-        if(_ib != nullptr && useIndexBuffer && _iformat != nullptr){
-            stateCache->SetIndexFormat(_iformat);
-            uint64_t residentPtr = 0;
-            if(_ib->GetGPUAddress(residentPtr)) {
-                glBufferAddressRangeNV(GL_ELEMENT_ARRAY_ADDRESS_NV, 0, residentPtr, _ib->GetGPUMem());
+        if(useIndexBuffer && _ib != nullptr){
+            auto ibuffer = _ib->GetBufferRange()->GetBuffer();
+            if(ibuffer != nullptr) {
+                auto iformat = _ib->GetFormat();
+                stateCache->SetIndexFormat(iformat);
+                uint64_t residentPtr = 0;
+                if(ibuffer->GetGPUAddress(residentPtr)) {
+                    glBufferAddressRangeNV(GL_ELEMENT_ARRAY_ADDRESS_NV, 0, residentPtr, ibuffer->GetGPUMem());
+                }
             }
         }
     } else {
-        if(_ib != nullptr && useIndexBuffer && _iformat != nullptr){
-            stateCache->SetIndexBuffer(_ib, _iformat);
+        if(useIndexBuffer && _ib != nullptr){
+            auto ibuffer = _ib->GetBufferRange()->GetBuffer();
+            if(ibuffer != nullptr) {
+                auto iformat = _ib->GetFormat();
+                stateCache->SetIndexBuffer(ibuffer, iformat);
+            }
         }
     }
 
@@ -136,8 +153,7 @@ bool GeometryBuffer::Bind(bool useIndexBuffer) const {
 
 GeometryBuffer::GeometryBuffer() :
     _vb(nullptr), _ib(nullptr),
-    _format(nullptr), _iformat(nullptr),
-    _draw_mode((mr::IGeometryBuffer::DrawMode)0)
+    _drawMode((DrawMode)0)
 {  }
 
 GeometryBuffer::~GeometryBuffer(){

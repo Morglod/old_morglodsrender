@@ -7,12 +7,12 @@
 
 namespace mr {
 
-class GPUBufferManager : public TGPUObjectManager<IGPUBuffer>, public mu::StaticSingleton<GPUBufferManager> {
+class BufferManager : public TGPUObjectManager<IBuffer>, public mu::StaticSingleton<BufferManager> {
 public:
-    IGPUBuffer* CreateBuffer(IGPUBuffer::Usage const& usage, size_t const& size);
+    IBuffer* CreateBuffer(size_t const& size, BufferUsage const& usage);
 
-    GPUBufferManager();
-    virtual ~GPUBufferManager();
+    BufferManager();
+    virtual ~BufferManager();
 };
 
 }

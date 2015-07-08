@@ -4,16 +4,20 @@
 #define _MR_GEOMETRY_MANAGER_H_
 
 #include "GeometryInterfaces.hpp"
+#include "../Buffers/BufferUsage.hpp"
 #include <mu/Singleton.hpp>
-#include "../Buffers/VirtualBuffer.hpp"
+#include <vector>
 
 namespace mr {
+
+class IBuffer;
+class VirtualBufferManager;
 
 class GeometryManager : public mu::Singleton<GeometryManager> {
 public:
     IGeometry* PlaceGeometry(VertexFormatPtr const& vertexFormat, void* vertexData, const size_t& vertexNum,
                              IndexFormatPtr const& indexFormat, void* indexData, const size_t& indexNum,
-                             const IGPUBuffer::Usage& usage, const IGeometryBuffer::DrawMode& drawMode);
+                             BufferUsage const& usage, DrawMode const& drawMode);
 
     inline bool GetBufferPerGeometry() { return _buffer_per_geom; }
     inline void SetBufferPerGeometry(bool const& b) { _buffer_per_geom = b; }
@@ -33,23 +37,23 @@ protected:
 
     struct VertexFormatBuffer {
         VertexFormatPtr format;
-        mr::IGPUBuffer::Usage usage;
-        mr::VirtualGPUBufferManager* manager; //when memory is totally used, manager will be deleted.
-        mr::IGPUBuffer* buffer; //ptr to real buffer
+        BufferUsage usage;
+        VirtualBufferManager* manager; //when memory is totally used, manager will be deleted.
+        IBuffer* buffer; //ptr to real buffer
     };
 
     struct IndexFormatBuffer {
         IndexFormatPtr format;
-        mr::IGPUBuffer::Usage usage;
-        mr::VirtualGPUBufferManager* manager; //when memory is totally used, manager will be deleted.
-        mr::IGPUBuffer* buffer; //ptr to real buffer
+        BufferUsage usage;
+        VirtualBufferManager* manager; //when memory is totally used, manager will be deleted.
+        IBuffer* buffer; //ptr to real buffer
     };
 
     std::vector<VertexFormatBuffer> _vertex_buffers;
     std::vector<IndexFormatBuffer> _index_buffers;
 
-    VertexFormatBuffer* _RequestVFBuffer(VertexFormatPtr const& format, size_t const& dataSize, IGPUBuffer::Usage const& usage);
-    IndexFormatBuffer* _RequestIFBuffer(IndexFormatPtr const& format, size_t const& dataSize, IGPUBuffer::Usage const& usage);
+    VertexFormatBuffer* _RequestVFBuffer(VertexFormatPtr const& format, size_t const& dataSize, BufferUsage const& usage);
+    IndexFormatBuffer* _RequestIFBuffer(IndexFormatPtr const& format, size_t const& dataSize, BufferUsage const& usage);
 };
 
 }

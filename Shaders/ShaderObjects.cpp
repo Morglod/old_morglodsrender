@@ -19,7 +19,7 @@ bool Shader::Create(ShaderType const& type) {
         int gl_er = 0;
         mr::gl::ClearError();
 #endif
-         handle = glCreateShader(type);
+         handle = glCreateShader(static_cast<unsigned int>(type));
          SetGPUHandle(handle);
 #ifdef MR_CHECK_LARGE_GL_ERRORS
         if(mr::gl::CheckError(0, &gl_er)) {

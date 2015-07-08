@@ -8,7 +8,7 @@
 
 namespace mr {
 
-class IGPUBuffer;
+class IBuffer;
 
 class Texture;
 class TextureSettings;
@@ -69,13 +69,13 @@ public:
 	bool ReBindFrameBuffers();
     bool ReBindAll();
 
-    bool BindBuffer(IGPUBuffer* buffer, BufferBindTarget const& target);
-    bool BindUniformBuffer(IGPUBuffer* buffer, unsigned int const& index);
-    bool BindTransformFeedbackBuffer(IGPUBuffer* buffer, unsigned int const& index);
-    IGPUBuffer* GetBindedBuffer(BufferBindTarget const& target);
-    IGPUBuffer* GetBindedUniformBuffer(unsigned int const& index);
-    IGPUBuffer* GetBindedTransformFeedbackBuffer(unsigned int const& index);
-    bool ReBindBuffer(IGPUBuffer* __restrict__ buffer, BufferBindTarget const& target, IGPUBuffer** __restrict__ was);
+    bool BindBuffer(IBuffer* buffer, BufferBindTarget const& target);
+    bool BindUniformBuffer(IBuffer* buffer, unsigned int const& index);
+    bool BindTransformFeedbackBuffer(IBuffer* buffer, unsigned int const& index);
+    IBuffer* GetBindedBuffer(BufferBindTarget const& target);
+    IBuffer* GetBindedUniformBuffer(unsigned int const& index);
+    IBuffer* GetBindedTransformFeedbackBuffer(unsigned int const& index);
+    bool ReBindBuffer(IBuffer* __restrict__ buffer, BufferBindTarget const& target, IBuffer** __restrict__ was);
 
     void TextureUnitNotUsed(unsigned int const& unit);
     bool BindTexture(Texture* texture, unsigned int const& unit);
@@ -114,13 +114,13 @@ public:
     }
     void UnBindVertexAttribute(unsigned int const& index);
 
-    bool SetVertexBuffer(IGPUBuffer* buf);
-    bool SetVertexBuffer(IGPUBuffer* buf, VertexFormatPtr const& format);
-    IGPUBuffer* GetVertexBuffer();
+    bool SetVertexBuffer(IBuffer* buf);
+    bool SetVertexBuffer(IBuffer* buf, VertexFormatPtr const& format);
+    IBuffer* GetVertexBuffer();
 
-    bool SetIndexBuffer(IGPUBuffer* buf);
-    bool SetIndexBuffer(IGPUBuffer* buf, IndexFormatPtr const& format);
-    IGPUBuffer* GetIndexBuffer();
+    bool SetIndexBuffer(IBuffer* buf);
+    bool SetIndexBuffer(IBuffer* buf, IndexFormatPtr const& format);
+    IBuffer* GetIndexBuffer();
 
     virtual ~StateCache();
 
@@ -133,8 +133,8 @@ private:
     StateCache();
     void _Init();
 
-    mu::ArrayHandle<IGPUBuffer*> _buffers;
-    std::unordered_map<unsigned int, IGPUBuffer*> _transformFeedbacks;
+    mu::ArrayHandle<IBuffer*> _buffers;
+    std::unordered_map<unsigned int, IBuffer*> _transformFeedbacks;
     mu::ArrayHandle<Texture*> _textures;
     mu::ArrayHandle<TextureSettings*> _textureSettings;
     mu::ArrayHandle<FrameBuffer*> _fbs;
@@ -145,7 +145,7 @@ private:
     IndexFormatPtr _indexFormat;
 
     mu::ArrayHandle<VertexAttribute> _vertexAttributes; // attribute[shader index]
-    mu::ArrayHandle<IGPUBuffer*> _ubos;
+    mu::ArrayHandle<IBuffer*> _ubos;
     unsigned int _vertexSize;
 };
 

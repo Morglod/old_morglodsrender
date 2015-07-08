@@ -65,7 +65,7 @@ ManualGeometry::IndexType ManualGeometry::AddIndexData(IndexType const& index) {
     return i;
 }
 
-IGeometry* ManualGeometry::Build(IGPUBuffer::Usage const& usage) {
+IGeometry* ManualGeometry::Build(BufferUsage const& usage) {
     mr::Log::LogString("ManualGeometry::Build NOT IMPLEMENTED YET");
     mr::Log::LogString("ManualGeometry::Build NOT IMPLEMENTED YET");
     mr::Log::LogString("ManualGeometry::Build NOT IMPLEMENTED YET");

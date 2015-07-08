@@ -38,7 +38,7 @@ IGeometry* BuiltInGeometry::CreateScreenQuad() {
 
     IndexFormatPtr indexFormatPtr = std::make_shared<IndexFormat>(ushort_DataType);
 
-    return GeometryManager::GetInstance()->PlaceGeometry(vertexFormatPtr, &vertexes[0].pos.x, 4, indexFormatPtr, &indecies[0], 6, IGPUBuffer::Static, IGeometryBuffer::Triangles);
+    return GeometryManager::GetInstance()->PlaceGeometry(vertexFormatPtr, &vertexes[0].pos.x, 4, indexFormatPtr, &indecies[0], 6, BufferUsage::Static, DrawMode::Triangles);
 }
 
 }

@@ -13,21 +13,12 @@ namespace mr {
 
 class GeometryBuffer : public IGeometryBuffer {
 public:
-    bool SetVertexBuffer(IGPUBuffer* buf) override;
-    inline IGPUBuffer* GetVertexBuffer() const override { return _vb; }
+    inline VertexBufferPtr GetVertexBuffer() const override { return _vb; }
+    inline IndexBufferPtr GetIndexBuffer() const override { return _ib; }
+    inline DrawMode GetDrawMode() const override { return _drawMode; }
 
-    bool SetIndexBuffer(IGPUBuffer* buf) override;
-    inline IGPUBuffer* GetIndexBuffer() const override { return _ib; }
-
-    inline IGeometryBuffer::DrawMode GetDrawMode() const override { return _draw_mode; }
-    inline void SetDrawMode(const IGeometryBuffer::DrawMode& dm) override { _draw_mode = dm; }
-
-    inline void SetFormat(VertexFormatPtr f, IndexFormatPtr fi) override { _format = f; _iformat = fi; }
-    inline VertexFormatPtr GetVertexFormat() const override { return _format; }
-    inline IndexFormatPtr GetIndexFormat() const override { return _iformat; }
-
-    void SetAttribute(VertexAttribute const& attrib, IGPUBuffer* buf) override;
-    inline IGPUBuffer* GetAttribute(VertexAttribute const& attrib) override { if(_customAttribs.count(attrib) == 0) return nullptr; else return _customAttribs[attrib].buffer; }
+    void SetAttribute(VertexAttribute const& attrib, IBuffer* buf) override;
+    inline IBuffer* GetAttribute(VertexAttribute const& attrib) override { if(_customAttribs.count(attrib) == 0) return nullptr; else return _customAttribs[attrib].buffer; }
 
     bool Bind(bool useIndexBuffer) const override;
 
@@ -37,14 +28,16 @@ public:
     virtual ~GeometryBuffer();
 
 protected:
-    IGPUBuffer* _vb;
-    IGPUBuffer* _ib;
-    VertexFormatPtr _format;
-    IndexFormatPtr _iformat;
-    IGeometryBuffer::DrawMode _draw_mode;
+
+    bool _SetVertexBuffer(VertexBufferPtr const& vb);
+    bool _SetIndexBuffer(IndexBufferPtr const& ib);
+
+    VertexBufferPtr _vb;
+    IndexBufferPtr _ib;
+    DrawMode _drawMode;
 
     struct CustomAttribute {
-        IGPUBuffer* buffer = nullptr;
+        IBuffer* buffer = nullptr;
         uint64_t ptr = 0;
         int size = 0;
     };

@@ -5,8 +5,10 @@
 
 #include "../Types.hpp"
 #include "../Config.hpp"
+#include "../Shaders/ShaderConfig.hpp"
 #include "GeometryInterfaces.hpp"
 #include <mu/Singleton.hpp>
+#include <mu/Containers.hpp>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

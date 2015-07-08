@@ -11,15 +11,15 @@
 
 namespace mr {
 
-GPUBufferRangeHandle::GPUBufferRangeHandle(IGPUBuffer* buf, size_t const& off, size_t const& sz) : _buffer(buf), _offset(off), _size(sz) {
+BufferRangeHdl::BufferRangeHdl(IBuffer* buf, size_t const& off, size_t const& sz) : _buffer(buf), _offset(off), _size(sz) {
 }
 
-GPUBufferRangeHandle::~GPUBufferRangeHandle() {
+BufferRangeHdl::~BufferRangeHdl() {
     _FreeRange();
 }
 
 
-bool GPUBuffer::Allocate(const Usage& usage, const size_t& allocationSize) {
+bool Buffer::Allocate(BufferUsage const& usage, const size_t& allocationSize) {
     AssertAndExec(allocationSize != 0, return false);
 
     if(GetGPUHandle() == 0) {
@@ -39,9 +39,9 @@ bool GPUBuffer::Allocate(const Usage& usage, const size_t& allocationSize) {
 
     unsigned int usageFlags = 0;
     switch(usage) {
-    case Static:        usageFlags = GL_STATIC_DRAW;    break;
-    case FastChange:    usageFlags = GL_DYNAMIC_DRAW;   break;
-    case FastReadWrite: usageFlags = GL_STREAM_DRAW;    break;
+    case BufferUsage::Static:        usageFlags = GL_STATIC_DRAW;    break;
+    case BufferUsage::FastChange:    usageFlags = GL_DYNAMIC_DRAW;   break;
+    case BufferUsage::FastReadWrite: usageFlags = GL_STREAM_DRAW;    break;
     default:
         mr::Log::LogString("GPUBuffer::Allocate. Unknown usage option ("+std::to_string((int)usage)+"), Static will be used.", MR_LOG_LEVEL_WARNING);
         usageFlags = GL_STATIC_DRAW;
@@ -49,12 +49,12 @@ bool GPUBuffer::Allocate(const Usage& usage, const size_t& allocationSize) {
     }
 
     //Bind, because OnAllocated event may need this buffer rebind.
-    IGPUBuffer* binded = nullptr;
+    IBuffer* binded = nullptr;
     StateCache* stateCache = nullptr;
 
     if(!mr::gl::IsDSA_EXT()) {
         stateCache = mr::StateCache::GetDefault();
-        if(!stateCache->ReBindBuffer(dynamic_cast<IGPUBuffer*>(this), StateCache::ArrayBuffer, &binded)) {
+        if(!stateCache->ReBindBuffer(dynamic_cast<IBuffer*>(this), StateCache::ArrayBuffer, &binded)) {
             mr::Log::LogString("Bind buffer failed in GPUBuffer::Allocate.", MR_LOG_LEVEL_ERROR);
             return false;
         }
@@ -68,14 +68,14 @@ bool GPUBuffer::Allocate(const Usage& usage, const size_t& allocationSize) {
         return false;
     )
 
-    OnGPUBufferAllocated.Invoke(dynamic_cast<IGPUBuffer*>(this), allocationSize);
+    OnGPUBufferAllocated.Invoke(dynamic_cast<IBuffer*>(this), allocationSize);
 
     if(binded) stateCache->BindBuffer(binded, StateCache::ArrayBuffer);
 
     return true;
 }
 
-bool GPUBuffer::Write(void* __restrict__ srcData, const size_t& srcOffset, const size_t& dstOffset, const size_t& size, size_t* __restrict__ out_realOffset, BufferedDataInfo* __restrict__ out_info) {
+bool Buffer::Write(void* __restrict__ srcData, const size_t& srcOffset, const size_t& dstOffset, const size_t& size, size_t* __restrict__ out_realOffset, BufferedDataInfo* __restrict__ out_info) {
     AssertAndExec(srcData != nullptr, return false);
     AssertAndExec(size != 0, return false);
     AssertAndExec(size+dstOffset <= GetGPUMem(), return false);
@@ -86,8 +86,8 @@ bool GPUBuffer::Write(void* __restrict__ srcData, const size_t& srcOffset, const
         else if(mr::gl::IsDSA_EXT()) glNamedBufferSubDataEXT(GetGPUHandle(), dstOffset, size, (void*)((size_t)srcData+srcOffset));
         else {
             StateCache* stateCache = StateCache::GetDefault();
-            IGPUBuffer* binded = nullptr;
-            if(!stateCache->ReBindBuffer(dynamic_cast<IGPUBuffer*>(this), StateCache::ArrayBuffer, &binded)) {
+            IBuffer* binded = nullptr;
+            if(!stateCache->ReBindBuffer(dynamic_cast<IBuffer*>(this), StateCache::ArrayBuffer, &binded)) {
                 mr::Log::LogString("Bind buffer failed in GPUBuffer::Write.", MR_LOG_LEVEL_ERROR);
                 return false;
             }
@@ -99,11 +99,11 @@ bool GPUBuffer::Write(void* __restrict__ srcData, const size_t& srcOffset, const
     )
 
     if(out_realOffset) *out_realOffset = dstOffset;
-    if(out_info) *out_info = mr::IGPUBuffer::BufferedDataInfo(dynamic_cast<mr::IGPUBuffer*>(this), dstOffset, size);
+    if(out_info) *out_info = mr::IBuffer::BufferedDataInfo(dynamic_cast<mr::IBuffer*>(this), dstOffset, size);
     return true;
 }
 
-bool GPUBuffer::Read(void* dstData, const size_t& dstOffset, const size_t& srcOffset, const size_t& size) {
+bool Buffer::Read(void* dstData, const size_t& dstOffset, const size_t& srcOffset, const size_t& size) {
     AssertAndExec(dstData != nullptr, return false);
     AssertAndExec(size+srcOffset < GetGPUMem(), return false);
     AssertAndExec(size != 0, return false);
@@ -114,8 +114,8 @@ bool GPUBuffer::Read(void* dstData, const size_t& dstOffset, const size_t& srcOf
         else if(mr::gl::IsDSA_EXT()) glGetNamedBufferSubDataEXT(GetGPUHandle(), srcOffset, size, (void*)((size_t)dstData+dstOffset));
         else {
             StateCache* stateCache = StateCache::GetDefault();
-            IGPUBuffer* binded = nullptr;
-            if(!stateCache->ReBindBuffer(dynamic_cast<IGPUBuffer*>(this), StateCache::ArrayBuffer, &binded)) {
+            IBuffer* binded = nullptr;
+            if(!stateCache->ReBindBuffer(dynamic_cast<IBuffer*>(this), StateCache::ArrayBuffer, &binded)) {
                 mr::Log::LogString("Bind buffer failed in GPUBuffer::Read.", MR_LOG_LEVEL_ERROR);
                 return false;
             }
@@ -129,40 +129,40 @@ bool GPUBuffer::Read(void* dstData, const size_t& dstOffset, const size_t& srcOf
     return true;
 }
 
-IGPUBuffer::IMappedRangePtr GPUBuffer::Map(size_t const& offset, size_t const& length, unsigned int const& flags) {
+IBuffer::IMappedRangePtr Buffer::Map(size_t const& offset, size_t const& length, unsigned int const& flags) {
     if(!_mapped.expired()) _mapped.lock()->UnMap();
     MappedRange* mapr = new MappedRange();
     IMappedRangePtr mrp = IMappedRangePtr(dynamic_cast<IMappedRange*>(mapr));
     if(!mapr->Map(this, offset, length, flags)) return nullptr;
-    _mapped = IMappedRangeWeakPtr(mrp);
+    _mapped = IMappedRangeWPtr(mrp);
     return mrp;
 }
 
-IGPUBufferRangeHandleWeakPtr GPUBuffer::UseRange(size_t const& offset, size_t const& size) {
-    IGPUBufferRangeHandlePtr rangeHandlePtr = IGPUBufferRangeHandlePtr(dynamic_cast<IGPUBufferRangeHandle*>(new GPUBufferRangeHandle(dynamic_cast<IGPUBuffer*>(this), offset, size)));
+IBufferRangeHdlWPtr Buffer::UseRange(size_t const& size, size_t const& offset) {
+    IBufferRangeHdlPtr rangeHandlePtr = IBufferRangeHdlPtr(dynamic_cast<IBufferRangeHdl*>(new BufferRangeHdl(dynamic_cast<IBuffer*>(this), offset, size)));
     _rangeHandles.push_back(rangeHandlePtr);
-    return IGPUBufferRangeHandleWeakPtr(rangeHandlePtr);
+    return IBufferRangeHdlWPtr(rangeHandlePtr);
 }
 
-mu::ArrayHandle<IGPUBufferRangeHandle*> GPUBuffer::GetRangeHandles() {
-    IGPUBufferRangeHandle** handles = new IGPUBufferRangeHandle*[_rangeHandles.size()];
+mu::ArrayHandle<IBufferRangeHdl*> Buffer::GetRangeHandles() {
+    IBufferRangeHdl** handles = new IBufferRangeHdl*[_rangeHandles.size()];
     for(size_t i = 0; i < _rangeHandles.size(); ++i) {
         handles[i] = _rangeHandles[i].get();
     }
-    return mu::ArrayHandle<IGPUBufferRangeHandle*>(handles, _rangeHandles.size(), true, false);
+    return mu::ArrayHandle<IBufferRangeHdl*>(handles, _rangeHandles.size(), true, false);
 }
 
-void GPUBuffer::_RangeFree(IGPUBufferRangeHandle* handle) {
+void Buffer::_RangeFree(IBufferRangeHdl* handle) {
     for(size_t i = 0; i < _rangeHandles.size(); ++i) {
         if(handle == _rangeHandles[i].get()) {
-            IGPUBufferRangeHandlePtr handlePtr = _rangeHandles[i];
+            IBufferRangeHdlPtr handlePtr = _rangeHandles[i];
             _rangeHandles.erase(_rangeHandles.begin()+i);
             return;
         }
     }
 }
 
-void GPUBuffer::Destroy() {
+void Buffer::Destroy() {
     unsigned int handle = GetGPUHandle();
     if(handle != 0) {
         glDeleteBuffers(1, &handle);
@@ -171,21 +171,21 @@ void GPUBuffer::Destroy() {
     }
 }
 
-GPUBuffer::GPUBuffer() : _size(0), _usage(Static) {
+Buffer::Buffer() : _size(0), _usage(BufferUsage::Static) {
 }
 
-GPUBuffer::~GPUBuffer() {
+Buffer::~Buffer() {
     _rangeHandles.clear();
 }
 
-void GPUBuffer::MappedRange::Flush() {
+void Buffer::MappedRange::Flush() {
     if(_mem == 0) return;
     if(mr::gl::IsDSA_ARB()) glFlushMappedNamedBufferRange(_buffer->GetGPUHandle(), _offset, _length);
     else if(mr::gl::IsDSA_EXT()) glFlushMappedNamedBufferRangeEXT(_buffer->GetGPUHandle(), _offset, _length);
     else {
         StateCache* stateCache = StateCache::GetDefault();
-        IGPUBuffer* binded = nullptr;
-        if(!stateCache->ReBindBuffer(dynamic_cast<IGPUBuffer*>(_buffer), StateCache::ArrayBuffer, &binded)) {
+        IBuffer* binded = nullptr;
+        if(!stateCache->ReBindBuffer(dynamic_cast<IBuffer*>(_buffer), StateCache::ArrayBuffer, &binded)) {
             mr::Log::LogString("Bind buffer failed in GPUBuffer::MappedRange::Flush.", MR_LOG_LEVEL_ERROR);
             return;
         }
@@ -194,15 +194,15 @@ void GPUBuffer::MappedRange::Flush() {
     }
 }
 
-void GPUBuffer::MappedRange::UnMap() {
+void Buffer::MappedRange::UnMap() {
     if(_mem == 0) return;
     if(mr::gl::IsDSA_ARB()) glUnmapNamedBuffer(_buffer->GetGPUHandle());
     else if(mr::gl::IsDSA_EXT()) glUnmapNamedBufferEXT(_buffer->GetGPUHandle());
     else {
     MR_BUFFERS_CHECK_MAPPINGS_ERRORS_CATCH(
         StateCache* stateCache = StateCache::GetDefault();
-        IGPUBuffer* binded = nullptr;
-        if(!stateCache->ReBindBuffer(dynamic_cast<IGPUBuffer*>(_buffer), StateCache::ArrayBuffer, &binded)) {
+        IBuffer* binded = nullptr;
+        if(!stateCache->ReBindBuffer(dynamic_cast<IBuffer*>(_buffer), StateCache::ArrayBuffer, &binded)) {
             mr::Log::LogString("Bind buffer failed in GPUBuffer::MappedRange::UnMap.", MR_LOG_LEVEL_ERROR);
             return;
         }
@@ -220,9 +220,10 @@ void GPUBuffer::MappedRange::UnMap() {
     _offset = 0;
 }
 
-bool GPUBuffer::MappedRange::Map(GPUBuffer* buf, size_t const& offset, size_t const& length, unsigned int const& flags) {
+bool Buffer::MappedRange::Map(Buffer* buf, size_t const& offset, size_t const& length, unsigned int const& flags) {
     AssertAndExec(buf != nullptr, return false);
     AssertAndExec(buf->GetGPUHandle() != 0, return false);
+    //mr::Log::LogString(std::to_string(offset) + " " + std::to_string(length) + " " + std::to_string(buf->GetGPUMem()));
     AssertAndExec(offset + length <= buf->GetGPUMem(), return false);
 
     _offset = offset;
@@ -246,7 +247,7 @@ bool GPUBuffer::MappedRange::Map(GPUBuffer* buf, size_t const& offset, size_t co
     }
     else {
         StateCache* stateCache = StateCache::GetDefault();
-        IGPUBuffer* binded = nullptr;
+        IBuffer* binded = nullptr;
         if(!stateCache->ReBindBuffer(buf, StateCache::ArrayBuffer, &binded)) {
             mr::Log::LogString("Bind buffer failed in GPUBuffer::MappedRange::Map.", MR_LOG_LEVEL_ERROR);
             return false;
@@ -268,13 +269,13 @@ bool GPUBuffer::MappedRange::Map(GPUBuffer* buf, size_t const& offset, size_t co
     return true;
 }
 
-GPUBuffer::MappedRange::MappedRange() : _buffer(nullptr), _mem(0), _length(0) {}
+Buffer::MappedRange::MappedRange() : _buffer(nullptr), _mem(0), _length(0) {}
 
-GPUBuffer::MappedRange::~MappedRange() {
+Buffer::MappedRange::~MappedRange() {
     UnMap();
 }
 
-bool GPUBuffer::MakeResident() {
+bool Buffer::MakeResident() {
     const unsigned int handle = GetGPUHandle();
     if(handle == 0) {
         mr::Log::LogString("Failed GPUBuffer::MakeResident. Handle is null.", MR_LOG_LEVEL_ERROR);
@@ -287,7 +288,7 @@ bool GPUBuffer::MakeResident() {
             glMakeNamedBufferResidentNV(handle, GL_READ_ONLY);
         } else {
             StateCache* stateCache = StateCache::GetDefault();
-            IGPUBuffer* binded = nullptr;
+            IBuffer* binded = nullptr;
             if(!stateCache->ReBindBuffer(this, StateCache::ArrayBuffer, &binded)) {
                 mr::Log::LogString("Failed GPUBuffer::MakeResident. Bind buffer failed.", MR_LOG_LEVEL_ERROR);
                 return false;
@@ -303,7 +304,7 @@ bool GPUBuffer::MakeResident() {
     return false;
 }
 
-void GPUBuffer::MakeNonResident() {
+void Buffer::MakeNonResident() {
     const unsigned int handle = GetGPUHandle();
     if(handle == 0) {
         mr::Log::LogString("Failed GPUBuffer::MakeResident. Handle is null.", MR_LOG_LEVEL_ERROR);
@@ -314,7 +315,7 @@ void GPUBuffer::MakeNonResident() {
             glMakeNamedBufferNonResidentNV(handle);
         } else {
             StateCache* stateCache = StateCache::GetDefault();
-            IGPUBuffer* binded = nullptr;
+            IBuffer* binded = nullptr;
             if(!stateCache->ReBindBuffer(this, StateCache::ArrayBuffer, &binded)) {
                 mr::Log::LogString("Failed GPUBuffer::MakeResident. Bind buffer failed.", MR_LOG_LEVEL_ERROR);
                 return;
@@ -329,7 +330,7 @@ void GPUBuffer::MakeNonResident() {
 
 /** GLOBAL **/
 
-bool GPUBufferCopy(IGPUBuffer* src, IGPUBuffer* dst, const unsigned int& srcOffset, const unsigned int& dstOffset, const unsigned int& size) {
+bool GPUBufferCopy(IBuffer* src, IBuffer* dst, const unsigned int& srcOffset, const unsigned int& dstOffset, const unsigned int& size) {
     Assert(src != nullptr);
     Assert(dst != nullptr);
     Assert(srcOffset < src->GetGPUMem());
@@ -345,8 +346,8 @@ bool GPUBufferCopy(IGPUBuffer* src, IGPUBuffer* dst, const unsigned int& srcOffs
         )
     } else {
         StateCache* stateCache = StateCache::GetDefault();
-        IGPUBuffer* binded_r = nullptr;
-        IGPUBuffer* binded_w = nullptr;
+        IBuffer* binded_r = nullptr;
+        IBuffer* binded_w = nullptr;
 
         if(!stateCache->ReBindBuffer(src, StateCache::CopyReadBuffer, &binded_r)) {
             mr::Log::LogString("Bind src buffer failed in GPUBufferCopy.", MR_LOG_LEVEL_ERROR);

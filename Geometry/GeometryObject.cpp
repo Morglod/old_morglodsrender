@@ -4,6 +4,9 @@
 #include "GeometryManager.hpp"
 #include "../Utils/Debug.hpp"
 
+#include "VertexBuffer.hpp"
+#include "IndexBuffer.hpp"
+
 #include <mu/Macro.hpp>
 
 #define GLEW_STATIC
@@ -28,13 +31,13 @@ void Geometry::Draw() const {
     _buffer->Bind(_draw_params->GetUsingIndexBuffer());
 
     if(_buffer->GetIndexBuffer() != nullptr && _draw_params->GetUsingIndexBuffer()){
-        const mr::IndexFormat* iformat = _buffer->GetIndexFormat().get();
+        const mr::IndexFormat* iformat = _buffer->GetIndexBuffer()->GetFormat().get();
         if(mr::gl::IsIndirectDrawSupported()) {
-            glDrawElementsIndirect( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], iformat->dataType->dataTypeGL, _draw_params->GetPtr());
+            glDrawElementsIndirect( _MR_DRAW_MODE_FLAG_TO_GL_[(int)_buffer->GetDrawMode()], iformat->dataType->dataTypeGL, _draw_params->GetPtr());
         }
         else {
             if(GL_ARB_base_instance) {
-                glDrawElementsInstancedBaseVertexBaseInstance(_MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()],
+                glDrawElementsInstancedBaseVertexBaseInstance(_MR_DRAW_MODE_FLAG_TO_GL_[(int)_buffer->GetDrawMode()],
                                                         _draw_params->GetIndexCount(),
                                                         iformat->dataType->dataTypeGL,
                                                         (void*)(size_t)(iformat->dataType->size * _draw_params->GetIndexStart()),
@@ -43,7 +46,7 @@ void Geometry::Draw() const {
                                                         _draw_params->GetFirstInstance());
             } else {
                 MU_ONE_TIME(mr::Log::LogString("GL_ARB_base_instance not supported. May be problems with IGeometryDrawParams::FirstInstance.", MR_LOG_LEVEL_ERROR));
-                glDrawElementsInstancedBaseVertex(_MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()],
+                glDrawElementsInstancedBaseVertex(_MR_DRAW_MODE_FLAG_TO_GL_[(int)_buffer->GetDrawMode()],
                                         _draw_params->GetIndexCount(),
                                         iformat->dataType->dataTypeGL,
                                         (void*)(size_t)(iformat->dataType->size * _draw_params->GetIndexStart()),
@@ -53,14 +56,14 @@ void Geometry::Draw() const {
         }
     }
     else {
-        if(mr::gl::IsIndirectDrawSupported()) glDrawArraysIndirect( _MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], _draw_params->GetPtr());
+        if(mr::gl::IsIndirectDrawSupported()) glDrawArraysIndirect( _MR_DRAW_MODE_FLAG_TO_GL_[(int)_buffer->GetDrawMode()], _draw_params->GetPtr());
         else {
             if(GL_ARB_base_instance) {
-                glDrawArraysInstancedBaseInstance(_MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], _draw_params->GetVertexStart(), _draw_params->GetVertexCount(), _draw_params->GetInstancesNum(), _draw_params->GetFirstInstance());
+                glDrawArraysInstancedBaseInstance(_MR_DRAW_MODE_FLAG_TO_GL_[(int)_buffer->GetDrawMode()], _draw_params->GetVertexStart(), _draw_params->GetVertexCount(), _draw_params->GetInstancesNum(), _draw_params->GetFirstInstance());
             }
             else {
                 MU_ONE_TIME(mr::Log::LogString("GL_ARB_base_instance not supported. May be problems with IGeometryDrawParams::FirstInstance.", MR_LOG_LEVEL_ERROR));
-                glDrawArraysInstanced(_MR_DRAW_MODE_FLAG_TO_GL_[_buffer->GetDrawMode()], _draw_params->GetVertexStart(), _draw_params->GetVertexCount(), _draw_params->GetInstancesNum());
+                glDrawArraysInstanced(_MR_DRAW_MODE_FLAG_TO_GL_[(int)_buffer->GetDrawMode()], _draw_params->GetVertexStart(), _draw_params->GetVertexCount(), _draw_params->GetInstancesNum());
             }
         }
     }

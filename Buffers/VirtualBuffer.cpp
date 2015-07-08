@@ -7,7 +7,7 @@
 
 namespace mr {
 
-void VirtualGPUBuffer::Destroy() {
+void VirtualBuffer::Destroy() {
     if(_realBuffer) {
         if(_eventHandle) {
             _realBuffer->OnDestroy -= _eventHandle;
@@ -19,7 +19,7 @@ void VirtualGPUBuffer::Destroy() {
     _realBuffer = nullptr;
 }
 
-VirtualGPUBuffer::VirtualGPUBuffer(IGPUBuffer* realBuffer, size_t const& offset, size_t const& size) : _realBuffer(realBuffer), _realBuffer_offset(offset), _size(size), _eventHandle(0) {
+VirtualBuffer::VirtualBuffer(IBuffer* realBuffer, size_t const& offset, size_t const& size) : _realBuffer(realBuffer), _realBuffer_offset(offset), _size(size), _eventHandle(0) {
     Assert(_realBuffer != nullptr);
     Assert(size != 0);
     Assert(offset < _realBuffer->GetGPUMem());
@@ -34,31 +34,31 @@ VirtualGPUBuffer::VirtualGPUBuffer(IGPUBuffer* realBuffer, size_t const& offset,
     };
 }
 
-bool VirtualGPUBuffer::Allocate(const Usage& usage, const size_t& size) {
+bool VirtualBuffer::Allocate(BufferUsage const& usage, const size_t& size) {
     mr::Log::LogString("Cannot Allocate gpu mem in virtual buffer. VirtualGPUBuffer::Allocate failed.", MR_LOG_LEVEL_ERROR);
     return false;
 }
 
-VirtualGPUBuffer::~VirtualGPUBuffer() {
+VirtualBuffer::~VirtualBuffer() {
 }
 
 /** MANAGER **/
 
-VirtualGPUBuffer* VirtualGPUBufferManager::Take(const size_t& size) {
+VirtualBuffer* VirtualBufferManager::Take(const size_t& size) {
     AssertAndExec(size != 0, return nullptr);
     AssertAndExec(size+_offset <= _realBuffer->GetGPUMem(), return nullptr);
     AssertAndExec(_realBuffer->GetGPUHandle() != 0, return nullptr);
 
-    VirtualGPUBuffer* buf = new mr::VirtualGPUBuffer(_realBuffer, _offset, size);
+    VirtualBuffer* buf = new mr::VirtualBuffer(_realBuffer, _offset, size);
     _offset += size;
     _buffers.push_back(buf);
     return buf;
 }
 
-VirtualGPUBufferManager::VirtualGPUBufferManager(IGPUBuffer* realBuffer, const size_t& offset) : _realBuffer(realBuffer), _offset(offset) {
+VirtualBufferManager::VirtualBufferManager(IBuffer* realBuffer, const size_t& offset) : _realBuffer(realBuffer), _offset(offset) {
 }
 
-VirtualGPUBufferManager::~VirtualGPUBufferManager() {
+VirtualBufferManager::~VirtualBufferManager() {
     OnDelete(this);
     while(!_buffers.empty()) {
         _buffers.back()->Destroy();

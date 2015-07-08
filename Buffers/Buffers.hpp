@@ -4,43 +4,43 @@
 
 namespace mr {
 
-class GPUBufferRangeHandle : public IGPUBufferRangeHandle {
-    friend class GPUBuffer;
+class BufferRangeHdl : public IBufferRangeHdl {
+    friend class Buffer;
 public:
-    inline IGPUBuffer* GetBuffer() override { return _buffer; }
-    inline size_t GetOffset() override { return _offset; }
-    inline size_t GetSize() override { return _size; }
+    inline IBuffer* GetBuffer() const override { return _buffer; }
+    inline size_t GetOffset() const override { return _offset; }
+    inline size_t GetSize() const override { return _size; }
 
-    virtual ~GPUBufferRangeHandle();
+    virtual ~BufferRangeHdl();
 protected:
-    GPUBufferRangeHandle(IGPUBuffer* buf, size_t const& off, size_t const& sz);
-    IGPUBuffer* _buffer;
+    BufferRangeHdl(IBuffer* buf, size_t const& off, size_t const& sz);
+    IBuffer* _buffer;
     size_t _offset;
     size_t _size;
 };
 
-class GPUBuffer : public IGPUBuffer {
-    friend class GPUBufferManager;
+class Buffer : public IBuffer {
+    friend class BufferManager;
 public:
-    inline Usage GetUsage() override { return _usage; }
-    bool Write(void* __restrict__ srcData, const size_t& srcOffset, const size_t& dstOffset, const size_t& size, size_t* __restrict__ out_realOffset, BufferedDataInfo* __restrict__ out_info) override;
+    inline BufferUsage GetUsage() override { return _usage; }
+    bool Write(void* __restrict__ srcData, const size_t& srcOffset, const size_t& dstOffset, const size_t& size, size_t* __restrict__ out_realOffset = nullptr, BufferedDataInfo* __restrict__ out_info = nullptr) override;
     bool Read(void* dstData, const size_t& dstOffset, const size_t& srcOffset, const size_t& size) override;
 
     IMappedRangePtr Map(size_t const& offset, size_t const& length, unsigned int const& flags) override;
-    inline IMappedRangeWeakPtr GetMapped() override { return _mapped; }
+    inline IMappedRangeWPtr GetMapped() override { return _mapped; }
 
     inline bool IsMapped() override {
         if(_mapped.expired()) return false;
         auto ptr = _mapped.lock();
         if((ptr == nullptr) || (ptr->IsMapped() == false)) {
-            _mapped = IMappedRangeWeakPtr();
+            _mapped = IMappedRangeWPtr();
             return false;
         }
         return true;
     }
 
-    IGPUBufferRangeHandleWeakPtr UseRange(size_t const& offset, size_t const& size) override;
-    mu::ArrayHandle<IGPUBufferRangeHandle*> GetRangeHandles() override;
+    IBufferRangeHdlWPtr UseRange(size_t const& size, size_t const& offset = 0) override; //todo swap offset and size, offset = 0
+    mu::ArrayHandle<IBufferRangeHdl*> GetRangeHandles() override;
 
     //-
     bool MakeResident() override;
@@ -61,14 +61,14 @@ public:
     void Destroy() override;
 
 protected:
-    virtual ~GPUBuffer();
-    GPUBuffer();
-    bool Allocate(const Usage& usage, const size_t& size) override;
-    void _RangeFree(IGPUBufferRangeHandle* handle) override;
+    virtual ~Buffer();
+    Buffer();
+    bool Allocate(BufferUsage const& usage, const size_t& size) override;
+    void _RangeFree(IBufferRangeHdl* handle) override;
 
-    class MappedRange : public IGPUBuffer::IMappedRange {
+    class MappedRange : public IBuffer::IMappedRange {
     public:
-        inline IGPUBuffer* GetBuffer() override { return _buffer; }
+        inline IBuffer* GetBuffer() override { return _buffer; }
         inline char* Get() override { return _mem; }
         inline size_t GetLength() override { return _length; }
         inline size_t GetOffset() override { return _offset; }
@@ -78,12 +78,12 @@ protected:
 
         bool IsMapped() override { return (_mem != 0); }
 
-        bool Map(GPUBuffer* buf, size_t const& offset, size_t const& length, unsigned int const& flags);
+        bool Map(Buffer* buf, size_t const& offset, size_t const& length, unsigned int const& flags);
 
         MappedRange();
         virtual ~MappedRange();
     private:
-        IGPUBuffer* _buffer;
+        IBuffer* _buffer;
         char* _mem;
         size_t _length;
         size_t _offset;
@@ -92,13 +92,13 @@ protected:
 
     uint64_t _residentPtr = 0;
     size_t _size;
-    IMappedRangeWeakPtr _mapped;
-    Usage _usage;
+    IMappedRangeWPtr _mapped;
+    BufferUsage _usage;
 
-    std::vector<IGPUBufferRangeHandlePtr> _rangeHandles;
+    std::vector<IBufferRangeHdlPtr> _rangeHandles;
 };
 
 /** !! DO NOT USE IT ON VirtualGPUBuffers !! **/
-bool GPUBufferCopy(IGPUBuffer* src, IGPUBuffer* dst, const unsigned int& srcOffset, const unsigned int& dstOffset, const unsigned int& size);
+bool GPUBufferCopy(IBuffer* src, IBuffer* dst, const unsigned int& srcOffset, const unsigned int& dstOffset, const unsigned int& size);
 
 }

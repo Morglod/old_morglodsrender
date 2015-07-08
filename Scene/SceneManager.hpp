@@ -7,7 +7,7 @@
 namespace mr {
 
 class IVertexFormat;
-class IGPUBuffer;
+class IBuffer;
 
 class SceneManager : public ISceneManager {
 public:
@@ -43,7 +43,7 @@ protected:
     //std::unordered_map<mr::IVertexFormat*, mr::TDynamicArray<Entity*>> _sort_entity;
     SceneNodePtr _rootNode;
     PointLightDescList _pointLights;
-    IGPUBuffer* lightsGpuBuff = nullptr;
+    IBuffer* lightsGpuBuff = nullptr;
 };
 
 }

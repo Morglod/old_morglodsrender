@@ -59,8 +59,8 @@ public:
 
 class SerializeMRTypes {
 public:
-    static TStaticArray<unsigned char> GPUBufferToBytes(class IGPUBuffer*);
-    static IGPUBuffer* GPUBufferFromBytes(TStaticArray<unsigned char>);
+    static TStaticArray<unsigned char> GPUBufferToBytes(class IBuffer*);
+    static IBuffer* GPUBufferFromBytes(TStaticArray<unsigned char>);
 
     static TStaticArray<unsigned char> ShaderProgramToBytes(class IShaderProgram*);
     static IShaderProgram* ShaderProgramFromBytes(TStaticArray<unsigned char>);

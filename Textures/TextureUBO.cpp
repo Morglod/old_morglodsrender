@@ -8,9 +8,9 @@ bool TextureUBO::Init(mu::ArrayHandle<Texture*> textures, const bool fastChange)
     _textures = textures;
     const size_t bufferSize = sizeof(uint64_t) * textures.GetNum() * 2; // handles stored as <handle, none> (uint64_t[2])
 
-    auto& bufMgr = mr::GPUBufferManager::GetInstance();
-    const auto bufferType = (fastChange) ? (IGPUBuffer::Usage::FastChange) : (IGPUBuffer::Usage::Static);
-    _buffer = bufMgr.CreateBuffer(bufferType, bufferSize);
+    auto& bufMgr = mr::BufferManager::GetInstance();
+    const auto bufferType = (fastChange) ? (BufferUsage::FastChange) : (BufferUsage::Static);
+    _buffer = bufMgr.CreateBuffer(bufferSize, bufferType);
 
     bool updated = false;
 
@@ -46,7 +46,7 @@ bool TextureUBO::IndexOf(Texture* texture, size_t& outIndex) {
 }
 
 void TextureUBO::Destroy() {
-    auto& bufMgr = mr::GPUBufferManager::GetInstance();
+    auto& bufMgr = mr::BufferManager::GetInstance();
     bufMgr.Delete(_buffer);
 }
 
@@ -58,7 +58,7 @@ unsigned int TextureUBO::GetGPUHandle() {
     return (_buffer != nullptr) ? (_buffer->GetGPUHandle()) : 0;
 }
 
-IGPUBuffer* TextureUBO::GetBuffer() const {
+IBuffer* TextureUBO::GetBuffer() const {
     return _buffer;
 }
 

@@ -4,7 +4,7 @@
 #define _MR_GEOMETRY_BUILDER_H_
 
 #include "../Utils/Containers.hpp"
-#include "../Buffers/BuffersInterfaces.hpp"
+#include "../Buffers/BufferUsage.hpp"
 
 #include "../Shaders/ShaderConfig.hpp"
 
@@ -47,7 +47,7 @@ public:
     IndexType AddIndexData(IndexType const& index);
     inline IndexType AddIndexData(IndexType const& i1, IndexType const& i2, IndexType const& i3) { AddIndexData(i1); AddIndexData(i2); return AddIndexData(i3); }
 
-    IGeometry* Build(IGPUBuffer::Usage const& usage);
+    IGeometry* Build(BufferUsage const& usage);
     void Clear();
 
     ManualGeometry();

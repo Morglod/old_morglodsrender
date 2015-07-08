@@ -11,7 +11,7 @@
 namespace mr {
 
 class Texture2D;
-class IGPUBuffer;
+class IBuffer;
 
 class TextureStreamer2D {
 public:
@@ -83,7 +83,7 @@ public:
 protected:
     Texture2D* _target = nullptr;
     IDataSourcePtr _dataSource = nullptr;
-    IGPUBuffer* _pbos[2];
+    IBuffer* _pbos[2];
     glm::uvec2 _pageSize;
     unsigned char _curPbo = 0;
     bool _synced = true;

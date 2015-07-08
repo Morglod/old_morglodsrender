@@ -4,20 +4,20 @@
 namespace mr {
 
 template<>
-mr::GPUBufferManager mu::StaticSingleton<mr::GPUBufferManager>::_singleton_instance = mr::GPUBufferManager();
+mr::BufferManager mu::StaticSingleton<mr::BufferManager>::_singleton_instance = mr::BufferManager();
 
-IGPUBuffer* GPUBufferManager::CreateBuffer(IGPUBuffer::Usage const& usage, size_t const& size) {
-    IGPUBuffer* buffer = dynamic_cast<IGPUBuffer*>(new GPUBuffer());
+IBuffer* BufferManager::CreateBuffer(size_t const& size, BufferUsage const& usage) {
+    IBuffer* buffer = dynamic_cast<IBuffer*>(new Buffer());
 
     if(!buffer->Allocate(usage, size)) {
         delete buffer;
         return nullptr;
     }
 
-    class COnGPUBufferAllocated : public mu::Event<IGPUBuffer*, size_t const&>::Listener {
+    class COnGPUBufferAllocated : public mu::Event<IBuffer*, size_t const&>::Listener {
     public:
-        void Callback(IGPUBuffer*, size_t const& sz) override {
-            GPUBufferManager::GetInstance()._usedMem += sz;
+        void Callback(IBuffer*, size_t const& sz) override {
+            BufferManager::GetInstance()._usedMem += sz;
         }
 
         COnGPUBufferAllocated() {}
@@ -26,16 +26,16 @@ IGPUBuffer* GPUBufferManager::CreateBuffer(IGPUBuffer::Usage const& usage, size_
 
     class COnGPUBufferDestroy : public mu::Event<IGPUObjectHandle*>::Listener {
     public:
-        IGPUBuffer* currentBuffer = nullptr;
+        IBuffer* currentBuffer = nullptr;
 
         virtual ~COnGPUBufferDestroy() {
         }
 
         void Callback(IGPUObjectHandle* obj) override {
-            GPUBufferManager::GetInstance()._usedMem -= currentBuffer->GetGPUMem();
+            BufferManager::GetInstance()._usedMem -= currentBuffer->GetGPUMem();
         }
 
-        COnGPUBufferDestroy(IGPUBuffer* curBuf) : currentBuffer(curBuf) {}
+        COnGPUBufferDestroy(IBuffer* curBuf) : currentBuffer(curBuf) {}
     };
 
     /**
@@ -54,10 +54,10 @@ IGPUBuffer* GPUBufferManager::CreateBuffer(IGPUBuffer::Usage const& usage, size_
     return buffer;
 }
 
-GPUBufferManager::GPUBufferManager() {
+BufferManager::BufferManager() {
 }
 
-GPUBufferManager::~GPUBufferManager() {
+BufferManager::~BufferManager() {
 }
 
 }

@@ -64,6 +64,7 @@
 		</Linker>
 		<Unit filename="Buffers/BufferManager.cpp" />
 		<Unit filename="Buffers/BufferManager.hpp" />
+		<Unit filename="Buffers/BufferUsage.hpp" />
 		<Unit filename="Buffers/Buffers.cpp" />
 		<Unit filename="Buffers/Buffers.hpp" />
 		<Unit filename="Buffers/BuffersConfig.hpp" />
@@ -82,6 +83,7 @@
 		<Unit filename="FeaturesList/FeaturesList.txt" />
 		<Unit filename="Geometry/BuiltInGeometry.cpp" />
 		<Unit filename="Geometry/BuiltInGeometry.hpp" />
+		<Unit filename="Geometry/DrawModes.hpp" />
 		<Unit filename="Geometry/GeometryBuffer.cpp" />
 		<Unit filename="Geometry/GeometryBuffer.hpp" />
 		<Unit filename="Geometry/GeometryBuilder.cpp" />
@@ -95,9 +97,13 @@
 		<Unit filename="Geometry/GeometryManager.hpp" />
 		<Unit filename="Geometry/GeometryObject.cpp" />
 		<Unit filename="Geometry/GeometryObject.hpp" />
+		<Unit filename="Geometry/IndexBuffer.cpp" />
+		<Unit filename="Geometry/IndexBuffer.hpp" />
 		<Unit filename="Geometry/Mesh.cpp" />
 		<Unit filename="Geometry/Mesh.hpp" />
 		<Unit filename="Geometry/MeshInterfaces.hpp" />
+		<Unit filename="Geometry/VertexBuffer.cpp" />
+		<Unit filename="Geometry/VertexBuffer.hpp" />
 		<Unit filename="MachineInfo.cpp" />
 		<Unit filename="MachineInfo.hpp" />
 		<Unit filename="Materials/Material.cpp" />
