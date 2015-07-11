@@ -51,6 +51,8 @@ struct GeomDataType {
     GeomDataType(unsigned int const& dataTypeGL, unsigned int const& size);
 };
 
+struct VertexAttribute;
+
 struct VertexAttributeDesc {
     enum DefaultShaderIndex {
         PositionIndex = MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION,
@@ -76,11 +78,15 @@ struct VertexAttributeDesc {
     VertexAttributeDescPtr Cache();
 
     VertexAttributeDesc();
-    VertexAttributeDesc(unsigned int const& elementsNum, unsigned int const& size, unsigned int const& shaderIndex, unsigned int const& divisor, GeomDataTypePtr const& dataType);
+    VertexAttributeDesc(unsigned int const& elementsNum, unsigned int const& shaderIndex, unsigned int const& divisor, GeomDataTypePtr const& dataType);
+
+    VertexAttribute CreateInstance();
 };
 
 struct VertexAttribute {
-    unsigned int offset;
+    friend struct VertexFormat;
+    friend class StateCache;
+
     VertexAttributeDescPtr desc;
 
     inline bool Equal(VertexAttribute const& other) const {
@@ -94,6 +100,11 @@ struct VertexAttribute {
     inline bool operator < (VertexAttribute const& b) const {
         return (!Equal(b));
     }
+
+    VertexAttribute();
+    VertexAttribute(VertexAttributeDescPtr const& desc);
+protected:
+    unsigned int offset = 0;
 };
 
 struct VertexFormat {
@@ -131,6 +142,9 @@ struct VertexFormat {
         }
         return offset;
     }
+
+    static VertexFormatPtr Create(std::initializer_list<VertexAttribute> const& attribs);
+    static VertexFormatPtr Create(mu::ArrayHandle<VertexAttribute> const& attribs);
 };
 
 struct IndexFormat {

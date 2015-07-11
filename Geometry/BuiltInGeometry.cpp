@@ -31,8 +31,8 @@ IGeometry* BuiltInGeometry::CreateScreenQuad() {
     vertexFormatPtr->pointers = mu::ArrayHandle<uint64_t>(new uint64_t[2], 2, true, false);
     vertexFormatPtr->attribsNum = 2;
 
-    vertexFormatPtr->SetAttribute(std::make_shared<VertexAttributeDesc>(3, sizeof(float)*3, MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION, 0, float_DataType), 0);
-    vertexFormatPtr->SetAttribute(std::make_shared<VertexAttributeDesc>(2, sizeof(float)*2, MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION, 0, float_DataType), 1);
+    vertexFormatPtr->SetAttribute(std::make_shared<VertexAttributeDesc>(3, MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION, 0, float_DataType), 0);
+    vertexFormatPtr->SetAttribute(std::make_shared<VertexAttributeDesc>(2, MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION, 0, float_DataType), 1);
 
     vertexFormatPtr->Complete();
 

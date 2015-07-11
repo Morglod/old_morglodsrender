@@ -15,7 +15,10 @@ BufferRangeHdl::BufferRangeHdl(IBuffer* buf, size_t const& off, size_t const& sz
 }
 
 BufferRangeHdl::~BufferRangeHdl() {
-    _FreeRange();
+    if(!_disposed) {
+        _disposed = true;
+        _FreeRange();
+    }
 }
 
 
@@ -155,7 +158,6 @@ mu::ArrayHandle<IBufferRangeHdl*> Buffer::GetRangeHandles() {
 void Buffer::_RangeFree(IBufferRangeHdl* handle) {
     for(size_t i = 0; i < _rangeHandles.size(); ++i) {
         if(handle == _rangeHandles[i].get()) {
-            IBufferRangeHdlPtr handlePtr = _rangeHandles[i];
             _rangeHandles.erase(_rangeHandles.begin()+i);
             return;
         }
@@ -175,6 +177,9 @@ Buffer::Buffer() : _size(0), _usage(BufferUsage::Static) {
 }
 
 Buffer::~Buffer() {
+    for(size_t i = 0; i < _rangeHandles.size(); ++i) {
+        _rangeHandles[i]->_StopHandle();
+    }
     _rangeHandles.clear();
 }
 

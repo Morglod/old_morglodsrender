@@ -16,7 +16,7 @@ bool VertexBuffer::Write(void* data, size_t const& dataSize, size_t const& offse
 char* VertexBuffer::Map(int const& flags) {
     auto* buffer = _range->GetBuffer();
     if(buffer->IsMapped()) return nullptr;
-    _mapping = buffer->Map(_range->GetOffset(), _range->GetSize(), flags);
+    _mapping = buffer->Map(0, _range->GetSize(), flags);
     if(_mapping != nullptr) {
         return _mapping->Get();
     } else {
@@ -62,7 +62,7 @@ VertexBufferPtr VertexBuffer::Create(VertexFormatPtr const& format, size_t const
         mr::Log::LogString("Failed VertexBuffer::Create. Failed BufferManager::CreateBuffer", MR_LOG_LEVEL_ERROR);
         return nullptr;
     }
-    auto vb = VertexBuffer::Create(format, buffer, size, 0);
+    auto vb = VertexBuffer::Create(format, buffer, vertexesNum, 0);
     if(vb != nullptr) vb->_ownBuffer = true;
     return vb;
 }

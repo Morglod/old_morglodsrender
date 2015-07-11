@@ -13,11 +13,13 @@ class IBuffer;
 
 //Memory is used, so handle it.
 class IBufferRangeHdl {
+    friend class IBuffer;
 public:
     virtual IBuffer* GetBuffer() const = 0;
     virtual size_t GetOffset() const = 0;
     virtual size_t GetSize() const = 0;
     virtual bool IsInRange(size_t const& x) const;
+    virtual void _StopHandle() = 0;
     virtual ~IBufferRangeHdl() {}
 protected:
     //Call it in class, derived from IGPUBufferRangeHandle, when yu free this memory range.

@@ -16,9 +16,12 @@ GeomDataType::GeomDataType(unsigned int const& dataTypeGL_, unsigned int const& 
 VertexAttributeDesc::VertexAttributeDesc() : elementsNum(0), size(0), shaderIndex(0), divisor(0), dataType(nullptr) {
 }
 
-VertexAttributeDesc::VertexAttributeDesc(unsigned int const& elementsNum_, unsigned int const& size_, unsigned int const& shaderIndex_, unsigned int const& divisor_, GeomDataTypePtr const& dataType_)
-: elementsNum(elementsNum_), size(size_), shaderIndex(shaderIndex_), divisor(divisor_), dataType(dataType_) {
+VertexAttributeDesc::VertexAttributeDesc(unsigned int const& elementsNum_, unsigned int const& shaderIndex_, unsigned int const& divisor_, GeomDataTypePtr const& dataType_)
+: elementsNum(elementsNum_), size(elementsNum_ * dataType_->size), shaderIndex(shaderIndex_), divisor(divisor_), dataType(dataType_) {
 }
+
+VertexAttribute::VertexAttribute() : desc(nullptr) {}
+VertexAttribute::VertexAttribute(VertexAttributeDescPtr const& desc_) : desc(desc_) {}
 
 void VertexFormat::Complete() {
     size = 0;
@@ -29,6 +32,20 @@ void VertexFormat::Complete() {
         pointers.GetArray()[i] = (uint64_t)size;
         size += attributesArray[i].desc->size;
     }
+}
+
+VertexFormatPtr VertexFormat::Create(std::initializer_list<VertexAttribute> const& attribs) {
+    return VertexFormat::Create(mu::ArrayHandle<VertexAttribute>(attribs));
+}
+
+VertexFormatPtr VertexFormat::Create(mu::ArrayHandle<VertexAttribute> const& attribs) {
+    const size_t num = attribs.GetNum();
+    if(num == 0) return nullptr;
+    VertexFormat* vf = new VertexFormat();
+    vf->attributes = attribs;
+    vf->pointers = mu::ArrayHandle<uint64_t>(new uint64_t[num], num);
+    vf->Complete();
+    return VertexFormatPtr(vf);
 }
 
 IndexFormat::IndexFormat() : dataType(nullptr) {}

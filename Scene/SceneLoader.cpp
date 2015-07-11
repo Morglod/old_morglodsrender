@@ -301,19 +301,19 @@ bool SceneLoader::Import(std::string const& file, ImportOptions const& options) 
         {
             size_t attr_index = 0;
             if(bAttrib[0]) {
-                vertexFormatPtr->SetAttribute(std::make_shared<VertexAttributeDesc>(3, sizeof(float)*3, MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION, 0, float_DataType), attr_index);
+                vertexFormatPtr->SetAttribute(std::make_shared<VertexAttributeDesc>(3, MR_SHADER_VERTEX_POSITION_ATTRIB_LOCATION, 0, float_DataType), attr_index);
                 attr_index++;
             }
             if(bAttrib[1]) {
-                vertexFormatPtr->SetAttribute(std::make_shared<VertexAttributeDesc>(3, sizeof(float)*3, MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION, 0, float_DataType), attr_index);
+                vertexFormatPtr->SetAttribute(std::make_shared<VertexAttributeDesc>(3, MR_SHADER_VERTEX_NORMAL_ATTRIB_LOCATION, 0, float_DataType), attr_index);
                 attr_index++;
             }
             if(bAttrib[2]) {
-                vertexFormatPtr->SetAttribute(std::make_shared<VertexAttributeDesc>(4, sizeof(float)*4, MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION, 0, float_DataType), attr_index);
+                vertexFormatPtr->SetAttribute(std::make_shared<VertexAttributeDesc>(4, MR_SHADER_VERTEX_COLOR_ATTRIB_LOCATION, 0, float_DataType), attr_index);
                 attr_index++;
             }
             if(bAttrib[3]) {
-                vertexFormatPtr->SetAttribute(std::make_shared<VertexAttributeDesc>(2, sizeof(float)*2, MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION, 0, float_DataType), attr_index);
+                vertexFormatPtr->SetAttribute(std::make_shared<VertexAttributeDesc>(2, MR_SHADER_VERTEX_TEXCOORD_ATTRIB_LOCATION, 0, float_DataType), attr_index);
                 attr_index++;
             }
         }

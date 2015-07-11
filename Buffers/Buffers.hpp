@@ -10,6 +10,7 @@ public:
     inline IBuffer* GetBuffer() const override { return _buffer; }
     inline size_t GetOffset() const override { return _offset; }
     inline size_t GetSize() const override { return _size; }
+    inline void _StopHandle() override { _disposed = true; }
 
     virtual ~BufferRangeHdl();
 protected:
@@ -17,6 +18,7 @@ protected:
     IBuffer* _buffer;
     size_t _offset;
     size_t _size;
+    bool _disposed = false;
 };
 
 class Buffer : public IBuffer {

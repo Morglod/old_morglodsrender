@@ -58,10 +58,8 @@ IGeometry* GeometryManager::PlaceGeometry(VertexFormatPtr const& vertexFormat, v
                 drawMode
             )
         )) {
-            mr::BufferManager& bufferMgr = mr::BufferManager::GetInstance();
             vertexBuffer->Destroy();
             indexBuffer->Destroy();
-
             return nullptr;
         }
 
@@ -71,6 +69,7 @@ IGeometry* GeometryManager::PlaceGeometry(VertexFormatPtr const& vertexFormat, v
                     )
                 );
     }
+    return nullptr;
 /*
     VertexFormatBuffer* vfbuf = _RequestVFBuffer(vertexFormat, vertexDataSize, usage);
     VirtualBuffer* vf_virtualBuffer = vfbuf->manager->Take(vertexDataSize);
@@ -131,7 +130,6 @@ IGeometry* GeometryManager::PlaceGeometry(VertexFormatPtr const& vertexFormat, v
 }
 
 GeometryManager::VertexFormatBuffer* GeometryManager::_RequestVFBuffer(VertexFormatPtr const& vertexFormat, const size_t& vertexDataSize, BufferUsage const& usage) {
-
     for(size_t i = 0; i < _vertex_buffers.size(); ++i) {
         if(_vertex_buffers[i].format && !_vertex_buffers[i].format->Equal(vertexFormat.get())) continue;
         if((_vertex_buffers[i].usage == usage) &&
