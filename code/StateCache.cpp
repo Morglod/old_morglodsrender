@@ -543,7 +543,7 @@ bool StateCache::BindVertexAttribute(VertexAttribute const& attribute, unsigned 
         glEnableClientState(GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
     }
     else {
-        glVertexAttribPointer(index, (int) attribute.desc->elementsNum, attribute.desc->dataType->dataTypeGL, GL_FALSE, vertexSize, (const void*)attribute.offset);
+        glVertexAttribPointer(index, (int) attribute.desc->elementsNum, attribute.desc->dataType->dataTypeGL, GL_FALSE, vertexSize, (const void*)((size_t)attribute.offset));
         glEnableVertexAttribArray(index);
         glVertexAttribDivisor(index, attribute.desc->divisor);
     }

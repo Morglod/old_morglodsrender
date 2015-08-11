@@ -24,11 +24,19 @@ public:
 template < typename T >
 class TStaticArray : public ITArray<T> {
 public:
-    inline T* GetRaw() const { return _ar; }
-    inline size_t GetNum() const override { return _el_num; }
+    inline T* GetRaw() const {
+        return _ar;
+    }
+    inline size_t GetNum() const override {
+        return _el_num;
+    }
 #if MR_CONTAINERS_LOOP_INDEX == 0
-    inline T& At(size_t const& i) const override { return _ar[i]; }
-    inline T* AtPtr(const size_t& i) const { return &_ar[i]; }
+    inline T& At(size_t const& i) const override {
+        return _ar[i];
+    }
+    inline T* AtPtr(const size_t& i) const {
+        return &_ar[i];
+    }
 #else
     inline T& At(size_t i) const {
         while(i >= _el_num) i -= _el_num;
@@ -46,8 +54,12 @@ public:
         return _ar[index];
     }
 
-    inline void SetDeleteFlag(const bool& d) { _delete = d; }
-    inline bool GetDeleteFlag() const { return _delete; }
+    inline void SetDeleteFlag(const bool& d) {
+        _delete = d;
+    }
+    inline bool GetDeleteFlag() const {
+        return _delete;
+    }
 
     inline TStaticArray<T> Combine(TStaticArray<T> a) const {
         size_t sz = a.GetNum()+GetNum();
@@ -97,13 +109,13 @@ public:
     }
 
     TStaticArray(TStaticArray<T> const& a) : _ar(new T [a._el_num]), _el_num(a._el_num), _delete(a._delete) {
-        for(size_t i = 0; i < _el_num; ++i){
+        for(size_t i = 0; i < _el_num; ++i) {
             _ar[i] = a._ar[i];
         }
     }
 
     TStaticArray(TStaticArray<T>& a) : _ar(new T [a._el_num]), _el_num(a._el_num), _delete(a._delete) {
-        for(size_t i = 0; i < _el_num; ++i){
+        for(size_t i = 0; i < _el_num; ++i) {
             _ar[i] = a._ar[i];
         }
     }
@@ -115,7 +127,7 @@ public:
         _ar = new T [ar._el_num];
         _delete = ar._delete;
         _el_num = ar._el_num;
-        for(size_t i = 0; i < _el_num; ++i){
+        for(size_t i = 0; i < _el_num; ++i) {
             _ar[i] = ar._ar[i];
         }
         return *this;
@@ -128,7 +140,7 @@ public:
         _ar = new T [ar._el_num];
         _delete = ar._delete;
         _el_num = ar._el_num;
-        for(size_t i = 0; i < _el_num; ++i){
+        for(size_t i = 0; i < _el_num; ++i) {
             _ar[i] = ar._ar[i];
         }
         return *this;
@@ -144,11 +156,19 @@ class TDynamicArray : public ITArray<T> {
 public:
     class Iterator {
     public:
-        inline T& Get() { return _owner->GetRaw()[_el_index]; }
-        inline size_t GetIndex() { return _el_index; }
-        inline TDynamicArray<T>* GetDArray() { return _owner; }
+        inline T& Get() {
+            return _owner->GetRaw()[_el_index];
+        }
+        inline size_t GetIndex() {
+            return _el_index;
+        }
+        inline TDynamicArray<T>* GetDArray() {
+            return _owner;
+        }
 
-        inline T& operator -> () { return _owner->GetRaw()[_el_index]; }
+        inline T& operator -> () {
+            return _owner->GetRaw()[_el_index];
+        }
 
         inline Iterator& operator ++() {
             ++_el_index;
@@ -192,11 +212,21 @@ public:
     };
     typedef Iterator It;
 
-    inline T* GetRaw() const { return _ar; }
-    inline size_t GetNum() const override { return _el_num; }
-    inline size_t GetCapacity() const { return _el_cap; }
-    inline T& At(size_t const& i) const override { return _ar[i]; }
-    inline T* AtPtr(size_t const& i) const { return &_ar[i]; }
+    inline T* GetRaw() const {
+        return _ar;
+    }
+    inline size_t GetNum() const override {
+        return _el_num;
+    }
+    inline size_t GetCapacity() const {
+        return _el_cap;
+    }
+    inline T& At(size_t const& i) const override {
+        return _ar[i];
+    }
+    inline T* AtPtr(size_t const& i) const {
+        return &_ar[i];
+    }
 
     T& operator [] (size_t const& index) const {
         return _ar[index];
@@ -214,8 +244,12 @@ public:
         return TDynamicArray<T>::Iterator(this, _el_num);
     }
 
-    inline void SetDeleteFlag(bool const& b) { _delete = b; }
-    inline bool GetDeleteFlag() const { return _delete; }
+    inline void SetDeleteFlag(bool const& b) {
+        _delete = b;
+    }
+    inline bool GetDeleteFlag() const {
+        return _delete;
+    }
 
     inline bool Find(T const& t, size_t* index) const {
         for(size_t i = 0; i < _el_num; ++i) {
@@ -288,8 +322,7 @@ public:
         if(num == _el_cap) return true;
         if(_ar == 0) {
             _ar = new T[num];
-        }
-        else {
+        } else {
             void * p = realloc(_ar, num*sizeof(T));
             if(!p) {
                 _el_cap = 0;
@@ -370,13 +403,13 @@ public:
     }
 
     TDynamicArray(TDynamicArray<T> const& a) : _ar(new T [a._el_num]), _el_num(a._el_num), _el_cap(a._el_cap), _delete(a._delete) {
-        for(size_t i = 0; i < _el_num; ++i){
+        for(size_t i = 0; i < _el_num; ++i) {
             _ar[i] = a._ar[i];
         }
     }
 
     TDynamicArray(TDynamicArray<T>& a) : _ar(new T [a._el_num]), _el_num(a._el_num), _el_cap(a._el_cap), _delete(a._delete) {
-        for(size_t i = 0; i < _el_num; ++i){
+        for(size_t i = 0; i < _el_num; ++i) {
             _ar[i] = a._ar[i];
         }
     }
@@ -389,7 +422,7 @@ public:
         _delete = ar._delete;
         _el_num = ar._el_num;
         _el_cap = ar._el_cap;
-        for(size_t i = 0; i < _el_num; ++i){
+        for(size_t i = 0; i < _el_num; ++i) {
             _ar[i] = ar._ar[i];
         }
         return *this;
@@ -403,7 +436,7 @@ public:
         _delete = ar._delete;
         _el_num = ar._el_num;
         _el_cap = ar._el_cap;
-        for(size_t i = 0; i < _el_num; ++i){
+        for(size_t i = 0; i < _el_num; ++i) {
             _ar[i] = ar._ar[i];
         }
         return *this;
@@ -543,7 +576,7 @@ public:
 
         //find place
         size_t free_place_index = _queue.GetNum()-1;
-        for(size_t i = _queue.GetNum()-1; i != 0; --i){
+        for(size_t i = _queue.GetNum()-1; i != 0; --i) {
             if( !_queue.At(i).stored ) {
                 free_place_index = i;
                 break;
@@ -571,7 +604,7 @@ public:
     }
 
     bool Get(KeyT key, ValueT & value) {
-        for(size_t i = 0; i < _queue.GetNum(); ++i){
+        for(size_t i = 0; i < _queue.GetNum(); ++i) {
             if(_queue.At(i).key == key) {
                 value = _queue.At(i).value;
                 RisePriority(i);
@@ -581,7 +614,9 @@ public:
         return false;
     }
 
-    TStaticArray<PriorityCache<KeyT, ValueT>::CacheElement> * GetQueuePtr() { return &_queue; }
+    TStaticArray<PriorityCache<KeyT, ValueT>::CacheElement> * GetQueuePtr() {
+        return &_queue;
+    }
 
     PriorityCache() : _queue() {}
     PriorityCache(const size_t& size) : _queue(new PriorityCache<KeyT, ValueT>::CacheElement[size], size, true) {}
@@ -641,7 +676,9 @@ public:
 
     virtual ~ThreadSafeQueue() {
         _mutex.Lock();
-        while(!_q.empty()) { _q.pop(); }
+        while(!_q.empty()) {
+            _q.pop();
+        }
         _mutex.UnLock();
     }
 protected:
@@ -653,7 +690,7 @@ template<typename keyT, class valueT>
 class Dictionary {
 public:
     inline valueT& operator [] (const keyT& key) {
-        for(size_t i = 0; i < _keys.size(); ++i){
+        for(size_t i = 0; i < _keys.size(); ++i) {
             if(_keys[i] == key) return _values[i];
         }
         _keys.push_back(key);
@@ -666,14 +703,14 @@ public:
     }
 
     inline bool ContainKey(const keyT& key) {
-        for(size_t i = 0; i < _keys.size(); ++i){
+        for(size_t i = 0; i < _keys.size(); ++i) {
             if(_keys[i] == key) return true;
         }
         return false;
     }
 
     inline void Remove(const keyT& key) {
-        for(size_t i = 0; i < _keys.size(); ++i){
+        for(size_t i = 0; i < _keys.size(); ++i) {
             if(_keys[i] == key) {
                 _keys.erase(_keys.begin()+i);
                 _values.erase(_values.begin()+i);
@@ -720,7 +757,7 @@ public:
     const valueT DefaultValue = defaultValue;
 
     inline valueT& operator [] (const keyT& key) {
-        for(size_t i = 0; i < _keys.size(); ++i){
+        for(size_t i = 0; i < _keys.size(); ++i) {
             if(_keys[i] == key) return _values[i];
         }
         _keys.push_back(key);
@@ -733,14 +770,14 @@ public:
     }
 
     inline bool ContainKey(const keyT& key) {
-        for(size_t i = 0; i < _keys.size(); ++i){
+        for(size_t i = 0; i < _keys.size(); ++i) {
             if(_keys[i] == key) return true;
         }
         return false;
     }
 
     inline void Remove(const keyT& key) {
-        for(size_t i = 0; i < _keys.size(); ++i){
+        for(size_t i = 0; i < _keys.size(); ++i) {
             if(_keys[i] == key) {
                 _keys.erase(_keys.begin()+i);
                 _values.erase(_values.begin()+i);
