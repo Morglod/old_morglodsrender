@@ -20,7 +20,7 @@
 				</Compiler>
 				<Linker>
 					<Add option="-pg -lgmon" />
-					<Add library="C:\Libs\Projects\MorglodsUtils\bin\Debug\libMorglodsUtils.a" />
+					<Add library="libMorglodsUtils_debug.a" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -38,7 +38,7 @@
 					<Add option="-Wall" />
 				</Compiler>
 				<Linker>
-					<Add library="C:\Libs\Projects\MorglodsUtils\bin\Release\libMorglodsUtils.a" />
+					<Add library="libMorglodsUtils.a" />
 				</Linker>
 			</Target>
 		</Build>
@@ -125,8 +125,6 @@
 		<Unit filename="code/RTT/RTTManager.hpp" />
 		<Unit filename="code/RTT/RenderBuffer.cpp" />
 		<Unit filename="code/RTT/RenderBuffer.hpp" />
-		<Unit filename="code/Scene/Camera.cpp" />
-		<Unit filename="code/Scene/Camera.hpp" />
 		<Unit filename="code/Scene/Entity.cpp" />
 		<Unit filename="code/Scene/Entity.hpp" />
 		<Unit filename="code/Scene/Node.cpp" />
@@ -205,8 +203,6 @@
 		<Unit filename="code/Utils/UIUtil.cpp" />
 		<Unit filename="code/Utils/UIUtil.hpp" />
 		<Unit filename="code/Utils/Worker.hpp" />
-		<Unit filename="code/Viewport.cpp" />
-		<Unit filename="code/Viewport.hpp" />
 		<Unit filename="code/Viewports/Viewport.cpp" />
 		<Unit filename="code/Viewports/Viewport.hpp" />
 		<Unit filename="code/_Anim.cpp" />
