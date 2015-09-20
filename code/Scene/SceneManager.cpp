@@ -69,7 +69,7 @@ bool SceneManager::CompleteLights() {
     //TODO test for errors
 
     if(lightsGpuBuff != nullptr) {
-        mr::BufferManager::GetInstance().Delete(lightsGpuBuff);
+        mr::BufferManager::GetInstance().Destroy(lightsGpuBuff);
         lightsGpuBuff = nullptr;
     }
 

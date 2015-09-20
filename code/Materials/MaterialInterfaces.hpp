@@ -8,9 +8,7 @@
 
 #include <string>
 
-#ifndef glm_glm
-#   include <glm/glm.hpp>
-#endif
+#include "../pre_glm.hpp"
 
 namespace mr {
 

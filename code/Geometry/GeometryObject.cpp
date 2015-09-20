@@ -9,7 +9,6 @@
 
 #include <mu/Macro.hpp>
 
-#define GLEW_STATIC
 #include <GL/glew.h>
 
 unsigned int _MR_DRAW_MODE_FLAG_TO_GL_[4] {

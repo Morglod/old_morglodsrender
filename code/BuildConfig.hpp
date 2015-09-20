@@ -1,7 +1,6 @@
 #pragma once
 
 /** COMPILE TIME CONFIG **/
-#define GLEW_STATIC
 #define GLM_FORCE_CXX11
 #define MR_ASYNC_LOADING_DEFAULT false
 #define MR_RESOURCE_MANAGER_DEBUG_MSG_DEFAULT false

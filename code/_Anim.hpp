@@ -6,9 +6,8 @@
 #include "Types.hpp"
 
 #include <vector>
-#ifndef glm_glm
-#   include <glm/glm.hpp>
-#endif
+
+#include "pre_glm.hpp"
 
 namespace mr{
 

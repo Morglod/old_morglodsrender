@@ -3,7 +3,7 @@
 #ifndef _MR_COLLISION_INTERFACES_H_
 #define _MR_COLLISION_INTERFACES_H_
 
-#include <glm/glm.hpp>
+#include "../pre_glm.hpp"
 
 namespace mr {
 

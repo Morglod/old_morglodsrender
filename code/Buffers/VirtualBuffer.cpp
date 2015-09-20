@@ -2,7 +2,6 @@
 #include "../Utils/Debug.hpp"
 #include "../MachineInfo.hpp"
 
-#define GLEW_STATIC
 #include <GL/glew.h>
 
 namespace mr {

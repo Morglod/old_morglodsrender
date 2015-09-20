@@ -23,7 +23,7 @@
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/ProgressHandler.hpp>
 
-#include <glm/glm.hpp>
+#include "../pre_glm.hpp"
 
 #include <iostream>
 #include <unordered_map>
@@ -126,7 +126,7 @@ Texture* _AssimpLoadTexture(aiMaterial* material, aiTextureType const& texType, 
             mr::Log::LogString("Failed SceneLoader::Import. Failed load texture with customTextureLoad method.", MR_LOG_LEVEL_ERROR);
 
             Texture* toDelete = static_cast<mr::Texture*>(tex);
-            textureManager.Delete(toDelete);
+            textureManager.Destroy(toDelete);
             return nullptr;
         }
     } else {

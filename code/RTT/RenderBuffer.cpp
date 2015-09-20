@@ -4,10 +4,7 @@
 #include "../Textures/Texture.hpp"
 #include "../StateCache.hpp"
 
-#define GLEW_STATIC
-#ifndef __glew_h__
-#   include <GL\glew.h>
-#endif
+#include <GL\glew.h>
 
 namespace mr {
 

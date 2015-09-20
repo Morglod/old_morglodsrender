@@ -9,7 +9,6 @@
 #include "Shaders/ShaderProgramObject.hpp"
 #include "Geometry/GeometryInterfaces.hpp"
 
-#define GLEW_STATIC
 #include <GL/glew.h>
 
 //without transform and uniform

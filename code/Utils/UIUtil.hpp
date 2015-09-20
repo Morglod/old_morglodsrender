@@ -3,7 +3,7 @@
 #ifndef _MR_UI_UTIL_H_
 #define _MR_UI_UTIL_H_
 
-#include <glm/glm.hpp>
+#include "../pre_glm.hpp"
 #include <string>
 
 namespace mr {

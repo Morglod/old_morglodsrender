@@ -9,7 +9,8 @@
 #include "../Shaders/ShaderConfig.hpp"
 
 #include <vector>
-#include <glm/glm.hpp>
+
+#include "../pre_glm.hpp"
 
 namespace mr {
 

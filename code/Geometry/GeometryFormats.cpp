@@ -4,7 +4,6 @@
 #include "../MachineInfo.hpp"
 #include "../Utils/Containers.hpp"
 
-#define GLEW_STATIC
 #include <GL\glew.h>
 
 namespace mr {
@@ -46,6 +45,30 @@ VertexFormatPtr VertexFormat::Create(mu::ArrayHandle<VertexAttribute> const& att
     vf->pointers = mu::ArrayHandle<uint64_t>(new uint64_t[num], num);
     vf->Complete();
     return VertexFormatPtr(vf);
+}
+
+bool VertexFormat::GetActiveAttribs(unsigned int programHandle, std::vector<VertexShaderAttribute>& outAttribs) {
+    int activeAttributes = 0;
+    glGetProgramiv(programHandle, GL_ACTIVE_ATTRIBUTES, &activeAttributes);
+    if(activeAttributes == 0) {
+        mr::Log::LogString("No active attributes, for \""+std::to_string(programHandle)+"\" shader program.", MR_LOG_LEVEL_WARNING);
+        return true;
+    }
+
+    const int nameBufSize = 1024;
+    char nameBuf[nameBufSize];
+    int nameLen = 0;
+    VertexShaderAttribute attrib;
+
+    for(int i = 0; i < activeAttributes; ++i) {
+        glGetActiveAttrib(programHandle, i, nameBufSize, &nameLen, &attrib.size, &attrib.typeGL, nameBuf);
+        attrib.location = glGetAttribLocation(programHandle, nameBuf);
+        attrib.i = i;
+        attrib.name = std::string(nameBuf, nameLen);
+        outAttribs.push_back(attrib);
+    }
+
+    return true;
 }
 
 IndexFormat::IndexFormat() : dataType(nullptr) {}

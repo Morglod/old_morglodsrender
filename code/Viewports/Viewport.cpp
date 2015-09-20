@@ -1,6 +1,5 @@
 #include "Viewport.hpp"
 
-#define GLEW_STATIC
 #include <GL/glew.h>
 
 namespace mr {

@@ -47,7 +47,7 @@ bool TextureUBO::IndexOf(Texture* texture, size_t& outIndex) {
 
 void TextureUBO::Destroy() {
     auto& bufMgr = mr::BufferManager::GetInstance();
-    bufMgr.Delete(_buffer);
+    bufMgr.Destroy(_buffer);
 }
 
 size_t TextureUBO::GetGPUMem() {

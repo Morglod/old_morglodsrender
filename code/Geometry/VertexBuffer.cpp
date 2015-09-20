@@ -47,7 +47,7 @@ void VertexBuffer::Destroy() {
     if(_range != nullptr) {
         auto& mgr = BufferManager::GetInstance();
         IBuffer* buf = _range->GetBuffer();
-        if(_ownBuffer) mgr.Delete(buf);
+        if(_ownBuffer) mgr.Destroy(buf);
     }
     _format = nullptr;
     _range = nullptr;

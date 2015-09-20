@@ -6,9 +6,7 @@
 #include "ShaderInterfaces.hpp"
 #include "../Utils/Log.hpp"
 
-#ifndef glm_glm
-#   include <glm/glm.hpp>
-#endif
+#include "../pre_glm.hpp"
 
 #include <unordered_map>
 #include <unordered_set>

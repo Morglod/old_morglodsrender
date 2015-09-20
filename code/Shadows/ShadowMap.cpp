@@ -37,8 +37,8 @@ void ShadowMap::Destroy() {
     TextureManager& tex = TextureManager::GetInstance();
     RTTManager& rtt = RTTManager::GetInstance();
 
-    rtt.DeleteFrameBuffer(_fb);
-    tex.Delete(_depthTex);
+    rtt.DestroyFrameBuffer(_fb);
+    tex.Destroy(_depthTex);
 }
 
 }

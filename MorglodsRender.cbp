@@ -4,14 +4,14 @@
 	<Project>
 		<Option title="MorglodsRender" />
 		<Option pch_mode="2" />
-		<Option compiler="tdm_gcc64" />
+		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
 				<Option output="BUILD/dMorglodsRender" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="" />
 				<Option object_output="obj/Debug/" />
 				<Option type="2" />
-				<Option compiler="tdm_gcc64" />
+				<Option compiler="gcc" />
 				<Option createDefFile="1" />
 				<Compiler>
 					<Add option="-Wall" />
@@ -28,39 +28,32 @@
 				<Option working_dir="BUILD" />
 				<Option object_output="obj/Release/" />
 				<Option type="3" />
-				<Option compiler="tdm_gcc64" />
+				<Option compiler="gcc" />
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
-				<Compiler>
-					<Add option="-march=corei7-avx" />
-					<Add option="-fexpensive-optimizations" />
-					<Add option="-O3" />
-					<Add option="-Wall" />
-				</Compiler>
-				<Linker>
-					<Add library="libMorglodsUtils.a" />
-				</Linker>
+				<MakeCommands>
+					<Build command="" />
+					<CompileFile command="" />
+					<Clean command="" />
+					<DistClean command="" />
+					<AskRebuildNeeded command="" />
+					<SilentBuild command=" &gt; $(CMD_NULL)" />
+				</MakeCommands>
 			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-std=c++11" />
-			<Add directory="C:/Libs/assimp-3.1.1-win-binaries/include" />
 			<Add directory="C:/Libs/Projects/MorglodsUtils" />
-			<Add directory="C:/Libs/FreeImage/Dist" />
 		</Compiler>
 		<Linker>
-			<Add library="libglew32.a" />
-			<Add library="libglew32mx.a" />
-			<Add library="opengl32" />
 			<Add library="glu32" />
+			<Add library="opengl32" />
+			<Add library="libglew32.dll.a" />
 			<Add library="gdi32" />
 			<Add library="winmm" />
 			<Add library="pthread" />
 			<Add library="libassimp.dll.a" />
-			<Add library="C:\Libs\FreeImage\Dist\FreeImage.a" />
-			<Add directory="C:/Libs/assimp-3.1.1-win-binaries/mingw_build" />
-			<Add directory="C:/TDM-GCC-64/lib" />
-			<Add directory="C:/Libs/FreeImage/Dist" />
+			<Add library="FreeImage" />
 		</Linker>
 		<Unit filename="code/Buffers/BufferManager.cpp" />
 		<Unit filename="code/Buffers/BufferManager.hpp" />
@@ -139,6 +132,8 @@
 		<Unit filename="code/Scene/SceneManagerInterfaces.hpp" />
 		<Unit filename="code/Scene/Transformation.cpp" />
 		<Unit filename="code/Scene/Transformation.hpp" />
+		<Unit filename="code/Shaders/BaseShaderFS.glsl" />
+		<Unit filename="code/Shaders/BaseShaderVS.glsl" />
 		<Unit filename="code/Shaders/ShaderCodeDefault.hpp" />
 		<Unit filename="code/Shaders/ShaderCompiler.cpp" />
 		<Unit filename="code/Shaders/ShaderCompiler.hpp" />
@@ -207,6 +202,7 @@
 		<Unit filename="code/Viewports/Viewport.hpp" />
 		<Unit filename="code/_Anim.cpp" />
 		<Unit filename="code/_Anim.hpp" />
+		<Unit filename="code/pre_glm.hpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />

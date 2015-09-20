@@ -4,7 +4,8 @@
 #define _MR_TEXTURE_SETTINGS_H_
 
 #include "../CoreObjects.hpp"
-#include <glm/glm.hpp>
+
+#include "../pre_glm.hpp"
 
 namespace mr {
 

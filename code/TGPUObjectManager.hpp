@@ -9,13 +9,13 @@ class TGPUObjectManager {
 public:
     inline size_t GetUsedGPUMemory() { return _usedMem; }
 
-    void Delete(T*& what) {
-        _Delete(what);
+    void Destroy(T*& what) {
+        _Destroy(what);
         what = nullptr;
     }
 
     void DestroyAll() {
-        while(!_objects.empty()) _Delete(*(_objects.begin()));
+        while(!_objects.empty()) _Destroy(*(_objects.begin()));
     }
 
     virtual ~TGPUObjectManager() {
@@ -39,7 +39,7 @@ protected:
     size_t _usedMem = 0;
 
 private:
-    void _Delete(T* what) {
+    void _Destroy(T* what) {
         if(what == nullptr) return;
         _UnRegister(what);
         what->Destroy();

@@ -4,7 +4,6 @@
 #include "../MachineInfo.hpp"
 #include "../StateCache.hpp"
 
-#define GLEW_STATIC
 #include <GL/glew.h>
 
 /** GPUBuffer class implementation **/

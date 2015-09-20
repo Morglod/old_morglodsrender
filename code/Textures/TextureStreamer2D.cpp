@@ -41,7 +41,7 @@ bool TextureStreamer2D::Reset(Texture2D* newTarget, IDataSourcePtr const& dataSo
 void TextureStreamer2D::Destroy() {
     BufferManager& manager = BufferManager::GetInstance();
     for(size_t i = 0; i < 2; ++i) {
-        manager.Delete(_pbos[i]);
+        manager.Destroy(_pbos[i]);
     }
 }
 

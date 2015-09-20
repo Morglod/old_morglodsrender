@@ -4,7 +4,8 @@
 #include <mu/Containers.hpp>
 
 #include <unordered_map>
-#include <glm/glm.hpp>
+
+#include "../pre_glm.hpp"
 
 namespace mr {
 

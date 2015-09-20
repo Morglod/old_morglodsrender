@@ -196,7 +196,7 @@ GeometryManager::~GeometryManager() {
         if(fbuf.manager) {
             delete fbuf.manager;
         }
-        bufferMgr.Delete(fbuf.buffer);
+        bufferMgr.Destroy(fbuf.buffer);
         _vertex_buffers.pop_back();
     }
     while(!_index_buffers.empty()) {
@@ -204,7 +204,7 @@ GeometryManager::~GeometryManager() {
         if(fbuf.manager) {
             delete fbuf.manager;
         }
-        bufferMgr.Delete(fbuf.buffer);
+        bufferMgr.Destroy(fbuf.buffer);
         _index_buffers.pop_back();
     }
 }

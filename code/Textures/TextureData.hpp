@@ -3,7 +3,7 @@
 #include "Texture.hpp"
 #include <mu/Containers.hpp>
 
-#include <glm/glm.hpp>
+#include "../pre_glm.hpp"
 #include <memory>
 
 namespace mr {

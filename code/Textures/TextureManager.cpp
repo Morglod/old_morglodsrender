@@ -85,7 +85,7 @@ void TextureManager::DestroyAllUBOs() {
     _ubos.clear();
 }
 
-void TextureManager::Delete(Texture*& texture) {
+void TextureManager::Destroy(Texture*& texture) {
     if(texture == nullptr) return;
     _UnRegisterTexture(texture);
     texture->Destroy();
@@ -93,7 +93,7 @@ void TextureManager::Delete(Texture*& texture) {
     texture = nullptr;
 }
 
-void TextureManager::Delete(TextureUBO*& textureUbo) {
+void TextureManager::Destroy(TextureUBO*& textureUbo) {
     if(textureUbo == nullptr) return;
     _UnRegisterUBO(textureUbo);
     textureUbo->Destroy();

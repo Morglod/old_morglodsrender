@@ -19,7 +19,7 @@ unsigned int ShaderUBO::GetGPUHandle() {
 
 void ShaderUBO::Destroy() {
     auto& mgr = BufferManager::GetInstance();
-    mgr.Delete(_buffer);
+    mgr.Destroy(_buffer);
 }
 
 bool ShaderUBO::SetData(void* data, size_t const& size, bool dynamic) {
@@ -36,7 +36,7 @@ bool ShaderUBO::CreateBuffer(size_t const& size, bool dynamic) {
 
     //Reallocate if not enought memory
     if(_buffer->GetGPUMem() < size) {
-        mgr.Delete(_buffer);
+        mgr.Destroy(_buffer);
     }
     _buffer = mgr.CreateBuffer(size, (dynamic) ? BufferUsage::FastChange : BufferUsage::Static);
 

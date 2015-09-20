@@ -9,7 +9,6 @@
 #include "../MachineInfo.hpp"
 #include "../Textures/TextureUBO.hpp"
 
-#define GLEW_STATIC
 #include <GL/glew.h>
 
 mr::MaterialFlag __MR_MATERIAL_FLAG = 0;//MR::MaterialFlag::Default();

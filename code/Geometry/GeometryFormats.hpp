@@ -10,8 +10,7 @@
 #include <mu/Singleton.hpp>
 #include <mu/Containers.hpp>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "../pre_glm.hpp"
 
 #include <vector>
 #include <string.h>
@@ -143,8 +142,18 @@ struct VertexFormat {
         return offset;
     }
 
+    struct VertexShaderAttribute {
+        int i;
+        std::string name;
+        unsigned int typeGL;
+        int location;
+        int size;
+    };
+
     static VertexFormatPtr Create(std::initializer_list<VertexAttribute> const& attribs);
     static VertexFormatPtr Create(mu::ArrayHandle<VertexAttribute> const& attribs);
+
+    static bool GetActiveAttribs(unsigned int programHandle, std::vector<VertexShaderAttribute>& outAttribs);
 };
 
 struct IndexFormat {

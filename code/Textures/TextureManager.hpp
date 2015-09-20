@@ -23,8 +23,8 @@ public:
     void DestroyAllTextures();
     void DestroyAllUBOs();
 
-    void Delete(Texture*& texture);
-    void Delete(TextureUBO*& textureUbo);
+    void Destroy(Texture*& texture);
+    void Destroy(TextureUBO*& textureUbo);
 
     TextureManager();
     virtual ~TextureManager();

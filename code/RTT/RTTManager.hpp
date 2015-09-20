@@ -22,8 +22,8 @@ public:
     inline void DestroyAllFrameBuffers() { TGPUObjectManager<FrameBuffer>::DestroyAll(); }
     inline void DestroyAllRenderBuffers() { TGPUObjectManager<RenderBuffer>::DestroyAll(); }
 
-    inline void DeleteFrameBuffer(FrameBuffer*& what) { this->TGPUObjectManager<FrameBuffer>::Delete(what); }
-    inline void DeleteRenderBuffer(RenderBuffer*& what) { this->TGPUObjectManager<RenderBuffer>::Delete(what); }
+    inline void DestroyFrameBuffer(FrameBuffer*& what) { this->TGPUObjectManager<FrameBuffer>::Destroy(what); }
+    inline void DestroyRenderBuffer(RenderBuffer*& what) { this->TGPUObjectManager<RenderBuffer>::Destroy(what); }
 
     RTTManager();
     virtual ~RTTManager();
