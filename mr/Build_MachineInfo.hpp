@@ -1,0 +1,4 @@
+#pragma once
+
+#define MR_MINIMAL_GL_VERSION_MAJOR 4
+#define MR_MINIMAL_GL_VERSION_MINOR 5
