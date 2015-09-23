@@ -1,4 +1,4 @@
-#include "../../mr/threads/semaphore.hpp"
+#include "../../mr/thread/semaphore.hpp"
 
 namespace mr {
 

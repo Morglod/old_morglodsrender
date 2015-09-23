@@ -6,3 +6,5 @@
 #include "log.hpp"
 #include "info.hpp"
 #include "buffers/buffer.hpp"
+#include "vformat.hpp"
+#include "vbuffer.hpp"

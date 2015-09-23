@@ -8,7 +8,6 @@
 
 namespace mr {
 
-typedef std::shared_ptr<class ObjectGL> ObjectGLPtr;
 typedef std::shared_ptr<class Buffer> BufferPtr;
 
 class MR_API Buffer {
@@ -40,6 +39,7 @@ public:
 
     //static std::future<bool> Write(MemoryPtr const& mem); map and write mapped async
     inline MappedMem GetMappedMem() const { return _mapped; }
+    inline uint32_t GetId() const { return _id; }
 protected:
     Buffer();
 private:

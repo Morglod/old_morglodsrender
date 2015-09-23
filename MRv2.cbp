@@ -133,7 +133,9 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="mr/threads/semaphore.hpp" />
+		<Unit filename="mr/thread/semaphore.hpp" />
+		<Unit filename="mr/vbuffer.hpp" />
+		<Unit filename="mr/vformat.hpp" />
 		<Unit filename="samples/sample_cube.cpp">
 			<Option target="Debug_Sample_Cube" />
 		</Unit>
@@ -165,7 +167,16 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="src/threads/semaphore.cpp">
+		<Unit filename="src/thread/semaphore.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/thread/util.hpp" />
+		<Unit filename="src/vbuffer.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/vformat.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>

@@ -4,6 +4,39 @@
 #include <thread>
 #include <iostream>
 
+struct Vertex {
+    char word[3];
+};
+
+void main_logic(GLFWwindow* window) {
+    using namespace mr;
+
+    Core::Exec([](void*){ Info::PrintInfo(); }).wait();
+
+    static Vertex vertexData[] = {
+        { 'a', 'b', '\0' },
+        { '1', '2', '\0' }
+    };
+    const auto vertexDataMem = Memory::Ref(vertexData, sizeof(vertexData));
+
+    Buffer::CreationCmd cmd;
+    cmd.map_after_creation = true;
+    auto buf = Buffer::Create(vertexDataMem, cmd);
+
+    auto vdecl = VertexDecl::Create();
+    auto vdef = vdecl->Begin();
+    vdef.Pos()
+        .Color()
+        .End();
+
+    auto vbuffer = VertexBuffer::Create(buf.get(), vdecl);
+
+    while(!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+        glfwSwapBuffers(window);
+    }
+}
+
 class glfwContextMgr : public mr::ContextMgr {
 public:
     void* mainWindow;
@@ -18,8 +51,6 @@ public:
 
     glfwContextMgr(void* wnd) : mainWindow(wnd) {}
 };
-
-void main_logic();
 
 int main() {
     if(!glfwInit()) {
@@ -46,50 +77,9 @@ int main() {
         return -1;
     }
 
-    main_logic();
+    main_logic(window);
 
     mr::Core::Shutdown();
 
     return 0;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-struct Vertex {
-    char word[3];
-};
-
-void main_logic() {
-    using namespace mr;
-
-    Core::Exec([](void*){ Info::PrintInfo(); }).wait();
-
-    static Vertex vertexData[] = {
-        { 'a', 'b', '\0' },
-        { '1', '2', '\0' }
-    };
-    const auto vertexDataMem = Memory::Ref(vertexData, sizeof(vertexData));
-
-    Buffer::CreationCmd cmd;
-    cmd.map_after_creation = true;
-    auto buf = Buffer::Create(vertexDataMem, cmd).get();
-
-    Vertex* mem = static_cast<Vertex*>(buf->GetMappedMem().mem);
-    for(int i = 0; i < 2; ++i) {
-        MR_LOG(std::string(mem[i].word));
-    }
-
-    buf->UnMap().wait();
 }

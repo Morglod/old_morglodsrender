@@ -3,6 +3,8 @@
 #include "../../mr/log.hpp"
 #include "../../mr/core.hpp"
 
+#include "../thread/util.hpp"
+
 namespace {
 
 struct _BufferInfo {
@@ -32,14 +34,6 @@ void _GetBufferInfo(uint32_t buffer, _BufferInfo& info) {
     glGetNamedBufferParameteriv(buffer, GL_BUFFER_USAGE, &info.usage);
     glGetNamedBufferPointerv(buffer, GL_BUFFER_MAP_POINTER, &info.mapped_mem);
 }
-
-template<typename T>
-struct PromiseData {
-    std::promise<T> promise;
-    typedef std::shared_ptr<PromiseData<T>> Ptr;
-
-    PromiseData() : promise() {}
-};
 
 }
 
@@ -92,7 +86,6 @@ std::future<Buffer::MappedMem> Buffer::Map(uint32_t length, Buffer::MapCmd const
 }
 
 std::future<void> Buffer::UnMap() {
-
     PromiseData<void>* pdata = new PromiseData<void>();
     Buffer* buf = this;
 
