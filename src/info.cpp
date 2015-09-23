@@ -1,6 +1,6 @@
-#include "../mr/MachineInfo.hpp"
-#include "../mr/Build_MachineInfo.hpp"
-#include "../mr/Log.hpp"
+#include "../mr/info.hpp"
+#include "../mr/build_info.hpp"
+#include "../mr/log.hpp"
 #include "../mr/pre/glew.hpp"
 
 #include <unordered_map>
@@ -62,7 +62,6 @@ const std::string Info::GetExtensionsListAsString() {
 void Info::PrintInfo() {
     try {
     MR_LOG(
-            std::string("Machine info:") +
             std::string("\nVersion: ") + GetVersionAsString() +
             std::string("\nGLSL: ") + GetGlslVersionAsString() +
             std::string("\nOpenGL: ") + std::to_string(GetMajorVersion()) + std::string(" ") + std::to_string(GetMinorVersion()) +
@@ -139,7 +138,7 @@ int32_t Info::GetMinorVersion() {
 
 float Info::GetVersionAsFloat() {
     static float f = 0.0f;
-    if(f < 0.1f || f > -0.1f) {
+    if(f < 0.1f && f > -0.1f) {
         float m = (float)GetMinorVersion();
         while((int32_t)m != 0) {
             m /= 10.0f;
@@ -174,7 +173,7 @@ Info::GLVersion Info::GetVersion() {
 
     if(ver != GLVersion::VUnknown) return ver;
 
-    if( (gl_major <= MR_MINIMAL_GL_VERSION_MAJOR) && (gl_minor <= MR_MINIMAL_GL_VERSION_MINOR) ) {
+    if( (gl_major < MR_MINIMAL_GL_VERSION_MAJOR) && (gl_minor < MR_MINIMAL_GL_VERSION_MINOR) ) {
         ver = GLVersion::VNotSupported;
         return ver;
     }
