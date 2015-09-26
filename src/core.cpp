@@ -1,10 +1,10 @@
-#include "../mr/core.hpp"
+#include "mr/core.hpp"
 
-#include "../mr/pre/glew.hpp"
-#include "../mr/log.hpp"
-#include "../mr/info.hpp"
+#include "mr/pre/glew.hpp"
+#include "mr/log.hpp"
+#include "mr/info.hpp"
 
-#include "../mr/threads/semaphore.hpp"
+#include "mr/thread/semaphore.hpp"
 
 #include <thread>
 #include <deque>

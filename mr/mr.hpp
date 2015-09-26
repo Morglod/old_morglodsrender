@@ -8,3 +8,5 @@
 #include "buffers/buffer.hpp"
 #include "vformat.hpp"
 #include "vbuffer.hpp"
+#include "ibuffer.hpp"
+#include "draw.hpp"

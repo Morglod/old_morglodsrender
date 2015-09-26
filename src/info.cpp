@@ -1,7 +1,7 @@
-#include "../mr/info.hpp"
-#include "../mr/build_info.hpp"
-#include "../mr/log.hpp"
-#include "../mr/pre/glew.hpp"
+#include "mr/info.hpp"
+#include "mr/build_info.hpp"
+#include "mr/log.hpp"
+#include "mr/pre/glew.hpp"
 
 #include <unordered_map>
 

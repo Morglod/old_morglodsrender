@@ -1,5 +1,5 @@
-#include "../mr/log.hpp"
-#include "../mr/build_log.hpp"
+#include "mr/log.hpp"
+#include "mr/build_log.hpp"
 
 #include <string>
 

@@ -1,9 +1,9 @@
-#include "../../mr/buffers/buffer.hpp"
-#include "../../mr/pre/glew.hpp"
-#include "../../mr/log.hpp"
-#include "../../mr/core.hpp"
+#include "mr/buffers/buffer.hpp"
+#include "mr/pre/glew.hpp"
+#include "mr/log.hpp"
+#include "mr/core.hpp"
 
-#include "../thread/util.hpp"
+#include "src/thread/util.hpp"
 
 namespace {
 
@@ -49,6 +49,7 @@ std::future<BufferPtr> Buffer::Create(MemoryPtr const& mem, CreationCmd const& c
 
     bool map = cmd.map_after_creation;
     PromiseData<BufferPtr>* pdata = new PromiseData<BufferPtr>();
+    auto fut = pdata->promise.get_future();
 
     Core::Exec([mem, flags_i, map](void* arg){
         PromiseData<BufferPtr>* parg = (PromiseData<BufferPtr>*)arg;
@@ -62,7 +63,7 @@ std::future<BufferPtr> Buffer::Create(MemoryPtr const& mem, CreationCmd const& c
         parg->promise.set_value(BufferPtr(buf));
     }, pdata);
 
-    return pdata->promise.get_future();
+    return fut;
 }
 
 std::future<Buffer::MappedMem> Buffer::Map(uint32_t length, Buffer::MapCmd const& cmd, uint32_t offset) {
@@ -73,6 +74,7 @@ std::future<Buffer::MappedMem> Buffer::Map(uint32_t length, Buffer::MapCmd const
 
     PromiseData<Buffer::MappedMem>* pdata = new PromiseData<Buffer::MappedMem>();
     Buffer* buf = this;
+    auto fut = pdata->promise.get_future();
 
     Core::Exec([flags_i, length, offset, buf](void* arg){
         PromiseData<Buffer::MappedMem>* parg = (PromiseData<Buffer::MappedMem>*)arg;
@@ -82,12 +84,13 @@ std::future<Buffer::MappedMem> Buffer::Map(uint32_t length, Buffer::MapCmd const
         parg->promise.set_value(buf->_mapped);
     }, pdata);
 
-    return pdata->promise.get_future();
+    return fut;
 }
 
 std::future<void> Buffer::UnMap() {
     PromiseData<void>* pdata = new PromiseData<void>();
     Buffer* buf = this;
+    auto fut = pdata->promise.get_future();
 
     Core::Exec([buf](void* arg){
         PromiseData<void>* parg = (PromiseData<void>*)arg;
@@ -97,7 +100,7 @@ std::future<void> Buffer::UnMap() {
         parg->promise.set_value();
     }, pdata);
 
-    return pdata->promise.get_future();
+    return fut;
 }
 
 bool Buffer::_Create(Buffer* buf, MemoryPtr const& mem, uint32_t flags, bool map) {

@@ -1,8 +1,8 @@
-#include "../mr/vformat.hpp"
-#include "../mr/core.hpp"
-#include "thread/util.hpp"
+#include "mr/vformat.hpp"
+#include "mr/core.hpp"
+#include "src/thread/util.hpp"
 
-#include "../mr/pre/glew.hpp"
+#include "mr/pre/glew.hpp"
 
 #include <unordered_map>
 
@@ -73,6 +73,7 @@ VertexDecl::Changer VertexDecl::Begin() {
 std::future<bool> VertexDecl::Bind(uint32_t binding) {
     PromiseData<bool>* pdata = new PromiseData<bool>();
     VertexDecl* vd = this;
+    auto fut = pdata->promise.get_future();
 
     Core::Exec([vd, binding](void* arg){
         PromiseData<bool>* parg = (PromiseData<bool>*)arg;
@@ -81,7 +82,7 @@ std::future<bool> VertexDecl::Bind(uint32_t binding) {
         parg->promise.set_value(VertexDecl::_Bind(vd, binding));
     }, pdata);
 
-    return pdata->promise.get_future();
+    return fut;
 }
 
 bool VertexDecl::_Bind(VertexDecl* decl, uint32_t binding) {

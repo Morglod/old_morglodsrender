@@ -1,5 +1,5 @@
-#include "../../mr/gl/object.hpp"
-#include "../../mr/gl/objectlist.hpp"
+#include "mr/gl/object.hpp"
+#include "mr/gl/objectlist.hpp"
 
 namespace mr {
 

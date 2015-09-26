@@ -16,6 +16,7 @@
 				<Compiler>
 					<Add option="-g" />
 					<Add option="-DBUILD_DLL" />
+					<Add directory="../morglodsrender" />
 				</Compiler>
 				<Linker>
 					<Add library="user32" />
@@ -33,6 +34,7 @@
 				<Compiler>
 					<Add option="-O2" />
 					<Add option="-DBUILD_DLL" />
+					<Add directory="../morglodsrender" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -97,6 +99,7 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="mr/draw.hpp" />
 		<Unit filename="mr/experimental/buffertransfer.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -109,6 +112,7 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="mr/ibuffer.hpp" />
 		<Unit filename="mr/info.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -133,6 +137,10 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="mr/shaders/shader.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="mr/thread/semaphore.hpp" />
 		<Unit filename="mr/vbuffer.hpp" />
 		<Unit filename="mr/vformat.hpp" />
@@ -147,11 +155,19 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="src/draw.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/gl/object.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="src/gl/objectlist.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/ibuffer.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>

@@ -5,7 +5,8 @@
 #include <iostream>
 
 struct Vertex {
-    char word[3];
+    glm::vec3 pos;
+    uint8_t rgba[4];
 };
 
 void main_logic(GLFWwindow* window) {
@@ -14,8 +15,12 @@ void main_logic(GLFWwindow* window) {
     Core::Exec([](void*){ Info::PrintInfo(); }).wait();
 
     static Vertex vertexData[] = {
-        { 'a', 'b', '\0' },
-        { '1', '2', '\0' }
+        {   glm::vec3(0,0.1f,-2),
+            255,0,0,255 },
+        {   glm::vec3(0,-0.1f,-2),
+            0,255,0,255 },
+        {   glm::vec3(0.1f,0,-2),
+            0,0,255,255 }
     };
     const auto vertexDataMem = Memory::Ref(vertexData, sizeof(vertexData));
 
@@ -26,14 +31,24 @@ void main_logic(GLFWwindow* window) {
     auto vdecl = VertexDecl::Create();
     auto vdef = vdecl->Begin();
     vdef.Pos()
-        .Color()
+        .Color(ColorDataType::UByte)
         .End();
 
-    auto vbuffer = VertexBuffer::Create(buf.get(), vdecl);
+    auto vbuffer = VertexBuffer::Create(buf.get(), vdecl, 3);
 
+    double lastTime = glfwGetTime(), curTime = glfwGetTime();
+
+    Draw::ClearColor(255,0,0,255);
     while(!glfwWindowShouldClose(window)) {
+        curTime = glfwGetTime();
+        MR_LOG_T_STD(curTime - lastTime);
+        lastTime = curTime;
+
+        Draw::Clear(GL_COLOR_BUFFER_BIT);
+        Draw::Primitive(DrawMode::Point, vbuffer, nullptr);
+
+        Core::Exec([window](void*){ glfwSwapBuffers(window); }).wait();
         glfwPollEvents();
-        glfwSwapBuffers(window);
     }
 }
 

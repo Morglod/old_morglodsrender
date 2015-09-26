@@ -1,6 +1,6 @@
-#include "../../mr/gl/objectlist.hpp"
-#include "../../mr/pre/glew.hpp"
-#include "../../mr/log.hpp"
+#include "mr/gl/objectlist.hpp"
+#include "mr/pre/glew.hpp"
+#include "mr/log.hpp"
 
 namespace {
 
