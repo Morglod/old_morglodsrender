@@ -13,7 +13,7 @@ typedef std::shared_ptr<class VertexBuffer> VertexBufferPtr;
 class MR_API VertexBuffer final {
     friend class Draw;
 public:
-    inline uint32_t GetNum() const { return _num; }
+    inline uint32_t GetNum() const;
     std::future<bool> Bind(uint32_t binding, uint32_t offset = 0);
     static VertexBufferPtr Create(BufferPtr const& vbuf, VertexDeclPtr const& vdecl, uint32_t num);
 protected:
@@ -24,5 +24,9 @@ private:
     VertexDeclPtr _vdecl = nullptr;
     uint32_t _num;
 };
+
+inline uint32_t VertexBuffer::GetNum() const {
+    return _num;
+}
 
 }

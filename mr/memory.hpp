@@ -9,9 +9,9 @@ namespace mr {
 typedef std::shared_ptr<class Memory> MemoryPtr;
 
 struct MR_API Memory final {
-    inline bool IsOwn() const { return _own; }
-    inline size_t GetSize() const { return _size; }
-    inline void* GetPtr() const { return _ptr; }
+    inline bool IsOwn() const;
+    inline size_t GetSize() const;
+    inline void* GetPtr() const;
 
     Memory() = delete;
     Memory(void* ptr, size_t sz, bool own);
@@ -26,5 +26,17 @@ private:
     size_t _size = 0;
     bool _own = true; // if true, delete at Memory object deletion.
 };
+
+inline bool Memory::IsOwn() const {
+    return _own;
+}
+
+inline size_t Memory::GetSize() const {
+    return _size;
+}
+
+inline void* Memory::GetPtr() const {
+    return _ptr;
+}
 
 }

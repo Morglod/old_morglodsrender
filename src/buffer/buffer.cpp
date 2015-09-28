@@ -81,7 +81,7 @@ std::future<Buffer::MappedMem> Buffer::Map(uint32_t length, Buffer::MapCmd const
         PromiseData<Buffer::MappedMem>::Ptr free_guard(parg);
 
         Buffer::_Map(buf, offset, length, flags_i);
-        parg->promise.set_value(buf->_mapped);
+        parg->promise.set_value(buf->_mapState);
     }, pdata);
 
     return fut;
@@ -110,7 +110,7 @@ bool Buffer::_Create(Buffer* buf, MemoryPtr const& mem, uint32_t flags, bool map
     glNamedBufferStorage(buffer, size, mem->GetPtr(), flags);
     buf->_id = buffer;
     buf->_size = size;
-    buf->_mapped.mem = nullptr;
+    buf->_mapState.mem = nullptr;
 
     if(map) {
         uint32_t map_flags = (flags & GL_MAP_WRITE_BIT) | (flags & GL_MAP_READ_BIT) | (flags & GL_MAP_PERSISTENT_BIT) | (flags & GL_MAP_COHERENT_BIT);
@@ -121,20 +121,20 @@ bool Buffer::_Create(Buffer* buf, MemoryPtr const& mem, uint32_t flags, bool map
 
 bool Buffer::_Map(Buffer* buf, uint32_t offset, uint32_t length, uint32_t flags) {
     const uint32_t buffer = buf->_id;
-    if(buf->_mapped.mem != nullptr) Buffer::_UnMap(buf);
-    buf->_mapped.mem = glMapNamedBufferRange(buffer, offset, length, flags);
-    buf->_mapped.offset = offset;
-    buf->_mapped.length = length;
-    return (buf->_mapped.mem != nullptr);
+    if(buf->_mapState.mem != nullptr) Buffer::_UnMap(buf);
+    buf->_mapState.mem = glMapNamedBufferRange(buffer, offset, length, flags);
+    buf->_mapState.offset = offset;
+    buf->_mapState.length = length;
+    return (buf->_mapState.mem != nullptr);
 }
 
 bool Buffer::_UnMap(Buffer* buf) {
     glUnmapNamedBuffer(buf->_id);
-    buf->_mapped = MappedMem();
+    buf->_mapState = MappedMem();
     return true;
 }
 
-Buffer::Buffer() : _id(0), _size(0), _mapped() {
+Buffer::Buffer() : _id(0), _size(0), _mapState() {
 }
 
 }

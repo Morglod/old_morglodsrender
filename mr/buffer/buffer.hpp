@@ -38,8 +38,8 @@ public:
     std::future<void> UnMap();
 
     //static std::future<bool> Write(MemoryPtr const& mem); map and write mapped async
-    inline MappedMem GetMappedMem() const { return _mapped; }
-    inline uint32_t GetId() const { return _id; }
+    inline MappedMem GetMapState() const;
+    inline uint32_t GetId() const;
 protected:
     Buffer();
 private:
@@ -49,7 +49,15 @@ private:
 
     uint32_t _id;
     int32_t _size;
-    MappedMem _mapped;
+    MappedMem _mapState;
 };
+
+inline Buffer::MappedMem Buffer::GetMapState() const {
+    return _mapState;
+}
+
+inline uint32_t Buffer::GetId() const {
+    return _id;
+}
 
 }

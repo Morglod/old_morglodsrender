@@ -6,6 +6,7 @@
 #include <vector>
 #include <memory>
 #include <future>
+#include <unordered_map>
 
 namespace mr {
 
@@ -41,15 +42,29 @@ public:
         uint8_t offset;
     };
 
-    struct MR_API AttribArray {
+    struct MR_API BindPoint {
+        uint8_t bindpoint = 0;
+        uint8_t stride = 0;
+
         Attrib* attribs = nullptr;
         uint8_t num = 0;
+
+        void Free();
+        void Resize(uint8_t n);
+
+        BindPoint() = default;
+        ~BindPoint();
+    };
+
+    struct MR_API AttribMap {
+        BindPoint* bindpoints = nullptr;
+        uint8_t num;
 
         void Resize(uint8_t n);
         void Free();
 
-        AttribArray() = default;
-        ~AttribArray();
+        AttribMap() = default;
+        ~AttribMap();
     };
 
     class MR_API Changer final {
@@ -64,37 +79,43 @@ public:
             bool normalized;
         };
 
-        Changer& Pos(PosDataType const& type = PosDataType::Float); // vec3<DataType>
-        Changer& Color(ColorDataType const& type = ColorDataType::UByte); // vec4<DataType>
-        Changer& Data(uint8_t sz); // skip data block, sizeof 'sz'
+        struct BindPointDesc {
+            uint32_t offset = 0;
+            uint8_t attribi = 0;
+            std::vector<AttribDesc> attribs;
+        };
+
+        Changer& Pos(PosDataType const& type = PosDataType::Float, uint8_t bindpoint = 0); // vec3<DataType>
+        Changer& Color(ColorDataType const& type = ColorDataType::UByte, uint8_t bindpoint = 0); // vec4<DataType>
+        Changer& Data(uint8_t sz, uint8_t bindpoint = 0); // skip data block, sizeof 'sz'
         void End();
 
     protected:
         Changer(VertexDecl& d);
-        void Push(uint32_t gl_dt, uint8_t comp_num, bool norm);
+        void Push(uint8_t bindpoint, uint32_t gl_dt, uint8_t comp_num, bool norm);
 
         VertexDecl& decl;
-        uint32_t offset = 0;
-        uint8_t attribi = 0;
-        std::vector<AttribDesc> attribs;
+        std::unordered_map<uint8_t, BindPointDesc> bindpoints; // [binding point].attributes[]
     };
 
     Changer Begin();
-    std::future<bool> Bind(uint32_t binding);
+    std::future<bool> Bind();
     VertexDecl() = default;
 
-    inline uint32_t GetSize() const { return _size; }
+    inline uint32_t GetSize() const;
 
-    inline static VertexDeclPtr Create() {
-        return VertexDeclPtr(new VertexDecl());
-    }
+    static VertexDeclPtr Create();
 
 protected:
-    static bool _Bind(VertexDecl* decl, uint32_t binding);
+    static bool _Bind(VertexDecl* decl);
 
 private:
-    AttribArray _attribs;
-    uint32_t _size = 0;
+    AttribMap _map;
+    uint32_t _size = 0; // total vertex size
 };
+
+inline uint32_t VertexDecl::GetSize() const {
+    return _size;
+}
 
 }

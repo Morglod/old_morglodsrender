@@ -52,7 +52,8 @@ void main_logic(GLFWwindow* window) {
 
     auto vdecl = VertexDecl::Create();
     auto vdef = vdecl->Begin();
-    vdef.Pos().Color()
+    vdef.Pos()
+        .Color()
         .End();
 
     auto vbuffer = VertexBuffer::Create(buf.get(), vdecl, 3);

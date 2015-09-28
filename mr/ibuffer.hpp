@@ -17,8 +17,8 @@ enum class IndexType : uint32_t {
 class MR_API IndexBuffer final {
     friend class Draw;
 public:
-    inline uint32_t GetNum() const { return _num; }
-    inline IndexType GetDataType() const { return _dtype; }
+    inline uint32_t GetNum() const;
+    inline IndexType GetDataType() const;
     static IndexBufferPtr Create(BufferPtr const& ibuf, IndexType const& datatype, uint32_t num);
     static IndexBufferPtr Create(void* array, IndexType const& datatype, uint32_t num);
 protected:
@@ -30,5 +30,13 @@ private:
     IndexType _dtype;
     uint32_t _num;
 };
+
+inline uint32_t IndexBuffer::GetNum() const {
+    return _num;
+}
+
+inline IndexType IndexBuffer::GetDataType() const {
+    return _dtype;
+}
 
 }

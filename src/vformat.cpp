@@ -9,39 +9,72 @@
 
 namespace mr {
 
-VertexDecl::Changer& VertexDecl::Changer::Pos(PosDataType const& type) {
-    Push((uint32_t)type, 3, false);
+void VertexDecl::BindPoint::Free() {
+    if(attribs != nullptr) {
+        delete [] attribs;
+        attribs = nullptr;
+    }
+    num = 0;
+}
+
+void VertexDecl::BindPoint::Resize(uint8_t n) {
+    Free();
+    attribs = new Attrib[n];
+    num = n;
+}
+
+VertexDecl::BindPoint::~BindPoint() {
+    Free();
+}
+
+VertexDecl::Changer& VertexDecl::Changer::Pos(PosDataType const& type, uint8_t bindpoint) {
+    Push(bindpoint, (uint32_t)type, 3, false);
     return *this;
 }
 
-VertexDecl::Changer& VertexDecl::Changer::Color(ColorDataType const& type) {
-    Push((uint32_t)type, 4, true);
+VertexDecl::Changer& VertexDecl::Changer::Color(ColorDataType const& type, uint8_t bindpoint) {
+    Push(bindpoint, (uint32_t)type, 4, true);
     return *this;
 }
 
-VertexDecl::Changer& VertexDecl::Changer::Data(uint8_t sz) {
-    Push(GL_BYTE, sz, false);
+VertexDecl::Changer& VertexDecl::Changer::Data(uint8_t sz, uint8_t bindpoint) {
+    Push(bindpoint, GL_BYTE, sz, false);
     return *this;
 }
 
 void VertexDecl::Changer::End() {
-    decl._size = offset;
-    decl._attribs.Resize(attribi);
-    for(uint8_t i = 0, n = attribs.size(); i < n; ++i) {
-        Attrib a; auto const& asrc = attribs[i];
-        a.index = asrc.index;
-        a.datatype = asrc.gl_data_type;
-        a.normalized = (asrc.normalized ? 1 : 0);
-        a.offset = asrc.offset;
-        a.components_num = asrc.components_num;
-        decl._attribs.attribs[i] = a;
+    // Write changes
+    // src - VertexDecl::Changer declaration
+    // dst - VertexDecl declaration
+
+    decl._size = 0;
+    decl._map.Resize(bindpoints.size());
+    uint8_t ibp = 0;
+    for(std::pair<uint8_t, BindPointDesc> const& src_attribs : bindpoints) {
+        BindPoint& dst_bindpoint = decl._map.bindpoints[ibp++];
+        dst_bindpoint.Resize(src_attribs.second.attribs.size());
+        dst_bindpoint.bindpoint = src_attribs.first;
+        for(uint8_t i = 0, n = src_attribs.second.attribs.size(); i < n; ++i) {
+            Attrib dst_a;
+            AttribDesc const& src_a = src_attribs.second.attribs[i];
+            dst_a.index = src_a.index;
+            dst_a.datatype = src_a.gl_data_type;
+            dst_a.normalized = (src_a.normalized ? 1 : 0);
+            dst_a.offset = src_a.offset;
+            dst_a.components_num = src_a.components_num;
+            dst_bindpoint.attribs[i] = dst_a;
+
+            decl._size += src_a.size;
+            dst_bindpoint.stride += src_a.size;
+        }
     }
 }
 
-void VertexDecl::Changer::Push(uint32_t gl_dt, uint8_t comp_num, bool norm) {
+void VertexDecl::Changer::Push(uint8_t bindpoint_index, uint32_t gl_dt, uint8_t comp_num, bool norm) {
+    BindPointDesc& bindpoint = bindpoints[bindpoint_index];
     AttribDesc a;
-    a.index = attribi;
-    a.offset = offset;
+    a.index = bindpoint.attribi;
+    a.offset = bindpoint.offset;
     a.components_num = comp_num;
     a.gl_data_type = gl_dt;
     a.normalized = norm;
@@ -59,9 +92,9 @@ void VertexDecl::Changer::Push(uint32_t gl_dt, uint8_t comp_num, bool norm) {
     const uint8_t sz = gl_data_type_size.at(gl_dt) * comp_num;
     a.size = sz;
 
-    attribs.push_back(a);
-    ++attribi;
-    offset += sz;
+    bindpoint.attribs.push_back(a);
+    ++(bindpoint.attribi);
+    bindpoint.offset += sz;
 }
 
 VertexDecl::Changer::Changer(VertexDecl& d) : decl(d) {
@@ -71,47 +104,54 @@ VertexDecl::Changer VertexDecl::Begin() {
     return VertexDecl::Changer(*this);
 }
 
-std::future<bool> VertexDecl::Bind(uint32_t binding) {
+std::future<bool> VertexDecl::Bind() {
     PromiseData<bool>* pdata = new PromiseData<bool>();
     VertexDecl* vd = this;
     auto fut = pdata->promise.get_future();
 
-    Core::Exec([vd, binding](void* arg){
+    Core::Exec([vd](void* arg){
         PromiseData<bool>* parg = (PromiseData<bool>*)arg;
         PromiseData<bool>::Ptr free_guard(parg);
 
-        parg->promise.set_value(VertexDecl::_Bind(vd, binding));
+        parg->promise.set_value(VertexDecl::_Bind(vd));
     }, pdata);
 
     return fut;
 }
 
-bool VertexDecl::_Bind(VertexDecl* decl, uint32_t binding) {
-    for(uint8_t i = 0, n = decl->_attribs.num; i < n; ++i) {
-        auto const& a = decl->_attribs.attribs[i];
-        glEnableVertexAttribArray(a.index);
-        //glVertexAttribPointer(a.index, a.components_num, a.datatype, a.normalized, 0, (void*)a.offset);
-        glVertexAttribFormat(a.index, a.components_num, a.datatype, a.normalized, a.offset);
-        glVertexAttribBinding(a.index, binding);
+bool VertexDecl::_Bind(VertexDecl* decl) {
+    for(uint8_t i_bp = 0, n_bp = decl->_map.num; i_bp < n_bp; ++i_bp) { //foreach bindpoint
+        BindPoint const& bindpoint = decl->_map.bindpoints[i_bp];
+        for(uint8_t i_a = 0, n_a = bindpoint.num; i_a < n_a; ++i_a) { //foreach attrib
+            Attrib const& attrib = bindpoint.attribs[i_a];
+            glEnableVertexAttribArray(attrib.index);
+            glVertexAttribFormat(attrib.index, attrib.components_num, attrib.datatype, attrib.normalized, attrib.offset);
+            glVertexAttribBinding(attrib.index, bindpoint.bindpoint);
+        }
     }
     return true;
 }
 
-void VertexDecl::AttribArray::Resize(uint8_t n) {
+void VertexDecl::AttribMap::Resize(uint8_t n) {
     Free();
-    attribs = new Attrib[n];
+    bindpoints = new BindPoint[n];
     num = n;
 }
 
-void VertexDecl::AttribArray::Free() {
-    if(attribs != nullptr) {
-        delete [] attribs;
+void VertexDecl::AttribMap::Free() {
+    if(bindpoints != nullptr) {
+        delete [] bindpoints;
+        bindpoints = nullptr;
     }
     num = 0;
 }
 
-VertexDecl::AttribArray::~AttribArray() {
+VertexDecl::AttribMap::~AttribMap() {
     Free();
+}
+
+VertexDeclPtr VertexDecl::Create() {
+    return VertexDeclPtr(new VertexDecl());
 }
 
 }
