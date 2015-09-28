@@ -9,6 +9,7 @@ namespace mr {
 
 typedef std::shared_ptr<class VertexBuffer> VertexBufferPtr;
 typedef std::shared_ptr<class IndexBuffer> IndexBufferPtr;
+typedef std::shared_ptr<class ShaderProgram> ShaderProgramPtr;
 
 enum class DrawMode : uint32_t {
     Point = 0x0000,
@@ -27,9 +28,9 @@ class MR_API Draw final {
 public:
     static std::future<bool> Clear(uint32_t flags);
     static std::future<bool> ClearColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-    static std::future<bool> Primitive(DrawMode const& dmode, VertexBufferPtr const& vb, IndexBufferPtr const& ib = nullptr);
+    static std::future<bool> Primitive(ShaderProgramPtr const& program, DrawMode const& dmode, VertexBufferPtr const& vb, IndexBufferPtr const& ib = nullptr);
 protected:
-    static bool _Primitive(uint32_t dmode, VertexBuffer* vb, IndexBuffer* ib);
+    static bool _Primitive(ShaderProgram* program, uint32_t dmode, VertexBuffer* vb, IndexBuffer* ib);
     static bool _Clear(uint32_t flags);
     static bool _ClearColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 };

@@ -43,6 +43,14 @@ public:
         if(Info::GetVersion() == Info::GLVersion::VNotSupported) {
             MR_LOG_WARNING(Core::Init, "Current opengl version (\""+Info::GetVersionAsString()+"\") is not supported. Try to use OpenGL 4.0 features");
         }
+
+        glEnable (GL_DEPTH_TEST);
+        glDepthFunc (GL_LESS);
+
+        GLuint VertexArrayID;
+        glGenVertexArrays(1, &VertexArrayID);
+        glBindVertexArray(VertexArrayID);
+
         self->initStatus = true;
         self->critMtx.unlock();
 

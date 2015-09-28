@@ -34,7 +34,7 @@ class MR_API VertexDecl final {
     friend class VertexBuffer;
 public:
     struct Attrib {
-        uint8_t bindpoint;
+        uint8_t index; // attrib shader index
         uint8_t components_num;
         uint32_t datatype;
         uint8_t normalized;
@@ -59,12 +59,12 @@ public:
             uint32_t gl_data_type;
             uint8_t components_num;
             uint8_t offset;
-            uint8_t bindpoint;
+            uint8_t index;
             uint8_t size;
             bool normalized;
         };
 
-        Changer& Pos(PosDataType const& type = PosDataType::HalfFloat); // vec3<DataType>
+        Changer& Pos(PosDataType const& type = PosDataType::Float); // vec3<DataType>
         Changer& Color(ColorDataType const& type = ColorDataType::UByte); // vec4<DataType>
         Changer& Data(uint8_t sz); // skip data block, sizeof 'sz'
         void End();

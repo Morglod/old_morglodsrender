@@ -4,25 +4,47 @@
 #include <thread>
 #include <iostream>
 
-struct Vertex {
-    glm::vec3 pos;
-    uint8_t rgba[4];
-};
+const char* vertexShader =
+"#version 400 \n"
+"layout (location = 0) in vec3 pos; \n"
+"layout (location = 1) in vec4 color; \n"
+"out vec4 vcolor; \n"
+"uniform mat4 proj; \n"
+"uniform mat4 view; \n"
+"uniform mat4 model; \n"
+"void main() { \n"
+"   gl_Position.xyz = ((proj * view * model) * vec4(pos, 1.0)).xyz; \n"
+"   gl_Position.w = 1.0; \n"
+"   vcolor = color; \n"
+"} \n"
+;
+
+const char* fragmentShader =
+"#version 400 \n"
+"in vec4 vcolor; \n"
+"out vec3 fragColor; \n"
+"void main() { \n"
+"   fragColor = vcolor.xyz; \n"
+"} \n"
+;
 
 void main_logic(GLFWwindow* window) {
     using namespace mr;
 
     Core::Exec([](void*){ Info::PrintInfo(); }).wait();
 
-    static Vertex vertexData[] = {
-        {   glm::vec3(0,0.1f,-2),
-            255,0,0,255 },
-        {   glm::vec3(0,-0.1f,-2),
-            0,255,0,255 },
-        {   glm::vec3(0.1f,0,-2),
-            0,0,255,255 }
+    struct Vertex {
+        float xyz[3];
+        uint8_t color[4];
     };
-    const auto vertexDataMem = Memory::Ref(vertexData, sizeof(vertexData));
+
+    static Vertex vertexData[] = {
+        {0.0f,  0.5f,  0.0f, 255, 0, 0, 255},
+        {0.5f, -0.5f,  0.0f, 0, 255, 0, 255},
+        {-0.5f, -0.5f, 0.0f, 0, 0, 255, 0}
+    };
+
+    const auto vertexDataMem = Memory::Ref(vertexData, sizeof(Vertex) * 3);
 
     Buffer::CreationCmd cmd;
     cmd.map_after_creation = true;
@@ -30,24 +52,25 @@ void main_logic(GLFWwindow* window) {
 
     auto vdecl = VertexDecl::Create();
     auto vdef = vdecl->Begin();
-    vdef.Pos()
-        .Color(ColorDataType::UByte)
+    vdef.Pos().Color()
         .End();
 
     auto vbuffer = VertexBuffer::Create(buf.get(), vdecl, 3);
 
-    double lastTime = glfwGetTime(), curTime = glfwGetTime();
+    auto vshader = Shader::Create(ShaderType::Vertex, std::string(vertexShader));
+    auto fshader = Shader::Create(ShaderType::Fragment, std::string(fragmentShader));
+    auto prog = ShaderProgram::Create({vshader.get(), fshader.get()}).get();
 
-    Draw::ClearColor(255,0,0,255);
+    prog->UniformMat4("model", glm::mat4(1.0f));
+    prog->UniformMat4("view", glm::mat4(1.0f));
+    prog->UniformMat4("proj", glm::mat4(1.0f));
+
+    Draw::ClearColor(125,125,125,255);
     while(!glfwWindowShouldClose(window)) {
-        curTime = glfwGetTime();
-        MR_LOG_T_STD(curTime - lastTime);
-        lastTime = curTime;
+        Draw::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        Draw::Primitive(prog, DrawMode::Triangle, vbuffer, nullptr);
 
-        Draw::Clear(GL_COLOR_BUFFER_BIT);
-        Draw::Primitive(DrawMode::Point, vbuffer, nullptr);
-
-        Core::Exec([window](void*){ glfwSwapBuffers(window); }).wait();
+        Core::Exec([](void* wnd){ glfwSwapBuffers((GLFWwindow*)wnd); }, window).wait();
         glfwPollEvents();
     }
 }

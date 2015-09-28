@@ -59,6 +59,19 @@
 					<Add directory="build" />
 				</Linker>
 			</Target>
+			<Target title="Release_Sample_Cube">
+				<Option output="build/Sample_Cube" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="build/" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="tdm_gcc64" />
+				<Option use_console_runner="0" />
+				<Linker>
+					<Add library="libglfw3dll.a" />
+					<Add library="MRv2" />
+					<Add directory="build" />
+				</Linker>
+			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wnon-virtual-dtor" />
@@ -79,9 +92,10 @@
 			<Add option="-Wall" />
 			<Add option="-std=c++11" />
 		</Compiler>
-		<Unit filename="mr/buffers/buffer.hpp">
+		<Unit filename="mr/buffer/buffer.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
+			<Option target="Debug_Sample_Cube" />
 		</Unit>
 		<Unit filename="mr/build.hpp">
 			<Option target="Debug" />
@@ -99,7 +113,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="mr/draw.hpp" />
+		<Unit filename="mr/draw.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Debug_Sample_Cube" />
+		</Unit>
 		<Unit filename="mr/experimental/buffertransfer.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -112,7 +130,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="mr/ibuffer.hpp" />
+		<Unit filename="mr/ibuffer.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Debug_Sample_Cube" />
+		</Unit>
 		<Unit filename="mr/info.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -137,17 +159,36 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="mr/shaders/shader.hpp">
+		<Unit filename="mr/shader/program.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
-		</Unit>
-		<Unit filename="mr/thread/semaphore.hpp" />
-		<Unit filename="mr/vbuffer.hpp" />
-		<Unit filename="mr/vformat.hpp" />
-		<Unit filename="samples/sample_cube.cpp">
 			<Option target="Debug_Sample_Cube" />
 		</Unit>
-		<Unit filename="src/buffers/buffer.cpp">
+		<Unit filename="mr/shader/shader.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Debug_Sample_Cube" />
+		</Unit>
+		<Unit filename="mr/thread/semaphore.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Debug_Sample_Cube" />
+		</Unit>
+		<Unit filename="mr/vbuffer.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Debug_Sample_Cube" />
+		</Unit>
+		<Unit filename="mr/vformat.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Debug_Sample_Cube" />
+		</Unit>
+		<Unit filename="samples/sample_cube.cpp">
+			<Option target="Debug_Sample_Cube" />
+			<Option target="Release_Sample_Cube" />
+		</Unit>
+		<Unit filename="src/buffer/buffer.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
@@ -183,11 +224,23 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="src/shader/program.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/shader/shader.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/thread/semaphore.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="src/thread/util.hpp" />
+		<Unit filename="src/thread/util.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Debug_Sample_Cube" />
+		</Unit>
 		<Unit filename="src/vbuffer.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />

@@ -1,6 +1,6 @@
 #include "mr/ibuffer.hpp"
 #include "mr/pre/glew.hpp"
-#include "mr/buffers/buffer.hpp"
+#include "mr/buffer/buffer.hpp"
 
 namespace mr {
 

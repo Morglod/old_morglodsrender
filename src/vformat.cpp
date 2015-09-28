@@ -1,6 +1,7 @@
 #include "mr/vformat.hpp"
 #include "mr/core.hpp"
 #include "src/thread/util.hpp"
+#include "mr/log.hpp"
 
 #include "mr/pre/glew.hpp"
 
@@ -28,7 +29,7 @@ void VertexDecl::Changer::End() {
     decl._attribs.Resize(attribi);
     for(uint8_t i = 0, n = attribs.size(); i < n; ++i) {
         Attrib a; auto const& asrc = attribs[i];
-        a.bindpoint = asrc.bindpoint;
+        a.index = asrc.index;
         a.datatype = asrc.gl_data_type;
         a.normalized = (asrc.normalized ? 1 : 0);
         a.offset = asrc.offset;
@@ -39,7 +40,7 @@ void VertexDecl::Changer::End() {
 
 void VertexDecl::Changer::Push(uint32_t gl_dt, uint8_t comp_num, bool norm) {
     AttribDesc a;
-    a.bindpoint = attribi;
+    a.index = attribi;
     a.offset = offset;
     a.components_num = comp_num;
     a.gl_data_type = gl_dt;
@@ -47,7 +48,7 @@ void VertexDecl::Changer::Push(uint32_t gl_dt, uint8_t comp_num, bool norm) {
 
     const std::unordered_map<uint32_t, uint8_t> gl_data_type_size = {
         { GL_FLOAT, sizeof(float) },
-        { GL_HALF_FLOAT, sizeof(float)/2 },
+        { GL_HALF_FLOAT, sizeof(float) },//{ GL_HALF_FLOAT, sizeof(float)/2 },
         { GL_INT, sizeof(int32_t) },
         { GL_SHORT, sizeof(uint16_t) },
         { GL_UNSIGNED_BYTE, 1 },
@@ -88,8 +89,10 @@ std::future<bool> VertexDecl::Bind(uint32_t binding) {
 bool VertexDecl::_Bind(VertexDecl* decl, uint32_t binding) {
     for(uint8_t i = 0, n = decl->_attribs.num; i < n; ++i) {
         auto const& a = decl->_attribs.attribs[i];
-        glVertexAttribFormat(a.bindpoint, a.components_num, a.datatype, a.normalized, a.offset);
-        glVertexAttribBinding(a.bindpoint, binding);
+        glEnableVertexAttribArray(a.index);
+        //glVertexAttribPointer(a.index, a.components_num, a.datatype, a.normalized, 0, (void*)a.offset);
+        glVertexAttribFormat(a.index, a.components_num, a.datatype, a.normalized, a.offset);
+        glVertexAttribBinding(a.index, binding);
     }
     return true;
 }

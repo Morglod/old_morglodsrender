@@ -1,4 +1,4 @@
-#include "mr/buffers/buffer.hpp"
+#include "mr/buffer/buffer.hpp"
 #include "mr/pre/glew.hpp"
 #include "mr/log.hpp"
 #include "mr/core.hpp"
@@ -108,7 +108,6 @@ bool Buffer::_Create(Buffer* buf, MemoryPtr const& mem, uint32_t flags, bool map
     glCreateBuffers(1, &buffer);
     const auto size = mem->GetSize();
     glNamedBufferStorage(buffer, size, mem->GetPtr(), flags);
-
     buf->_id = buffer;
     buf->_size = size;
     buf->_mapped.mem = nullptr;

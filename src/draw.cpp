@@ -3,31 +3,34 @@
 #include "mr/core.hpp"
 #include "mr/vbuffer.hpp"
 #include "mr/ibuffer.hpp"
+#include "mr/shader/program.hpp"
 
 #include "mr/pre/glew.hpp"
 
 namespace mr {
 
-std::future<bool> Draw::Primitive(DrawMode const& dmode, VertexBufferPtr const& vb, IndexBufferPtr const& ib) {
+std::future<bool> Draw::Primitive(ShaderProgramPtr const& program, DrawMode const& dmode, VertexBufferPtr const& vb, IndexBufferPtr const& ib) {
     PromiseData<bool>* pdata = new PromiseData<bool>();
 
     auto vb_ = vb.get();
     IndexBuffer* ib_ = (ib == nullptr) ? nullptr : ib.get();
     uint32_t drawmode = (uint32_t)dmode;
+    ShaderProgram* prog = program.get();
 
     auto fut = pdata->promise.get_future();
 
-    Core::Exec([vb_, ib_, drawmode](void* arg){
+    Core::Exec([prog, vb_, ib_, drawmode](void* arg){
         PromiseData<bool>* parg = (PromiseData<bool>*)arg;
         PromiseData<bool>::Ptr free_guard(parg);
 
-        parg->promise.set_value(Draw::_Primitive(drawmode, vb_, ib_));
+        parg->promise.set_value(Draw::_Primitive(prog, drawmode, vb_, ib_));
     }, pdata);
 
     return fut;
 }
 
-bool Draw::_Primitive(uint32_t dmode, VertexBuffer* vb, IndexBuffer* ib) {
+bool Draw::_Primitive(ShaderProgram* program, uint32_t dmode, VertexBuffer* vb, IndexBuffer* ib) {
+    glUseProgram(program->_id);
     VertexBuffer::_Bind(vb, 0, 0);
     if(ib) {
         IndexBuffer::_Bind(ib);
