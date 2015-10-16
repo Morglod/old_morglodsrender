@@ -1,6 +1,7 @@
 #pragma once
 
 #include "build.hpp"
+#include "gl/types.hpp"
 
 #include <memory>
 
@@ -8,11 +9,6 @@ namespace mr {
 
 typedef std::shared_ptr<class Buffer> BufferPtr;
 typedef std::shared_ptr<class IndexBuffer> IndexBufferPtr;
-
-enum class IndexType : uint32_t {
-    UShort = 0x1403,
-    UInt = 0x1405
-};
 
 class MR_API IndexBuffer final {
     friend class Draw;

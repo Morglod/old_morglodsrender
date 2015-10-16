@@ -2,6 +2,7 @@
 #include "mr/core.hpp"
 #include "src/thread/util.hpp"
 #include "mr/log.hpp"
+#include "mr/gl/types.hpp"
 
 #include "mr/pre/glew.hpp"
 
@@ -28,17 +29,17 @@ VertexDecl::BindPoint::~BindPoint() {
 }
 
 VertexDecl::Changer& VertexDecl::Changer::Pos(PosDataType const& type, uint8_t bindpoint) {
-    Push(bindpoint, (uint32_t)type, 3, false);
+    Push(bindpoint, (uint32_t)type, 3, false, false);
     return *this;
 }
 
 VertexDecl::Changer& VertexDecl::Changer::Color(ColorDataType const& type, uint8_t bindpoint) {
-    Push(bindpoint, (uint32_t)type, 4, true);
+    Push(bindpoint, (uint32_t)type, 4, true, false);
     return *this;
 }
 
 VertexDecl::Changer& VertexDecl::Changer::Data(uint8_t sz, uint8_t bindpoint) {
-    Push(bindpoint, GL_BYTE, sz, false);
+    Push(bindpoint, GL_BYTE, sz, false, true);
     return *this;
 }
 
@@ -54,6 +55,7 @@ void VertexDecl::Changer::End() {
         BindPoint& dst_bindpoint = decl._map.bindpoints[ibp++];
         dst_bindpoint.Resize(src_attribs.second.attribs.size());
         dst_bindpoint.bindpoint = src_attribs.first;
+        dst_bindpoint.stride = src_attribs.second.offset;
         for(uint8_t i = 0, n = src_attribs.second.attribs.size(); i < n; ++i) {
             Attrib dst_a;
             AttribDesc const& src_a = src_attribs.second.attribs[i];
@@ -65,36 +67,32 @@ void VertexDecl::Changer::End() {
             dst_bindpoint.attribs[i] = dst_a;
 
             decl._size += src_a.size;
-            dst_bindpoint.stride += src_a.size;
         }
     }
 }
 
-void VertexDecl::Changer::Push(uint8_t bindpoint_index, uint32_t gl_dt, uint8_t comp_num, bool norm) {
+void VertexDecl::Changer::Push(uint8_t bindpoint_index, uint32_t gl_dt, uint8_t comp_num, bool norm, bool offsetOnly) {
+    const uint32_t dt_size = (gl_dt != GL_HALF_FLOAT) ? sizeof_gl(gl_dt) : sizeof(float);
+    const uint8_t attrib_size = dt_size * comp_num;
+
     BindPointDesc& bindpoint = bindpoints[bindpoint_index];
+
+    if(offsetOnly) {
+        bindpoint.offset += attrib_size;
+        return;
+    }
+
     AttribDesc a;
     a.index = bindpoint.attribi;
     a.offset = bindpoint.offset;
     a.components_num = comp_num;
     a.gl_data_type = gl_dt;
     a.normalized = norm;
-
-    const std::unordered_map<uint32_t, uint8_t> gl_data_type_size = {
-        { GL_FLOAT, sizeof(float) },
-        { GL_HALF_FLOAT, sizeof(float) },//{ GL_HALF_FLOAT, sizeof(float)/2 },
-        { GL_INT, sizeof(int32_t) },
-        { GL_SHORT, sizeof(uint16_t) },
-        { GL_UNSIGNED_BYTE, 1 },
-        { GL_UNSIGNED_SHORT, sizeof(uint16_t) },
-        { GL_UNSIGNED_INT, sizeof(uint32_t) }
-    };
-
-    const uint8_t sz = gl_data_type_size.at(gl_dt) * comp_num;
-    a.size = sz;
+    a.size = attrib_size;
 
     bindpoint.attribs.push_back(a);
     ++(bindpoint.attribi);
-    bindpoint.offset += sz;
+    bindpoint.offset += attrib_size;
 }
 
 VertexDecl::Changer::Changer(VertexDecl& d) : decl(d) {
@@ -109,11 +107,13 @@ std::future<bool> VertexDecl::Bind() {
     VertexDecl* vd = this;
     auto fut = pdata->promise.get_future();
 
-    Core::Exec([vd](void* arg){
+    Core::Exec([vd](void* arg)  -> uint8_t{
         PromiseData<bool>* parg = (PromiseData<bool>*)arg;
         PromiseData<bool>::Ptr free_guard(parg);
 
         parg->promise.set_value(VertexDecl::_Bind(vd));
+
+        return 0;
     }, pdata);
 
     return fut;

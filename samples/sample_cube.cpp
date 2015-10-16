@@ -1,17 +1,21 @@
 #include "../mr/mr.hpp"
 
+#include "../mr/pre/glew.hpp"
 #include <GLFW/glfw3.h>
 #include <thread>
 #include <iostream>
+
 
 const char* vertexShader =
 "#version 400 \n"
 "layout (location = 0) in vec3 pos; \n"
 "layout (location = 1) in vec4 color; \n"
 "out vec4 vcolor; \n"
-"uniform mat4 proj; \n"
-"uniform mat4 view; \n"
-"uniform mat4 model; \n"
+"uniform Mat { \n"
+"   mat4 proj; \n"
+"   mat4 view; \n"
+"   mat4 model; \n"
+"}; \n"
 "void main() { \n"
 "   gl_Position.xyz = ((proj * view * model) * vec4(pos, 1.0)).xyz; \n"
 "   gl_Position.w = 1.0; \n"
@@ -31,49 +35,74 @@ const char* fragmentShader =
 void main_logic(GLFWwindow* window) {
     using namespace mr;
 
-    Core::Exec([](void*){ Info::PrintInfo(); }).wait();
+    VertexBufferPtr vbuffer = nullptr;
+    ShaderProgramPtr prog = nullptr;
+    glm::mat4* ubo_mat = nullptr;
 
-    struct Vertex {
-        float xyz[3];
-        uint8_t color[4];
-    };
+    Core::Exec([window, &vbuffer, &prog, &ubo_mat](void*) -> uint8_t {
+        Info::PrintInfo();
 
-    static Vertex vertexData[] = {
-        {0.0f,  0.5f,  0.0f, 255, 0, 0, 255},
-        {0.5f, -0.5f,  0.0f, 0, 255, 0, 255},
-        {-0.5f, -0.5f, 0.0f, 0, 0, 255, 0}
-    };
+        struct Vertex {
+            float xyz[3];
+            uint8_t color[4];
+        };
 
-    const auto vertexDataMem = Memory::Ref(vertexData, sizeof(Vertex) * 3);
+        static Vertex vertexData[] = {
+            {0.0f,  0.5f,  0.0f, 255,   0,   0, 255},
+            {0.5f, -0.5f,  0.0f,   0, 255,   0, 255},
+            {-0.5f,-0.5f,  0.0f,   0,   0, 255,   0}
+        };
 
-    Buffer::CreationCmd cmd;
-    cmd.map_after_creation = true;
-    auto buf = Buffer::Create(vertexDataMem, cmd);
+        static glm::mat4 uboData[] = {
+            glm::mat4(1.0f), glm::mat4(1.0f), glm::mat4(1.0f)
+        };
 
-    auto vdecl = VertexDecl::Create();
-    auto vdef = vdecl->Begin();
-    vdef.Pos()
-        .Color()
-        .End();
+        const auto vertexDataMem = Memory::Ref(vertexData, sizeof(Vertex) * 3);
+        const auto uboDataMem = Memory::Ref(uboData, sizeof(glm::mat4) * 3);
 
-    auto vbuffer = VertexBuffer::Create(buf.get(), vdecl, 3);
+        Buffer::CreationFlags flags;
+        flags.map_after_creation = true;
+        auto buf = Buffer::Create(vertexDataMem, flags);
+        auto ubo = Buffer::Create(uboDataMem, flags).get();
 
-    auto vshader = Shader::Create(ShaderType::Vertex, std::string(vertexShader));
-    auto fshader = Shader::Create(ShaderType::Fragment, std::string(fragmentShader));
-    auto prog = ShaderProgram::Create({vshader.get(), fshader.get()}).get();
+        auto vdecl = VertexDecl::Create();
+        auto vdef = vdecl->Begin();
+        vdef.Pos()
+            .Color()
+            .End();
 
-    prog->UniformMat4("model", glm::mat4(1.0f));
-    prog->UniformMat4("view", glm::mat4(1.0f));
-    prog->UniformMat4("proj", glm::mat4(1.0f));
+        vbuffer = VertexBuffer::Create(buf.get(), vdecl, 3);
 
-    Draw::ClearColor(125,125,125,255);
+        auto vshader = Shader::Create(ShaderType::Vertex, std::string(vertexShader));
+        auto fshader = Shader::Create(ShaderType::Fragment, std::string(fragmentShader));
+        prog = ShaderProgram::Create({vshader.get(), fshader.get()}).get();
+
+        prog->UniformBuffer("Mat", ubo, 0);
+        ubo_mat = (glm::mat4*) ubo->GetMapState().mem;
+
+        Draw::ClearColor(125,125,125,255).wait();
+
+    float a = 0.0f;
     while(!glfwWindowShouldClose(window)) {
-        Draw::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        Draw::Primitive(prog, DrawMode::Triangle, vbuffer, nullptr);
+        //Core::Exec([&a, &vbuffer, &prog, &ubo_mat](void*){
+            //Draw::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            //Draw::Primitive(prog, DrawMode::Triangle, vbuffer, nullptr);
+            glUseProgram(prog->_id);
+            VertexBuffer::_Bind(vbuffer.get(), 0, 0);
+            const uint32_t baseInstance = 0, instancesNum = 1, baseVertex = 0, baseIndex = 0;
+            glDrawArraysInstancedBaseInstance((uint32_t)DrawMode::Triangle, baseVertex, vbuffer->_num, instancesNum, baseInstance);
 
-        Core::Exec([](void* wnd){ glfwSwapBuffers((GLFWwindow*)wnd); }, window).wait();
+            ubo_mat[2] = glm::rotate(a, glm::vec3(1,1,1));
+            a += 0.0001f;
+
+     //       Core::Swap()/*;
+     //   })*/.wait();
+        glfwSwapBuffers(window);
         glfwPollEvents();
     }
+    return 0;
+    }).wait();
 }
 
 class glfwContextMgr : public mr::ContextMgr {
@@ -86,6 +115,10 @@ public:
 
     void* GetMainContext() override {
         return mainWindow;
+    }
+
+    void Swap() override {
+        glfwSwapBuffers((GLFWwindow*)mainWindow);
     }
 
     glfwContextMgr(void* wnd) : mainWindow(wnd) {}

@@ -39,68 +39,99 @@ void _GetBufferInfo(uint32_t buffer, _BufferInfo& info) {
 
 namespace mr {
 
-std::future<BufferPtr> Buffer::Create(MemoryPtr const& mem, CreationCmd const& cmd) {
-    uint32_t flags_i =  (cmd.client_storage ? GL_CLIENT_STORAGE_BIT : 0) |
-                        (cmd.coherent ? GL_MAP_COHERENT_BIT : 0) |
-                        (cmd.dynamic ? GL_DYNAMIC_STORAGE_BIT : 0) |
-                        (cmd.persistent ? GL_MAP_PERSISTENT_BIT : 0) |
-                        (cmd.read ? GL_MAP_READ_BIT : 0) |
-                        (cmd.write ? GL_MAP_WRITE_BIT : 0);
+std::future<BufferPtr> Buffer::Create(MemoryPtr const& mem, CreationFlags const& flags) {
+    uint32_t flags_i =  (flags.client_storage ? GL_CLIENT_STORAGE_BIT : 0) |
+                        (flags.coherent ? GL_MAP_COHERENT_BIT : 0) |
+                        (flags.dynamic ? GL_DYNAMIC_STORAGE_BIT : 0) |
+                        (flags.persistent ? GL_MAP_PERSISTENT_BIT : 0) |
+                        (flags.read ? GL_MAP_READ_BIT : 0) |
+                        (flags.write ? GL_MAP_WRITE_BIT : 0);
 
-    bool map = cmd.map_after_creation;
-    PromiseData<BufferPtr>* pdata = new PromiseData<BufferPtr>();
-    auto fut = pdata->promise.get_future();
+    bool map = flags.map_after_creation;
 
-    Core::Exec([mem, flags_i, map](void* arg){
-        PromiseData<BufferPtr>* parg = (PromiseData<BufferPtr>*)arg;
-        PromiseData<BufferPtr>::Ptr free_guard(parg);
+    if(!Core::IsWorkerThread()) {
+        std::promise<BufferPtr> promise;
+        auto futur = promise.get_future();
+        BufferPtr buf = BufferPtr(new Buffer());
+        if(!Buffer::_Create(buf.get(), mem, flags_i, map))
+            promise.set_value(nullptr);
+        else
+            promise.set_value(buf);
+        return futur;
+    } else {
+        PromiseData<BufferPtr>* pdata = new PromiseData<BufferPtr>();
+        auto fut = pdata->promise.get_future();
 
-        Buffer* buf = new Buffer();
-        if(!Buffer::_Create(buf, mem, flags_i, map)) {
-            parg->promise.set_value(nullptr);
-            return;
-        }
-        parg->promise.set_value(BufferPtr(buf));
-    }, pdata);
+        Core::Exec([mem, flags_i, map](void* arg) -> uint8_t {
+            PromiseData<BufferPtr>* parg = (PromiseData<BufferPtr>*)arg;
+            PromiseData<BufferPtr>::Ptr free_guard(parg);
 
-    return fut;
+            BufferPtr buf = BufferPtr(new Buffer());
+            if(!Buffer::_Create(buf.get(), mem, flags_i, map)) {
+                parg->promise.set_value(nullptr);
+                return 1;
+            }
+            parg->promise.set_value(buf);
+            return 0;
+        }, pdata);
+
+        return fut;
+    }
 }
 
-std::future<Buffer::MappedMem> Buffer::Map(uint32_t length, Buffer::MapCmd const& cmd, uint32_t offset) {
-    uint32_t flags_i =  (cmd.coherent ? GL_MAP_COHERENT_BIT : 0) |
-                        (cmd.persistent ? GL_MAP_PERSISTENT_BIT : 0) |
-                        (cmd.read ? GL_MAP_READ_BIT : 0) |
-                        (cmd.write ? GL_MAP_WRITE_BIT : 0);
+std::future<Buffer::MappedMem> Buffer::Map(uint32_t length, Buffer::MapFlags const& flags, uint32_t offset) {
+    uint32_t flags_i =  (flags.coherent ? GL_MAP_COHERENT_BIT : 0) |
+                        (flags.persistent ? GL_MAP_PERSISTENT_BIT : 0) |
+                        (flags.read ? GL_MAP_READ_BIT : 0) |
+                        (flags.write ? GL_MAP_WRITE_BIT : 0);
 
-    PromiseData<Buffer::MappedMem>* pdata = new PromiseData<Buffer::MappedMem>();
-    Buffer* buf = this;
-    auto fut = pdata->promise.get_future();
+    if(Core::IsWorkerThread()) {
+        std::promise<Buffer::MappedMem> promise;
+        auto futur = promise.get_future();
+        Buffer::_Map(this, offset, length, flags_i);
+        promise.set_value(this->_mapState);
+        return futur;
+    } else {
+        PromiseData<Buffer::MappedMem>* pdata = new PromiseData<Buffer::MappedMem>();
+        Buffer* buf = this;
+        auto fut = pdata->promise.get_future();
+        Core::Exec([flags_i, length, offset, buf](void* arg) -> uint8_t{
+            PromiseData<Buffer::MappedMem>* parg = (PromiseData<Buffer::MappedMem>*)arg;
+            PromiseData<Buffer::MappedMem>::Ptr free_guard(parg);
 
-    Core::Exec([flags_i, length, offset, buf](void* arg){
-        PromiseData<Buffer::MappedMem>* parg = (PromiseData<Buffer::MappedMem>*)arg;
-        PromiseData<Buffer::MappedMem>::Ptr free_guard(parg);
+            Buffer::_Map(buf, offset, length, flags_i);
+            parg->promise.set_value(buf->_mapState);
 
-        Buffer::_Map(buf, offset, length, flags_i);
-        parg->promise.set_value(buf->_mapState);
-    }, pdata);
-
-    return fut;
+            return 0;
+        }, pdata);
+        return fut;
+    }
 }
 
 std::future<void> Buffer::UnMap() {
-    PromiseData<void>* pdata = new PromiseData<void>();
-    Buffer* buf = this;
-    auto fut = pdata->promise.get_future();
+    if(Core::IsWorkerThread()) {
+        std::promise<void> promise;
+        auto futur = promise.get_future();
+        Buffer::_UnMap(this);
+        promise.set_value();
+        return futur;
+    } else {
+        PromiseData<void>* pdata = new PromiseData<void>();
+        Buffer* buf = this;
+        auto fut = pdata->promise.get_future();
 
-    Core::Exec([buf](void* arg){
-        PromiseData<void>* parg = (PromiseData<void>*)arg;
-        PromiseData<void>::Ptr free_guard(parg);
+        Core::Exec([buf](void* arg) -> uint8_t{
+            PromiseData<void>* parg = (PromiseData<void>*)arg;
+            PromiseData<void>::Ptr free_guard(parg);
 
-        Buffer::_UnMap(buf);
-        parg->promise.set_value();
-    }, pdata);
+            Buffer::_UnMap(buf);
+            parg->promise.set_value();
 
-    return fut;
+            return 0;
+        }, pdata);
+
+        return fut;
+    }
 }
 
 bool Buffer::_Create(Buffer* buf, MemoryPtr const& mem, uint32_t flags, bool map) {
@@ -121,7 +152,7 @@ bool Buffer::_Create(Buffer* buf, MemoryPtr const& mem, uint32_t flags, bool map
 
 bool Buffer::_Map(Buffer* buf, uint32_t offset, uint32_t length, uint32_t flags) {
     const uint32_t buffer = buf->_id;
-    if(buf->_mapState.mem != nullptr) Buffer::_UnMap(buf);
+    if(buf->IsMapped()) Buffer::_UnMap(buf);
     buf->_mapState.mem = glMapNamedBufferRange(buffer, offset, length, flags);
     buf->_mapState.offset = offset;
     buf->_mapState.length = length;
@@ -132,6 +163,9 @@ bool Buffer::_UnMap(Buffer* buf) {
     glUnmapNamedBuffer(buf->_id);
     buf->_mapState = MappedMem();
     return true;
+}
+
+bool Buffer::_MakeResident(Buffer* buf, bool resident) {
 }
 
 Buffer::Buffer() : _id(0), _size(0), _mapState() {

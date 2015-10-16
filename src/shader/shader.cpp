@@ -10,23 +10,36 @@ namespace mr {
 Shader::Shader() : _id(0) {}
 
 std::future<ShaderPtr> Shader::Create(ShaderType const& type, std::string const& code) {
-    PromiseData<ShaderPtr>* pdata = new PromiseData<ShaderPtr>();
-    auto fut = pdata->promise.get_future();
-    uint32_t stype = (uint32_t)type;
+    if(Core::IsWorkerThread()) {
+        std::promise<ShaderPtr> promise;
+        auto futur = promise.get_future();
+        ShaderPtr sh = ShaderPtr(new Shader());
+        if(!Shader::_Create(sh.get(), (const uint32_t)type, code))
+            promise.set_value(nullptr);
+        else
+            promise.set_value(sh);
+        return futur;
+    }
+    else {
+        PromiseData<ShaderPtr>* pdata = new PromiseData<ShaderPtr>();
+        auto fut = pdata->promise.get_future();
+        const uint32_t stype = (const uint32_t)type;
 
-    Core::Exec([code, stype](void* arg){
-        PromiseData<ShaderPtr>* parg = (PromiseData<ShaderPtr>*)arg;
-        PromiseData<ShaderPtr>::Ptr free_guard(parg);
+        Core::Exec([code, stype](void* arg) -> uint8_t{
+            PromiseData<ShaderPtr>* parg = (PromiseData<ShaderPtr>*)arg;
+            PromiseData<ShaderPtr>::Ptr free_guard(parg);
 
-        Shader* shader = new Shader();
-        if(!Shader::_Create(shader, stype, code)) {
-            parg->promise.set_value(nullptr);
-            return;
-        }
-        parg->promise.set_value(ShaderPtr(shader));
-    }, pdata);
+            ShaderPtr shader = ShaderPtr(new Shader());
+            if(!Shader::_Create(shader.get(), stype, code)) {
+                parg->promise.set_value(nullptr);
+                return 1;
+            }
+            parg->promise.set_value(shader);
+            return 0;
+        }, pdata);
 
-    return fut;
+        return fut;
+    }
 }
 
 bool Shader::_Create(Shader* shader, uint32_t const& type, std::string const& code) {

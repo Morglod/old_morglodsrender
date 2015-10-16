@@ -11,20 +11,21 @@ namespace mr {
 typedef std::shared_ptr<class Buffer> BufferPtr;
 
 class MR_API Buffer {
+    friend class CmdQueue;
 public:
-    struct MapCmd {
+    struct MapFlags {
         bool    read = false,
                 write = true;
         bool persistent = true;
         bool coherent = true;
-        MapCmd() = default;
+        MapFlags() = default;
     };
 
-    struct CreationCmd : public MapCmd {
+    struct CreationFlags : public MapFlags {
         bool dynamic = false;
         bool client_storage = false;
         bool map_after_creation = false;
-        CreationCmd() = default;
+        CreationFlags() = default;
     };
 
     struct MappedMem {
@@ -33,19 +34,21 @@ public:
         uint32_t length = 0;
     };
 
-    static std::future<BufferPtr> Create(MemoryPtr const& mem, CreationCmd const& cmd);
-    std::future<MappedMem> Map(uint32_t length, MapCmd const& cmd, uint32_t offset = 0);
+    static std::future<BufferPtr> Create(MemoryPtr const& mem, CreationFlags const& flags);
+    std::future<MappedMem> Map(uint32_t length, MapFlags const& flags, uint32_t offset = 0);
     std::future<void> UnMap();
 
     //static std::future<bool> Write(MemoryPtr const& mem); map and write mapped async
     inline MappedMem GetMapState() const;
     inline uint32_t GetId() const;
+    inline bool IsMapped() const;
 protected:
     Buffer();
 private:
     static bool _Create(Buffer* buf, MemoryPtr const& mem, uint32_t flags, bool map);
     static bool _Map(Buffer* buf, uint32_t offset, uint32_t length, uint32_t flags);
     static bool _UnMap(Buffer* buf);
+    static bool _MakeResident(Buffer* buf, bool resident); // if resident == false, make NonResident
 
     uint32_t _id;
     int32_t _size;
@@ -58,6 +61,10 @@ inline Buffer::MappedMem Buffer::GetMapState() const {
 
 inline uint32_t Buffer::GetId() const {
     return _id;
+}
+
+inline bool Buffer::IsMapped() const {
+    return _mapState.mem != nullptr;
 }
 
 }

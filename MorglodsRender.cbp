@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="MorglodsRender" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="BUILD/dMorglodsRender" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="obj/Debug/" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-pg" />
+					<Add option="-g" />
+				</Compiler>
+				<Linker>
+					<Add option="-pg -lgmon" />
+					<Add library="libMorglodsUtils_debug.a" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="BUILD/MorglodsRender" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="BUILD" />
+				<Option object_output="obj/Release/" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Option createStaticLib="1" />
+				<MakeCommands>
+					<Build command="" />
+					<CompileFile command="" />
+					<Clean command="" />
+					<DistClean command="" />
+					<AskRebuildNeeded command="" />
+					<SilentBuild command=" &gt; $(CMD_NULL)" />
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-std=c++11" />
+			<Add directory="C:/Libs/Projects/MorglodsUtils" />
+		</Compiler>
+		<Linker>
+			<Add library="glu32" />
+			<Add library="opengl32" />
+			<Add library="libglew32.dll.a" />
+			<Add library="gdi32" />
+			<Add library="winmm" />
+			<Add library="pthread" />
+			<Add library="libassimp.dll.a" />
+			<Add library="FreeImage" />
+		</Linker>
+		<Unit filename="code/Buffers/BufferManager.cpp" />
+		<Unit filename="code/Buffers/BufferManager.hpp" />
+		<Unit filename="code/Buffers/BufferUsage.hpp" />
+		<Unit filename="code/Buffers/Buffers.cpp" />
+		<Unit filename="code/Buffers/Buffers.hpp" />
+		<Unit filename="code/Buffers/BuffersConfig.hpp" />
+		<Unit filename="code/Buffers/BuffersInterfaces.hpp" />
+		<Unit filename="code/Buffers/VirtualBuffer.cpp" />
+		<Unit filename="code/Buffers/VirtualBuffer.hpp" />
+		<Unit filename="code/BuildConfig.hpp" />
+		<Unit filename="code/Collisions/CollisionBoxes.cpp" />
+		<Unit filename="code/Collisions/CollisionBoxes.hpp" />
+		<Unit filename="code/Collisions/CollisionInterfaces.hpp" />
+		<Unit filename="code/Config.hpp" />
+		<Unit filename="code/Core.cpp" />
+		<Unit filename="code/Core.hpp" />
+		<Unit filename="code/CoreObjects.cpp" />
+		<Unit filename="code/CoreObjects.hpp" />
+		<Unit filename="code/Geometry/BuiltInGeometry.cpp" />
+		<Unit filename="code/Geometry/BuiltInGeometry.hpp" />
+		<Unit filename="code/Geometry/DrawModes.hpp" />
+		<Unit filename="code/Geometry/GeometryBuffer.cpp" />
+		<Unit filename="code/Geometry/GeometryBuffer.hpp" />
+		<Unit filename="code/Geometry/GeometryBuilder.cpp" />
+		<Unit filename="code/Geometry/GeometryBuilder.hpp" />
+		<Unit filename="code/Geometry/GeometryDrawParams.cpp" />
+		<Unit filename="code/Geometry/GeometryDrawParams.hpp" />
+		<Unit filename="code/Geometry/GeometryFormats.cpp" />
+		<Unit filename="code/Geometry/GeometryFormats.hpp" />
+		<Unit filename="code/Geometry/GeometryInterfaces.hpp" />
+		<Unit filename="code/Geometry/GeometryManager.cpp" />
+		<Unit filename="code/Geometry/GeometryManager.hpp" />
+		<Unit filename="code/Geometry/GeometryObject.cpp" />
+		<Unit filename="code/Geometry/GeometryObject.hpp" />
+		<Unit filename="code/Geometry/IndexBuffer.cpp" />
+		<Unit filename="code/Geometry/IndexBuffer.hpp" />
+		<Unit filename="code/Geometry/Mesh.cpp" />
+		<Unit filename="code/Geometry/Mesh.hpp" />
+		<Unit filename="code/Geometry/MeshInterfaces.hpp" />
+		<Unit filename="code/Geometry/VertexBuffer.cpp" />
+		<Unit filename="code/Geometry/VertexBuffer.hpp" />
+		<Unit filename="code/MachineInfo.cpp" />
+		<Unit filename="code/MachineInfo.hpp" />
+		<Unit filename="code/Materials/Material.cpp" />
+		<Unit filename="code/Materials/Material.hpp" />
+		<Unit filename="code/Materials/MaterialInterfaces.hpp" />
+		<Unit filename="code/Materials/MaterialsConfig.hpp" />
+		<Unit filename="code/Models/ModelInterfaces.hpp" />
+		<Unit filename="code/Models/Models.cpp" />
+		<Unit filename="code/Models/Models.hpp" />
+		<Unit filename="code/MorglodsRender.hpp" />
+		<Unit filename="code/Postprocessing/PostprocessConfig.hpp" />
+		<Unit filename="code/Postprocessing/PostprocessInterfaces.hpp" />
+		<Unit filename="code/Postprocessing/PostprocessStep.cpp" />
+		<Unit filename="code/Postprocessing/PostprocessStep.hpp" />
+		<Unit filename="code/Query.cpp" />
+		<Unit filename="code/Query.hpp" />
+		<Unit filename="code/RTT/FrameBuffer.cpp" />
+		<Unit filename="code/RTT/FrameBuffer.hpp" />
+		<Unit filename="code/RTT/RTTManager.cpp" />
+		<Unit filename="code/RTT/RTTManager.hpp" />
+		<Unit filename="code/RTT/RenderBuffer.cpp" />
+		<Unit filename="code/RTT/RenderBuffer.hpp" />
+		<Unit filename="code/Scene/Entity.cpp" />
+		<Unit filename="code/Scene/Entity.hpp" />
+		<Unit filename="code/Scene/Node.cpp" />
+		<Unit filename="code/Scene/Node.hpp" />
+		<Unit filename="code/Scene/PerspectiveCamera.cpp" />
+		<Unit filename="code/Scene/PerspectiveCamera.hpp" />
+		<Unit filename="code/Scene/SceneInterfaces.hpp" />
+		<Unit filename="code/Scene/SceneLoader.cpp" />
+		<Unit filename="code/Scene/SceneLoader.hpp" />
+		<Unit filename="code/Scene/SceneManager.cpp" />
+		<Unit filename="code/Scene/SceneManager.hpp" />
+		<Unit filename="code/Scene/SceneManagerInterfaces.hpp" />
+		<Unit filename="code/Scene/Transformation.cpp" />
+		<Unit filename="code/Scene/Transformation.hpp" />
+		<Unit filename="code/Shaders/BaseShaderFS.glsl" />
+		<Unit filename="code/Shaders/BaseShaderVS.glsl" />
+		<Unit filename="code/Shaders/ShaderCodeDefault.hpp" />
+		<Unit filename="code/Shaders/ShaderCompiler.cpp" />
+		<Unit filename="code/Shaders/ShaderCompiler.hpp" />
+		<Unit filename="code/Shaders/ShaderConfig.hpp" />
+		<Unit filename="code/Shaders/ShaderGenerator.cpp" />
+		<Unit filename="code/Shaders/ShaderGenerator.hpp" />
+		<Unit filename="code/Shaders/ShaderInterfaces.cpp" />
+		<Unit filename="code/Shaders/ShaderInterfaces.hpp" />
+		<Unit filename="code/Shaders/ShaderManager.cpp" />
+		<Unit filename="code/Shaders/ShaderManager.hpp" />
+		<Unit filename="code/Shaders/ShaderObjects.cpp" />
+		<Unit filename="code/Shaders/ShaderObjects.hpp" />
+		<Unit filename="code/Shaders/ShaderProgramObject.cpp" />
+		<Unit filename="code/Shaders/ShaderProgramObject.hpp" />
+		<Unit filename="code/Shaders/ShaderTypes.hpp" />
+		<Unit filename="code/Shaders/ShaderUBO.cpp" />
+		<Unit filename="code/Shaders/ShaderUBO.hpp" />
+		<Unit filename="code/Shaders/ShaderUniforms.cpp" />
+		<Unit filename="code/Shaders/ShaderUniforms.hpp" />
+		<Unit filename="code/Shadows/ShadowMap.cpp" />
+		<Unit filename="code/Shadows/ShadowMap.hpp" />
+		<Unit filename="code/SimpleApp/ContextGLFW.hpp" />
+		<Unit filename="code/SimpleApp/SimpleApp.hpp" />
+		<Unit filename="code/SimpleApp/SimpleGLFWApp.hpp" />
+		<Unit filename="code/SimpleApp/SimpleSDLApp_todo.hpp" />
+		<Unit filename="code/StateCache.cpp" />
+		<Unit filename="code/StateCache.hpp" />
+		<Unit filename="code/TGPUObjectManager.hpp" />
+		<Unit filename="code/Textures/Texture.cpp" />
+		<Unit filename="code/Textures/Texture.hpp" />
+		<Unit filename="code/Textures/Texture2D.cpp" />
+		<Unit filename="code/Textures/Texture2D.hpp" />
+		<Unit filename="code/Textures/TextureData.cpp" />
+		<Unit filename="code/Textures/TextureData.hpp" />
+		<Unit filename="code/Textures/TextureManager.cpp" />
+		<Unit filename="code/Textures/TextureManager.hpp" />
+		<Unit filename="code/Textures/TextureSettings.cpp" />
+		<Unit filename="code/Textures/TextureSettings.hpp" />
+		<Unit filename="code/Textures/TextureStreamer2D.cpp" />
+		<Unit filename="code/Textures/TextureStreamer2D.hpp" />
+		<Unit filename="code/Textures/TextureUBO.cpp" />
+		<Unit filename="code/Textures/TextureUBO.hpp" />
+		<Unit filename="code/Types.cpp" />
+		<Unit filename="code/Types.hpp" />
+		<Unit filename="code/Utils/Containers.cpp" />
+		<Unit filename="code/Utils/Containers.hpp" />
+		<Unit filename="code/Utils/Debug.hpp" />
+		<Unit filename="code/Utils/EmptyPlugin.cpp" />
+		<Unit filename="code/Utils/Exception.cpp" />
+		<Unit filename="code/Utils/Exception.hpp" />
+		<Unit filename="code/Utils/FilesIO.cpp" />
+		<Unit filename="code/Utils/FilesIO.hpp" />
+		<Unit filename="code/Utils/Log.cpp" />
+		<Unit filename="code/Utils/Log.hpp" />
+		<Unit filename="code/Utils/Memory.cpp" />
+		<Unit filename="code/Utils/Memory.hpp" />
+		<Unit filename="code/Utils/PluginSystem.cpp" />
+		<Unit filename="code/Utils/PluginSystem.hpp" />
+		<Unit filename="code/Utils/Pointers.hpp" />
+		<Unit filename="code/Utils/Serialization.cpp" />
+		<Unit filename="code/Utils/Serialization.hpp" />
+		<Unit filename="code/Utils/UIUtil.cpp" />
+		<Unit filename="code/Utils/UIUtil.hpp" />
+		<Unit filename="code/Utils/Worker.hpp" />
+		<Unit filename="code/Viewports/Viewport.cpp" />
+		<Unit filename="code/Viewports/Viewport.hpp" />
+		<Unit filename="code/_Anim.cpp" />
+		<Unit filename="code/_Anim.hpp" />
+		<Unit filename="code/pre_glm.hpp" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<lib_finder disable_auto="1" />
+			<DoxyBlocks>
+				<comment_style block="0" line="0" />
+				<doxyfile_project />
+				<doxyfile_build />
+				<doxyfile_warnings />
+				<doxyfile_output />
+				<doxyfile_dot />
+				<general />
+			</DoxyBlocks>
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

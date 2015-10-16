@@ -14,6 +14,14 @@ MemoryPtr Memory::Copy(void* mem, size_t sz) {
     return MemoryPtr(new Memory(local, sz, true));
 }
 
+MemoryPtr Memory::Own(void* mem, size_t sz) {
+    return MemoryPtr(new Memory(mem, sz, true));
+}
+
+MemoryPtr Memory::Zero() {
+    return MemoryPtr(new Memory(0, 0, false));
+}
+
 Memory::Memory(void* ptr, size_t sz, bool own) : _ptr(ptr), _size(sz), _own(own) {}
 Memory::~Memory() {
     if(_ptr == nullptr) return;

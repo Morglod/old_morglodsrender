@@ -11,7 +11,7 @@ namespace mr {
 class MR_API Semaphore {
 public:
     void Notify();
-    void Wait();
+    bool Wait(); // return true, if ok. false on error while waiting (or counter == 0 in one thread build)
 
 private:
     std::mutex mtx;

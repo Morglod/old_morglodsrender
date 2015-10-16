@@ -10,15 +10,21 @@
 #include <deque>
 #include <future>
 
+namespace {
+
+thread_local bool _core_worker_thread = false;
+
+}
+
 namespace mr {
 
 class CoreImpl {
 public:
     struct _Task {
-        Core::PackagedTaskT task;
+        Core::TaskFuncT task;
         void* arg;
 
-        _Task(Core::PackagedTaskT&& t, void* a) : task(std::move(t)), arg(a) {}
+        _Task(Core::TaskFuncT&& t, void* a) : task(std::move(t)), arg(a) {}
     };
 
     std::thread thread;
@@ -32,6 +38,7 @@ public:
     static void Worker(CoreImpl* self) {
         auto mainCtx = self->ctx->GetMainContext();
         self->ctx->MakeCurrent(mainCtx);
+        _core_worker_thread = true;
 
         glewExperimental = true;
         GLenum result = glewInit();
@@ -71,6 +78,10 @@ public:
 
 CoreImpl coreImpl;
 
+bool Core::IsWorkerThread() {
+    return _core_worker_thread;
+}
+
 bool Core::Init(ContextMgr* context) {
     coreImpl.ctx = context;
     coreImpl.thread = std::thread(CoreImpl::Worker, &coreImpl);
@@ -87,11 +98,20 @@ void Core::Shutdown() {
     coreImpl.thread.join();
 }
 
-Core::TaskReturnT Core::Exec(Core::ExecTaskT const& func, void* arg) {
-    return Exec(PackagedTaskT(func), arg);
+Core::TaskReturnT Core::Swap() {
+    if(Core::IsWorkerThread()) {
+        coreImpl.ctx->Swap();
+        return Core::TaskReturnT();
+    } else {
+        return Exec([](void*) -> uint8_t { coreImpl.ctx->Swap(); return 0; });
+    }
 }
 
-Core::TaskReturnT Core::Exec(PackagedTaskT task, void* arg) {
+Core::TaskReturnT Core::Exec(Core::FuncT const& func, void* arg) {
+    return Exec(TaskFuncT(func), arg);
+}
+
+Core::TaskReturnT Core::Exec(TaskFuncT task, void* arg) {
     auto fu = task.get_future();
     coreImpl.exec_queue.push_back(CoreImpl::_Task(std::move(task), arg));
     coreImpl.semaphore.Notify();

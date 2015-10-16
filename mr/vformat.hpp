@@ -1,6 +1,7 @@
 #pragma once
 
 #include "build.hpp"
+#include "gl/types.hpp"
 
 #include <inttypes.h>
 #include <vector>
@@ -9,21 +10,6 @@
 #include <unordered_map>
 
 namespace mr {
-
-enum class PosDataType : uint32_t {
-    Float = 0x1406,
-    HalfFloat = 0x140B,
-    Int = 0x1404,
-    Short = 0x1402
-};
-
-enum class ColorDataType : uint32_t {
-    UByte = 0x1401,
-    UShort = 0x1403,
-    UInt = 0x1405,
-    HalfFloat = 0x140B,
-    Float = 0x1406
-};
 
 typedef std::shared_ptr<class VertexDecl> VertexDeclPtr;
 
@@ -92,7 +78,7 @@ public:
 
     protected:
         Changer(VertexDecl& d);
-        void Push(uint8_t bindpoint, uint32_t gl_dt, uint8_t comp_num, bool norm);
+        void Push(uint8_t bindpoint, uint32_t gl_dt, uint8_t comp_num, bool norm, bool offsetOnly);
 
         VertexDecl& decl;
         std::unordered_map<uint8_t, BindPointDesc> bindpoints; // [binding point].attributes[]
