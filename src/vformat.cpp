@@ -102,26 +102,9 @@ VertexDecl::Changer VertexDecl::Begin() {
     return VertexDecl::Changer(*this);
 }
 
-std::future<bool> VertexDecl::Bind() {
-    PromiseData<bool>* pdata = new PromiseData<bool>();
-    VertexDecl* vd = this;
-    auto fut = pdata->promise.get_future();
-
-    Core::Exec([vd](void* arg)  -> uint8_t{
-        PromiseData<bool>* parg = (PromiseData<bool>*)arg;
-        PromiseData<bool>::Ptr free_guard(parg);
-
-        parg->promise.set_value(VertexDecl::_Bind(vd));
-
-        return 0;
-    }, pdata);
-
-    return fut;
-}
-
-bool VertexDecl::_Bind(VertexDecl* decl) {
-    for(uint8_t i_bp = 0, n_bp = decl->_map.num; i_bp < n_bp; ++i_bp) { //foreach bindpoint
-        BindPoint const& bindpoint = decl->_map.bindpoints[i_bp];
+bool VertexDecl::Bind() {
+    for(uint8_t i_bp = 0, n_bp = _map.num; i_bp < n_bp; ++i_bp) { //foreach bindpoint
+        BindPoint const& bindpoint = _map.bindpoints[i_bp];
         for(uint8_t i_a = 0, n_a = bindpoint.num; i_a < n_a; ++i_a) { //foreach attrib
             Attrib const& attrib = bindpoint.attribs[i_a];
             glEnableVertexAttribArray(attrib.index);

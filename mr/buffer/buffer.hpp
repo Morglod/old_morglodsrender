@@ -19,6 +19,16 @@ public:
         bool persistent = true;
         bool coherent = true;
         MapFlags() = default;
+        MapFlags(MapFlags const&);
+    };
+
+    struct MapOptFlags : MapFlags {
+        bool invalidate_range = false;
+        bool invalidate_buffer = false;
+        bool flush_explicit = false;
+        bool unsynchronized = false;
+        MapOptFlags() = default;
+        MapOptFlags(MapFlags const&);
     };
 
     struct CreationFlags : public MapFlags {
@@ -32,27 +42,41 @@ public:
         void* mem = nullptr;
         uint32_t offset = 0;
         uint32_t length = 0;
+        uint32_t flags = 0;
     };
 
-    static std::future<BufferPtr> Create(MemoryPtr const& mem, CreationFlags const& flags);
-    std::future<MappedMem> Map(uint32_t length, MapFlags const& flags, uint32_t offset = 0);
-    std::future<void> UnMap();
+    struct ResidentState {
+        bool resident = false;
+        bool read = true;
+        bool write = false;
+        uint64_t address = 0;
+    };
 
-    //static std::future<bool> Write(MemoryPtr const& mem); map and write mapped async
-    inline MappedMem GetMapState() const;
+    static BufferPtr Create(MemoryPtr const& mem, CreationFlags const& flags);
+    MappedMem Map(uint32_t length, MapOptFlags const& flags, uint32_t offset = 0); // remaps buffer if needed
+    bool UnMap();
+
+    std::future<bool> Write(MemoryPtr const& mem_src, uint32_t offset = 0); // map and write mapped async
+    std::future<bool> Read(MemoryPtr const& mem_dst, uint32_t offset = 0); // map and read mapped async
+
+    bool MakeResident(bool read, bool write = false);
+    bool MakeNonResident();
+
+    inline MappedMem GetMapState() const; // may be changed during runtime, use mapstate.offset and mapstate.length
     inline uint32_t GetId() const;
     inline bool IsMapped() const;
+    inline ResidentState GetResidentState() const;
+    inline bool IsResident() const;
+
+    virtual ~Buffer();
+
 protected:
     Buffer();
-private:
-    static bool _Create(Buffer* buf, MemoryPtr const& mem, uint32_t flags, bool map);
-    static bool _Map(Buffer* buf, uint32_t offset, uint32_t length, uint32_t flags);
-    static bool _UnMap(Buffer* buf);
-    static bool _MakeResident(Buffer* buf, bool resident); // if resident == false, make NonResident
 
     uint32_t _id;
     int32_t _size;
     MappedMem _mapState;
+    ResidentState _resident;
 };
 
 inline Buffer::MappedMem Buffer::GetMapState() const {
@@ -65,6 +89,14 @@ inline uint32_t Buffer::GetId() const {
 
 inline bool Buffer::IsMapped() const {
     return _mapState.mem != nullptr;
+}
+
+inline Buffer::ResidentState Buffer::GetResidentState() const {
+    return _resident;
+}
+
+inline bool Buffer::IsResident() const {
+    return _resident.resident;
 }
 
 }

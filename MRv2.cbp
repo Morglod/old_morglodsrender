@@ -189,13 +189,12 @@
 			<Option target="Release" />
 			<Option target="Debug_Sample_Cube" />
 		</Unit>
-		<Unit filename="mr/thread/future.hpp" />
 		<Unit filename="mr/thread/semaphore.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 			<Option target="Debug_Sample_Cube" />
 		</Unit>
-		<Unit filename="mr/thread/task_func.hpp" />
+		<Unit filename="mr/timer.hpp" />
 		<Unit filename="mr/vbuffer.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -211,10 +210,6 @@
 			<Option target="Release_Sample_Cube" />
 		</Unit>
 		<Unit filename="src/buffer/buffer.cpp">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="src/cmd/cmd.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>

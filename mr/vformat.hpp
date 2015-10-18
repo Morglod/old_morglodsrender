@@ -85,15 +85,12 @@ public:
     };
 
     Changer Begin();
-    std::future<bool> Bind();
+    bool Bind();
     VertexDecl() = default;
 
     inline uint32_t GetSize() const;
 
     static VertexDeclPtr Create();
-
-protected:
-    static bool _Bind(VertexDecl* decl);
 
 private:
     AttribMap _map;

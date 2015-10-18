@@ -9,6 +9,7 @@
 #define MR_LOG_D(x) mr::Log::Print( std::string(#x) )
 #define MR_LOG_T(x) mr::Log::Print( mr::Log::StrT(x) )
 #define MR_LOG_T_STD(x) mr::Log::Print(std::to_string(x))
+#define MR_LOG_T_STD_(x,y) mr::Log::Print(x + std::to_string(y))
 #define MR_LOG_WARNING(method, reason) mr::Log::Print(mr::Log::Str( std::string(#method) + " " + reason, mr::Log::Type::T_Warning ))
 #define MR_LOG_ERROR(method, reason) mr::Log::Print(mr::Log::Str( std::string(#method) + " " + reason, mr::Log::Type::T_Error ))
 

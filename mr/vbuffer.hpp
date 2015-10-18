@@ -14,7 +14,7 @@ class MR_API VertexBuffer final {
     friend class Draw;
 public:
     inline uint32_t GetNum() const;
-    std::future<bool> Bind(uint32_t binding, uint32_t offset = 0);
+    bool Bind(uint32_t binding, uint32_t offset = 0);
     static VertexBufferPtr Create(BufferPtr const& vbuf, VertexDeclPtr const& vdecl, uint32_t num);
     static bool _Bind(VertexBuffer* vb, uint32_t binding, uint32_t offset);
     uint32_t _num;

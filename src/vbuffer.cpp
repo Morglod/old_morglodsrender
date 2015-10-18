@@ -5,11 +5,10 @@
 
 namespace mr {
 
-bool VertexBuffer::_Bind(VertexBuffer* vb, uint32_t binding, uint32_t offset) {
-    uint32_t buffer = vb->_vbuf->GetId();
-    glBindVertexBuffer(binding, buffer, offset, vb->_vdecl->GetSize());
-    VertexDecl::_Bind(vb->_vdecl.get());
-    return true;
+bool VertexBuffer::Bind(uint32_t binding, uint32_t offset) {
+    uint32_t buffer = _vbuf->GetId();
+    glBindVertexBuffer(binding, buffer, offset, _vdecl->GetSize());
+    return _vdecl->Bind();
 }
 
 VertexBufferPtr VertexBuffer::Create(BufferPtr const& vbuf, VertexDeclPtr const& vdecl, uint32_t num) {

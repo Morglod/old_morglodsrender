@@ -26,13 +26,9 @@ enum class DrawMode : uint32_t {
 
 class MR_API Draw final {
 public:
-    static std::future<bool> Clear(uint32_t flags);
-    static std::future<bool> ClearColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-    static std::future<bool> Primitive(ShaderProgramPtr const& program, DrawMode const& dmode, VertexBufferPtr const& vb, IndexBufferPtr const& ib = nullptr);
-protected:
-    static bool _Primitive(ShaderProgram* program, uint32_t dmode, VertexBuffer* vb, IndexBuffer* ib);
-    static bool _Clear(uint32_t flags);
-    static bool _ClearColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+    static bool Clear(uint32_t flags);
+    static bool ClearColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+    static bool Primitive(ShaderProgramPtr const& program, DrawMode const& dmode, VertexBufferPtr const& vb, IndexBufferPtr const& ib = nullptr);
 };
 
 }

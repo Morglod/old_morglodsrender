@@ -22,7 +22,7 @@ struct MR_API Memory final {
     static MemoryPtr Ref(void* mem, size_t sz);
     static MemoryPtr Copy(void* mem, size_t sz);
     static MemoryPtr Own(void* mem, size_t sz);
-    static MemoryPtr Zero();
+    static MemoryPtr Zero(size_t sz); // zero memory ptr with size
 private:
     void* _ptr = nullptr;
     size_t _size = 0;

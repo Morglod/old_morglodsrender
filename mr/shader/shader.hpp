@@ -10,6 +10,7 @@ namespace mr {
 typedef std::shared_ptr<class Shader> ShaderPtr;
 
 enum class ShaderType : uint32_t {
+    None = 0,
     Vertex = 0x8B31,
     Fragment = 0x8B30
 };
@@ -17,17 +18,23 @@ enum class ShaderType : uint32_t {
 class MR_API Shader final {
 public:
     inline uint32_t GetId() const;
-    static std::future<ShaderPtr> Create(ShaderType const& type, std::string const& code);
+    inline ShaderType GetType() const;
+    static ShaderPtr Create(ShaderType const& type, std::string const& code);
+    bool Compile(std::string const& code);
+    virtual ~Shader();
 protected:
     Shader();
 private:
-    static bool _Create(Shader* shader, uint32_t const& type, std::string const& code);
-    static bool _Compile(Shader* shader, std::string const& code);
     uint32_t _id;
+    ShaderType _type;
 };
 
 inline uint32_t Shader::GetId() const {
     return _id;
+}
+
+inline ShaderType Shader::GetType() const {
+    return _type;
 }
 
 }
