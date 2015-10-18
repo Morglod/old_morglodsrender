@@ -27,7 +27,7 @@ public:
     static uint32_t GetGpuTotalMemoryKb();
     static uint32_t GetGpuCurrentFreeMemoryKb(); //free mem
 
-    static void PrintInfo();
+    static void Print();
 
     enum class GLVersion : uint8_t {
         VUnknown = 255,

@@ -2,6 +2,7 @@
 
 #include "build.hpp"
 #include "gl/types.hpp"
+#include "memory.hpp"
 
 #include <memory>
 
@@ -16,13 +17,13 @@ public:
     inline uint32_t GetNum() const;
     inline IndexType GetDataType() const;
     static IndexBufferPtr Create(BufferPtr const& ibuf, IndexType const& datatype, uint32_t num);
-    static IndexBufferPtr Create(void* array, IndexType const& datatype, uint32_t num);
+    static IndexBufferPtr Create(MemoryPtr const& mem, IndexType const& datatype, uint32_t num);
 protected:
-    IndexBuffer(BufferPtr const& buf, void* mem, IndexType const& dtype, uint32_t num);
+    IndexBuffer(BufferPtr const& buf, MemoryPtr const& mem, IndexType const& dtype, uint32_t num);
     static bool _Bind(IndexBuffer* ib);
 private:
     BufferPtr _buf;
-    void* _mem;
+    MemoryPtr _mem;
     IndexType _dtype;
     uint32_t _num;
 };

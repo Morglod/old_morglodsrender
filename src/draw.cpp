@@ -30,7 +30,10 @@ bool Draw::Primitive(ShaderProgramPtr const& program, DrawMode const& dmode, Ver
     const uint32_t baseInstance = 0, instancesNum = 1, baseVertex = 0, baseIndex = 0;
     if(ibuf) {
         IndexBuffer::_Bind(ibuf.get());
-        glDrawElementsInstancedBaseVertexBaseInstance((const uint32_t)dmode, ibuf->_num, (const uint32_t)ibuf->_dtype, (void*)(size_t)(sizeof_gl((const uint32_t)ibuf->_dtype) * baseIndex), instancesNum, baseVertex, baseInstance);
+        void* ioffset = 0;
+        if(ibuf->_mem == nullptr) ioffset = (void*)(size_t)(sizeof_gl((const uint32_t)ibuf->_dtype) * baseIndex);
+        else ioffset = ibuf->_mem->GetPtr();
+        glDrawElementsInstancedBaseVertexBaseInstance((const uint32_t)dmode, ibuf->_num, (const uint32_t)ibuf->_dtype, ioffset, instancesNum, baseVertex, baseInstance);
     } else {
         glDrawArraysInstancedBaseInstance((const uint32_t)dmode, baseVertex, vbuf->_num, instancesNum, baseInstance);
     }

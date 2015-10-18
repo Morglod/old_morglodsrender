@@ -59,7 +59,7 @@ const std::string Info::GetExtensionsListAsString() {
     return outv;
 }
 
-void Info::PrintInfo() {
+void Info::Print() {
     try {
     MR_LOG(
             std::string("\nVersion: ") + GetVersionAsString() +
