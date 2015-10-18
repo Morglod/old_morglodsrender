@@ -19,7 +19,7 @@ class MR_API Shader final {
 public:
     inline uint32_t GetId() const;
     inline ShaderType GetType() const;
-    static ShaderPtr Create(ShaderType const& type, std::string const& code);
+    static ShaderPtr Create(ShaderType const& type, std::string const& code = std::string());
     bool Compile(std::string const& code);
     virtual ~Shader();
 protected:

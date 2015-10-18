@@ -7,26 +7,33 @@ namespace mr {
 typedef std::chrono::system_clock SystemClockT;
 typedef std::chrono::high_resolution_clock HighresClockT;
 
-template<typename ClockT>
+typedef std::chrono::nanoseconds NanoTimeT;
+typedef std::chrono::microseconds MicroTimeT;
+typedef std::chrono::milliseconds MilliTimeT;
+typedef std::chrono::seconds SecTimeT;
+typedef std::chrono::minutes MinTimeT;
+typedef std::chrono::hours HourTimeT;
+
+template<typename ClockT, typename TimeT>
 class Timer {
 public:
-    typedef std::chrono::time_point<ClockT> TimeT;
+    typedef typename TimeT::rep RetT;
 
     inline void Start() {
         _begin = ClockT::now();
     }
 
-    inline TimeT End() {
-        _end = ClockT::now() - _begin;
+    inline RetT End() {
+        return std::chrono::duration_cast<TimeT>(ClockT::now() - _begin).count();
     }
 
-    inline TimeT Loop() {
+    inline RetT Loop() {
         const auto r = End();
         Start();
         return r;
     }
 private:
-    TimeT _begin, _end;
+    std::chrono::time_point<ClockT> _begin;
 };
 
 }
