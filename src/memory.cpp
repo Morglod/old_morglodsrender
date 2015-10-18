@@ -19,7 +19,7 @@ MemoryPtr Memory::Own(void* mem, size_t sz) {
 }
 
 MemoryPtr Memory::Zero(size_t sz) {
-    return MemoryPtr(new Memory(0, sz, false));
+    return MemoryPtr(new Memory(nullptr, sz, false));
 }
 
 Memory::Memory(void* ptr, size_t sz, bool own) : _ptr(ptr), _size(sz), _own(own) {}

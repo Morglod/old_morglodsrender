@@ -16,11 +16,15 @@ typedef std::shared_ptr<class Buffer> BufferPtr;
 class MR_API ShaderProgram final {
     friend class Draw;
 public:
-    inline uint32_t GetId() const;
+    // shaders may be empty
+    static ShaderProgramPtr Create(std::vector<ShaderPtr> const& shaders = std::vector<ShaderPtr>());
+    bool Link(std::vector<ShaderPtr> const& shaders);
+
     bool UniformMat4(std::string const& name, glm::mat4& mat);
     bool UniformBuffer(std::string const& name, BufferPtr const& buffer, uint32_t buffer_binding);
-    static ShaderProgramPtr Create(std::vector<ShaderPtr> const& shaders);
-    bool Link(std::vector<ShaderPtr> const& shaders);
+
+    inline uint32_t GetId() const;
+
     virtual ~ShaderProgram();
 
 protected:

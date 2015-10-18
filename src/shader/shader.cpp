@@ -30,7 +30,7 @@ bool Shader::Compile(std::string const& code) {
     glGetShaderiv(_id, GL_INFO_LOG_LENGTH, &bufflen);
     if(bufflen > 1) {
         logString.resize((size_t)bufflen + 1);
-        glGetShaderInfoLog(_id, bufflen, 0, &logString[0]);
+        glGetShaderInfoLog(_id, bufflen, nullptr, &logString[0]);
         MR_LOG("Shader compilation output: "+logString);
     }
 

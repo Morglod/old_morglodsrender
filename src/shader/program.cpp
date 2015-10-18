@@ -33,7 +33,7 @@ bool ShaderProgram::Link(std::vector<ShaderPtr> const& shaders) {
     glGetProgramiv(_id, GL_INFO_LOG_LENGTH, &bufflen);
     if(bufflen > 1) {
         char buf[bufflen];
-        glGetProgramInfoLog(_id, bufflen, (int*)0, buf);
+        glGetProgramInfoLog(_id, bufflen, nullptr, buf);
         MR_LOG("Program link output:");
         MR_LOG(buf);
     }

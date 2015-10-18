@@ -57,16 +57,8 @@ void VertexDecl::Changer::End() {
         dst_bindpoint.bindpoint = src_attribs.first;
         dst_bindpoint.stride = src_attribs.second.offset;
         for(uint8_t i = 0, n = src_attribs.second.attribs.size(); i < n; ++i) {
-            Attrib dst_a;
-            AttribDesc const& src_a = src_attribs.second.attribs[i];
-            dst_a.index = src_a.index;
-            dst_a.datatype = src_a.gl_data_type;
-            dst_a.normalized = (src_a.normalized ? 1 : 0);
-            dst_a.offset = src_a.offset;
-            dst_a.components_num = src_a.components_num;
-            dst_bindpoint.attribs[i] = dst_a;
-
-            decl._size += src_a.size;
+            dst_bindpoint.attribs[i] = src_attribs.second.attribs[i];
+            decl._size += dst_bindpoint.attribs[i].size;
         }
     }
 }
@@ -82,15 +74,15 @@ void VertexDecl::Changer::Push(uint8_t bindpoint_index, uint32_t gl_dt, uint8_t 
         return;
     }
 
-    AttribDesc a;
-    a.index = bindpoint.attribi;
-    a.offset = bindpoint.offset;
-    a.components_num = comp_num;
-    a.gl_data_type = gl_dt;
-    a.normalized = norm;
-    a.size = attrib_size;
+    Attrib attrib;
+    attrib.index = bindpoint.attribi;
+    attrib.offset = bindpoint.offset;
+    attrib.components_num = comp_num;
+    attrib.datatype = gl_dt;
+    attrib.normalized = norm;
+    attrib.size = attrib_size;
 
-    bindpoint.attribs.push_back(a);
+    bindpoint.attribs.push_back(attrib);
     ++(bindpoint.attribi);
     bindpoint.offset += attrib_size;
 }
@@ -108,8 +100,13 @@ bool VertexDecl::Bind() {
         for(uint8_t i_a = 0, n_a = bindpoint.num; i_a < n_a; ++i_a) { //foreach attrib
             Attrib const& attrib = bindpoint.attribs[i_a];
             glEnableVertexAttribArray(attrib.index);
-            glVertexAttribFormat(attrib.index, attrib.components_num, attrib.datatype, attrib.normalized, attrib.offset);
-            glVertexAttribBinding(attrib.index, bindpoint.bindpoint);
+            if(GLEW_NV_vertex_buffer_unified_memory) {
+                glVertexAttribFormatNV(attrib.index, attrib.components_num, attrib.datatype, attrib.normalized, bindpoint.stride);
+            }
+            else {
+                glVertexAttribFormat(attrib.index, attrib.components_num, attrib.datatype, attrib.normalized, attrib.offset);
+                glVertexAttribBinding(attrib.index, bindpoint.bindpoint);
+            }
         }
     }
     return true;

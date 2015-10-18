@@ -132,16 +132,19 @@ bool Buffer::MakeResident(bool read, bool write) {
         MR_LOG_ERROR(Buffer::MakeResident, "NV_shader_buffer_load is not supported");
         return false;
     }
+
     if(IsResident())
         if(_resident.read != read || _resident.write != write)
             if(!MakeNonResident()) {
                 return false;
             }
+
     GLenum access_flag = GL_READ_ONLY;
     if(read && write) access_flag = GL_READ_WRITE;
     else if(write) access_flag = GL_WRITE_ONLY;
     else if(read) access_flag = GL_READ_ONLY;
     else return false;
+
     glMakeNamedBufferResidentNV(_id, access_flag);
     if(glIsNamedBufferResidentNV(_id)) {
         glGetNamedBufferParameterui64vNV(_id, GL_BUFFER_GPU_ADDRESS_NV, &_resident.address);
@@ -170,6 +173,7 @@ std::future<bool> Buffer::Write(MemoryPtr const& mem_src, uint32_t offset) {
         flags.read = _mapState.flags & GL_MAP_READ_BIT;
     }
     flags.write = true;
+
     Map(mem_src->GetSize(), flags, offset);
     if(!IsMapped()) {
         MR_LOG_ERROR(Buffer::Write, "Failed map memory");
@@ -197,6 +201,7 @@ std::future<bool> Buffer::Read(MemoryPtr const& mem_dst, uint32_t offset) {
         flags.write = _mapState.flags & GL_MAP_WRITE_BIT;
     }
     flags.read = true;
+
     Map(mem_dst->GetSize(), flags, offset);
     if(!IsMapped()) {
         MR_LOG_ERROR(Buffer::Write, "Failed map memory");

@@ -4,6 +4,7 @@
 #include "mr/vbuffer.hpp"
 #include "mr/ibuffer.hpp"
 #include "mr/shader/program.hpp"
+#include "mr/log.hpp"
 
 #include "mr/pre/glew.hpp"
 
@@ -26,13 +27,22 @@ bool Draw::Primitive(ShaderProgramPtr const& program, DrawMode const& dmode, Ver
     } DrawElementsIndirectCommand;
 
     glUseProgram(program->_id);
-    vbuf->Bind(0, 0);
+    if(!vbuf->Bind(0, 0)) {
+        MR_LOG_ERROR(Draw::Primitive, "Failed bind vertex buffer");
+        return false;
+    }
     const uint32_t baseInstance = 0, instancesNum = 1, baseVertex = 0, baseIndex = 0;
     if(ibuf) {
-        IndexBuffer::_Bind(ibuf.get());
-        void* ioffset = 0;
+        if(!ibuf->Bind()) {
+            MR_LOG_ERROR(Draw::Primitive, "Failed bind index buffer");
+            return false;
+        }
+
+        // Offset in binded buffer or direct ptr to indecies
+        void* ioffset;
         if(ibuf->_mem == nullptr) ioffset = (void*)(size_t)(sizeof_gl((const uint32_t)ibuf->_dtype) * baseIndex);
         else ioffset = ibuf->_mem->GetPtr();
+
         glDrawElementsInstancedBaseVertexBaseInstance((const uint32_t)dmode, ibuf->_num, (const uint32_t)ibuf->_dtype, ioffset, instancesNum, baseVertex, baseInstance);
     } else {
         glDrawArraysInstancedBaseInstance((const uint32_t)dmode, baseVertex, vbuf->_num, instancesNum, baseInstance);
@@ -40,12 +50,12 @@ bool Draw::Primitive(ShaderProgramPtr const& program, DrawMode const& dmode, Ver
     return true;
 }
 
-bool Draw::Clear(uint32_t flags) {
-    glClear(flags);
+bool Draw::Clear(ClearFlags const& flags) {
+    glClear((uint32_t)flags);
     return true;
 }
 
-bool Draw::ClearColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+bool Draw::SetClearColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     glClearColor((float)r / 255.0f, (float)g / 255.0f, (float)b / 255.0f, (float)a / 255.0f);
     return true;
 }

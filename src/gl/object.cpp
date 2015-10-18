@@ -1,6 +1,12 @@
 #include "mr/gl/object.hpp"
 #include "mr/gl/objectlist.hpp"
 
+/**
+
+TEST ONLY
+
+**/
+
 namespace mr {
 
 void ObjectGL::Destroy() {

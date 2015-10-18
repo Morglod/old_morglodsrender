@@ -1,8 +1,9 @@
 #include "../mr/mr.hpp"
-#include "../mr/pre/glew.hpp"
 
 #include <GLFW/glfw3.h>
 #include <thread>
+
+void main_logic(GLFWwindow* window);
 
 //
 /// Define data
@@ -99,6 +100,8 @@ void main_logic(GLFWwindow* window) {
     // Will do it async further
     auto buf_vert = Buffer::Create(Memory::Zero(vertexDataMem->GetSize()), flags);
     auto buf_ind = Buffer::Create(Memory::Zero(indexDataMem->GetSize()), flags);
+    buf_vert->MakeResident(true, false);
+    buf_ind->MakeResident(true, false);
 
     // Mark readable for shader parameters buffer
     flags.read = true;
@@ -118,8 +121,11 @@ void main_logic(GLFWwindow* window) {
 
     // Create vertex and index buffers { buffer + format }
     auto vbuffer = VertexBuffer::Create(buf_vert, vdecl, vertexNum);
-    //auto ibuffer = IndexBuffer::Create(buf_ind, IndexType::UShort, indexNum);
-    auto ibuffer = IndexBuffer::Create(indexDataMem, IndexType::UShort, indexNum);
+    IndexBufferPtr ibuffer = nullptr;
+    if(true) // Use buffer for indecies
+        ibuffer = IndexBuffer::Create(buf_ind, IndexType::UShort, indexNum);
+    else
+        ibuffer = IndexBuffer::Create(indexDataMem, IndexType::UShort, indexNum);
 
     // Create and compile shaders
     auto vshader = Shader::Create(ShaderType::Vertex, std::string(vertexShader));
@@ -134,8 +140,8 @@ void main_logic(GLFWwindow* window) {
     // Get mapped memory ("direct" access to parameters buffer)
     auto ubo_mat = (glm::mat4*) ubo->GetMapState().mem;
 
-    // Set draw color
-    Draw::ClearColor(125,125,125,255);
+    // Set 'background' color
+    Draw::SetClearColor(125,125,125,255);
 
     // Wait till async tasks end
     bufv_write.wait();
@@ -159,10 +165,9 @@ void main_logic(GLFWwindow* window) {
                                         }
                                      }, ubo_mat);
 
-    //float a = 0.0f;
     while(!glfwWindowShouldClose(window)) {
         // Clear screen
-        Draw::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        Draw::Clear(ClearFlags::ColorDepth);
 
         // Draw from buffer with shader
         Draw::Primitive(prog, DrawMode::Triangle, vbuffer, ibuffer);
@@ -170,6 +175,7 @@ void main_logic(GLFWwindow* window) {
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
     update_thread_working = false;
     update_thread.join();
 }
@@ -187,7 +193,7 @@ int main() {
 
     GLFWwindow* window = glfwCreateWindow(800, 600,
                                           "MR2 Simple Cube",
-                                          0, 0);
+                                          nullptr, nullptr);
 
     if(window == nullptr) {
         MR_LOG_ERROR(glfwCreateWindow, "failed create window");

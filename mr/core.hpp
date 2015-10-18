@@ -8,7 +8,7 @@ class MR_API Core {
 public:
     static bool Init();
     static void Shutdown();
-    static bool IsCoreThread();
+    static bool IsCoreThread(); // Check, is calling thread same, where Core was init
 };
 
 }

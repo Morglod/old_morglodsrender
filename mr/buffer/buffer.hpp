@@ -12,6 +12,9 @@ typedef std::shared_ptr<class Buffer> BufferPtr;
 
 class MR_API Buffer {
     friend class CmdQueue;
+    friend class Draw;
+    friend class VertexBuffer;
+    friend class IndexBuffer;
 public:
     struct MapFlags {
         bool    read = false,
@@ -52,13 +55,18 @@ public:
         uint64_t address = 0;
     };
 
+    // Memory may be Memory::Zero
     static BufferPtr Create(MemoryPtr const& mem, CreationFlags const& flags);
+
+    // Read OpenGL docs, about flags
     MappedMem Map(uint32_t length, MapOptFlags const& flags, uint32_t offset = 0); // remaps buffer if needed
     bool UnMap();
 
+    // Map memory range in [offset, offset + mem.size] (remap if needed) and write/read async
     std::future<bool> Write(MemoryPtr const& mem_src, uint32_t offset = 0); // map and write mapped async
     std::future<bool> Read(MemoryPtr const& mem_dst, uint32_t offset = 0); // map and read mapped async
 
+    // Update ResidentState
     bool MakeResident(bool read, bool write = false);
     bool MakeNonResident();
 

@@ -24,8 +24,9 @@ public:
         uint8_t index; // attrib shader index
         uint8_t components_num;
         uint32_t datatype;
-        uint8_t normalized;
+        uint8_t normalized; // 0 or 1
         uint8_t offset;
+        uint8_t size;
     };
 
     struct MR_API BindPoint {
@@ -56,19 +57,10 @@ public:
     class MR_API Changer final {
         friend class VertexDecl;
     public:
-        struct AttribDesc {
-            uint32_t gl_data_type;
-            uint8_t components_num;
-            uint8_t offset;
-            uint8_t index;
-            uint8_t size;
-            bool normalized;
-        };
-
         struct BindPointDesc {
             uint32_t offset = 0;
             uint8_t attribi = 0;
-            std::vector<AttribDesc> attribs;
+            std::vector<Attrib> attribs;
         };
 
         Changer& Pos(PosDataType const& type = PosDataType::Float, uint8_t bindpoint = 0); // vec3<DataType>

@@ -2,6 +2,12 @@
 #include "mr/pre/glew.hpp"
 #include "mr/log.hpp"
 
+/**
+
+TEST ONLY
+
+**/
+
 namespace {
 
 void _DestroyUnknown(uint32_t num, uint32_t* ids) {

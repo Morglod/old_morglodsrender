@@ -33,6 +33,11 @@ bool Core::Init() {
     glGenVertexArrays(1, &workingVA);
     glBindVertexArray(workingVA);
 
+    if(GLEW_NV_vertex_buffer_unified_memory) {
+        MR_LOG("NV_vertex_buffer_unified_memory is used");
+        glEnableClientState(GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
+    }
+
     return true;
 }
 

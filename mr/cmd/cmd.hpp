@@ -9,6 +9,12 @@
 #define MR_CMD_SIZE_CHECK(T) \
 static_assert(sizeof(T) <= sizeof(Cmd), "Bad \"" #T "\" type size");
 
+/**
+
+TEST ONLY
+
+**/
+
 namespace mr {
 
 enum class CmdObjectType : uint8_t {

@@ -17,10 +17,13 @@ enum class ShaderType : uint32_t {
 
 class MR_API Shader final {
 public:
-    inline uint32_t GetId() const;
-    inline ShaderType GetType() const;
+    // Code may be empty
     static ShaderPtr Create(ShaderType const& type, std::string const& code = std::string());
     bool Compile(std::string const& code);
+
+    inline uint32_t GetId() const;
+    inline ShaderType GetType() const;
+
     virtual ~Shader();
 protected:
     Shader();

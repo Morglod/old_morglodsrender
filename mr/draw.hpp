@@ -24,10 +24,23 @@ enum class DrawMode : uint32_t {
     Polygon = 0x0009
 };
 
+enum class ClearFlags : uint32_t {
+    Color = 0x00004000,
+    Depth = 0x00000100,
+    Accum = 0x00000200,
+    Stencil = 0x00000400,
+    ColorDepth = ClearFlags::Color | ClearFlags::Depth,
+    ColorDepthStencil = ClearFlags::ColorDepth | ClearFlags::Stencil,
+    All = ClearFlags::ColorDepthStencil | ClearFlags::Accum
+};
+
 class MR_API Draw final {
 public:
-    static bool Clear(uint32_t flags);
-    static bool ClearColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+    // Do clear current framebuffer
+    static bool Clear(ClearFlags const& flags);
+
+    // Set clear color
+    static bool SetClearColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
     static bool Primitive(ShaderProgramPtr const& program, DrawMode const& dmode, VertexBufferPtr const& vb, IndexBufferPtr const& ib = nullptr);
 };
 
