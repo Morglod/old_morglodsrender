@@ -1,4 +1,5 @@
 #include "mr/memory.hpp"
+#include "src/mp.hpp"
 
 #include <memory>
 
@@ -9,8 +10,10 @@ MemoryPtr Memory::Ref(void* mem, size_t sz) {
 }
 
 MemoryPtr Memory::Copy(void* mem, size_t sz) {
+    MP_BeginSample(Memory::Copy);
     void* local = malloc(sz);
     memcpy(local, mem, sz);
+    MP_EndSample();
     return MemoryPtr(new Memory(local, sz, true));
 }
 

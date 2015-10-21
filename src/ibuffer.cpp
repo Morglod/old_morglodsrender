@@ -2,6 +2,14 @@
 #include "mr/pre/glew.hpp"
 #include "mr/buffer/buffer.hpp"
 
+#include "src/mp.hpp"
+
+namespace {
+
+uint32_t _ib_cache = 0;
+
+}
+
 namespace mr {
 
 IndexBufferPtr IndexBuffer::Create(BufferPtr const& ibuf, IndexType const& datatype, uint32_t num) {
@@ -16,6 +24,9 @@ IndexBuffer::IndexBuffer(BufferPtr const& buf, MemoryPtr const& mem, IndexType c
 }
 
 bool IndexBuffer::Bind() {
+    MP_ScopeSample(IndexBuffer::Bind);
+    if(_ib_cache == _buf->GetId()) return true;
+
     if(_buf != nullptr) {
         if(GLEW_NV_vertex_buffer_unified_memory) {
             glEnableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
@@ -28,6 +39,7 @@ bool IndexBuffer::Bind() {
     } else {
         if(GLEW_NV_vertex_buffer_unified_memory) glDisableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
     }
+    _ib_cache = _buf->GetId();
     return true;
 }
 

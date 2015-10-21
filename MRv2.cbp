@@ -16,6 +16,7 @@
 				<Compiler>
 					<Add option="-g" />
 					<Add option="-DBUILD_DLL" />
+					<Add option="-DMR_PROFILE" />
 					<Add directory="../morglodsrender" />
 				</Compiler>
 				<Linker>
@@ -213,6 +214,7 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="src/build_impl.hpp" />
 		<Unit filename="src/core.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -245,6 +247,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="src/mp.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/mp.hpp" />
 		<Unit filename="src/shader/program.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />

@@ -1,7 +1,7 @@
 #include "mr/buffer/buffer.hpp"
 #include "mr/pre/glew.hpp"
 #include "mr/log.hpp"
-
+#include "src/mp.hpp"
 #include "src/thread/util.hpp"
 
 namespace {
@@ -21,6 +21,8 @@ struct _BufferInfo {
 };
 
 void _GetBufferInfo(uint32_t buffer, _BufferInfo& info) {
+    MP_BeginSample(_GetBufferInfo);
+
     info.buffer = buffer;
     glGetNamedBufferParameteriv(buffer, GL_BUFFER_ACCESS, &info.access);
     glGetNamedBufferParameteriv(buffer, GL_BUFFER_ACCESS_FLAGS, &info.access_flags);
@@ -32,6 +34,8 @@ void _GetBufferInfo(uint32_t buffer, _BufferInfo& info) {
     glGetNamedBufferParameteriv(buffer, GL_BUFFER_STORAGE_FLAGS, &info.storage_flags);
     glGetNamedBufferParameteriv(buffer, GL_BUFFER_USAGE, &info.usage);
     glGetNamedBufferPointerv(buffer, GL_BUFFER_MAP_POINTER, &info.mapped_mem);
+
+    MP_EndSample();
 }
 
 }
@@ -53,6 +57,8 @@ Buffer::MapOptFlags::MapOptFlags(Buffer::MapFlags const& cpy) {
 }
 
 BufferPtr Buffer::Create(MemoryPtr const& mem, CreationFlags const& flags) {
+    MP_ScopeSample(Buffer::Create);
+
     uint32_t flags_i =  (flags.client_storage ? GL_CLIENT_STORAGE_BIT : 0) |
                         (flags.coherent ? GL_MAP_COHERENT_BIT : 0) |
                         (flags.dynamic ? GL_DYNAMIC_STORAGE_BIT : 0) |
@@ -76,11 +82,12 @@ BufferPtr Buffer::Create(MemoryPtr const& mem, CreationFlags const& flags) {
             return nullptr;
         }
     }
-
     return buf;
 }
 
 Buffer::MappedMem Buffer::Map(uint32_t length, Buffer::MapOptFlags const& flags, uint32_t offset) {
+    MP_ScopeSample(Buffer::Map);
+
     uint32_t flags_i =  (flags.coherent ? GL_MAP_COHERENT_BIT : 0) |
                         (flags.persistent ? GL_MAP_PERSISTENT_BIT : 0) |
                         (flags.read ? GL_MAP_READ_BIT : 0) |
@@ -104,7 +111,9 @@ Buffer::MappedMem Buffer::Map(uint32_t length, Buffer::MapOptFlags const& flags,
                 MR_LOG_ERROR(Buffer::Map, "Failed unmap buffer, before remap");
                 return _mapState;
             }
-        } else return _mapState;
+        } else {
+            return _mapState;
+        }
     }
 
     _mapState.mem = glMapNamedBufferRange(_id, offset, length, flags_i);
@@ -121,13 +130,20 @@ Buffer::MappedMem Buffer::Map(uint32_t length, Buffer::MapOptFlags const& flags,
 }
 
 bool Buffer::UnMap() {
-    if(!IsMapped()) return true;
+    MP_ScopeSample(Buffer::UnMap);
+
+    if(!IsMapped()) {
+        return true;
+    }
     if(!glUnmapNamedBuffer(_id))
         MR_LOG_ERROR(Buffer::UnMap, "Failed unmap buffer");
+
     return !IsMapped();
 }
 
 bool Buffer::MakeResident(bool read, bool write) {
+    MP_ScopeSample(Buffer::MakeResident);
+
     if(!GLEW_NV_shader_buffer_load) {
         MR_LOG_ERROR(Buffer::MakeResident, "NV_shader_buffer_load is not supported");
         return false;
@@ -153,6 +169,8 @@ bool Buffer::MakeResident(bool read, bool write) {
 }
 
 bool Buffer::MakeNonResident() {
+    MP_ScopeSample(Buffer::MakeNonResident);
+
     if(!GLEW_NV_shader_buffer_load) {
         MR_LOG_ERROR(Buffer::MakeNonResident, "NV_shader_buffer_load is not supported");
         return false;
@@ -162,6 +180,8 @@ bool Buffer::MakeNonResident() {
 }
 
 std::future<bool> Buffer::Write(MemoryPtr const& mem_src, uint32_t offset) {
+    MP_ScopeSample(Buffer::Write);
+
     std::promise<bool> promise;
     auto futur = promise.get_future();
 
@@ -184,12 +204,15 @@ std::future<bool> Buffer::Write(MemoryPtr const& mem_src, uint32_t offset) {
     // Run write task
     return std::async(std::launch::async,
         [](MemoryPtr const& mem, void* dst) -> bool {
+            MP_ScopeSample(Buffer::Write::memcpy);
             memcpy(dst, mem->GetPtr(), mem->GetSize());
             return true;
         }, mem_src, _mapState.mem);
 }
 
 std::future<bool> Buffer::Read(MemoryPtr const& mem_dst, uint32_t offset) {
+    MP_ScopeSample(Buffer::Read);
+
     std::promise<bool> promise;
     auto futur = promise.get_future();
 
@@ -212,6 +235,7 @@ std::future<bool> Buffer::Read(MemoryPtr const& mem_dst, uint32_t offset) {
     // Run write task
     return std::async(std::launch::async,
         [](MemoryPtr const& mem, void* src) -> bool {
+            MP_ScopeSample(Buffer::Read::memcpy);
             memcpy(mem->GetPtr(), src, mem->GetSize());
             return true;
         }, mem_dst, _mapState.mem);

@@ -3,7 +3,7 @@
 #include "src/thread/util.hpp"
 #include "mr/log.hpp"
 #include "mr/gl/types.hpp"
-
+#include "src/mp.hpp"
 #include "mr/pre/glew.hpp"
 
 #include <unordered_map>
@@ -11,17 +11,25 @@
 namespace mr {
 
 void VertexDecl::BindPoint::Free() {
+    MP_BeginSample(VertexDecl::BindPoint::Free);
+
     if(attribs != nullptr) {
         delete [] attribs;
         attribs = nullptr;
     }
     num = 0;
+
+    MP_EndSample();
 }
 
 void VertexDecl::BindPoint::Resize(uint8_t n) {
+    MP_BeginSample(VertexDecl::BindPoint::Resize);
+
     Free();
     attribs = new Attrib[n];
     num = n;
+
+    MP_EndSample();
 }
 
 VertexDecl::BindPoint::~BindPoint() {
@@ -29,21 +37,38 @@ VertexDecl::BindPoint::~BindPoint() {
 }
 
 VertexDecl::Changer& VertexDecl::Changer::Pos(PosDataType const& type, uint8_t bindpoint) {
+    MP_BeginSample(VertexDecl::Changer::Pos);
+
     Push(bindpoint, (uint32_t)type, 3, false, false);
+
+    MP_EndSample();
+
     return *this;
 }
 
 VertexDecl::Changer& VertexDecl::Changer::Color(ColorDataType const& type, uint8_t bindpoint) {
+    MP_BeginSample(VertexDecl::Changer::Color);
+
     Push(bindpoint, (uint32_t)type, 4, true, false);
+
+    MP_EndSample();
+
     return *this;
 }
 
 VertexDecl::Changer& VertexDecl::Changer::Data(uint8_t sz, uint8_t bindpoint) {
+    MP_BeginSample(VertexDecl::Changer::Data);
+
     Push(bindpoint, GL_BYTE, sz, false, true);
+
+    MP_EndSample();
+
     return *this;
 }
 
 void VertexDecl::Changer::End() {
+    MP_BeginSample(VertexDecl::Changer::End);
+
     // Write changes
     // src - VertexDecl::Changer declaration
     // dst - VertexDecl declaration
@@ -61,9 +86,13 @@ void VertexDecl::Changer::End() {
             decl._size += dst_bindpoint.attribs[i].size;
         }
     }
+
+    MP_EndSample();
 }
 
 void VertexDecl::Changer::Push(uint8_t bindpoint_index, uint32_t gl_dt, uint8_t comp_num, bool norm, bool offsetOnly) {
+    MP_BeginSample(VertexDecl::Changer::Push);
+
     const uint32_t dt_size = (gl_dt != GL_HALF_FLOAT) ? sizeof_gl(gl_dt) : sizeof(float);
     const uint8_t attrib_size = dt_size * comp_num;
 
@@ -71,6 +100,7 @@ void VertexDecl::Changer::Push(uint8_t bindpoint_index, uint32_t gl_dt, uint8_t 
 
     if(offsetOnly) {
         bindpoint.offset += attrib_size;
+        MP_EndSample();
         return;
     }
 
@@ -85,6 +115,8 @@ void VertexDecl::Changer::Push(uint8_t bindpoint_index, uint32_t gl_dt, uint8_t 
     bindpoint.attribs.push_back(attrib);
     ++(bindpoint.attribi);
     bindpoint.offset += attrib_size;
+
+    MP_EndSample();
 }
 
 VertexDecl::Changer::Changer(VertexDecl& d) : decl(d) {
@@ -95,6 +127,8 @@ VertexDecl::Changer VertexDecl::Begin() {
 }
 
 bool VertexDecl::Bind() {
+    MP_BeginSample(VertexDecl::Bind);
+
     for(uint8_t i_bp = 0, n_bp = _map.num; i_bp < n_bp; ++i_bp) { //foreach bindpoint
         BindPoint const& bindpoint = _map.bindpoints[i_bp];
         for(uint8_t i_a = 0, n_a = bindpoint.num; i_a < n_a; ++i_a) { //foreach attrib
@@ -109,21 +143,32 @@ bool VertexDecl::Bind() {
             }
         }
     }
+
+    MP_EndSample();
+
     return true;
 }
 
 void VertexDecl::AttribMap::Resize(uint8_t n) {
+    MP_BeginSample(VertexDecl::AttribMap::Resize);
+
     Free();
     bindpoints = new BindPoint[n];
     num = n;
+
+    MP_EndSample();
 }
 
 void VertexDecl::AttribMap::Free() {
+    MP_BeginSample(VertexDecl::AttribMap::Free);
+
     if(bindpoints != nullptr) {
         delete [] bindpoints;
         bindpoints = nullptr;
     }
     num = 0;
+
+    MP_EndSample();
 }
 
 VertexDecl::AttribMap::~AttribMap() {

@@ -4,6 +4,8 @@
 #include "mr/log.hpp"
 #include "mr/info.hpp"
 
+#include "src/mp.hpp"
+
 namespace {
 
 thread_local bool core_thread = false;
@@ -13,12 +15,19 @@ thread_local bool core_thread = false;
 namespace mr {
 
 bool Core::Init() {
+    if(!mp::Init()) {
+        MR_LOG_ERROR(Core::Init, "Failed init profiler");
+    }
+
+    MP_BeginSample(Core::Init);
+
     core_thread = true;
 
     glewExperimental = true;
     GLenum result = glewInit();
     if(result != GLEW_OK) {
         MR_LOG_ERROR(Core::Init, "glew initialization failed "+std::string((char*)glewGetErrorString(result)));
+        MP_EndSample();
         return false;
     }
 
@@ -38,10 +47,13 @@ bool Core::Init() {
         glEnableClientState(GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
     }
 
+    MP_EndSample();
+
     return true;
 }
 
 void Core::Shutdown() {
+    mp::Shutdown();
 }
 
 bool Core::IsCoreThread() {

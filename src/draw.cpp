@@ -6,11 +6,15 @@
 #include "mr/shader/program.hpp"
 #include "mr/log.hpp"
 
+#include "src/mp.hpp"
+
 #include "mr/pre/glew.hpp"
 
 namespace mr {
 
 bool Draw::Primitive(ShaderProgramPtr const& program, DrawMode const& dmode, VertexBufferPtr const& vbuf, IndexBufferPtr const& ibuf) {
+    MP_BeginSample(Draw::Primitive);
+
     typedef  struct {
         uint32_t  count; // Specifies the number of indices to be rendered.
         uint32_t  primCount; // Specifies the number of instances of the specified range of indices to be rendered.
@@ -29,12 +33,14 @@ bool Draw::Primitive(ShaderProgramPtr const& program, DrawMode const& dmode, Ver
     glUseProgram(program->_id);
     if(!vbuf->Bind(0, 0)) {
         MR_LOG_ERROR(Draw::Primitive, "Failed bind vertex buffer");
+        MP_EndSample();
         return false;
     }
     const uint32_t baseInstance = 0, instancesNum = 1, baseVertex = 0, baseIndex = 0;
     if(ibuf) {
         if(!ibuf->Bind()) {
             MR_LOG_ERROR(Draw::Primitive, "Failed bind index buffer");
+            MP_EndSample();
             return false;
         }
 
@@ -47,16 +53,23 @@ bool Draw::Primitive(ShaderProgramPtr const& program, DrawMode const& dmode, Ver
     } else {
         glDrawArraysInstancedBaseInstance((const uint32_t)dmode, baseVertex, vbuf->_num, instancesNum, baseInstance);
     }
+
+    MP_EndSample();
+
     return true;
 }
 
 bool Draw::Clear(ClearFlags const& flags) {
+    MP_BeginSample(Draw::Clear);
     glClear((uint32_t)flags);
+    MP_EndSample();
     return true;
 }
 
 bool Draw::SetClearColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+    MP_BeginSample(Draw::SetClearColor);
     glClearColor((float)r / 255.0f, (float)g / 255.0f, (float)b / 255.0f, (float)a / 255.0f);
+    MP_EndSample();
     return true;
 }
 

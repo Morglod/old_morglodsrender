@@ -1,13 +1,41 @@
 #include "mr/vbuffer.hpp"
 #include "mr/buffer/buffer.hpp"
 #include "mr/log.hpp"
+#include "src/mp.hpp"
+#include <unordered_map>
 
 #include "mr/pre/glew.hpp"
+
+namespace {
+
+struct _VertexBufferBindCache {
+    uint32_t offset;
+    uint32_t buffer;
+};
+
+std::unordered_map<uint32_t, _VertexBufferBindCache> _vb_bind_cache; // <bindpoint, struct>
+
+bool _VB_NeedRebind(uint32_t buffer, uint32_t binding, uint32_t offset) {
+    if(_vb_bind_cache.count(binding) == 0) return true;
+    _VertexBufferBindCache const& cache = _vb_bind_cache.at(binding);
+    if(cache.buffer != buffer || cache.offset != offset) return true;
+    return false;
+}
+
+void _VB_Cache(uint32_t buffer, uint32_t binding, uint32_t offset) {
+    _vb_bind_cache[binding].offset = offset;
+    _vb_bind_cache[binding].buffer = buffer;
+}
+
+}
 
 namespace mr {
 
 bool VertexBuffer::Bind(uint32_t binding, uint32_t offset) {
-    uint32_t buffer = _vbuf->GetId();
+    MP_ScopeSample(VertexBuffer::Bind);
+
+    const uint32_t buffer = _vbuf->GetId();
+    if(!_VB_NeedRebind(buffer, binding, offset)) return true;
 
     // Don't bind buffer with VBUM, because it will be pointed by resident ptr.
     if(!GLEW_NV_vertex_buffer_unified_memory)
@@ -30,6 +58,9 @@ bool VertexBuffer::Bind(uint32_t binding, uint32_t offset) {
             }
         }
     }
+
+    _VB_Cache(buffer, binding, offset);
+
     return true;
 }
 
