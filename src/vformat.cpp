@@ -66,6 +66,15 @@ VertexDecl::Changer& VertexDecl::Changer::Data(uint8_t sz, uint8_t bindpoint) {
     return *this;
 }
 
+VertexDecl::Changer& VertexDecl::Changer::Custom(DataType const& type, uint8_t components_num, uint8_t bindpoint, bool normalized) {
+    MP_BeginSample(VertexDecl::Changer::Custom);
+
+    Push(bindpoint, (uint32_t)type, components_num, normalized, false);
+
+    MP_EndSample();
+    return *this;
+}
+
 void VertexDecl::Changer::End() {
     MP_BeginSample(VertexDecl::Changer::End);
 

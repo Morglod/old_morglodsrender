@@ -41,7 +41,7 @@ public:
 
     // Set clear color
     static bool SetClearColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-    static bool Primitive(ShaderProgramPtr const& program, DrawMode const& dmode, VertexBufferPtr const& vb, IndexBufferPtr const& ib = nullptr);
+    static bool Primitive(ShaderProgramPtr const& program, DrawMode const& dmode, VertexBufferPtr const& vb, IndexBufferPtr const& ib = nullptr, uint32_t instancesNum = 1);
 };
 
 }

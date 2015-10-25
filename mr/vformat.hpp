@@ -66,6 +66,7 @@ public:
         Changer& Pos(PosDataType const& type = PosDataType::Float, uint8_t bindpoint = 0); // vec3<DataType>
         Changer& Color(ColorDataType const& type = ColorDataType::UByte, uint8_t bindpoint = 0); // vec4<DataType>
         Changer& Data(uint8_t sz, uint8_t bindpoint = 0); // skip data block, sizeof 'sz'
+        Changer& Custom(DataType const& type, uint8_t components_num, uint8_t bindpoint = 0, bool normalized = false);
         void End();
 
     protected:
@@ -78,19 +79,40 @@ public:
 
     Changer Begin();
     bool Bind();
-    VertexDecl() = default;
 
     inline uint32_t GetSize() const;
+    inline uint8_t GetBindpointsNum() const;
+    inline uint8_t GetBindpointIndex(uint8_t arrayIndex) const;
+    inline uint8_t GetBindpointStride(uint8_t arrayIndex) const;
+    inline uint8_t GetBindpointAttribsNum(uint8_t arrayIndex) const;
+    inline Attrib GetAttribute(uint8_t bindpointArrayIndex, uint8_t attribArrayIndex) const;
 
     static VertexDeclPtr Create();
 
 private:
+    VertexDecl() = default;
     AttribMap _map;
     uint32_t _size = 0; // total vertex size
 };
 
 inline uint32_t VertexDecl::GetSize() const {
     return _size;
+}
+
+inline uint8_t VertexDecl::GetBindpointsNum() const {
+    return _map.num;
+}
+
+inline uint8_t VertexDecl::GetBindpointIndex(uint8_t arrayIndex) const {
+    return _map.bindpoints[arrayIndex].bindpoint;
+}
+
+inline uint8_t VertexDecl::GetBindpointAttribsNum(uint8_t arrayIndex) const {
+    return _map.bindpoints[arrayIndex].num;
+}
+
+inline VertexDecl::Attrib VertexDecl::GetAttribute(uint8_t bindpointArrayIndex, uint8_t attribArrayIndex) const {
+    return _map.bindpoints[bindpointArrayIndex].attribs[attribArrayIndex];
 }
 
 }

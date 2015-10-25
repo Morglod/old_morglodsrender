@@ -12,15 +12,15 @@ uint32_t _ib_cache = 0;
 
 namespace mr {
 
-IndexBufferPtr IndexBuffer::Create(BufferPtr const& ibuf, IndexType const& datatype, uint32_t num) {
+IndexBufferPtr IndexBuffer::Create(BufferPtr const& ibuf, IndexDataType const& datatype, uint32_t num) {
     return IndexBufferPtr(new IndexBuffer(ibuf, nullptr, datatype, num));
 }
 
-IndexBufferPtr IndexBuffer::Create(MemoryPtr const& mem, IndexType const& datatype, uint32_t num) {
+IndexBufferPtr IndexBuffer::Create(MemoryPtr const& mem, IndexDataType const& datatype, uint32_t num) {
     return IndexBufferPtr(new IndexBuffer(nullptr, mem, datatype, num));
 }
 
-IndexBuffer::IndexBuffer(BufferPtr const& buf, MemoryPtr const& mem, IndexType const& dtype, uint32_t num) : _buf(buf), _mem(mem), _dtype(dtype), _num(num) {
+IndexBuffer::IndexBuffer(BufferPtr const& buf, MemoryPtr const& mem, IndexDataType const& dtype, uint32_t num) : _buf(buf), _mem(mem), _dtype(dtype), _num(num) {
 }
 
 bool IndexBuffer::Bind() {

@@ -12,7 +12,7 @@
 
 namespace mr {
 
-bool Draw::Primitive(ShaderProgramPtr const& program, DrawMode const& dmode, VertexBufferPtr const& vbuf, IndexBufferPtr const& ibuf) {
+bool Draw::Primitive(ShaderProgramPtr const& program, DrawMode const& dmode, VertexBufferPtr const& vbuf, IndexBufferPtr const& ibuf, uint32_t instancesNum) {
     MP_BeginSample(Draw::Primitive);
 
     typedef  struct {
@@ -36,7 +36,8 @@ bool Draw::Primitive(ShaderProgramPtr const& program, DrawMode const& dmode, Ver
         MP_EndSample();
         return false;
     }
-    const uint32_t baseInstance = 0, instancesNum = 1, baseVertex = 0, baseIndex = 0;
+
+    const uint32_t baseInstance = 0, /*instancesNum = 1,*/ baseVertex = 0, baseIndex = 0;
     if(ibuf) {
         if(!ibuf->Bind()) {
             MR_LOG_ERROR(Draw::Primitive, "Failed bind index buffer");

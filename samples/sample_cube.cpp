@@ -12,6 +12,7 @@ const char* vertexShader =
 "#version 400 \n"
 "layout (location = 0) in vec3 pos; \n"
 "layout (location = 1) in vec4 color; \n"
+"layout (location = 2) in float color2; \n"
 "out vec4 gl_Position; \n"
 "out vec4 vcolor; \n"
 "uniform Mat { \n"
@@ -20,8 +21,8 @@ const char* vertexShader =
 "   mat4 model; \n"
 "}; \n"
 "void main() { \n"
-"   gl_Position = ((proj * view * model) * vec4(pos, 1.0)); \n"
-"   vcolor = color; \n"
+"   gl_Position = ((proj * view * model) * vec4(pos + gl_InstanceID * vec3(2.0, 0.0, 0.0), 1.0)); \n"
+"   vcolor = color * color2; \n"
 "} \n"
 ;
 
@@ -38,18 +39,19 @@ const char* fragmentShader =
 struct Vertex {
     float xyz[3];
     uint32_t color_argb;
+    float color2;
 };
 
 const size_t vertexNum = 8;
 static Vertex vertexData[vertexNum] = {
-    {-1.0f,  1.0f,  1.0f, 0xff000000 },
-	{ 1.0f,  1.0f,  1.0f, 0xff0000ff },
-	{-1.0f, -1.0f,  1.0f, 0xff00ff00 },
-	{ 1.0f, -1.0f,  1.0f, 0xff00ffff },
-	{-1.0f,  1.0f, -1.0f, 0xffff0000 },
-	{ 1.0f,  1.0f, -1.0f, 0xffff00ff },
-	{-1.0f, -1.0f, -1.0f, 0xffffff00 },
-	{ 1.0f, -1.0f, -1.0f, 0xffffffff },
+    {-1.0f,  1.0f,  1.0f, 0xff000000, 0.1f },
+	{ 1.0f,  1.0f,  1.0f, 0xff0000ff, 0.2f },
+	{-1.0f, -1.0f,  1.0f, 0xff00ff00, 0.3f },
+	{ 1.0f, -1.0f,  1.0f, 0xff00ffff, 0.1f },
+	{-1.0f,  1.0f, -1.0f, 0xffff0000, 0.2f },
+	{ 1.0f,  1.0f, -1.0f, 0xffff00ff, 0.3f },
+	{-1.0f, -1.0f, -1.0f, 0xffffff00, 0.1f },
+	{ 1.0f, -1.0f, -1.0f, 0xffffffff, 0.2f },
 };
 
 const size_t indexNum = 36;
@@ -117,15 +119,16 @@ void main_logic(GLFWwindow* window) {
     auto vdef = vdecl->Begin();
     vdef.Pos()
         .Color()
+        .Custom(DataType::Float, 1, 0, true)
         .End();
 
     // Create vertex and index buffers { buffer + format }
     auto vbuffer = VertexBuffer::Create(buf_vert, vdecl, vertexNum);
     IndexBufferPtr ibuffer = nullptr;
     if(true) // Use buffer for indecies
-        ibuffer = IndexBuffer::Create(buf_ind, IndexType::UShort, indexNum);
+        ibuffer = IndexBuffer::Create(buf_ind, IndexDataType::UShort, indexNum);
     else
-        ibuffer = IndexBuffer::Create(indexDataMem, IndexType::UShort, indexNum);
+        ibuffer = IndexBuffer::Create(indexDataMem, IndexDataType::UShort, indexNum);
 
     // Create and compile shaders
     auto vshader = Shader::Create(ShaderType::Vertex, std::string(vertexShader));
@@ -151,6 +154,7 @@ void main_logic(GLFWwindow* window) {
     // Setup shader parameters
     ubo_mat[0] = glm::perspective(90.0f, 800.0f / 600.0f, 0.1f, 10.0f);
     ubo_mat[1] = glm::lookAt(glm::vec3(0,0,5), glm::vec3(0,0,-1), glm::vec3(0,1,0));
+    // ubo_mat[2] will be changed in Update thread
 
     MR_LOG_T_STD_("Loading time (ms): ", loadTimer.End());
 
@@ -170,7 +174,7 @@ void main_logic(GLFWwindow* window) {
         Draw::Clear(ClearFlags::ColorDepth);
 
         // Draw from buffer with shader
-        Draw::Primitive(prog, DrawMode::Triangle, vbuffer, ibuffer);
+        Draw::Primitive(prog, DrawMode::Triangle, vbuffer, ibuffer, 10);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
