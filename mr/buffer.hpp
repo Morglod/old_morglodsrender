@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../build.hpp"
-#include "../memory.hpp"
+#include "build.hpp"
+#include "memory.hpp"
 
 #include <memory>
 #include <future>

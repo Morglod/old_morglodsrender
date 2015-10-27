@@ -1,4 +1,4 @@
-#include "mr/buffer/buffer.hpp"
+#include "mr/buffer.hpp"
 #include "mr/pre/glew.hpp"
 #include "mr/log.hpp"
 #include "src/mp.hpp"

@@ -30,8 +30,9 @@ const char* fragmentShader =
 "#version 400 \n"
 "in vec4 vcolor; \n"
 "out vec3 fragColor; \n"
+"uniform float mr_time; \n"
 "void main() { \n"
-"   fragColor = vcolor.xyz; \n"
+"   fragColor = vcolor.xyz * sin(mr_time) + vec3(0.1, 0.1, 0.1); \n"
 "} \n"
 ;
 
@@ -144,7 +145,7 @@ void main_logic(GLFWwindow* window) {
     auto ubo_mat = (glm::mat4*) ubo->GetMapState().mem;
 
     // Set 'background' color
-    Draw::SetClearColor(125,125,125,255);
+    Draw::SetClearColor(10,10,10,255);
 
     // Wait till async tasks end
     bufv_write.wait();
@@ -176,6 +177,7 @@ void main_logic(GLFWwindow* window) {
         // Draw from buffer with shader
         Draw::Primitive(prog, DrawMode::Triangle, vbuffer, ibuffer, 10);
 
+        prog->UniformFloat("mr_time", (float)glfwGetTime());
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

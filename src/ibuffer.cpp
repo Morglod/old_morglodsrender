@@ -1,6 +1,6 @@
 #include "mr/ibuffer.hpp"
 #include "mr/pre/glew.hpp"
-#include "mr/buffer/buffer.hpp"
+#include "mr/buffer.hpp"
 
 #include "src/mp.hpp"
 

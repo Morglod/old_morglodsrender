@@ -22,6 +22,7 @@ public:
 
     bool UniformMat4(std::string const& name, glm::mat4& mat);
     bool UniformBuffer(std::string const& name, BufferPtr const& buffer, uint32_t buffer_binding);
+    bool UniformFloat(std::string const& name, float value);
 
     inline uint32_t GetId() const;
 

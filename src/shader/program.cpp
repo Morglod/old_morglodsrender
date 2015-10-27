@@ -3,7 +3,7 @@
 #include "src/thread/util.hpp"
 #include "mr/shader/shader.hpp"
 #include "mr/log.hpp"
-#include "mr/buffer/buffer.hpp"
+#include "mr/buffer.hpp"
 #include "src/mp.hpp"
 
 #include "mr/pre/glew.hpp"
@@ -68,6 +68,15 @@ bool ShaderProgram::UniformBuffer(std::string const& name, BufferPtr const& buff
 
     glBindBufferBase(GL_UNIFORM_BUFFER, buffer_binding, buffer->GetId());
     glUniformBlockBinding(_id, glGetUniformBlockIndex(_id, name.data()), buffer_binding);
+
+    MP_EndSample();
+    return true;
+}
+
+bool ShaderProgram::UniformFloat(std::string const& name, float value) {
+    MP_BeginSample(ShaderProgram::UniformFloat);
+
+    glProgramUniform1f(_id, glGetUniformLocation(_id, name.data()), value);
 
     MP_EndSample();
     return true;
