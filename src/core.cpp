@@ -3,6 +3,7 @@
 #include "mr/pre/glew.hpp"
 #include "mr/log.hpp"
 #include "mr/info.hpp"
+#include "src/statecache.hpp"
 
 #include "src/mp.hpp"
 
@@ -16,7 +17,7 @@ namespace mr {
 
 bool Core::Init() {
     if(!mp::Init()) {
-        MR_LOG_ERROR(Core::Init, "Failed init profiler");
+        MR_LOG_WARNING(Core::Init, "Failed init profiler");
     }
 
     MP_BeginSample(Core::Init);
@@ -33,6 +34,12 @@ bool Core::Init() {
 
     if(Info::GetVersion() == Info::GLVersion::VNotSupported) {
         MR_LOG_WARNING(Core::Init, "Current opengl version (\""+Info::GetVersionAsString()+"\") is not supported. Try to use OpenGL 4.0 features");
+    }
+
+    if(!StateCache::Get()->_Init()) {
+        MR_LOG_ERROR(Core::Init, "Failed init StateCache");
+        MP_EndSample();
+        return false;
     }
 
     glEnable(GL_DEPTH_TEST);

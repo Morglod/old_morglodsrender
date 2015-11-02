@@ -6,6 +6,10 @@
 #include <memory>
 #include <future>
 
+#define MR_RESIDENT_READ_ONLY true, false
+#define MR_RESIDENT_WRITE_ONLY false, true
+#define MR_RESIDENT_READ_WRITE true, true
+
 namespace mr {
 
 typedef std::shared_ptr<class Buffer> BufferPtr;

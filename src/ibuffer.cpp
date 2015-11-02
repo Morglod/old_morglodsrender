@@ -1,14 +1,8 @@
 #include "mr/ibuffer.hpp"
 #include "mr/pre/glew.hpp"
 #include "mr/buffer.hpp"
-
+#include "src/statecache.hpp"
 #include "src/mp.hpp"
-
-namespace {
-
-uint32_t _ib_cache = 0;
-
-}
 
 namespace mr {
 
@@ -25,21 +19,19 @@ IndexBuffer::IndexBuffer(BufferPtr const& buf, MemoryPtr const& mem, IndexDataTy
 
 bool IndexBuffer::Bind() {
     MP_ScopeSample(IndexBuffer::Bind);
-    if(_ib_cache == _buf->GetId()) return true;
+    if(!StateCache::Get()->SetIndexBuffer(_buf->GetId())) return true;
 
     if(_buf != nullptr) {
         if(GLEW_NV_vertex_buffer_unified_memory) {
             glEnableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
             glBufferAddressRangeNV(GL_ELEMENT_ARRAY_ADDRESS_NV, 0, _buf->_resident.address, _buf->_size);
         }
-        else {
+        else
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _buf->GetId());
-        }
 
-    } else {
+    } else
         if(GLEW_NV_vertex_buffer_unified_memory) glDisableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
-    }
-    _ib_cache = _buf->GetId();
+
     return true;
 }
 

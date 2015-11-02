@@ -5,6 +5,7 @@
 #include "mr/log.hpp"
 #include "mr/buffer.hpp"
 #include "src/mp.hpp"
+#include "src/statecache.hpp"
 
 #include "mr/pre/glew.hpp"
 
@@ -80,6 +81,16 @@ bool ShaderProgram::UniformFloat(std::string const& name, float value) {
 
     MP_EndSample();
     return true;
+}
+
+void ShaderProgram::Use() {
+    MP_BeginSample(ShaderProgram::Use);
+
+    if(StateCache::Get()->SetShaderProgram(_id)) {
+        glUseProgram(_id);
+    }
+
+    MP_EndSample();
 }
 
 }

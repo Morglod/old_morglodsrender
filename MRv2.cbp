@@ -99,11 +99,7 @@
 			<Add option="-std=c++11" />
 			<Add option="-std=c++14" />
 		</Compiler>
-		<Unit filename="mr/buffer/buffer.hpp">
-			<Option target="Debug" />
-			<Option target="Release" />
-			<Option target="Debug_Sample_Cube" />
-		</Unit>
+		<Unit filename="mr/buffer.hpp" />
 		<Unit filename="mr/build.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -155,6 +151,7 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="mr/json.hpp" />
 		<Unit filename="mr/log.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -210,7 +207,7 @@
 			<Option target="Debug_Sample_Cube" />
 			<Option target="Release_Sample_Cube" />
 		</Unit>
-		<Unit filename="src/buffer/buffer.cpp">
+		<Unit filename="src/buffer.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
@@ -260,6 +257,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="src/statecache.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/statecache.hpp" />
 		<Unit filename="src/thread/semaphore.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -274,6 +276,16 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="src/vformat.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/vformat_json.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="third/json/json-forwards.h" />
+		<Unit filename="third/json/json.h" />
+		<Unit filename="third/jsoncpp.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>

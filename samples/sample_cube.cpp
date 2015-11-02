@@ -2,8 +2,7 @@
 
 #include <GLFW/glfw3.h>
 #include <thread>
-
-void main_logic(GLFWwindow* window);
+#include <fstream>
 
 //
 /// Define data
@@ -32,7 +31,7 @@ const char* fragmentShader =
 "out vec3 fragColor; \n"
 "uniform float mr_time; \n"
 "void main() { \n"
-"   fragColor = vcolor.xyz * sin(mr_time) + vec3(0.1, 0.1, 0.1); \n"
+"   fragColor = vcolor.xyz * ((1.0 + sin(mr_time)) / 1.5) + vec3(0.1, 0.1, 0.1); \n"
 "} \n"
 ;
 
@@ -103,8 +102,8 @@ void main_logic(GLFWwindow* window) {
     // Will do it async further
     auto buf_vert = Buffer::Create(Memory::Zero(vertexDataMem->GetSize()), flags);
     auto buf_ind = Buffer::Create(Memory::Zero(indexDataMem->GetSize()), flags);
-    buf_vert->MakeResident(true, false);
-    buf_ind->MakeResident(true, false);
+    buf_vert->MakeResident(MR_RESIDENT_READ_ONLY);
+    buf_ind->MakeResident(MR_RESIDENT_READ_ONLY);
 
     // Mark readable for shader parameters buffer
     flags.read = true;
@@ -117,11 +116,21 @@ void main_logic(GLFWwindow* window) {
 
     // Define vertex format
     auto vdecl = VertexDecl::Create();
-    auto vdef = vdecl->Begin();
+
+    /// At runtme and export to "vertex.json"
+    /*auto vdef = vdecl->Begin();
     vdef.Pos()
         .Color()
         .Custom(DataType::Float, 1, 0, true)
         .End();
+
+    std::ofstream json_exp("vertex.json");
+    Json<VertexDecl>::Export(vdecl.get(), json_exp);
+    */
+
+    /// Import from "vertex.json"
+    std::ifstream json_imp("vertex.json");
+    Json<VertexDecl>::Import(vdecl.get(), json_imp);
 
     // Create vertex and index buffers { buffer + format }
     auto vbuffer = VertexBuffer::Create(buf_vert, vdecl, vertexNum);

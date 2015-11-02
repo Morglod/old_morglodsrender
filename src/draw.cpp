@@ -30,7 +30,8 @@ bool Draw::Primitive(ShaderProgramPtr const& program, DrawMode const& dmode, Ver
         uint32_t  baseInstance; // Specifies the base instance for use in fetching instanced vertex attributes.
     } DrawElementsIndirectCommand;
 
-    glUseProgram(program->_id);
+    program->Use();
+
     if(!vbuf->Bind(0, 0)) {
         MR_LOG_ERROR(Draw::Primitive, "Failed bind vertex buffer");
         MP_EndSample();

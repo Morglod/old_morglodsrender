@@ -24,6 +24,8 @@ public:
     bool UniformBuffer(std::string const& name, BufferPtr const& buffer, uint32_t buffer_binding);
     bool UniformFloat(std::string const& name, float value);
 
+    void Use();
+
     inline uint32_t GetId() const;
 
     virtual ~ShaderProgram();
