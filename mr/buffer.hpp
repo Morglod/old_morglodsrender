@@ -14,6 +14,22 @@ namespace mr {
 
 typedef std::shared_ptr<class Buffer> BufferPtr;
 
+struct MR_API BufferInfo {
+    uint32_t buffer;
+    int32_t access; //mapBuffer
+    int32_t access_flags; //mapBufferRange
+    int32_t immutable_storage; // 0 or 1
+    int32_t mapped;
+    int32_t map_length;
+    int32_t map_offset;
+    int32_t size;
+    int32_t storage_flags;
+    int32_t usage;
+    void* mapped_mem;
+
+    void Get(uint32_t buffer);
+};
+
 class MR_API Buffer {
     friend class CmdQueue;
     friend class Draw;
@@ -61,14 +77,18 @@ public:
 
     // Memory may be Memory::Zero
     static BufferPtr Create(MemoryPtr const& mem, CreationFlags const& flags);
+    void Destroy();
 
     // Read OpenGL docs, about flags
     MappedMem Map(uint32_t length, MapOptFlags const& flags, uint32_t offset = 0); // remaps buffer if needed
     bool UnMap();
 
     // Map memory range in [offset, offset + mem.size] (remap if needed) and write/read async
-    std::future<bool> Write(MemoryPtr const& mem_src, uint32_t offset = 0); // map and write mapped async
-    std::future<bool> Read(MemoryPtr const& mem_dst, uint32_t offset = 0); // map and read mapped async
+    std::future<bool> WriteAsync(MemoryPtr const& mem_src, uint32_t offset = 0); // map and write mapped async
+    std::future<bool> ReadAsync(MemoryPtr const& mem_dst, uint32_t offset = 0); // map and read mapped async
+
+    bool Write(MemoryPtr const& mem_src, uint32_t offset = 0);
+    bool Read(MemoryPtr const& mem_dst, uint32_t offset = 0);
 
     // Update ResidentState
     bool MakeResident(bool read, bool write = false);
@@ -79,6 +99,7 @@ public:
     inline bool IsMapped() const;
     inline ResidentState GetResidentState() const;
     inline bool IsResident() const;
+    inline int32_t GetSize() const;
 
     virtual ~Buffer();
 
@@ -109,6 +130,10 @@ inline Buffer::ResidentState Buffer::GetResidentState() const {
 
 inline bool Buffer::IsResident() const {
     return _resident.resident;
+}
+
+inline int32_t Buffer::GetSize() const {
+    return _size;
 }
 
 }

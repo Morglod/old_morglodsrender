@@ -14,6 +14,7 @@ struct MR_API Memory final {
     static MemoryPtr Copy(void* mem, size_t sz);
     static MemoryPtr Own(void* mem, size_t sz);
     static MemoryPtr Zero(size_t sz); // zero memory ptr with size
+    static MemoryPtr New(size_t sz);
 
     inline bool IsOwn() const;
     inline size_t GetSize() const;

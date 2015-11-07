@@ -4,43 +4,25 @@
 #include "src/mp.hpp"
 #include "src/thread/util.hpp"
 
-namespace {
+namespace mr {
 
-struct _BufferInfo {
-    uint32_t buffer;
-    int32_t access; //mapBuffer
-    int32_t access_flags; //mapBufferRange
-    int32_t immutable_storage; // 0 or 1
-    int32_t mapped;
-    int32_t map_length;
-    int32_t map_offset;
-    int32_t size;
-    int32_t storage_flags;
-    int32_t usage;
-    void* mapped_mem;
-};
+void BufferInfo::Get(uint32_t buf) {
+    MP_BeginSample(BufferInfo::Get);
 
-void _GetBufferInfo(uint32_t buffer, _BufferInfo& info) {
-    MP_BeginSample(_GetBufferInfo);
-
-    info.buffer = buffer;
-    glGetNamedBufferParameteriv(buffer, GL_BUFFER_ACCESS, &info.access);
-    glGetNamedBufferParameteriv(buffer, GL_BUFFER_ACCESS_FLAGS, &info.access_flags);
-    glGetNamedBufferParameteriv(buffer, GL_BUFFER_IMMUTABLE_STORAGE, &info.immutable_storage);
-    glGetNamedBufferParameteriv(buffer, GL_BUFFER_MAPPED, &info.mapped);
-    glGetNamedBufferParameteriv(buffer, GL_BUFFER_MAP_LENGTH, &info.map_length);
-    glGetNamedBufferParameteriv(buffer, GL_BUFFER_MAP_OFFSET, &info.map_offset);
-    glGetNamedBufferParameteriv(buffer, GL_BUFFER_SIZE, &info.size);
-    glGetNamedBufferParameteriv(buffer, GL_BUFFER_STORAGE_FLAGS, &info.storage_flags);
-    glGetNamedBufferParameteriv(buffer, GL_BUFFER_USAGE, &info.usage);
-    glGetNamedBufferPointerv(buffer, GL_BUFFER_MAP_POINTER, &info.mapped_mem);
+    buffer = buf;
+    glGetNamedBufferParameteriv(buf, GL_BUFFER_ACCESS, &access);
+    glGetNamedBufferParameteriv(buf, GL_BUFFER_ACCESS_FLAGS, &access_flags);
+    glGetNamedBufferParameteriv(buf, GL_BUFFER_IMMUTABLE_STORAGE, &immutable_storage);
+    glGetNamedBufferParameteriv(buf, GL_BUFFER_MAPPED, &mapped);
+    glGetNamedBufferParameteriv(buf, GL_BUFFER_MAP_LENGTH, &map_length);
+    glGetNamedBufferParameteriv(buf, GL_BUFFER_MAP_OFFSET, &map_offset);
+    glGetNamedBufferParameteriv(buf, GL_BUFFER_SIZE, &size);
+    glGetNamedBufferParameteriv(buf, GL_BUFFER_STORAGE_FLAGS, &storage_flags);
+    glGetNamedBufferParameteriv(buf, GL_BUFFER_USAGE, &usage);
+    glGetNamedBufferPointerv(buf, GL_BUFFER_MAP_POINTER, &mapped_mem);
 
     MP_EndSample();
 }
-
-}
-
-namespace mr {
 
 Buffer::MapFlags::MapFlags(Buffer::MapFlags const& cpy) {
     read = cpy.read;
@@ -83,6 +65,12 @@ BufferPtr Buffer::Create(MemoryPtr const& mem, CreationFlags const& flags) {
         }
     }
     return buf;
+}
+
+void Buffer::Destroy() {
+    if(_id == 0) return;
+    glDeleteBuffers(1, &_id);
+    _id = 0;
 }
 
 Buffer::MappedMem Buffer::Map(uint32_t length, Buffer::MapOptFlags const& flags, uint32_t offset) {
@@ -179,11 +167,18 @@ bool Buffer::MakeNonResident() {
     return !glIsNamedBufferResidentNV(_id);
 }
 
-std::future<bool> Buffer::Write(MemoryPtr const& mem_src, uint32_t offset) {
-    MP_ScopeSample(Buffer::Write);
+std::future<bool> Buffer::WriteAsync(MemoryPtr const& mem_src, uint32_t offset) {
+    MP_ScopeSample(Buffer::WriteAsync);
 
     std::promise<bool> promise;
     auto futur = promise.get_future();
+
+    //Assert
+    if((offset + mem_src->GetSize()) > ((uint32_t)GetSize())) {
+        MR_LOG_ERROR(Buffer::WriteAsync, "Failed write data: offset + mem.size > buffer.size");
+        promise.set_value(false);
+        return futur;
+    }
 
     // Should be mapped
     MapFlags flags;
@@ -210,11 +205,18 @@ std::future<bool> Buffer::Write(MemoryPtr const& mem_src, uint32_t offset) {
         }, mem_src, _mapState.mem);
 }
 
-std::future<bool> Buffer::Read(MemoryPtr const& mem_dst, uint32_t offset) {
-    MP_ScopeSample(Buffer::Read);
+std::future<bool> Buffer::ReadAsync(MemoryPtr const& mem_dst, uint32_t offset) {
+    MP_ScopeSample(Buffer::ReadAsync);
 
     std::promise<bool> promise;
     auto futur = promise.get_future();
+
+    //Assert
+    if((offset + mem_dst->GetSize()) > (uint32_t)GetSize()) {
+        MR_LOG_ERROR(Buffer::ReadAsync, "Failed read data: offset + mem.size > buffer.size");
+        promise.set_value(false);
+        return futur;
+    }
 
     // Should be mapped
     MapFlags flags;
@@ -241,10 +243,39 @@ std::future<bool> Buffer::Read(MemoryPtr const& mem_dst, uint32_t offset) {
         }, mem_dst, _mapState.mem);
 }
 
+bool Buffer::Write(MemoryPtr const& mem_src, uint32_t offset) {
+    MP_ScopeSample(Buffer::Write);
+
+    //Assert
+    if((offset + mem_src->GetSize()) > (uint32_t)GetSize()) {
+        MR_LOG_ERROR(Buffer::Write, "Failed write data: offset + mem.size > buffer.size");
+        return false;
+    }
+
+    glNamedBufferSubData(GetId(), offset, mem_src->GetSize(), mem_src->GetPtr());
+
+    return true;
+}
+
+bool Buffer::Read(MemoryPtr const& mem_dst, uint32_t offset) {
+    MP_ScopeSample(Buffer::Read);
+
+    //Assert
+    if((offset + mem_dst->GetSize()) > (uint32_t)GetSize()) {
+        MR_LOG_ERROR(Buffer::Write, "Failed read data: offset + mem.size > buffer.size");
+        return false;
+    }
+
+    glGetNamedBufferSubData(GetId(), offset, mem_dst->GetSize(), mem_dst->GetPtr());
+
+    return true;
+}
+
 Buffer::Buffer() : _id(0), _size(0), _mapState(), _resident() {
 }
 
 Buffer::~Buffer() {
+    Destroy();
 }
 
 }

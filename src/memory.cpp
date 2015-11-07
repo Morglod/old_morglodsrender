@@ -25,11 +25,15 @@ MemoryPtr Memory::Zero(size_t sz) {
     return MemoryPtr(new Memory(nullptr, sz, false));
 }
 
+MemoryPtr Memory::New(size_t sz) {
+    return MemoryPtr(new Memory(new uint8_t[sz], sz, false));
+}
+
 Memory::Memory(void* ptr, size_t sz, bool own) : _ptr(ptr), _size(sz), _own(own) {}
 Memory::~Memory() {
     if(_ptr == nullptr) return;
     if(_own) {
-        free(_ptr);
+        delete [] ((uint8_t*)_ptr);
         _ptr = nullptr;
     }
 }

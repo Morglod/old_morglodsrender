@@ -110,27 +110,27 @@ void main_logic(GLFWwindow* window) {
     auto ubo = Buffer::Create(Memory::Zero(uboDataMem->GetSize()), flags);
 
     // Run write async
-    auto bufv_write = buf_vert->Write(vertexDataMem);
-    auto bufi_write = buf_ind->Write(indexDataMem);
-    auto ubo_write = ubo->Write(uboDataMem);
+    auto bufv_write = buf_vert->WriteAsync(vertexDataMem);
+    auto bufi_write = buf_ind->WriteAsync(indexDataMem);
+    auto ubo_write = ubo->WriteAsync(uboDataMem);
 
     // Define vertex format
     auto vdecl = VertexDecl::Create();
 
-    /// At runtme and export to "vertex.json"
-    /*auto vdef = vdecl->Begin();
+    /// At runtime and export to "vertex.json"
+    auto vdef = vdecl->Begin();
     vdef.Pos()
         .Color()
         .Custom(DataType::Float, 1, 0, true)
         .End();
 
-    std::ofstream json_exp("vertex.json");
-    Json<VertexDecl>::Export(vdecl.get(), json_exp);
-    */
+    std::ofstream json_file("vertex.json");
+    Json<VertexDeclPtr>::Export(vdecl, json_file);
 
     /// Import from "vertex.json"
-    std::ifstream json_imp("vertex.json");
-    Json<VertexDecl>::Import(vdecl.get(), json_imp);
+    /*std::ifstream json_file("vertex.json");
+    Json<VertexDeclPtr>::Import(vdecl, json_file);
+    */
 
     // Create vertex and index buffers { buffer + format }
     auto vbuffer = VertexBuffer::Create(buf_vert, vdecl, vertexNum);
@@ -160,6 +160,11 @@ void main_logic(GLFWwindow* window) {
     bufv_write.wait();
     bufi_write.wait();
     ubo_write.wait();
+
+    /// Export VertexBuffer
+    /*std::ifstream json_file2("vbuffer.json");
+    Json<VertexBufferPtr>::Import(vbuffer, json_file2);
+    */
 
     // Setup shader parameters
     ubo_mat[0] = glm::perspective(90.0f, 800.0f / 600.0f, 0.1f, 10.0f);
