@@ -14,3 +14,4 @@
 #include "shader/program.hpp"
 #include "timer.hpp"
 #include "json.hpp"
+#include "texture.hpp"

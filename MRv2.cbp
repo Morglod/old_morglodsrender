@@ -23,6 +23,7 @@
 					<Add library="user32" />
 					<Add library="libglew32.dll.a" />
 					<Add library="opengl32" />
+					<Add library="FreeImage" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -42,6 +43,7 @@
 					<Add library="user32" />
 					<Add library="libglew32.dll.a" />
 					<Add library="opengl32" />
+					<Add library="FreeImage" />
 				</Linker>
 			</Target>
 			<Target title="Debug_Sample_Cube">
@@ -187,6 +189,7 @@
 			<Option target="Release" />
 			<Option target="Debug_Sample_Cube" />
 		</Unit>
+		<Unit filename="mr/texture.hpp" />
 		<Unit filename="mr/thread/semaphore.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -208,6 +211,10 @@
 			<Option target="Release_Sample_Cube" />
 		</Unit>
 		<Unit filename="src/buffer.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/buffer_json.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
@@ -262,6 +269,10 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="src/statecache.hpp" />
+		<Unit filename="src/texture.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/thread/semaphore.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -272,6 +283,10 @@
 			<Option target="Debug_Sample_Cube" />
 		</Unit>
 		<Unit filename="src/vbuffer.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/vbuffer_json.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>

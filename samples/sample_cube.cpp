@@ -9,29 +9,44 @@
 //
 const char* vertexShader =
 "#version 400 \n"
+"#extension GL_ARB_bindless_texture : require \n"
+"#extension GL_NV_gpu_shader5 : enable \n"
 "layout (location = 0) in vec3 pos; \n"
 "layout (location = 1) in vec4 color; \n"
 "layout (location = 2) in float color2; \n"
+"layout (location = 3) in vec2 texCoord; \n"
 "out vec4 gl_Position; \n"
 "out vec4 vcolor; \n"
-"uniform Mat { \n"
+"out vec2 vtexCoord; \n"
+"uniform UBOData { \n"
 "   mat4 proj; \n"
 "   mat4 view; \n"
 "   mat4 model; \n"
+"   uint64_t tex; \n"
 "}; \n"
 "void main() { \n"
 "   gl_Position = ((proj * view * model) * vec4(pos + gl_InstanceID * vec3(2.0, 0.0, 0.0), 1.0)); \n"
 "   vcolor = color * color2; \n"
+"   vtexCoord = texCoord; \n"
 "} \n"
 ;
 
 const char* fragmentShader =
 "#version 400 \n"
+"#extension GL_ARB_bindless_texture : require \n"
+"#extension GL_NV_gpu_shader5 : enable \n"
 "in vec4 vcolor; \n"
+"in vec2 vtexCoord; \n"
 "out vec3 fragColor; \n"
 "uniform float mr_time; \n"
+"uniform UBOData { \n"
+"   mat4 proj; \n"
+"   mat4 view; \n"
+"   mat4 model; \n"
+"   uint64_t tex; \n"
+"}; \n"
 "void main() { \n"
-"   fragColor = vcolor.xyz * ((1.0 + sin(mr_time)) / 1.5) + vec3(0.1, 0.1, 0.1); \n"
+"   fragColor = ((texture(sampler2D(tex), vtexCoord).rgb + vcolor.xyz) * 0.5) * ((1.0 + sin(mr_time)) / 1.5) + vec3(0.1, 0.1, 0.1); \n"
 "} \n"
 ;
 
@@ -40,18 +55,19 @@ struct Vertex {
     float xyz[3];
     uint32_t color_argb;
     float color2;
+    float texCoord[2];
 };
 
 const size_t vertexNum = 8;
 static Vertex vertexData[vertexNum] = {
-    {-1.0f,  1.0f,  1.0f, 0xff000000, 0.1f },
-	{ 1.0f,  1.0f,  1.0f, 0xff0000ff, 0.2f },
-	{-1.0f, -1.0f,  1.0f, 0xff00ff00, 0.3f },
-	{ 1.0f, -1.0f,  1.0f, 0xff00ffff, 0.1f },
-	{-1.0f,  1.0f, -1.0f, 0xffff0000, 0.2f },
-	{ 1.0f,  1.0f, -1.0f, 0xffff00ff, 0.3f },
-	{-1.0f, -1.0f, -1.0f, 0xffffff00, 0.1f },
-	{ 1.0f, -1.0f, -1.0f, 0xffffffff, 0.2f },
+    {-1.0f,  1.0f,  1.0f, 0xff000000, 0.1f, 0,1 },
+	{ 1.0f,  1.0f,  1.0f, 0xff0000ff, 0.2f, 1,1 },
+	{-1.0f, -1.0f,  1.0f, 0xff00ff00, 0.3f, 0,0 },
+	{ 1.0f, -1.0f,  1.0f, 0xff00ffff, 0.1f, 1,0 },
+	{-1.0f,  1.0f, -1.0f, 0xffff0000, 0.2f, 0,1 },
+	{ 1.0f,  1.0f, -1.0f, 0xffff00ff, 0.3f, 1,1 },
+	{-1.0f, -1.0f, -1.0f, 0xffffff00, 0.1f, 0,0 },
+	{ 1.0f, -1.0f, -1.0f, 0xffffffff, 0.2f, 1,0 },
 };
 
 const size_t indexNum = 36;
@@ -70,10 +86,11 @@ static uint16_t indexData[indexNum] = {
 	6, 3, 7,
 };
 
-static glm::mat4 uboData[] = {
-    glm::mat4(1.0f), // proj
-    glm::mat4(1.0f), // view
-    glm::mat4(1.0f) // model
+struct UBOData {
+    glm::mat4 proj = glm::mat4(1.0f),
+              view = glm::mat4(1.0f),
+              model = glm::mat4(1.0f);
+    uint64_t tex;
 };
 
 //
@@ -92,7 +109,7 @@ void main_logic(GLFWwindow* window) {
     // Prepare memory
     const auto vertexDataMem = Memory::Ref(vertexData, sizeof(Vertex) * vertexNum);
     const auto indexDataMem = Memory::Ref(indexData, sizeof(uint16_t) * indexNum);
-    const auto uboDataMem = Memory::Ref(uboData, sizeof(glm::mat4) * 3);
+    const auto uboDataMem = Memory::Own(new UBOData, sizeof(UBOData));
 
     // Create buffer and map it
     Buffer::CreationFlags flags;
@@ -122,6 +139,7 @@ void main_logic(GLFWwindow* window) {
     vdef.Pos()
         .Color()
         .Custom(DataType::Float, 1, 0, true)
+        .Custom(DataType::Float, 2, 0, true)
         .End();
 
     std::ofstream json_file("vertex.json");
@@ -151,7 +169,7 @@ void main_logic(GLFWwindow* window) {
     prog->UniformBuffer("Mat", ubo, 0);
 
     // Get mapped memory ("direct" access to parameters buffer)
-    auto ubo_mat = (glm::mat4*) ubo->GetMapState().mem;
+    auto uboData = (UBOData*)ubo->GetMapState().mem;
 
     // Set 'background' color
     Draw::SetClearColor(10,10,10,255);
@@ -167,22 +185,34 @@ void main_logic(GLFWwindow* window) {
     */
 
     // Setup shader parameters
-    ubo_mat[0] = glm::perspective(90.0f, 800.0f / 600.0f, 0.1f, 10.0f);
-    ubo_mat[1] = glm::lookAt(glm::vec3(0,0,5), glm::vec3(0,0,-1), glm::vec3(0,1,0));
-    // ubo_mat[2] will be changed in Update thread
+    uboData->proj = glm::perspective(90.0f, 800.0f / 600.0f, 0.1f, 10.0f);
+    uboData->view = glm::lookAt(glm::vec3(0,0,5), glm::vec3(0,0,-1), glm::vec3(0,1,0));
+    // uboData->model will be changed in Update thread
+
+    // Test texture
+    TextureDataPtr textureData = TextureData::FromFile("house.png");
+    TextureParams textureParams;
+    textureParams.minFilter = TextureMinFilter::LinearMipmapLinear;
+    textureParams.magFilter = TextureMagFilter::Linear;
+    Texture2DPtr texture = Texture2D::Create(textureParams);
+    texture->Storage();
+    texture->WriteImage(textureData);
+    texture->BuildMipmaps();
+    texture->MakeResident();
+    uboData->tex = texture->GetResidentHandle();
 
     MR_LOG_T_STD_("Loading time (ms): ", loadTimer.End());
 
     // Update thread example
     bool update_thread_working = true;
-    auto update_thread = std::thread([&update_thread_working](glm::mat4* ubo_data) {
+    auto update_thread = std::thread([&update_thread_working](UBOData* ubo_data) {
                                         float a = 0.0f;
                                         while(update_thread_working) {
-                                            ubo_data[2] = glm::rotate(a, glm::vec3(1,1,1));
+                                            ubo_data->model = glm::rotate(a, glm::vec3(1,1,1));
                                             a += 0.01f;
                                             std::this_thread::sleep_for(std::chrono::milliseconds(16));
                                         }
-                                     }, ubo_mat);
+                                     }, uboData);
 
     while(!glfwWindowShouldClose(window)) {
         // Clear screen
