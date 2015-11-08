@@ -50,7 +50,6 @@ const char* fragmentShader =
 "} \n"
 ;
 
-
 struct Vertex {
     float xyz[3];
     uint32_t color_argb;
@@ -166,7 +165,7 @@ void main_logic(GLFWwindow* window) {
     auto prog = ShaderProgram::Create({vshader, fshader});
 
     // Set parameters buffer for shaders
-    prog->UniformBuffer("Mat", ubo, 0);
+    prog->UniformBuffer("UBOData", ubo, 0);
 
     // Get mapped memory ("direct" access to parameters buffer)
     auto uboData = (UBOData*)ubo->GetMapState().mem;
@@ -190,11 +189,13 @@ void main_logic(GLFWwindow* window) {
     // uboData->model will be changed in Update thread
 
     // Test texture
-    TextureDataPtr textureData = TextureData::FromFile("house.png");
+    auto textureData = TextureData::FromFile("house.png");
+
     TextureParams textureParams;
     textureParams.minFilter = TextureMinFilter::LinearMipmapLinear;
     textureParams.magFilter = TextureMagFilter::Linear;
-    Texture2DPtr texture = Texture2D::Create(textureParams);
+
+    auto texture = Texture2D::Create(textureParams);
     texture->Storage();
     texture->WriteImage(textureData);
     texture->BuildMipmaps();

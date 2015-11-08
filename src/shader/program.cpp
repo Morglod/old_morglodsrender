@@ -58,7 +58,11 @@ bool ShaderProgram::Link(std::vector<ShaderPtr> const& shaders) {
 bool ShaderProgram::UniformMat4(std::string const& name, glm::mat4& mat) {
     MP_BeginSample(ShaderProgram::UniformMat4);
 
-    glProgramUniformMatrix4fv(_id, glGetUniformLocation(_id, name.data()), 1, false, &mat[0][0]);
+    const auto location = glGetUniformLocation(_id, name.data());
+    if(location == -1)
+        MR_LOG_WARNING(ShaderProgram::UniformMat4, "failed get \""+name+"\"'s location");
+    else
+        glProgramUniformMatrix4fv(_id, location, 1, false, &mat[0][0]);
 
     MP_EndSample();
     return true;
@@ -77,7 +81,11 @@ bool ShaderProgram::UniformBuffer(std::string const& name, BufferPtr const& buff
 bool ShaderProgram::UniformFloat(std::string const& name, float value) {
     MP_BeginSample(ShaderProgram::UniformFloat);
 
-    glProgramUniform1f(_id, glGetUniformLocation(_id, name.data()), value);
+    const auto location = glGetUniformLocation(_id, name.data());
+    if(location == -1)
+        MR_LOG_WARNING(ShaderProgram::UniformMat4, "failed get \""+name+"\"'s location");
+    else
+        glProgramUniform1f(_id, location, value);
 
     MP_EndSample();
     return true;
