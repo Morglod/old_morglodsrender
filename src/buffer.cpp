@@ -129,6 +129,18 @@ bool Buffer::UnMap() {
     return !IsMapped();
 }
 
+void Buffer::FlushMapped() {
+    MP_ScopeSample(Buffer::FlushMapped);
+
+    if(!IsMapped()) {
+        // TODO warning
+    }
+
+    // if(!FLUSH_EXPLICIT_BIT) TODO warning
+
+    glFlushMappedNamedBufferRange(_id, _mapState.offset, _mapState.length);
+}
+
 bool Buffer::MakeResident(bool read, bool write) {
     MP_ScopeSample(Buffer::MakeResident);
 

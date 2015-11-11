@@ -202,7 +202,20 @@ void main_logic(GLFWwindow* window) {
     texture->MakeResident();
     uboData->tex = texture->GetResidentHandle();
 
+    // Test shader generator
+    MaterialShaderCfg shaderCfg;
+    shaderCfg.vertex_decl = vdecl;
+
+    std::ofstream shaderFile("shader.glsl");
+    shaderFile << MaterialShaderGenerator::Shader(shaderCfg);
+    shaderFile.close();
+
     MR_LOG_T_STD_("Loading time (ms): ", loadTimer.End());
+
+    // Test camera
+    PerspectiveCamera camera;
+    camera.SetPos({0,0,0});
+    camera.SetRot({0,0,0});
 
     // Update thread example
     bool update_thread_working = true;
@@ -220,9 +233,17 @@ void main_logic(GLFWwindow* window) {
         Draw::Clear(ClearFlags::ColorDepth);
 
         // Draw from buffer with shader
-        Draw::Primitive(prog, DrawMode::Triangle, vbuffer, ibuffer, 10);
+        const uint32_t instances = 10;
+        Draw::Primitive(prog, DrawMode::Triangle, vbuffer, ibuffer, instances);
 
         prog->UniformFloat("mr_time", (float)glfwGetTime());
+
+        if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) camera.MoveForward(0.001f);
+        if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) camera.MoveForward(-0.001f);
+        if(glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) camera.RotateY(0.1f);
+        if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) camera.RotateY(-0.1f);
+        uboData->view = camera.GetMat();
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

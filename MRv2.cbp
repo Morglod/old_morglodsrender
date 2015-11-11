@@ -8,7 +8,7 @@
 		<Build>
 			<Target title="Debug">
 				<Option output="build/MRv2_d" prefix_auto="1" extension_auto="1" />
-				<Option object_output="obj/Debug/" />
+				<Option object_output="build_obj/Debug/" />
 				<Option type="3" />
 				<Option compiler="tdm_gcc64" />
 				<Option createDefFile="1" />
@@ -28,7 +28,7 @@
 			</Target>
 			<Target title="Release">
 				<Option output="build/MRv2" prefix_auto="1" extension_auto="1" />
-				<Option object_output="obj/Release/" />
+				<Option object_output="build_obj/Release/" />
 				<Option type="3" />
 				<Option compiler="tdm_gcc64" />
 				<Option createDefFile="1" />
@@ -49,7 +49,7 @@
 			<Target title="Debug_Sample_Cube">
 				<Option output="build/Sample_Cube_d" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="build/" />
-				<Option object_output="obj/Debug/" />
+				<Option object_output="build_obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="tdm_gcc64" />
 				<Option use_console_runner="0" />
@@ -67,13 +67,32 @@
 			<Target title="Release_Sample_Cube">
 				<Option output="build/Sample_Cube" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="build/" />
-				<Option object_output="obj/Release/" />
+				<Option object_output="build_obj/Release/" />
 				<Option type="1" />
 				<Option compiler="tdm_gcc64" />
 				<Option use_console_runner="0" />
 				<Linker>
 					<Add library="libglfw3dll.a" />
 					<Add library="MRv2" />
+					<Add library="user32" />
+					<Add library="libglew32.dll.a" />
+					<Add library="opengl32" />
+					<Add directory="build" />
+				</Linker>
+			</Target>
+			<Target title="Sample_Doom">
+				<Option output="build/Sample_Doom" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="build/" />
+				<Option object_output="build_obj/Release/" />
+				<Option type="1" />
+				<Option compiler="tdm_gcc64" />
+				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+				<Linker>
+					<Add library="libglfw3dll.a" />
+					<Add library="MRv2_d" />
 					<Add library="user32" />
 					<Add library="libglew32.dll.a" />
 					<Add library="opengl32" />
@@ -101,7 +120,12 @@
 			<Add option="-std=c++11" />
 			<Add option="-std=c++14" />
 		</Compiler>
-		<Unit filename="mr/buffer.hpp" />
+		<Unit filename="mr/buffer.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Debug_Sample_Cube" />
+			<Option target="Release_Sample_Cube" />
+		</Unit>
 		<Unit filename="mr/build.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -111,6 +135,10 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="mr/build_log.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="mr/camera.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
@@ -143,7 +171,12 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="mr/gl/types.hpp" />
+		<Unit filename="mr/gl/types.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Debug_Sample_Cube" />
+			<Option target="Release_Sample_Cube" />
+		</Unit>
 		<Unit filename="mr/ibuffer.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -153,8 +186,17 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="mr/json.hpp" />
+		<Unit filename="mr/json.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Debug_Sample_Cube" />
+			<Option target="Release_Sample_Cube" />
+		</Unit>
 		<Unit filename="mr/log.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="mr/material/MaterialShader.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
@@ -178,7 +220,12 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="mr/pre/mu.hpp" />
+		<Unit filename="mr/pre/mu.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Debug_Sample_Cube" />
+			<Option target="Release_Sample_Cube" />
+		</Unit>
 		<Unit filename="mr/shader/program.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -189,13 +236,27 @@
 			<Option target="Release" />
 			<Option target="Debug_Sample_Cube" />
 		</Unit>
-		<Unit filename="mr/texture.hpp" />
+		<Unit filename="mr/string.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="mr/texture.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Debug_Sample_Cube" />
+			<Option target="Release_Sample_Cube" />
+		</Unit>
 		<Unit filename="mr/thread/semaphore.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 			<Option target="Debug_Sample_Cube" />
 		</Unit>
-		<Unit filename="mr/timer.hpp" />
+		<Unit filename="mr/timer.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Debug_Sample_Cube" />
+			<Option target="Release_Sample_Cube" />
+		</Unit>
 		<Unit filename="mr/vbuffer.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -210,6 +271,21 @@
 			<Option target="Debug_Sample_Cube" />
 			<Option target="Release_Sample_Cube" />
 		</Unit>
+		<Unit filename="samples/sample_doom.cpp">
+			<Option target="Sample_Doom" />
+		</Unit>
+		<Unit filename="samples/sample_doom_geom.hpp">
+			<Option target="Sample_Doom" />
+		</Unit>
+		<Unit filename="samples/sample_doom_map.hpp">
+			<Option target="Sample_Doom" />
+		</Unit>
+		<Unit filename="samples/sample_doom_shader.hpp">
+			<Option target="Sample_Doom" />
+		</Unit>
+		<Unit filename="samples/sample_doom_texture.hpp">
+			<Option target="Sample_Doom" />
+		</Unit>
 		<Unit filename="src/buffer.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -218,7 +294,16 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="src/build_impl.hpp" />
+		<Unit filename="src/build_impl.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Debug_Sample_Cube" />
+			<Option target="Release_Sample_Cube" />
+		</Unit>
+		<Unit filename="src/camera.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/core.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -247,6 +332,10 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="src/material/MaterialShader.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/memory.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -255,7 +344,16 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="src/mp.hpp" />
+		<Unit filename="src/mp.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Debug_Sample_Cube" />
+			<Option target="Release_Sample_Cube" />
+		</Unit>
+		<Unit filename="src/shader/common_shader.glsl">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/shader/program.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -264,11 +362,20 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="src/shader/shader_code.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/statecache.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="src/statecache.hpp" />
+		<Unit filename="src/statecache.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Debug_Sample_Cube" />
+			<Option target="Release_Sample_Cube" />
+		</Unit>
 		<Unit filename="src/texture.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -298,8 +405,18 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="third/json/json-forwards.h" />
-		<Unit filename="third/json/json.h" />
+		<Unit filename="third/json/json-forwards.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Debug_Sample_Cube" />
+			<Option target="Release_Sample_Cube" />
+		</Unit>
+		<Unit filename="third/json/json.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Debug_Sample_Cube" />
+			<Option target="Release_Sample_Cube" />
+		</Unit>
 		<Unit filename="third/jsoncpp.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />

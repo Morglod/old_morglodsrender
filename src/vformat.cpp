@@ -100,7 +100,7 @@ void VertexDecl::Changer::End() {
 }
 
 void VertexDecl::Changer::Push(uint8_t bindpoint_index, uint32_t gl_dt, uint8_t comp_num, bool norm, bool offsetOnly) {
-    MP_BeginSample(VertexDecl::Changer::Push);
+    MP_ScopeSample(VertexDecl::Changer::Push);
 
     const uint32_t dt_size = (gl_dt != GL_HALF_FLOAT) ? sizeof_gl(gl_dt) : sizeof(float);
     const uint8_t attrib_size = dt_size * comp_num;
@@ -124,8 +124,6 @@ void VertexDecl::Changer::Push(uint8_t bindpoint_index, uint32_t gl_dt, uint8_t 
     bindpoint.attribs.push_back(attrib);
     ++(bindpoint.attribi);
     bindpoint.offset += attrib_size;
-
-    MP_EndSample();
 }
 
 VertexDecl::Changer::Changer(VertexDecl& d) : decl(d) {
@@ -169,15 +167,13 @@ void VertexDecl::AttribMap::Resize(uint8_t n) {
 }
 
 void VertexDecl::AttribMap::Free() {
-    MP_BeginSample(VertexDecl::AttribMap::Free);
+    MP_ScopeSample(VertexDecl::AttribMap::Free);
 
     if(bindpoints != nullptr) {
         delete [] bindpoints;
         bindpoints = nullptr;
     }
     num = 0;
-
-    MP_EndSample();
 }
 
 VertexDecl::AttribMap::~AttribMap() {

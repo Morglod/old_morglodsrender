@@ -27,6 +27,7 @@ public:
         uint8_t normalized; // 0 or 1
         uint8_t offset;
         uint8_t size;
+        // bool flat; TODO
     };
 
     struct MR_API BindPoint {

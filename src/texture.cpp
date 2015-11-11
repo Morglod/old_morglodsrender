@@ -56,7 +56,7 @@ TextureDataPtr TextureData::FromFile(std::string const& file) {
 		return nullptr;
 	}
 
-    //FreeImage_FlipVertical(dib);
+    FreeImage_FlipVertical(dib);
 
 	BYTE* bits = FreeImage_GetBits(dib);
 	unsigned int width = FreeImage_GetWidth(dib);

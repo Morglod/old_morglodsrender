@@ -74,6 +74,7 @@ struct Sample {
 	TimerT timer;
 	TimeT time;
 	std::string name;
+	inline ~Sample() {}
 };
 
 bool Init();

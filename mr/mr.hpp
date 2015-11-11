@@ -15,3 +15,5 @@
 #include "timer.hpp"
 #include "json.hpp"
 #include "texture.hpp"
+#include "material/MaterialShader.hpp"
+#include "camera.hpp"

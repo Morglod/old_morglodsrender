@@ -82,6 +82,7 @@ public:
     // Read OpenGL docs, about flags
     MappedMem Map(uint32_t length, MapOptFlags const& flags, uint32_t offset = 0); // remaps buffer if needed
     bool UnMap();
+    void FlushMapped();
 
     // Map memory range in [offset, offset + mem.size] (remap if needed) and write/read async
     std::future<bool> WriteAsync(MemoryPtr const& mem_src, uint32_t offset = 0); // map and write mapped async
@@ -98,6 +99,7 @@ public:
     inline uint32_t GetId() const;
     inline bool IsMapped() const;
     inline ResidentState GetResidentState() const;
+    inline uint64_t GetResidentHandle() const;
     inline bool IsResident() const;
     inline int32_t GetSize() const;
 
@@ -134,6 +136,10 @@ inline bool Buffer::IsResident() const {
 
 inline int32_t Buffer::GetSize() const {
     return _size;
+}
+
+inline uint64_t Buffer::GetResidentHandle() const {
+    return _resident.address;
 }
 
 }
