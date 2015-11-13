@@ -138,4 +138,9 @@ void Log(Sample const& smpl, std::string const& parentName) {
     _total_samples[hashName].total += smpl.time;
 }
 
+std::mutex& GlobalMtx() {
+    static std::mutex mtx;
+    return mtx;
+}
+
 }

@@ -17,3 +17,4 @@
 #include "texture.hpp"
 #include "material/MaterialShader.hpp"
 #include "camera.hpp"
+#include "string.hpp"

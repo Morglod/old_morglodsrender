@@ -2,25 +2,16 @@
 #include "mr/vformat.hpp"
 #include "src/shader/shader_code.hpp"
 #include "mr/string.hpp"
+#include "mr/gl/types.hpp"
 
 #include "mr/pre/glew.hpp"
 
-namespace {
-
-std::string _MR_DataType(uint8_t components_num, uint32_t datatype) {
-    if(components_num > 1) {
-        return "vec"+std::to_string(components_num);
-    }
-    //TODO data types
-    if(datatype == GL_FLOAT) return "float";
-    if(datatype == GL_UNSIGNED_INT) return "uint";
-    if(datatype == GL_UNSIGNED_BYTE) return "ubyte";
-    return "void";
-}
-
-}
-
 namespace mr {
+
+MaterialParamGroup::Changer MaterialParamGroup::Begin() {
+    _params.clear();
+    _size = 0;
+}
 
 std::string MaterialShaderGenerator::Vertex(VertexDeclPtr const& vdecl) {
     if(vdecl == nullptr) return "";
@@ -32,7 +23,7 @@ std::string MaterialShaderGenerator::Vertex(VertexDeclPtr const& vdecl) {
             const auto attrib = vdecl->GetAttribute(ib, ia);
             result += "layout(location = "+std::to_string(attrib.index)+") ";
             result += "in "; // TODO in/out
-            result += _MR_DataType(attrib.components_num, attrib.datatype);
+            result += VertexAttributeTypeString(attrib.datatype, attrib.components_num);
             result += " mr_attrib_" + std::to_string(acounter);
             result += ";\n";
             ++acounter;

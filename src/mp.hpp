@@ -6,6 +6,7 @@
 #include <stack>
 #include <string>
 #include <chrono>
+#include <mutex>
 
 #include "mr/timer.hpp"
 
@@ -20,6 +21,7 @@
 
 #define MP_BeginSampleT(_name_) \
 { \
+    std::lock_guard<std::mutex> lock(mp::GlobalMtx()); \
 	auto smpl = mp::Sample(); \
 	smpl.name = std::string(_name_); \
 	smpl.timer.Start(); \
@@ -34,6 +36,7 @@ MP_BeginSample( (__func__) )
 
 #define MP_EndSample() \
 { \
+    std::lock_guard<std::mutex> lock(mp::GlobalMtx()); \
     if(!mp::RefSamples().empty()) { \
         auto smpl = mp::RefSamples().top(); \
         mp::RefSamples().pop(); \
@@ -83,6 +86,7 @@ void Shutdown();
 void Log(Sample const&, std::string const& parentName);
 
 std::stack<Sample>& RefSamples();
+std::mutex& GlobalMtx();
 
 struct ScopeSample {
 	inline ScopeSample(const char* name) {
