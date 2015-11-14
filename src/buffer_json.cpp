@@ -85,6 +85,7 @@ MR_API bool mr::Json<mr::BufferPtr>::_Import(mr::BufferPtr& type, void* in) {
 
     uint64_t uid = 0;
     _MR_JSON_MEMBER(j_root, "uid", isUInt64, Json<mr::BufferPtr>::Import, uid, asUInt64);
+    ((void)uid); // use uid
 
     uint32_t buf_size = 0;
     _MR_JSON_MEMBER(j_root, "size", isUInt, Json<mr::BufferPtr>::Import, buf_size, asUInt);

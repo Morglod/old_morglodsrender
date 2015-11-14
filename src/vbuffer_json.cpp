@@ -61,6 +61,7 @@ MR_API bool mr::Json<mr::VertexBufferPtr>::_Import(mr::VertexBufferPtr& type, vo
 
     uint64_t uid = 0;
     _MR_JSON_MEMBER(j_root, "uid", isUInt64, Json<mr::VertexBufferPtr>::_Import, uid, asUInt64);
+    ((void)uid); // use uid
 
     uint32_t num = 0;
     _MR_JSON_MEMBER(j_root, "num", isUInt, Json<mr::VertexBufferPtr>::_Import, num, asUInt);

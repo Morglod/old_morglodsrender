@@ -133,10 +133,14 @@ void Buffer::FlushMapped() {
     MP_ScopeSample(Buffer::FlushMapped);
 
     if(!IsMapped()) {
-        // TODO warning
+        MR_LOG_WARNING(Buffer::FlushMapped, "connot flush unmapped buffer");
+        return;
     }
 
-    // if(!FLUSH_EXPLICIT_BIT) TODO warning
+    if(!(_mapState.flags & GL_MAP_FLUSH_EXPLICIT_BIT)) {
+        MR_LOG_ERROR(Buffer::FlushMapped, "failed flush buffer, without flush_explicit flag");
+        return;
+    }
 
     glFlushMappedNamedBufferRange(_id, _mapState.offset, _mapState.length);
 }

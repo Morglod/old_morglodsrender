@@ -17,7 +17,6 @@
 					<Add option="-g" />
 					<Add option="-DBUILD_DLL" />
 					<Add option="-DMR_PROFILE" />
-					<Add directory="../morglodsrender" />
 				</Compiler>
 				<Linker>
 					<Add library="user32" />
@@ -36,7 +35,6 @@
 				<Compiler>
 					<Add option="-O2" />
 					<Add option="-DBUILD_DLL" />
-					<Add directory="../morglodsrender" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -119,6 +117,7 @@
 			<Add option="-Wall" />
 			<Add option="-std=c++11" />
 			<Add option="-std=c++14" />
+			<Add directory="../morglodsrender" />
 		</Compiler>
 		<Unit filename="mr/buffer.hpp">
 			<Option target="Debug" />
@@ -160,14 +159,6 @@
 			<Option target="Debug_Sample_Cube" />
 		</Unit>
 		<Unit filename="mr/experimental/buffertransfer.hpp">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="mr/gl/object.hpp">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="mr/gl/objectlist.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
@@ -235,6 +226,10 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 			<Option target="Debug_Sample_Cube" />
+		</Unit>
+		<Unit filename="mr/shader/ubo.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="mr/string.hpp">
 			<Option target="Debug" />
@@ -312,11 +307,7 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="src/gl/object.cpp">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="src/gl/objectlist.cpp">
+		<Unit filename="src/gl/types.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
@@ -363,6 +354,10 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="src/shader/shader_code.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/shader/ubo.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>

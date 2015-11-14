@@ -18,14 +18,13 @@ const char* vertexShader =
 "out vec4 gl_Position; \n"
 "out vec4 vcolor; \n"
 "out vec2 vtexCoord; \n"
+"{{SYS_UNIFORM}} \n"
 "uniform UBOData { \n"
-"   mat4 proj; \n"
-"   mat4 view; \n"
 "   mat4 model; \n"
 "   uint64_t tex; \n"
 "}; \n"
 "void main() { \n"
-"   gl_Position = ((proj * view * model) * vec4(pos + gl_InstanceID * vec3(2.0, 0.0, 0.0), 1.0)); \n"
+"   gl_Position = ((mr_sys.proj * mr_sys.view * model) * vec4(pos + gl_InstanceID * vec3(2.0, 0.0, 0.0), 1.0)); \n"
 "   vcolor = color * color2; \n"
 "   vtexCoord = texCoord; \n"
 "} \n"
@@ -38,15 +37,13 @@ const char* fragmentShader =
 "in vec4 vcolor; \n"
 "in vec2 vtexCoord; \n"
 "out vec3 fragColor; \n"
-"uniform float mr_time; \n"
+"{{SYS_UNIFORM}} \n"
 "uniform UBOData { \n"
-"   mat4 proj; \n"
-"   mat4 view; \n"
 "   mat4 model; \n"
 "   uint64_t tex; \n"
 "}; \n"
 "void main() { \n"
-"   fragColor = ((texture(sampler2D(tex), vtexCoord).rgb + vcolor.xyz) * 0.5) * ((1.0 + sin(mr_time)) / 1.5) + vec3(0.1, 0.1, 0.1); \n"
+"   fragColor = ((texture(sampler2D(tex), vtexCoord).rgb + vcolor.xyz) * 0.5) * ((1.0 + sin(mr_sys.time)) / 1.5) + vec3(0.1, 0.1, 0.1); \n"
 "} \n"
 ;
 
@@ -86,9 +83,7 @@ static uint16_t indexData[indexNum] = {
 };
 
 struct UBOData {
-    glm::mat4 proj = glm::mat4(1.0f),
-              view = glm::mat4(1.0f),
-              model = glm::mat4(1.0f);
+    glm::mat4 model = glm::mat4(1.0f);
     uint64_t tex;
 };
 
@@ -158,17 +153,22 @@ void main_logic(GLFWwindow* window) {
         ibuffer = IndexBuffer::Create(indexDataMem, IndexDataType::UShort, indexNum);
 
     // Create and compile shaders
-    auto vshader = Shader::Create(ShaderType::Vertex, std::string(vertexShader));
-    auto fshader = Shader::Create(ShaderType::Fragment, std::string(fragmentShader));
+    auto vshader = Shader::Create(ShaderType::Vertex, ReplaceString(std::string(vertexShader), "{{SYS_UNIFORM}}", SysUniformStr));
+    auto fshader = Shader::Create(ShaderType::Fragment, ReplaceString(std::string(fragmentShader), "{{SYS_UNIFORM}}", SysUniformStr));
 
     // Create and link shader program
     auto prog = ShaderProgram::Create({vshader, fshader});
 
+    // Test material
+    MaterialShaderPtr material = MaterialShader::Create(prog);
+
     // Set parameters buffer for shaders
     prog->UniformBuffer("UBOData", ubo, 0);
+    //prog->UniformBuffer("mr_sys_block", MaterialShader::GetSystemUniformBuffer(), 1);
 
     // Get mapped memory ("direct" access to parameters buffer)
     auto uboData = (UBOData*)ubo->GetMapState().mem;
+    auto sysUBO = (SysUniformData*)MaterialShader::GetSystemUniformBuffer()->GetMapState().mem;
 
     // Set 'background' color
     Draw::SetClearColor(10,10,10,255);
@@ -184,9 +184,9 @@ void main_logic(GLFWwindow* window) {
     */
 
     // Setup shader parameters
-    uboData->proj = glm::perspective(90.0f, 800.0f / 600.0f, 0.1f, 10.0f);
-    uboData->view = glm::lookAt(glm::vec3(0,0,5), glm::vec3(0,0,-1), glm::vec3(0,1,0));
-    // uboData->model will be changed in Update thread
+    sysUBO->proj = glm::perspective(90.0f, 800.0f / 600.0f, 0.1f, 10.0f);
+    sysUBO->view = glm::lookAt(glm::vec3(0,0,5), glm::vec3(0,0,-1), glm::vec3(0,1,0));
+    // sysUBO->model will be changed in Update thread
 
     // Test texture
     auto textureData = TextureData::FromFile("house.png");
@@ -202,20 +202,24 @@ void main_logic(GLFWwindow* window) {
     texture->MakeResident();
     uboData->tex = texture->GetResidentHandle();
 
-    // Test shader generator
-    MaterialShaderCfg shaderCfg;
-    shaderCfg.vertex_decl = vdecl;
-
-    std::ofstream shaderFile("shader.glsl");
-    shaderFile << MaterialShaderGenerator::Shader(shaderCfg);
-    shaderFile.close();
-
     MR_LOG_T_STD_("Loading time (ms): ", loadTimer.End());
 
     // Test camera
     PerspectiveCamera camera;
     camera.SetPos({0,0,0});
     camera.SetRot({0,0,0});
+
+    // Test ubo info
+    {
+        std::vector<UniformBufferDescPtr> ubos;
+        if(!UniformBufferDesc::Create(prog, ubos)) {
+            MR_LOG_ERROR(main_logic, "failed create ubos desc");
+        } else {
+            for(UniformBufferDescPtr const& ubod : ubos) {
+                std::cout << ubod;
+            }
+        }
+    }
 
     // Update thread example
     bool update_thread_working = true;
@@ -236,13 +240,12 @@ void main_logic(GLFWwindow* window) {
         const uint32_t instances = 10;
         Draw::Primitive(prog, DrawMode::Triangle, vbuffer, ibuffer, instances);
 
-        prog->UniformFloat("mr_time", (float)glfwGetTime());
-
         if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) camera.MoveForward(0.001f);
         if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) camera.MoveForward(-0.001f);
         if(glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) camera.RotateY(0.1f);
         if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) camera.RotateY(-0.1f);
-        uboData->view = camera.GetMat();
+        sysUBO->view = camera.GetMat();
+        sysUBO->time = (float)glfwGetTime();
 
         glfwSwapBuffers(window);
         glfwPollEvents();

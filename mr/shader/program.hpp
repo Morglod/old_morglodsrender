@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../build.hpp"
-#include "../pre/glm.hpp"
+#include "mr/build.hpp"
+#include "mr/pre/glm.hpp"
 
 #include <memory>
 #include <future>

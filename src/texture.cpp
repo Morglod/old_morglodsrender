@@ -43,7 +43,7 @@ TextureDataPtr TextureData::FromFile(std::string const& file) {
 		return nullptr;
 	}
 
-    FIBITMAP* dib = 0;
+    FIBITMAP* dib = nullptr;
 	if(FreeImage_FIFSupportsReading(fif))
 		dib = FreeImage_Load(fif, file.c_str());
     else {
@@ -72,7 +72,7 @@ TextureDataPtr TextureData::FromFile(std::string const& file) {
 		return nullptr;
 	}
 
-	if((bits == 0) || (width == 0) || (height == 0)) {
+	if((bits == nullptr) || (width == 0) || (height == 0)) {
 		MR_LOG_ERROR(TextureData::FromFile, "corrupted data (bits/width/height is zero). \""+file+"\"");
         FreeImage_Unload(dib);
 		return nullptr;
