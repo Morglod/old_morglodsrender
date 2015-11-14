@@ -25,10 +25,11 @@ public:
     inline std::string GetName() const;
     inline int32_t GetUniformsNum() const;
     inline Uniform GetUniform(int32_t arrayIndex) const;
-    inline bool FindUniformByIndex(uint32_t uniformIndex, Uniform& out_uniform) const;
-    inline bool FindUniformByName(std::string const& uniformName, Uniform& out_uniform) const;
+    inline bool FindUniformByIndex(uint32_t uniformIndex, Uniform& out_uniform, int32_t& out_arrayIndex) const;
+    inline bool FindUniformByName(std::string const& uniformName, Uniform& out_uniform, int32_t& out_arrayIndex) const;
 
     static UniformBufferDescPtr Create(ShaderProgramPtr const& program, uint32_t ubo_index);
+    static UniformBufferDescPtr Create(ShaderProgramPtr const& program, std::string const& ubo_name);
     static bool Create(ShaderProgramPtr const& program, std::vector<UniformBufferDescPtr>& out_ubos);
 private:
     UniformBufferDesc() = default;
@@ -55,8 +56,19 @@ public:
     inline BufferPtr GetBuffer() const;
 
     template<typename T>
-    inline T* As(int32_t arrayIndex);
+    inline T* AsPtr(int32_t arrayIndex);
+
+    template<typename T>
+    inline T* AsPtr(std::string const& name);
+
+    template<typename T>
+    inline T& As(int32_t arrayIndex);
+
+    template<typename T>
+    inline T& As(std::string const& name);
+
     void* At(int32_t arrayIndex);
+    void* At(std::string const& name);
 
     static UniformBufferPtr Create(UniformBufferDescPtr const& desc);
 private:
@@ -90,20 +102,22 @@ inline UniformBufferDesc::Uniform UniformBufferDesc::GetUniform(int32_t arrayInd
     return _uniforms.arr[arrayIndex];
 }
 
-inline bool UniformBufferDesc::FindUniformByIndex(uint32_t uniformIndex, UniformBufferDesc::Uniform& out_uniform) const {
+inline bool UniformBufferDesc::FindUniformByIndex(uint32_t uniformIndex, UniformBufferDesc::Uniform& out_uniform, int32_t& out_arrayIndex) const {
     for(int32_t i = 0, n = _uniforms.num; i < n; ++i) {
         if(_uniforms.arr[i].index == uniformIndex) {
             out_uniform = _uniforms.arr[i];
+            out_arrayIndex = i;
             return true;
         }
     }
     return false;
 }
 
-inline bool UniformBufferDesc::FindUniformByName(std::string const& uniformName, Uniform& out_uniform) const {
+inline bool UniformBufferDesc::FindUniformByName(std::string const& uniformName, Uniform& out_uniform, int32_t& out_arrayIndex) const {
     for(int32_t i = 0, n = _uniforms.num; i < n; ++i) {
         if(_uniforms.arr[i].name == uniformName) {
             out_uniform = _uniforms.arr[i];
+            out_arrayIndex = i;
             return true;
         }
     }
@@ -119,10 +133,30 @@ inline BufferPtr UniformBuffer::GetBuffer() const {
 }
 
 template<typename T>
-inline T* UniformBuffer::As(int32_t uniformIndex) {
-    void* mem = At(uniformIndex);
+inline T* UniformBuffer::AsPtr(int32_t arrayIndex) {
+    void* mem = At(arrayIndex);
     if(mem == nullptr) return nullptr;
     return (T*)mem;
+}
+
+template<typename T>
+inline T* UniformBuffer::AsPtr(std::string const& name) {
+    void* mem = At(name);
+    if(mem == nullptr) return nullptr;
+    return (T*)mem;
+}
+
+template<typename T>
+inline T& UniformBuffer::As(int32_t arrayIndex) {
+    void* mem = At(arrayIndex);
+    if(mem == nullptr) return nullptr;
+    return *((T*)mem);
+}
+
+template<typename T>
+inline T& UniformBuffer::As(std::string const& name) {
+    void* mem = At(name);
+    return *((T*)mem);
 }
 
 }

@@ -82,11 +82,6 @@ static uint16_t indexData[indexNum] = {
 	6, 3, 7,
 };
 
-struct UBOData {
-    glm::mat4 model = glm::mat4(1.0f);
-    uint64_t tex;
-};
-
 //
 /// Work with MorglodsRender
 //
@@ -103,7 +98,6 @@ void main_logic(GLFWwindow* window) {
     // Prepare memory
     const auto vertexDataMem = Memory::Ref(vertexData, sizeof(Vertex) * vertexNum);
     const auto indexDataMem = Memory::Ref(indexData, sizeof(uint16_t) * indexNum);
-    const auto uboDataMem = Memory::Own(new UBOData, sizeof(UBOData));
 
     // Create buffer and map it
     Buffer::CreationFlags flags;
@@ -116,14 +110,9 @@ void main_logic(GLFWwindow* window) {
     buf_vert->MakeResident(MR_RESIDENT_READ_ONLY);
     buf_ind->MakeResident(MR_RESIDENT_READ_ONLY);
 
-    // Mark readable for shader parameters buffer
-    flags.read = true;
-    auto ubo = Buffer::Create(Memory::Zero(uboDataMem->GetSize()), flags);
-
     // Run write async
     auto bufv_write = buf_vert->WriteAsync(vertexDataMem);
     auto bufi_write = buf_ind->WriteAsync(indexDataMem);
-    auto ubo_write = ubo->WriteAsync(uboDataMem);
 
     // Define vertex format
     auto vdecl = VertexDecl::Create();
@@ -163,11 +152,10 @@ void main_logic(GLFWwindow* window) {
     MaterialShaderPtr material = MaterialShader::Create(prog);
 
     // Set parameters buffer for shaders
-    prog->UniformBuffer("UBOData", ubo, 0);
-    //prog->UniformBuffer("mr_sys_block", MaterialShader::GetSystemUniformBuffer(), 1);
+    UniformBufferPtr ubo_data_uniform = UniformBuffer::Create(UniformBufferDesc::Create(prog, "UBOData"));
+    prog->UniformBuffer("UBOData", ubo_data_uniform->GetBuffer(), 0);
 
     // Get mapped memory ("direct" access to parameters buffer)
-    auto uboData = (UBOData*)ubo->GetMapState().mem;
     auto sysUBO = (SysUniformData*)MaterialShader::GetSystemUniformBuffer()->GetMapState().mem;
 
     // Set 'background' color
@@ -176,7 +164,6 @@ void main_logic(GLFWwindow* window) {
     // Wait till async tasks end
     bufv_write.wait();
     bufi_write.wait();
-    ubo_write.wait();
 
     /// Export VertexBuffer
     /*std::ifstream json_file2("vbuffer.json");
@@ -200,7 +187,7 @@ void main_logic(GLFWwindow* window) {
     texture->WriteImage(textureData);
     texture->BuildMipmaps();
     texture->MakeResident();
-    uboData->tex = texture->GetResidentHandle();
+    ubo_data_uniform->As<uint64_t>("tex") = texture->GetResidentHandle();
 
     MR_LOG_T_STD_("Loading time (ms): ", loadTimer.End());
 
@@ -209,28 +196,16 @@ void main_logic(GLFWwindow* window) {
     camera.SetPos({0,0,0});
     camera.SetRot({0,0,0});
 
-    // Test ubo info
-    {
-        std::vector<UniformBufferDescPtr> ubos;
-        if(!UniformBufferDesc::Create(prog, ubos)) {
-            MR_LOG_ERROR(main_logic, "failed create ubos desc");
-        } else {
-            for(UniformBufferDescPtr const& ubod : ubos) {
-                std::cout << ubod;
-            }
-        }
-    }
-
     // Update thread example
     bool update_thread_working = true;
-    auto update_thread = std::thread([&update_thread_working](UBOData* ubo_data) {
+    auto update_thread = std::thread([&update_thread_working](glm::mat4* modelMat) {
                                         float a = 0.0f;
                                         while(update_thread_working) {
-                                            ubo_data->model = glm::rotate(a, glm::vec3(1,1,1));
+                                            *modelMat = glm::rotate(a, glm::vec3(1,1,1));
                                             a += 0.01f;
                                             std::this_thread::sleep_for(std::chrono::milliseconds(16));
                                         }
-                                     }, uboData);
+                                     }, ubo_data_uniform->AsPtr<glm::mat4>("model"));
 
     while(!glfwWindowShouldClose(window)) {
         // Clear screen

@@ -26,6 +26,42 @@ UniformBufferDesc::sUniforms::~sUniforms() {
     Free();
 }
 
+UniformBufferDescPtr UniformBufferDesc::Create(ShaderProgramPtr const& program, std::string const& ubo_name) {
+    if(program == nullptr) {
+        MR_LOG_ERROR(UniformBufferDesc::Create, "program is null");
+        return nullptr;
+    }
+    uint32_t phandle = program->GetId();
+    if(phandle == 0) {
+        MR_LOG_ERROR(UniformBufferDesc::Create, "program not created");
+        return nullptr;
+    }
+
+    {
+        int32_t blocks_num = 0;
+        glGetProgramiv(phandle, GL_ACTIVE_UNIFORM_BLOCKS, &blocks_num);
+        if(blocks_num <= 0) {
+            MR_LOG_WARNING(UniformBufferDesc::Create, "no active uniform blocks");
+            return nullptr;
+        }
+
+        for(int32_t i = 0; i < blocks_num; ++i) {
+            char nameBuf[512];
+            int nameSize = 0;
+            glGetActiveUniformBlockName(phandle, i, 512, &nameSize, nameBuf);
+
+            std::string name = "";
+            if(nameSize <= 0) {
+                MR_LOG_WARNING(UniformBufferDesc::Create, "block data nonamed");
+            } else if(ubo_name == std::string(nameBuf, nameSize)) {
+                return Create(program, i);
+            }
+        }
+    }
+
+    return nullptr;
+}
+
 UniformBufferDescPtr UniformBufferDesc::Create(ShaderProgramPtr const& program, uint32_t ubo_index) {
     if(program == nullptr) {
         MR_LOG_ERROR(UniformBufferDesc::Create, "program is null");
@@ -146,6 +182,13 @@ bool UniformBuffer::_ResetBuffer() {
 
 void* UniformBuffer::At(int32_t arrayIndex) {
     return &((uint8_t*)_buffer->GetMapState().mem)[_desc->GetUniform(arrayIndex).offset];
+}
+
+void* UniformBuffer::At(std::string const& name) {
+    UniformBufferDesc::Uniform u;
+    int32_t arrayIndex;
+    if(!_desc->FindUniformByName(name, u, arrayIndex)) return nullptr;
+    return At(arrayIndex);
 }
 
 }
