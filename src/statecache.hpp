@@ -24,6 +24,9 @@ public:
     inline bool SetIndexBuffer(uint32_t ib);
     inline uint32_t GetIndexBuffer() const;
 
+    bool SetUniformBuffer(uint32_t buffer, uint32_t binding);
+    bool GetUniformBuffer(uint32_t binding, uint32_t& out_buffer);
+
     static StateCache* Get();
 protected:
     bool _Init();
@@ -51,6 +54,17 @@ protected:
     std::unique_ptr<_VertexBufferBindings> _vb = nullptr;
 
     uint32_t _ib = 0;
+
+    struct _UniformBufferBindings {
+        uint32_t* ar = nullptr;
+        uint32_t num = 0;
+
+        _UniformBufferBindings(uint32_t num);
+        ~_UniformBufferBindings();
+    };
+
+    // sizeof GL_MAX_UNIFORM_BUFFER_BINDINGS
+    std::unique_ptr<_UniformBufferBindings> _ubo = nullptr;
 };
 
 inline uint32_t StateCache::GetShaderProgram() const {

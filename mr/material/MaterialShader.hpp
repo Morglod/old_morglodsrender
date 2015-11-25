@@ -4,6 +4,7 @@
 #include "mr/pre/glew.hpp"
 #include "mr/pre/glm.hpp"
 #include "mr/string.hpp"
+#include "mr/shader/ubo.hpp"
 
 #define _MR_TO_STRING(x) (#x)
 
@@ -30,13 +31,7 @@ _MR_DEF_SYS_UNIFORM(
 
 class MR_API MaterialShader final {
 public:
-    void SetUBO(std::string const& name, BufferPtr const& buf);
-    void SetUBO(int32_t index, BufferPtr const& buf);
-    BufferPtr GetUBO(std::string const& name);
-    BufferPtr GetUBO(int32_t index);
-    std::string GetUBOName(int32_t index);
-    int32_t GetUBOSize(int32_t index);
-    inline int32_t GetUBONum() const;
+    void SetUBO(std::string const& name, UniformBufferPtr const& buf);
     inline ShaderProgramPtr GetProgram() const;
 
     static BufferPtr GetSystemUniformBuffer();
@@ -47,14 +42,10 @@ protected:
     ShaderProgramPtr _program;
     struct sUBO {
         std::string name;
-        BufferPtr buffer;
+        UniformBufferPtr buffer = nullptr;
     };
     std::vector<sUBO> _ubos;
 };
-
-inline int32_t MaterialShader::GetUBONum() const {
-    return _ubos.size();
-}
 
 inline ShaderProgramPtr MaterialShader::GetProgram() const {
     return _program;

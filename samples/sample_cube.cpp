@@ -145,6 +145,11 @@ void main_logic(GLFWwindow* window) {
     auto vshader = Shader::Create(ShaderType::Vertex, ReplaceString(std::string(vertexShader), "{{SYS_UNIFORM}}", SysUniformStr));
     auto fshader = Shader::Create(ShaderType::Fragment, ReplaceString(std::string(fragmentShader), "{{SYS_UNIFORM}}", SysUniformStr));
 
+    auto uboDecl = UniformBufferDecl::Create();
+    auto uboDeclEdit = uboDecl->Begin();
+    uboDeclEdit.Float(3)
+    .End();
+
     // Create and link shader program
     auto prog = ShaderProgram::Create({vshader, fshader});
 
@@ -153,7 +158,7 @@ void main_logic(GLFWwindow* window) {
 
     // Set parameters buffer for shaders
     UniformBufferPtr ubo_data_uniform = UniformBuffer::Create(UniformBufferDesc::Create(prog, "UBOData"));
-    prog->UniformBuffer("UBOData", ubo_data_uniform->GetBuffer(), 0);
+    ubo_data_uniform->Binding(0);
 
     // Get mapped memory ("direct" access to parameters buffer)
     auto sysUBO = (SysUniformData*)MaterialShader::GetSystemUniformBuffer()->GetMapState().mem;

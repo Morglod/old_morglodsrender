@@ -23,6 +23,19 @@ StateCache::_VertexBufferBindings::~_VertexBufferBindings() {
     }
 }
 
+StateCache::_UniformBufferBindings::_UniformBufferBindings(uint32_t n) {
+    ar = new uint32_t[n];
+    num = n;
+}
+
+StateCache::_UniformBufferBindings::~_UniformBufferBindings() {
+    if(ar == nullptr) {
+        delete [] ar;
+        ar = nullptr;
+        num = 0;
+    }
+}
+
 StateCache* StateCache::Get() {
     return &_state_cache;
 }
@@ -63,6 +76,30 @@ bool StateCache::GetVertexBuffer(uint32_t bindpoint, uint32_t& out_vb, uint32_t&
     return true;
 }
 
+bool StateCache::SetUniformBuffer(uint32_t buffer, uint32_t binding) {
+    if(binding >= _ubo->num) {
+        MR_LOG_WARNING(StateCache::SetUniformBuffer, "binding >= totalBindpoints");
+        return false;
+    }
+
+    auto& bp_ref = _ubo->ar[binding];
+    if(bp_ref != buffer) {
+        bp_ref = buffer;
+        return true;
+    }
+    return false;
+}
+
+bool StateCache::GetUniformBuffer(uint32_t binding, uint32_t& out_buffer) {
+    if(binding >= _ubo->num) {
+        MR_LOG_WARNING(StateCache::GetUniformBuffer, "binding >= totalBindpoints");
+        return false;
+    }
+
+    out_buffer = _ubo->ar[binding];
+    return true;
+}
+
 bool StateCache::_Init() {
     {   // Init VertexBuffer bindpoints
         int num;
@@ -72,6 +109,16 @@ bool StateCache::_Init() {
             return false;
         }
         _vb = std::make_unique<_VertexBufferBindings>(num);
+    }
+
+    {   // Init UniformBuffer bindpoints
+        int num;
+        glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &num);
+        if(num <= 0) {
+            MR_LOG_ERROR(StateCache::_Init, "Failed get GL_MAX_UNIFORM_BUFFER_BINDINGS, it's value <= 0");
+            return false;
+        }
+        _ubo = std::make_unique<_UniformBufferBindings>(num);
     }
 
     return true;

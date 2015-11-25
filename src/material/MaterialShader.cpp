@@ -74,18 +74,18 @@ bool MaterialShader::_Init(bool createBuffers) {
                 if(buffer == nullptr)
                     MR_LOG_WARNING(MaterialShader::_Init, "failed create buffer for ["+std::to_string(i)+"]");
                 else {
-                    _program->UniformBuffer(SysUniformNameBlock, buffer, i+1);
+                    _program->SetUniformBuffer(SysUniformNameBlock, nullptr); // TODO nullptr fix
                 }
             }
         }
 
-        _ubos.push_back(sUBO{name, buffer});
+        _ubos.push_back(/*sUBO{name, buffer}*/ nullptr); // TODO nullptr fix
     }
 
     return true;
 }
 
-void MaterialShader::SetUBO(std::string const& name, BufferPtr const& buf) {
+void MaterialShader::SetUBO(std::string const& name, UniformBufferPtr const& buf) {
     for(int32_t i = 0, n = _ubos.size(); i < n; ++i) {
         if(_ubos[i].name == name) {
             _ubos[i].buffer = buf;
@@ -93,52 +93,6 @@ void MaterialShader::SetUBO(std::string const& name, BufferPtr const& buf) {
         }
     }
     MR_LOG_ERROR(MaterialShader::SetUBO, "uniform buffer not found \""+name+"\"");
-}
-
-void MaterialShader::SetUBO(int32_t index, BufferPtr const& buf) {
-    if(index >= (int32_t)_ubos.size() || index < 0) {
-        MR_LOG_ERROR(MaterialShader::SetUBO, "uniform buffer not found ["+std::to_string(index)+"]");
-        return;
-    }
-    _ubos[index].buffer = buf;
-}
-
-BufferPtr MaterialShader::GetUBO(std::string const& name) {
-    for(int32_t i = 0, n = _ubos.size(); i < n; ++i) {
-        if(_ubos[i].name == name) {
-            return _ubos[i].buffer;
-        }
-    }
-    MR_LOG_ERROR(MaterialShader::GetUBO, "uniform buffer not found \""+name+"\"");
-    return nullptr;
-}
-
-BufferPtr MaterialShader::GetUBO(int32_t index) {
-    if(index >= (int32_t)_ubos.size() || index < 0) {
-        MR_LOG_ERROR(MaterialShader::GetUBO, "uniform buffer not found ["+std::to_string(index)+"]");
-        return nullptr;
-    }
-    return _ubos[index].buffer;
-}
-
-int32_t MaterialShader::GetUBOSize(int32_t index) {
-    if(_program == nullptr) {
-        MR_LOG_ERROR(MaterialShader::GetUBOSize, "ShaderProgram not set");
-        return false;
-    }
-
-    const uint32_t phandle = _program->GetId();
-    if(phandle == 0) {
-        MR_LOG_ERROR(MaterialShader::GetUBOSize, "ShaderProgram not created");
-        return false;
-    }
-
-    int32_t bufSize;
-    glGetActiveUniformBlockiv(phandle, index, GL_UNIFORM_BLOCK_DATA_SIZE, &bufSize);
-    if(bufSize <= 0)
-        MR_LOG_WARNING(MaterialShader::GetUBOSize, "bad uniform buffer size ["+std::to_string(index)+"]");
-
-    return bufSize;
 }
 
 MaterialShaderPtr MaterialShader::Create(ShaderProgramPtr const& program, bool createBuffers) {
