@@ -9,7 +9,7 @@
 #include "mr/pre/glew.hpp"
 
 namespace {
-mr::BufferPtr _global_ubo = nullptr;
+mr::UniformBufferPtr _global_ubo = nullptr;
 }
 
 namespace mr {

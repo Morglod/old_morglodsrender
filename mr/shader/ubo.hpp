@@ -29,9 +29,9 @@ public:
     static UniformBufferDeclPtr Create(ShaderProgram* program, std::string const& ubo_name);
     static bool Create(ShaderProgram* program, std::vector<std::pair<std::string, UniformBufferDeclPtr>>& out_ubos); // <name, decl>
 
-    inline static UniformBufferDeclPtr Create(ShaderProgramPtr const& program, uint32_t ubo_index) {return Create(program.get(), ubo_index);}
-    inline static UniformBufferDeclPtr Create(ShaderProgramPtr const& program, std::string const& ubo_name) {return Create(program.get(), ubo_name);}
-    inline static bool Create(ShaderProgramPtr const& program, std::vector<std::pair<std::string, UniformBufferDeclPtr>>& out_ubos) /** <name, decl> **/ {return Create(program.get(), out_ubos);}
+    inline static UniformBufferDeclPtr Create(ShaderProgramPtr const& program, uint32_t ubo_index);
+    inline static UniformBufferDeclPtr Create(ShaderProgramPtr const& program, std::string const& ubo_name);
+    inline static bool Create(ShaderProgramPtr const& program, std::vector<std::pair<std::string, UniformBufferDeclPtr>>& out_ubos); /** out_ubos is <name, decl> **/
 private:
     UniformBufferDecl() = default;
     int32_t _size;
@@ -52,6 +52,8 @@ class MR_API UniformBuffer final {
 public:
     inline UniformBufferDeclPtr GetDecl() const;
     inline BufferPtr GetBuffer() const;
+    bool SetBuffer(BufferPtr const& buffer);
+    inline bool Match(UniformBufferDeclPtr const& other) const;
 
     template<typename T>
     inline T* AsPtr(int32_t arrayIndex);
@@ -69,13 +71,15 @@ public:
     void* At(std::string const& name);
 
     static UniformBufferPtr Create(UniformBufferDeclPtr const& desc);
-    static UniformBufferPtr Create(UniformBufferDeclPtr const& desc, UniformBufferPtr const& buffer);
+    static UniformBufferPtr Create(UniformBufferDeclPtr const& desc, BufferPtr const& buffer);
 private:
     bool _ResetBuffer();
     UniformBuffer() = default;
     UniformBufferDeclPtr _desc;
     BufferPtr _buffer;
 };
+
+/// UniformBufferDecl inline
 
 inline int32_t UniformBufferDecl::GetSize() const {
     return _size;
@@ -98,6 +102,35 @@ inline bool UniformBufferDecl::FindUniformByName(std::string const& uniformName,
         }
     }
     return false;
+}
+
+inline UniformBufferDeclPtr UniformBufferDecl::Create(ShaderProgramPtr const& program, uint32_t ubo_index) {
+    return Create(program.get(), ubo_index);
+}
+
+inline UniformBufferDeclPtr UniformBufferDecl::Create(ShaderProgramPtr const& program, std::string const& ubo_name) {
+    return Create(program.get(), ubo_name);
+}
+
+/** out_ubos is <name, decl> **/
+inline bool UniformBufferDecl::Create(ShaderProgramPtr const& program, std::vector<std::pair<std::string, UniformBufferDeclPtr>>& out_ubos) {
+    return UniformBufferDecl::Create(program.get(), out_ubos);
+}
+
+inline bool UniformBufferDecl::Equal(UniformBufferDeclPtr const& other) const {
+    if(_size != other->_size) return false;
+    if(_uniforms.num != other->_uniforms.num) return false;
+    for(int32_t i = 0, n = _uniforms.num; i < n; ++i) {
+        if(_uniforms.arr[i].name !=  other->_uniforms.arr[i].name) return false;
+        if(_uniforms.arr[i].offset !=  other->_uniforms.arr[i].offset) return false;
+    }
+    return true;
+}
+
+/// UniformBuffer inline
+
+inline bool UniformBuffer::Match(UniformBufferDeclPtr const& other) const {
+    return _desc->Equal(other);
 }
 
 inline UniformBufferDeclPtr UniformBuffer::GetDecl() const {
@@ -133,16 +166,6 @@ template<typename T>
 inline T& UniformBuffer::As(std::string const& name) {
     void* mem = At(name);
     return *((T*)mem);
-}
-
-inline bool UniformBufferDecl::Equal(UniformBufferDeclPtr const& other) const {
-    if(_size != other->_size) return false;
-    if(_uniforms.num != other->_uniforms.num) return false;
-    for(int32_t i = 0, n = _uniforms.num; i < n; ++i) {
-        if(_uniforms.arr[i].name !=  other->_uniforms.arr[i].name) return false;
-        if(_uniforms.arr[i].offset !=  other->_uniforms.arr[i].offset) return false;
-    }
-    return true;
 }
 
 }

@@ -154,6 +154,10 @@ bool UniformBufferDecl::Create(ShaderProgram* program, std::vector<std::pair<std
 }
 
 UniformBufferPtr UniformBuffer::Create(UniformBufferDeclPtr const& desc) {
+    if(desc == nullptr) {
+        MR_LOG_ERROR(UniformBuffer::Create, "desc can not be null");
+        return nullptr;
+    }
     UniformBufferPtr ubo = UniformBufferPtr(new UniformBuffer);
     ubo->_desc = desc;
     if(!ubo->_ResetBuffer()) {
@@ -163,7 +167,11 @@ UniformBufferPtr UniformBuffer::Create(UniformBufferDeclPtr const& desc) {
     return ubo;
 }
 
-UniformBufferPtr UniformBuffer::Create(UniformBufferDeclPtr const& desc, UniformBufferPtr const& buffer) {
+UniformBufferPtr UniformBuffer::Create(UniformBufferDeclPtr const& desc, BufferPtr const& buffer) {
+    if(desc == nullptr) {
+        MR_LOG_ERROR(UniformBuffer::Create, "desc can not be null");
+        return nullptr;
+    }
     UniformBufferPtr ubo = UniformBufferPtr(new UniformBuffer);
     ubo->_desc = desc;
     if(buffer->GetSize() != desc->GetSize()) {
@@ -187,8 +195,21 @@ void* UniformBuffer::At(int32_t arrayIndex) {
 void* UniformBuffer::At(std::string const& name) {
     UniformBufferDecl::Uniform u;
     int32_t arrayIndex;
-    if(!_desc->FindUniformByName(name, u, arrayIndex)) return nullptr;
+    if(!_desc->FindUniformByName(name, u, arrayIndex))
+        return nullptr;
     return At(arrayIndex);
+}
+
+bool UniformBuffer::SetBuffer(BufferPtr const& buffer) {
+    if(buffer == nullptr) {
+        MR_LOG_ERROR(UniformBuffer::SetBuffer, "buffer can not be null");
+        return false;
+    }
+    if(buffer->GetSize() != _desc->GetSize()) {
+        MR_LOG_ERROR(UniformBuffer::SetBuffer, "not same buffer size");
+        return false;
+    }
+    return true;
 }
 
 }

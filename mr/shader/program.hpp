@@ -19,7 +19,6 @@ class MR_API ShaderProgram final {
 public:
     struct UBO {
         std::string name = "";
-        UniformBufferDeclPtr decl = nullptr;
         UniformBufferPtr ubo = nullptr;
     };
 
@@ -33,9 +32,6 @@ public:
     bool GetUniformBuffer(std::string const& name, ShaderProgram::UBO& out_ubo);
     bool GetUniformBuffer(uint32_t arrayIndex, ShaderProgram::UBO& out_ubo) const;
 
-    bool _UniformFloat(std::string const& name, float value);
-    bool _UniformMat4(std::string const& name, glm::mat4& mat);
-
     static void Use(ShaderProgramPtr const& program);
 
     inline uint32_t GetId() const;
@@ -43,6 +39,8 @@ public:
     virtual ~ShaderProgram();
 
 protected:
+    void _BindUniformBuffer(uint32_t index, uint32_t buffer);
+
     ShaderProgram();
     bool _InitUBO();
     uint32_t _id;
@@ -58,6 +56,8 @@ protected:
 
     sUBOList _ubo;
 };
+
+///
 
 inline uint32_t ShaderProgram::GetId() const {
     return _id;

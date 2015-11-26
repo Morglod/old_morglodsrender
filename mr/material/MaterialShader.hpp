@@ -34,7 +34,7 @@ public:
     void SetUBO(std::string const& name, UniformBufferPtr const& buf);
     inline ShaderProgramPtr GetProgram() const;
 
-    static BufferPtr GetSystemUniformBuffer();
+    UniformBufferPtr GetSystemUniformBuffer();
     static MaterialShaderPtr Create(ShaderProgramPtr const& program, bool createBuffers = true);
 protected:
     bool _Init(bool createBuffers);
@@ -54,3 +54,4 @@ inline ShaderProgramPtr MaterialShader::GetProgram() const {
 }
 
 #undef _MR_DEF_SYS_UNIFORM
+#undef _MR_TO_STRING

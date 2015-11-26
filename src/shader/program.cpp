@@ -85,10 +85,10 @@ bool ShaderProgram::_InitUBO() {
     }
 
     if(ubos.size() != 0) {
-        _uniforms.Resize(ubos.size());
-        for(uint32_t i = 0, n = 0; i < n; ++i) {
-            _uniforms.arr[i].name = ubos[i].first;
-            _uniforms.arr[i].decl = ubos[i].second;
+        _ubo.Resize(ubos.size());
+        for(uint32_t i = 0, n = ubos.size(); i < n; ++i) {
+            _ubo.arr[i].name = ubos[i].first;
+            _ubo.arr[i].ubo = UniformBuffer::Create(ubos[i].second);
         }
     }
 
@@ -109,31 +109,6 @@ bool ShaderProgram::UniformBuffer(std::string const& name, BufferPtr const& buff
     return true;
 }
 */
-bool ShaderProgram::_UniformFloat(std::string const& name, float value) {
-    MP_BeginSample(ShaderProgram::UniformFloat);
-
-    const auto location = glGetUniformLocation(_id, name.data());
-    if(location == -1)
-        MR_LOG_WARNING(ShaderProgram::UniformMat4, "failed get \""+name+"\"'s location");
-    else
-        glProgramUniform1f(_id, location, value);
-
-    MP_EndSample();
-    return true;
-}
-
-bool ShaderProgram::_UniformMat4(std::string const& name, glm::mat4& mat) {
-    MP_BeginSample(ShaderProgram::UniformMat4);
-
-    const auto location = glGetUniformLocation(_id, name.data());
-    if(location == -1)
-        MR_LOG_WARNING(ShaderProgram::UniformMat4, "failed get \""+name+"\"'s location");
-    else
-        glProgramUniformMatrix4fv(_id, location, 1, false, &mat[0][0]);
-
-    MP_EndSample();
-    return true;
-}
 
 bool ShaderProgram::SetUniformBuffer(std::string const& name, UniformBufferPtr const& ubo) {
     if(_ubo.num == 0) {
@@ -142,7 +117,7 @@ bool ShaderProgram::SetUniformBuffer(std::string const& name, UniformBufferPtr c
     }
     for(uint32_t i = 0, n = _ubo.num; i < n; ++i) {
         if(_ubo.arr[i].name == name) {
-            if(ubo != nullptr && !_ubo.arr[i].decl->Equal(ubo->GetDecl())) {
+            if(ubo != nullptr && !_ubo.arr[i].ubo->Match(ubo->GetDecl())) {
                 MR_LOG_ERROR(ShaderProgram::SetUniformBuffer, "failed set UniformBuffer, that not equal to UniformBufferDecl of ShaderProgram's by name \""+name+"\"");
                 return false;
             }
@@ -160,12 +135,19 @@ bool ShaderProgram::SetUniformBuffer(uint32_t arrayIndex, UniformBufferPtr const
         return false;
     }
 
-    if(ubo != nullptr && !_ubo.arr[arrayIndex].decl->Equal(ubo->GetDecl())) {
+    if(ubo != nullptr && !_ubo.arr[arrayIndex].ubo->Match(ubo->GetDecl())) {
         MR_LOG_ERROR(ShaderProgram::SetUniformBuffer, "failed set UniformBuffer, that not equal to UniformBufferDecl of ShaderProgram's by array index \""+std::to_string(arrayIndex)+"\"");
         return false;
     }
     _ubo.arr[arrayIndex].ubo = ubo;
     return true;
+}
+
+void ShaderProgram::_BindUniformBuffer(uint32_t index, uint32_t buffer) {
+    if(StateCache::Get()->SetUniformBuffer(buffer, index)) {
+        glBindBufferBase(GL_UNIFORM_BUFFER, index, buffer);
+    }
+    glUniformBlockBinding(_id, index, index);
 }
 
 bool ShaderProgram::GetUniformBuffer(std::string const& name, ShaderProgram::UBO& out_ubo) {
@@ -188,8 +170,8 @@ bool ShaderProgram::GetUniformBuffer(uint32_t arrayIndex, ShaderProgram::UBO& ou
         MR_LOG_ERROR(ShaderProgram::GetUniformBuffer, "invalid array index");
         return false;
     }
-    if(_ubo.arr[arrayIndex].decl == nullptr)
-        MR_LOG_WARNING(ShaderProgram::GetUniformBuffer, "invalid UniformBufferDecl on UniformBuffer by arrayIndex "+std::to_string(arrayIndex));
+    //if(_ubo.arr[arrayIndex].ubo == nullptr)
+    //    MR_LOG_WARNING(ShaderProgram::GetUniformBuffer, "invalid UniformBufferDecl on UniformBuffer by arrayIndex "+std::to_string(arrayIndex));
     out_ubo = _ubo.arr[arrayIndex];
     return true;
 }
@@ -197,9 +179,15 @@ bool ShaderProgram::GetUniformBuffer(uint32_t arrayIndex, ShaderProgram::UBO& ou
 void ShaderProgram::Use(ShaderProgramPtr const& program) {
     MP_BeginSample(ShaderProgram::Use);
 
-    const auto handle = (program != nullptr) program->GetId() : 0;
+    const auto handle = (program != nullptr) ? program->GetId() : 0;
     if(StateCache::Get()->SetShaderProgram(handle)) {
         glUseProgram(handle);
+    }
+    for(uint32_t i = 0, n = program->_ubo.num; i < n; ++i) {
+        const auto ubo = program->_ubo.arr[i].ubo;
+        uint32_t bufferId = 0;
+        if(ubo != nullptr) bufferId = ubo->GetBuffer()->GetId();
+        program->_BindUniformBuffer(i, bufferId);
     }
 
     MP_EndSample();

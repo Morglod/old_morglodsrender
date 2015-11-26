@@ -145,23 +145,22 @@ void main_logic(GLFWwindow* window) {
     auto vshader = Shader::Create(ShaderType::Vertex, ReplaceString(std::string(vertexShader), "{{SYS_UNIFORM}}", SysUniformStr));
     auto fshader = Shader::Create(ShaderType::Fragment, ReplaceString(std::string(fragmentShader), "{{SYS_UNIFORM}}", SysUniformStr));
 
-    auto uboDecl = UniformBufferDecl::Create();
-    auto uboDeclEdit = uboDecl->Begin();
-    uboDeclEdit.Float(3)
-    .End();
-
     // Create and link shader program
     auto prog = ShaderProgram::Create({vshader, fshader});
 
-    // Test material
-    MaterialShaderPtr material = MaterialShader::Create(prog);
+    UniformBufferPtr ubo_data_uniform = nullptr;
+    UniformBufferPtr sysUBO = nullptr;
 
-    // Set parameters buffer for shaders
-    UniformBufferPtr ubo_data_uniform = UniformBuffer::Create(UniformBufferDesc::Create(prog, "UBOData"));
-    ubo_data_uniform->Binding(0);
+    {
+        ShaderProgram::UBO uboData;
+        prog->GetUniformBuffer("UBOData", uboData);
 
-    // Get mapped memory ("direct" access to parameters buffer)
-    auto sysUBO = (SysUniformData*)MaterialShader::GetSystemUniformBuffer()->GetMapState().mem;
+        ShaderProgram::UBO uboSys;
+        prog->GetUniformBuffer(SysUniformNameBlock, uboSys);
+
+        ubo_data_uniform = uboData.ubo;
+        sysUBO = uboSys.ubo;
+    }
 
     // Set 'background' color
     Draw::SetClearColor(10,10,10,255);
@@ -176,8 +175,8 @@ void main_logic(GLFWwindow* window) {
     */
 
     // Setup shader parameters
-    sysUBO->proj = glm::perspective(90.0f, 800.0f / 600.0f, 0.1f, 10.0f);
-    sysUBO->view = glm::lookAt(glm::vec3(0,0,5), glm::vec3(0,0,-1), glm::vec3(0,1,0));
+    sysUBO->As<glm::mat4>("mr_sys_block.proj") = glm::perspective(90.0f, 800.0f / 600.0f, 0.1f, 10.0f);
+    sysUBO->As<glm::mat4>("mr_sys_block.view") = glm::lookAt(glm::vec3(0,0,5), glm::vec3(0,0,-1), glm::vec3(0,1,0));
     // sysUBO->model will be changed in Update thread
 
     // Test texture
@@ -224,8 +223,8 @@ void main_logic(GLFWwindow* window) {
         if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) camera.MoveForward(-0.001f);
         if(glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) camera.RotateY(0.1f);
         if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) camera.RotateY(-0.1f);
-        sysUBO->view = camera.GetMat();
-        sysUBO->time = (float)glfwGetTime();
+        sysUBO->As<glm::mat4>("mr_sys_block.view") = camera.GetMat();
+        sysUBO->As<float>("mr_sys_block.time") = (float)glfwGetTime();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
