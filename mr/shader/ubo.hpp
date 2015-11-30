@@ -48,6 +48,24 @@ private:
     sUniforms _uniforms;
 };
 
+
+template<typename T>
+struct MR_API UniformRef {
+    T* ptr;
+
+    inline T Get() {
+        return *ptr;
+    }
+
+    inline T& Value() {
+        return *ptr;
+    }
+
+    inline T operator = (T const& value) {
+        return ((*ptr) = value);
+    }
+};
+
 class MR_API UniformBuffer final {
 public:
     inline UniformBufferDeclPtr GetDecl() const;
@@ -69,6 +87,12 @@ public:
 
     void* At(int32_t arrayIndex);
     void* At(std::string const& name);
+
+    template<typename T>
+    inline UniformRef<T> Ref(int32_t arrayIndex);
+
+    template<typename T>
+    inline UniformRef<T> Ref(std::string const& name);
 
     static UniformBufferPtr Create(UniformBufferDeclPtr const& desc);
     static UniformBufferPtr Create(UniformBufferDeclPtr const& desc, BufferPtr const& buffer);
@@ -125,6 +149,20 @@ inline bool UniformBufferDecl::Equal(UniformBufferDeclPtr const& other) const {
         if(_uniforms.arr[i].offset !=  other->_uniforms.arr[i].offset) return false;
     }
     return true;
+}
+
+/// UniformBuffer::Ref inline
+
+template<typename T>
+inline UniformRef<T> UniformBuffer::Ref(int32_t arrayIndex) {
+    T* t = (T*)At(arrayIndex);
+    return UniformRef<T>{t};
+}
+
+template<typename T>
+inline UniformRef<T> UniformBuffer::Ref(std::string const& name) {
+    T* t = (T*)At(name);
+    return UniformRef<T>{t};
 }
 
 /// UniformBuffer inline

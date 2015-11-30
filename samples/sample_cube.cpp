@@ -117,7 +117,7 @@ void main_logic(GLFWwindow* window) {
     // Define vertex format
     auto vdecl = VertexDecl::Create();
 
-    /// At runtime and export to "vertex.json"
+    /// Setup vertex format at runtime and export to "vertex.json"
     auto vdef = vdecl->Begin();
     vdef.Pos()
         .Color()
@@ -138,7 +138,7 @@ void main_logic(GLFWwindow* window) {
     IndexBufferPtr ibuffer = nullptr;
     if(true) // Use buffer for indecies
         ibuffer = IndexBuffer::Create(buf_ind, IndexDataType::UShort, indexNum);
-    else
+    else     // Indecies can be used, without gpu buffer
         ibuffer = IndexBuffer::Create(indexDataMem, IndexDataType::UShort, indexNum);
 
     // Create and compile shaders
@@ -148,36 +148,46 @@ void main_logic(GLFWwindow* window) {
     // Create and link shader program
     auto prog = ShaderProgram::Create({vshader, fshader});
 
-    UniformBufferPtr ubo_data_uniform = nullptr;
-    UniformBufferPtr sysUBO = nullptr;
+    // Setup uniforms, from uniform blocks
+    UniformRef<uint64_t> uniform_texture;
+    UniformRef<glm::mat4>   uniform_modelMat,
+                            uniform_projMat,
+                            uniform_viewMat;
+    UniformRef<float> uniform_time;
 
     {
-        ShaderProgram::UBO uboData;
-        prog->GetUniformBuffer("UBOData", uboData);
+        ShaderProgram::UBO ubo;
+        prog->GetUniformBuffer("UBOData", ubo);
 
-        ShaderProgram::UBO uboSys;
-        prog->GetUniformBuffer(SysUniformNameBlock, uboSys);
+        uniform_texture = ubo.ubo->Ref<uint64_t>("tex");
+        uniform_modelMat = ubo.ubo->Ref<glm::mat4>("model");
 
-        ubo_data_uniform = uboData.ubo;
-        sysUBO = uboSys.ubo;
+        prog->GetUniformBuffer(SysUniformNameBlock, ubo);
+
+        uniform_projMat = ubo.ubo->Ref<glm::mat4>("mr_sys_block.proj");
+        uniform_viewMat = ubo.ubo->Ref<glm::mat4>("mr_sys_block.view");
+        uniform_time = ubo.ubo->Ref<float>("mr_sys_block.time");
     }
 
-    // Set 'background' color
+    // Set window 'background' color
     Draw::SetClearColor(10,10,10,255);
 
     // Wait till async tasks end
     bufv_write.wait();
     bufi_write.wait();
 
-    /// Export VertexBuffer
+    /// Export/Import VertexBuffer
+    /*std::ofstream json_file2("vbuffer.json");
+    Json<VertexBufferPtr>::Export(vbuffer, json_file2);
+    */
     /*std::ifstream json_file2("vbuffer.json");
     Json<VertexBufferPtr>::Import(vbuffer, json_file2);
     */
 
-    // Setup shader parameters
-    sysUBO->As<glm::mat4>("mr_sys_block.proj") = glm::perspective(90.0f, 800.0f / 600.0f, 0.1f, 10.0f);
-    sysUBO->As<glm::mat4>("mr_sys_block.view") = glm::lookAt(glm::vec3(0,0,5), glm::vec3(0,0,-1), glm::vec3(0,1,0));
-    // sysUBO->model will be changed in Update thread
+    // Set base uniform values
+    uniform_projMat = glm::perspective(90.0f, 800.0f / 600.0f, 0.1f, 10.0f);
+    uniform_viewMat = glm::lookAt(glm::vec3(0,0,5), glm::vec3(0,0,-1), glm::vec3(0,1,0));
+    // model matrix will be changed in Update thread
 
     // Test texture
     auto textureData = TextureData::FromFile("house.png");
@@ -191,7 +201,7 @@ void main_logic(GLFWwindow* window) {
     texture->WriteImage(textureData);
     texture->BuildMipmaps();
     texture->MakeResident();
-    ubo_data_uniform->As<uint64_t>("tex") = texture->GetResidentHandle();
+    uniform_texture = texture->GetResidentHandle();
 
     MR_LOG_T_STD_("Loading time (ms): ", loadTimer.End());
 
@@ -209,7 +219,7 @@ void main_logic(GLFWwindow* window) {
                                             a += 0.01f;
                                             std::this_thread::sleep_for(std::chrono::milliseconds(16));
                                         }
-                                     }, ubo_data_uniform->AsPtr<glm::mat4>("model"));
+                                     }, &uniform_modelMat.Value());
 
     while(!glfwWindowShouldClose(window)) {
         // Clear screen
@@ -223,8 +233,8 @@ void main_logic(GLFWwindow* window) {
         if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) camera.MoveForward(-0.001f);
         if(glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) camera.RotateY(0.1f);
         if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) camera.RotateY(-0.1f);
-        sysUBO->As<glm::mat4>("mr_sys_block.view") = camera.GetMat();
-        sysUBO->As<float>("mr_sys_block.time") = (float)glfwGetTime();
+        uniform_viewMat = camera.GetMat();
+        uniform_time = (float)glfwGetTime();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
