@@ -7,10 +7,12 @@
 namespace mr {
 
 IndexBufferPtr IndexBuffer::Create(BufferPtr const& ibuf, IndexDataType const& datatype, uint32_t num) {
+    MP_ScopeSample(IndexBuffer::Create);
     return IndexBufferPtr(new IndexBuffer(ibuf, nullptr, datatype, num));
 }
 
 IndexBufferPtr IndexBuffer::Create(MemoryPtr const& mem, IndexDataType const& datatype, uint32_t num) {
+    MP_ScopeSample(IndexBuffer::Create);
     return IndexBufferPtr(new IndexBuffer(nullptr, mem, datatype, num));
 }
 

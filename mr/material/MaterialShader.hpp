@@ -6,28 +6,10 @@
 #include "mr/string.hpp"
 #include "mr/shader/ubo.hpp"
 
-#define _MR_TO_STRING(x) (#x)
-
-#define _MR_DEF_SYS_UNIFORM(x) \
-struct SysUniformData { \
-    x \
-}; \
-const std::string SysUniformStr = "uniform "+SysUniformNameBlock+" { " +ReplaceString((#x), "glm::", "")+ " } "+SysUniformName+"; \n";
-
 namespace mr {
 
 typedef std::shared_ptr<class Buffer> BufferPtr;
 typedef std::shared_ptr<class MaterialShader> MaterialShaderPtr;
-
-/// const std::string SysUniformStr;
-const std::string SysUniformName = "mr_sys";
-const std::string SysUniformNameBlock = SysUniformName+"_block";
-
-_MR_DEF_SYS_UNIFORM(
-	glm::mat4 view;
-	glm::mat4 proj;
-	float time;
-)
 
 class MR_API MaterialShader final {
 public:
@@ -52,6 +34,3 @@ inline ShaderProgramPtr MaterialShader::GetProgram() const {
 }
 
 }
-
-#undef _MR_DEF_SYS_UNIFORM
-#undef _MR_TO_STRING

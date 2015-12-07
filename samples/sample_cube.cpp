@@ -149,24 +149,24 @@ void main_logic(GLFWwindow* window) {
     auto prog = ShaderProgram::Create({vshader, fshader});
 
     // Setup uniforms, from uniform blocks
-    UniformRef<uint64_t> uniform_texture;
+    UniformRef<uint64_t>    uniform_texture;
     UniformRef<glm::mat4>   uniform_modelMat,
                             uniform_projMat,
                             uniform_viewMat;
-    UniformRef<float> uniform_time;
+    UniformRef<float>       uniform_time;
 
     {
-        ShaderProgram::UBO ubo;
-        prog->GetUniformBuffer("UBOData", ubo);
+        ShaderProgram::UboInfo uboInfo;
+        prog->GetUniformBuffer("UBOData", uboInfo);
 
-        uniform_texture = ubo.ubo->Ref<uint64_t>("tex");
-        uniform_modelMat = ubo.ubo->Ref<glm::mat4>("model");
+        uniform_texture = uboInfo.ubo->Ref<uint64_t>("tex");
+        uniform_modelMat = uboInfo.ubo->Ref<glm::mat4>("model");
 
-        prog->GetUniformBuffer(SysUniformNameBlock, ubo);
+        prog->GetUniformBuffer(SysUniformNameBlock, uboInfo);
 
-        uniform_projMat = ubo.ubo->Ref<glm::mat4>("mr_sys_block.proj");
-        uniform_viewMat = ubo.ubo->Ref<glm::mat4>("mr_sys_block.view");
-        uniform_time = ubo.ubo->Ref<float>("mr_sys_block.time");
+        uniform_projMat = uboInfo.ubo->Ref<glm::mat4>("mr_sys_block.proj");
+        uniform_viewMat = uboInfo.ubo->Ref<glm::mat4>("mr_sys_block.view");
+        uniform_time = uboInfo.ubo->Ref<float>("mr_sys_block.time");
     }
 
     // Set window 'background' color
@@ -185,7 +185,7 @@ void main_logic(GLFWwindow* window) {
     */
 
     // Set base uniform values
-    uniform_projMat = glm::perspective(90.0f, 800.0f / 600.0f, 0.1f, 10.0f);
+    uniform_projMat = glm::perspective(90.0f, 800.0f / 600.0f, 0.1f, 1000.0f);
     uniform_viewMat = glm::lookAt(glm::vec3(0,0,5), glm::vec3(0,0,-1), glm::vec3(0,1,0));
     // model matrix will be changed in Update thread
 
@@ -229,10 +229,13 @@ void main_logic(GLFWwindow* window) {
         const uint32_t instances = 10;
         Draw::Primitive(prog, DrawMode::Triangle, vbuffer, ibuffer, instances);
 
+        // Simple GLFW camera movement
         if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) camera.MoveForward(0.001f);
         if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) camera.MoveForward(-0.001f);
         if(glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) camera.RotateY(0.1f);
         if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) camera.RotateY(-0.1f);
+
+        // Update uniform values
         uniform_viewMat = camera.GetMat();
         uniform_time = (float)glfwGetTime();
 

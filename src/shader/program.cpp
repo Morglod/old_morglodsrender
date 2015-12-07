@@ -13,12 +13,14 @@
 namespace mr {
 
 void ShaderProgram::sUBOList::Resize(uint32_t num_) {
+    MP_ScopeSample(ShaderProgram::sUBOList::Resize);
     Free();
-    arr = new UBO[num_];
+    arr = new UboInfo[num_];
     num = num_;
 }
 
 void ShaderProgram::sUBOList::Free() {
+    MP_ScopeSample(ShaderProgram::sUBOList::Free);
     if(arr != nullptr) {
         delete [] arr;
         arr = nullptr;
@@ -95,22 +97,9 @@ bool ShaderProgram::_InitUBO() {
     return true;
 }
 
-/*
-bool ShaderProgram::UniformBuffer(std::string const& name, BufferPtr const& buffer, uint32_t buffer_binding) {
-    MP_BeginSample(ShaderProgram::UniformBuffer);
-
-    const auto buffer_id = buffer->GetId();
-    if(StateCache::Get()->SetUniformBuffer(buffer_id, buffer_binding)) {
-        glBindBufferBase(GL_UNIFORM_BUFFER, buffer_binding, buffer_id);
-    }
-    glUniformBlockBinding(_id, glGetUniformBlockIndex(_id, name.data()), buffer_binding);
-
-    MP_EndSample();
-    return true;
-}
-*/
-
 bool ShaderProgram::SetUniformBuffer(std::string const& name, UniformBufferPtr const& ubo) {
+    MP_ScopeSample(ShaderProgram::SetUniformBuffer);
+
     if(_ubo.num == 0) {
         MR_LOG_ERROR(ShaderProgram::SetUniformBuffer, "there is no UniformBuffers");
         return false;
@@ -130,6 +119,8 @@ bool ShaderProgram::SetUniformBuffer(std::string const& name, UniformBufferPtr c
 }
 
 bool ShaderProgram::SetUniformBuffer(uint32_t arrayIndex, UniformBufferPtr const& ubo) {
+    MP_ScopeSample(ShaderProgram::SetUniformBuffer);
+
     if(_ubo.num == 0) {
         MR_LOG_ERROR(ShaderProgram::SetUniformBuffer, "there is no UniformBuffers");
         return false;
@@ -144,13 +135,17 @@ bool ShaderProgram::SetUniformBuffer(uint32_t arrayIndex, UniformBufferPtr const
 }
 
 void ShaderProgram::_BindUniformBuffer(uint32_t index, uint32_t buffer) {
+    MP_ScopeSample(ShaderProgram::_BindUniformBuffer);
+
     if(StateCache::Get()->SetUniformBuffer(buffer, index)) {
         glBindBufferBase(GL_UNIFORM_BUFFER, index, buffer);
+        glUniformBlockBinding(_id, index, index);
     }
-    glUniformBlockBinding(_id, index, index);
 }
 
-bool ShaderProgram::GetUniformBuffer(std::string const& name, ShaderProgram::UBO& out_ubo) {
+bool ShaderProgram::GetUniformBuffer(std::string const& name, ShaderProgram::UboInfo& out_ubo) {
+    MP_ScopeSample(ShaderProgram::GetUniformBuffer);
+
     if(_ubo.num == 0) {
         MR_LOG_ERROR(ShaderProgram::GetUniformBuffer, "there is no UniformBuffers");
         return false;
@@ -165,7 +160,9 @@ bool ShaderProgram::GetUniformBuffer(std::string const& name, ShaderProgram::UBO
     return false;
 }
 
-bool ShaderProgram::GetUniformBuffer(uint32_t arrayIndex, ShaderProgram::UBO& out_ubo) const {
+bool ShaderProgram::GetUniformBuffer(uint32_t arrayIndex, ShaderProgram::UboInfo& out_ubo) const {
+    MP_ScopeSample(ShaderProgram::GetUniformBuffer);
+
     if(arrayIndex >= _ubo.num) {
         MR_LOG_ERROR(ShaderProgram::GetUniformBuffer, "invalid array index");
         return false;
@@ -177,7 +174,7 @@ bool ShaderProgram::GetUniformBuffer(uint32_t arrayIndex, ShaderProgram::UBO& ou
 }
 
 void ShaderProgram::Use(ShaderProgramPtr const& program) {
-    MP_BeginSample(ShaderProgram::Use);
+    MP_ScopeSample(ShaderProgram::Use);
 
     const auto handle = (program != nullptr) ? program->GetId() : 0;
     if(StateCache::Get()->SetShaderProgram(handle)) {
@@ -189,8 +186,6 @@ void ShaderProgram::Use(ShaderProgramPtr const& program) {
         if(ubo != nullptr) bufferId = ubo->GetBuffer()->GetId();
         program->_BindUniformBuffer(i, bufferId);
     }
-
-    MP_EndSample();
 }
 
 }

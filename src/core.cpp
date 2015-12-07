@@ -20,7 +20,7 @@ bool Core::Init() {
         MR_LOG_WARNING(Core::Init, "Failed init profiler");
     }
 
-    MP_BeginSample(Core::Init);
+    MP_ScopeSample(Core::Init);
 
     core_thread = true;
 
@@ -54,12 +54,13 @@ bool Core::Init() {
         glEnableClientState(GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
     }
 
-    MP_EndSample();
-
     return true;
 }
 
 void Core::Shutdown() {
+    MP_BeginSample(Core::Shutdown);
+
+    MP_EndSample();
     mp::Shutdown();
 }
 

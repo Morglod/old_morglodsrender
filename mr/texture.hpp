@@ -19,12 +19,10 @@ enum class TextureType : uint32_t {
 };
 
 enum class TextureStorageFormat : uint32_t {
-    Alpha = 0x1906,
     Alpha4 = 0x803b,
     Alpha8 = 0x803c,
     Alpha12 = 0x803d,
     Alpha16 = 0x803e,
-    Luminance = 0x1909,
     Luminance4 = 0x803f,
     Luminance8 = 0x8040,
     Luminance12 = 0x8041,
@@ -36,20 +34,17 @@ enum class TextureStorageFormat : uint32_t {
     Luminance12Alpha4 = 0x8046,
     Luminance12Alpha12 = 0x8047,
     Luminance16Alpha16 = 0x8048,
-    Intensity = 0x8049,
     Intensity4 = 0x804a,
     Intensity8 = 0x804b,
     Intensity12 = 0x804c,
     Intensity16 = 0x804d,
     R3G3B2 = 0x2a10,
-    RGB = 0x1907,
     RGB4 = 0x804f,
     RGB5 = 0x8050,
     RGB8 = 0x8051,
     RGB10 = 0x8052,
     RGB12 = 0x8053,
     RGB16 = 0x8054,
-    RGBA = 0x1908,
     RGBA2 = 0x8055,
     RGBA4 = 0x8056,
     RGB5A1 = 0x8057,
@@ -61,7 +56,6 @@ enum class TextureStorageFormat : uint32_t {
     /** render buffer **/
     Depth24Stencil8 = 0x88f0,
     //rgba4,
-    DepthComponent = 0x1902,
     DepthComponent16 = 0x81a5,
     DepthComponent24 = 0x81a6,
     DepthComponent32 = 0x81a7,
@@ -176,6 +170,8 @@ private:
     TextureParams _params;
     uint64_t _residentHandle = 0;
 };
+
+///
 
 inline MemoryPtr TextureData::GetData() const {
     return _data;

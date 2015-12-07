@@ -1,8 +1,11 @@
 #include "mr/camera.hpp"
+#include "src/mp.hpp"
 
 namespace {
 
 glm::vec3 _NormalizedDirection(float angleX, float angleY) {
+    MP_ScopeSample(_NormalizedDirection);
+
     float rx = glm::radians(angleX);
     float ry = glm::radians(angleY);
 
@@ -18,12 +21,16 @@ glm::vec3 _NormalizedDirection(float angleX, float angleY) {
 namespace mr {
 
 void PerspectiveCamera::CalcDir() {
+    MP_ScopeSample(PerspectiveCamera::CalcDir);
+
     _dir_forward = _NormalizedDirection(_rot.x, _rot.y);
     _dir_up = _NormalizedDirection(_rot.x, _rot.y+90.0f);
     _dir_left = _NormalizedDirection(_rot.x+90.0f, 0.0f);
 }
 
 void PerspectiveCamera::CalcMat() {
+    MP_ScopeSample(PerspectiveCamera::CalcMat);
+
     _mat = glm::lookAt(_pos, _pos + (_dir_forward * 2.0f), _dir_up);
 }
 

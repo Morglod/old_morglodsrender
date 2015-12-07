@@ -28,6 +28,7 @@ namespace mr {
 template<>
 MR_API bool mr::Json<mr::BufferPtr>::_Export(mr::BufferPtr& type, void* out) {
     MP_ScopeSample(mr::Json<mr::BufferPtr>::_Export);
+
     ::Json::Value& j_root = *((::Json::Value*)out);
 
     j_root["uid"] = ::Json::Value((uint64_t)type.get());

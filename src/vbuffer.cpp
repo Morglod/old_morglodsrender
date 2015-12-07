@@ -41,6 +41,7 @@ bool VertexBuffer::Bind(uint32_t binding, uint32_t offset) {
 }
 
 VertexBufferPtr VertexBuffer::Create(BufferPtr const& vbuf, VertexDeclPtr const& vdecl, uint32_t num) {
+    MP_ScopeSample(VertexBuffer::Create);
     return VertexBufferPtr(new VertexBuffer(vbuf, vdecl, num));
 }
 

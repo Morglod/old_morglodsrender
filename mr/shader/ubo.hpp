@@ -1,9 +1,20 @@
 #pragma once
 
 #include "mr/build.hpp"
+#include "mr/pre/glm.hpp"
+#include "mr/string.hpp"
+
 #include <memory>
 #include <vector>
 #include <unordered_map>
+
+#define _MR_TO_STRING(x) (#x)
+
+#define _MR_DEF_SYS_UNIFORM(x) \
+struct SysUniformData { \
+    x \
+}; \
+const std::string SysUniformStr = "uniform "+SysUniformNameBlock+" { " +ReplaceString((#x), "glm::", "")+ " } "+SysUniformName+"; \n";
 
 namespace mr {
 
@@ -11,6 +22,16 @@ typedef std::shared_ptr<class UniformBuffer> UniformBufferPtr;
 typedef std::shared_ptr<class UniformBufferDecl> UniformBufferDeclPtr;
 typedef std::shared_ptr<class ShaderProgram> ShaderProgramPtr;
 typedef std::shared_ptr<class Buffer> BufferPtr;
+
+/// const std::string SysUniformStr;
+const std::string SysUniformName = "mr_sys";
+const std::string SysUniformNameBlock = SysUniformName+"_block";
+
+_MR_DEF_SYS_UNIFORM(
+	glm::mat4 view;
+	glm::mat4 proj;
+	float time;
+)
 
 class MR_API UniformBufferDecl final {
 public:
@@ -53,7 +74,7 @@ template<typename T>
 struct MR_API UniformRef {
     T* ptr;
 
-    inline T Get() {
+    inline T Get() const {
         return *ptr;
     }
 
@@ -213,3 +234,6 @@ namespace std {
 MR_API std::ostream& operator << (std::ostream& out, mr::UniformBufferDeclPtr const& ubo_desc);
 }
 #endif
+
+#undef _MR_DEF_SYS_UNIFORM
+#undef _MR_TO_STRING

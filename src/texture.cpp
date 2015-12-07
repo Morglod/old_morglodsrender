@@ -91,6 +91,8 @@ TextureDataPtr TextureData::FromFile(std::string const& file) {
 }
 
 Texture2DPtr Texture2D::Create(TextureParams const& params) {
+    MP_ScopeSample(Texture2D::Create);
+
     uint32_t handle;
     glCreateTextures(GL_TEXTURE_2D, 1, &handle);
 
@@ -108,11 +110,14 @@ Texture2DPtr Texture2D::Create(TextureParams const& params) {
 }
 
 bool Texture2D::Storage() {
+    MP_ScopeSample(Texture2D::Storage);
     glTextureStorage2D(_id, _params.levels, (uint32_t)_params.storageFormat, _params.size.x, _params.size.y);
     return true;
 }
 
 bool Texture2D::WriteImage(TextureDataPtr const& data, uint32_t level) {
+    MP_ScopeSample(Texture2D::WriteImage);
+
     if(!data->IsGood()) {
         MR_LOG_ERROR(Texture2D::WriteImage, "data is bad");
         return false;
@@ -134,6 +139,8 @@ bool Texture2D::WriteImage(TextureDataPtr const& data, uint32_t level) {
 }
 
 bool Texture2D::WriteSubImage(TextureDataPtr const& data, uint32_t level, glm::ivec2 const& offset) {
+    MP_ScopeSample(Texture2D::WriteSubImage);
+
     if(!data->IsGood()) {
         MR_LOG_ERROR(Texture2D::WriteSubImage, "data is bad");
         return false;
@@ -153,26 +160,34 @@ bool Texture2D::WriteSubImage(TextureDataPtr const& data, uint32_t level, glm::i
 }
 
 bool Texture2D::BuildMipmaps() {
+    MP_BeginSample(Texture2D::BuildMipmaps);
     glGenerateTextureMipmap(_id);
+    MP_EndSample();
     return true;
 }
 
 void Texture2D::Destroy() {
     if(_id == 0) return;
+    MP_BeginSample(Texture2D::Destroy);
     glDeleteTextures(1, &_id);
     _id = 0;
+    MP_EndSample();
 }
 
 bool Texture2D::MakeResident() {
+    MP_BeginSample(Texture2D::MakeResident);
     _residentHandle = glGetTextureHandleARB(_id);
     glMakeTextureHandleResidentARB(_residentHandle);
+    MP_EndSample();
     return true;
 }
 
 bool Texture2D::MakeNonResident() {
     if(_residentHandle == 0) return true;
+    MP_BeginSample(Texture2D::MakeNonResident);
     glMakeTextureHandleNonResidentARB(_residentHandle);
     _residentHandle = 0;
+    MP_EndSample();
     return true;
 }
 

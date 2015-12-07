@@ -3,12 +3,25 @@
 #include "mr/pre/glew.hpp"
 #include "mr/log.hpp"
 #include "mr/buffer.hpp"
+#include "src/mp.hpp"
 
 #include <iostream>
+
+#define _CHECK_PROGRAM_NULL(method, bad_return) \
+if(program == nullptr) { \
+    MR_LOG_ERROR(method, "program is null"); \
+    return bad_return; \
+} \
+uint32_t phandle = program->GetId(); \
+if(phandle == 0) { \
+    MR_LOG_ERROR(method, "program not created"); \
+    return bad_return; \
+} \
 
 namespace mr {
 
 void UniformBufferDecl::sUniforms::Free() {
+    MP_ScopeSample(UniformBufferDecl::sUniforms::Free);
     if(arr != nullptr) {
         delete [] arr;
         arr = nullptr;
@@ -17,6 +30,7 @@ void UniformBufferDecl::sUniforms::Free() {
 }
 
 void UniformBufferDecl::sUniforms::Resize(int32_t num_) {
+    MP_ScopeSample(UniformBufferDecl::sUniforms::Resize);
     Free();
     num = num_;
     arr = new Uniform[num_];
@@ -27,15 +41,9 @@ UniformBufferDecl::sUniforms::~sUniforms() {
 }
 
 UniformBufferDeclPtr UniformBufferDecl::Create(ShaderProgram* program, std::string const& ubo_name) {
-    if(program == nullptr) {
-        MR_LOG_ERROR(UniformBufferDecl::Create, "program is null");
-        return nullptr;
-    }
-    uint32_t phandle = program->GetId();
-    if(phandle == 0) {
-        MR_LOG_ERROR(UniformBufferDecl::Create, "program not created");
-        return nullptr;
-    }
+    MP_ScopeSample(UniformBufferDecl::Create);
+
+    _CHECK_PROGRAM_NULL(UniformBufferDecl::Create, nullptr);
 
     {
         int32_t blocks_num = 0;
@@ -63,15 +71,9 @@ UniformBufferDeclPtr UniformBufferDecl::Create(ShaderProgram* program, std::stri
 }
 
 UniformBufferDeclPtr UniformBufferDecl::Create(ShaderProgram* program, uint32_t ubo_index) {
-    if(program == nullptr) {
-        MR_LOG_ERROR(UniformBufferDecl::Create, "program is null");
-        return nullptr;
-    }
-    uint32_t phandle = program->GetId();
-    if(phandle == 0) {
-        MR_LOG_ERROR(UniformBufferDecl::Create, "program not created");
-        return nullptr;
-    }
+    MP_ScopeSample(UniformBufferDecl::Create);
+
+    _CHECK_PROGRAM_NULL(UniformBufferDecl::Create, nullptr);
 
     UniformBufferDeclPtr ubo = UniformBufferDeclPtr(new UniformBufferDecl);
 
@@ -119,15 +121,9 @@ UniformBufferDeclPtr UniformBufferDecl::Create(ShaderProgram* program, uint32_t 
 }
 
 bool UniformBufferDecl::Create(ShaderProgram* program, std::vector<std::pair<std::string, UniformBufferDeclPtr>>& out_ubos) {
-    if(program == nullptr) {
-        MR_LOG_ERROR(UniformBufferDecl::Create, "program is null");
-        return false;
-    }
-    uint32_t phandle = program->GetId();
-    if(phandle == 0) {
-        MR_LOG_ERROR(UniformBufferDecl::Create, "program not created");
-        return false;
-    }
+    MP_ScopeSample(UniformBufferDecl::Create);
+
+    _CHECK_PROGRAM_NULL(UniformBufferDecl::Create, false);
 
     {
         int32_t blocks_num = 0;
@@ -154,6 +150,8 @@ bool UniformBufferDecl::Create(ShaderProgram* program, std::vector<std::pair<std
 }
 
 UniformBufferPtr UniformBuffer::Create(UniformBufferDeclPtr const& desc) {
+    MP_ScopeSample(UniformBuffer::Create);
+
     if(desc == nullptr) {
         MR_LOG_ERROR(UniformBuffer::Create, "desc can not be null");
         return nullptr;
@@ -168,6 +166,8 @@ UniformBufferPtr UniformBuffer::Create(UniformBufferDeclPtr const& desc) {
 }
 
 UniformBufferPtr UniformBuffer::Create(UniformBufferDeclPtr const& desc, BufferPtr const& buffer) {
+    MP_ScopeSample(UniformBuffer::Create);
+
     if(desc == nullptr) {
         MR_LOG_ERROR(UniformBuffer::Create, "desc can not be null");
         return nullptr;
@@ -183,16 +183,21 @@ UniformBufferPtr UniformBuffer::Create(UniformBufferDeclPtr const& desc, BufferP
 }
 
 bool UniformBuffer::_ResetBuffer() {
+    MP_ScopeSample(UniformBuffer::_ResetBuffer);
+
     Buffer::CreationFlags flags; flags.map_after_creation = true;
     _buffer = Buffer::Create(Memory::Zero(_desc->GetSize()), flags);
     return (_buffer != nullptr);
 }
 
 void* UniformBuffer::At(int32_t arrayIndex) {
+    MP_ScopeSample(UniformBuffer::At);
     return &((uint8_t*)_buffer->GetMapState().mem)[_desc->GetUniform(arrayIndex).offset];
 }
 
 void* UniformBuffer::At(std::string const& name) {
+    MP_ScopeSample(UniformBuffer::At);
+
     UniformBufferDecl::Uniform u;
     int32_t arrayIndex;
     if(!_desc->FindUniformByName(name, u, arrayIndex))
@@ -201,6 +206,8 @@ void* UniformBuffer::At(std::string const& name) {
 }
 
 bool UniformBuffer::SetBuffer(BufferPtr const& buffer) {
+    MP_ScopeSample(UniformBuffer::SetBuffer);
+
     if(buffer == nullptr) {
         MR_LOG_ERROR(UniformBuffer::SetBuffer, "buffer can not be null");
         return false;
@@ -217,6 +224,8 @@ bool UniformBuffer::SetBuffer(BufferPtr const& buffer) {
 namespace std {
 
 MR_API std::ostream& operator << (std::ostream& out, mr::UniformBufferDeclPtr const& ubo_desc) {
+    MP_ScopeSample(std::ostream << mr::UniformBufferDeclPtr);
+
     out << "UniformBufferDecl: \n";
     out << "\tsize: " << ubo_desc->GetSize() << " \n";
     out << "\tuniforms: \n";

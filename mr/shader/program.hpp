@@ -17,7 +17,7 @@ typedef std::shared_ptr<class UniformBufferDecl> UniformBufferDeclPtr;
 class MR_API ShaderProgram final {
     friend class Draw;
 public:
-    struct UBO {
+    struct UboInfo {
         std::string name = "";
         UniformBufferPtr ubo = nullptr;
     };
@@ -29,8 +29,8 @@ public:
     bool SetUniformBuffer(uint32_t arrayIndex, UniformBufferPtr const& ubo);
     bool SetUniformBuffer(std::string const& name, UniformBufferPtr const& ubo);
     inline uint32_t GetUniformBuffersNum() const;
-    bool GetUniformBuffer(std::string const& name, ShaderProgram::UBO& out_ubo);
-    bool GetUniformBuffer(uint32_t arrayIndex, ShaderProgram::UBO& out_ubo) const;
+    bool GetUniformBuffer(std::string const& name, ShaderProgram::UboInfo& out_ubo);
+    bool GetUniformBuffer(uint32_t arrayIndex, ShaderProgram::UboInfo& out_ubo) const;
 
     static void Use(ShaderProgramPtr const& program);
 
@@ -46,7 +46,7 @@ protected:
     uint32_t _id;
 
     struct sUBOList {
-        UBO* arr = nullptr;
+        UboInfo* arr = nullptr;
         uint32_t num = 0;
 
         void Resize(uint32_t num);

@@ -68,6 +68,8 @@ BufferPtr Buffer::Create(MemoryPtr const& mem, CreationFlags const& flags) {
 }
 
 void Buffer::Destroy() {
+    MP_ScopeSample(Buffer::Destroy);
+
     if(_id == 0) return;
     glDeleteBuffers(1, &_id);
     _id = 0;
