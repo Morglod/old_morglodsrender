@@ -187,7 +187,7 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="mr/material/MaterialShader.hpp">
+		<Unit filename="mr/material/material.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
@@ -323,7 +323,7 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="src/material/MaterialShader.cpp">
+		<Unit filename="src/material/material.cpp">
 			<Option compile="0" />
 			<Option link="0" />
 			<Option target="Debug" />

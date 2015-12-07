@@ -69,21 +69,22 @@ private:
     sUniforms _uniforms;
 };
 
+struct MR_API UniformRefAny {
+    void* ptr;
+};
 
 template<typename T>
-struct MR_API UniformRef {
-    T* ptr;
-
+struct MR_API UniformRef : public UniformRefAny {
     inline T Get() const {
-        return *ptr;
+        return *((T*)ptr);
     }
 
     inline T& Value() {
-        return *ptr;
+        return *((T*)ptr);
     }
 
     inline T operator = (T const& value) {
-        return ((*ptr) = value);
+        return ((*((T*)ptr)) = value);
     }
 };
 
@@ -114,6 +115,9 @@ public:
 
     template<typename T>
     inline UniformRef<T> Ref(std::string const& name);
+
+    inline UniformRefAny RefAny(int32_t arrayIndex);
+    inline UniformRefAny RefAny(std::string const& name);
 
     static UniformBufferPtr Create(UniformBufferDeclPtr const& desc);
     static UniformBufferPtr Create(UniformBufferDeclPtr const& desc, BufferPtr const& buffer);
@@ -184,6 +188,12 @@ template<typename T>
 inline UniformRef<T> UniformBuffer::Ref(std::string const& name) {
     T* t = (T*)At(name);
     return UniformRef<T>{t};
+}
+
+inline UniformRefAny UniformBuffer::RefAny(int32_t arrayIndex) {
+}
+
+inline UniformRefAny UniformBuffer::RefAny(std::string const& name) {
 }
 
 /// UniformBuffer inline

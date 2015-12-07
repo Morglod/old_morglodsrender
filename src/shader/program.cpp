@@ -10,7 +10,13 @@
 
 #include "mr/pre/glew.hpp"
 
+mr::UniformBufferPtr _sysUniformBuffer = nullptr;
+
 namespace mr {
+
+UniformBufferPtr ShaderProgram::GetSystemUniformBuffer() {
+    return _sysUniformBuffer;
+}
 
 void ShaderProgram::sUBOList::Resize(uint32_t num_) {
     MP_ScopeSample(ShaderProgram::sUBOList::Resize);
@@ -90,7 +96,13 @@ bool ShaderProgram::_InitUBO() {
         _ubo.Resize(ubos.size());
         for(uint32_t i = 0, n = ubos.size(); i < n; ++i) {
             _ubo.arr[i].name = ubos[i].first;
-            _ubo.arr[i].ubo = UniformBuffer::Create(ubos[i].second);
+            /// Place global "system uniform" block
+            if(ubos[i].first == SysUniformNameBlock) {
+                if(_sysUniformBuffer == nullptr)
+                    _sysUniformBuffer = UniformBuffer::Create(ubos[i].second);
+                _ubo.arr[i].ubo = _sysUniformBuffer;
+            }
+            else _ubo.arr[i].ubo = UniformBuffer::Create(ubos[i].second);
         }
     }
 
@@ -179,12 +191,12 @@ void ShaderProgram::Use(ShaderProgramPtr const& program) {
     const auto handle = (program != nullptr) ? program->GetId() : 0;
     if(StateCache::Get()->SetShaderProgram(handle)) {
         glUseProgram(handle);
-    }
-    for(uint32_t i = 0, n = program->_ubo.num; i < n; ++i) {
-        const auto ubo = program->_ubo.arr[i].ubo;
-        uint32_t bufferId = 0;
-        if(ubo != nullptr) bufferId = ubo->GetBuffer()->GetId();
-        program->_BindUniformBuffer(i, bufferId);
+        for(uint32_t i = 0, n = program->_ubo.num; i < n; ++i) {
+            const auto ubo = program->_ubo.arr[i].ubo;
+            uint32_t bufferId = 0;
+            if(ubo != nullptr) bufferId = ubo->GetBuffer()->GetId();
+            program->_BindUniformBuffer(i, bufferId);
+        }
     }
 }
 

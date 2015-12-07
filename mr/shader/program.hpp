@@ -32,6 +32,8 @@ public:
     bool GetUniformBuffer(std::string const& name, ShaderProgram::UboInfo& out_ubo);
     bool GetUniformBuffer(uint32_t arrayIndex, ShaderProgram::UboInfo& out_ubo) const;
 
+    static UniformBufferPtr GetSystemUniformBuffer();
+
     static void Use(ShaderProgramPtr const& program);
 
     inline uint32_t GetId() const;
