@@ -20,7 +20,7 @@
 #ifdef MP_ENABLED
 
 #define MP_BeginSampleT(_name_) \
-{ \
+if(mp::IsCapturing()) { \
     std::lock_guard<std::mutex> lock(mp::GlobalMtx()); \
 	auto smpl = mp::Sample(); \
 	smpl.name = std::string(_name_); \
@@ -35,7 +35,7 @@ MP_BeginSampleT(#x)
 MP_BeginSample( (__func__) )
 
 #define MP_EndSample() \
-{ \
+if(mp::IsCapturing()) { \
     std::lock_guard<std::mutex> lock(mp::GlobalMtx()); \
     if(!mp::RefSamples().empty()) { \
         auto smpl = mp::RefSamples().top(); \
@@ -69,6 +69,8 @@ auto __scope_sample mp::ScopeSample( (__func__) );
 #endif // MP_ENABLED
 
 namespace mp {
+
+bool IsCapturing();
 
 typedef mr::Timer<mr::HighresClockT, mr::MilliTimeT> TimerT;
 typedef TimerT::RetT TimeT;

@@ -75,12 +75,19 @@ void _OutSampleTree(std::ofstream& file, size_t top_sample_hash, const double to
 
 namespace mp {
 
+bool _capture = false;
+
 std::stack<Sample>& RefSamples() {
     return _samples;
 }
 
 bool Init() {
+    _capture = true;
     return true;
+}
+
+bool IsCapturing() {
+    return _capture;
 }
 
 void Shutdown() {
@@ -125,6 +132,8 @@ void Shutdown() {
     _total_samples.clear();
 
     file.close();
+
+    _capture = false;
 }
 
 void Log(Sample const& smpl, std::string const& parentName) {

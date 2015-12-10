@@ -102,14 +102,15 @@ UniformBufferDeclPtr UniformBufferDecl::Create(ShaderProgram* program, uint32_t 
                 int unif_size = 0;
                 unsigned int unif_type = 0;
 
-                ubo->_uniforms.arr[i].offset = offsets[i];
-
                 glGetActiveUniform(phandle, indecies[i], 512, &nameSize, &unif_size, &unif_type, nameBuf);
 
                 if(nameSize <= 0) {
                     MR_LOG_WARNING(UniformBufferDecl::Create, "uniform nonamed");
                     ubo->_uniforms.arr[i].name = "";
                 } else ubo->_uniforms.arr[i].name = std::string(nameBuf, nameSize);
+
+                ubo->_uniforms.arr[i].offset = offsets[i];
+                ubo->_uniforms.arr[i].size = unif_size;
             }
 
             delete [] indecies;
@@ -190,19 +191,23 @@ bool UniformBuffer::_ResetBuffer() {
     return (_buffer != nullptr);
 }
 
-void* UniformBuffer::At(int32_t arrayIndex) {
+UniformRefAny UniformBuffer::At(int32_t arrayIndex) const {
     MP_ScopeSample(UniformBuffer::At);
-    return &((uint8_t*)_buffer->GetMapState().mem)[_desc->GetUniform(arrayIndex).offset];
+    const auto uniform = _desc->GetUniform(arrayIndex);
+    if(!uniform.IsGood()) return UniformRefAny();
+    auto* ptr = &((uint8_t*)_buffer->GetMapState().mem)[uniform.offset];
+    return UniformRefAny(ptr, uniform.size);
 }
 
-void* UniformBuffer::At(std::string const& name) {
+UniformRefAny UniformBuffer::At(std::string const& name) const {
     MP_ScopeSample(UniformBuffer::At);
 
-    UniformBufferDecl::Uniform u;
+    UniformBufferDecl::Uniform uniform;
     int32_t arrayIndex;
-    if(!_desc->FindUniformByName(name, u, arrayIndex))
-        return nullptr;
-    return At(arrayIndex);
+    if(!_desc->FindUniformByName(name, uniform, arrayIndex))
+        return UniformRefAny();
+    auto* ptr = &((uint8_t*)_buffer->GetMapState().mem)[uniform.offset];
+    return UniformRefAny(ptr, uniform.size);
 }
 
 bool UniformBuffer::SetBuffer(BufferPtr const& buffer) {
@@ -233,6 +238,7 @@ MR_API std::ostream& operator << (std::ostream& out, mr::UniformBufferDeclPtr co
         const auto uniform = ubo_desc->GetUniform(i);
         out << "\t\tname: " << uniform.name << " \n";
         out << "\t\toffset: " << uniform.offset << " \n";
+        out << "\t\tsize: " << uniform.size << " \n";
     }
     return out;
 }

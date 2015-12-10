@@ -22,6 +22,22 @@ public:
         UniformBufferPtr ubo = nullptr;
     };
 
+    struct MR_API FoundUniform {
+        std::string uniformName;
+        UniformBufferPtr ubo;
+        int32_t arrayIndex;
+        int32_t size;
+
+        void* GetPtr() const;
+
+        template<typename T>
+        inline T* AsPtr() {
+            return (T*)GetPtr();
+        }
+
+        FoundUniform() = default;
+    };
+
     // shaders may be empty
     static ShaderProgramPtr Create(std::vector<ShaderPtr> const& shaders = std::vector<ShaderPtr>());
     bool Link(std::vector<ShaderPtr> const& shaders);
@@ -31,6 +47,8 @@ public:
     inline uint32_t GetUniformBuffersNum() const;
     bool GetUniformBuffer(std::string const& name, ShaderProgram::UboInfo& out_ubo);
     bool GetUniformBuffer(uint32_t arrayIndex, ShaderProgram::UboInfo& out_ubo) const;
+
+    bool FindUniform(std::string const& uniformName, FoundUniform& out_uniform) const;
 
     static UniformBufferPtr GetSystemUniformBuffer();
 

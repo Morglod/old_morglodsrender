@@ -12,9 +12,9 @@ const char* vertexShader =
 "#extension GL_ARB_bindless_texture : require \n"
 "#extension GL_NV_gpu_shader5 : enable \n"
 "layout (location = 0) in vec3 pos; \n"
-"layout (location = 1) in vec4 color; \n"
-"layout (location = 2) in float color2; \n"
-"layout (location = 3) in vec2 texCoord; \n"
+//"layout (location = 1) in vec4 color; \n"
+//"layout (location = 2) in float color2; \n"
+"layout (location = 1) in vec2 texCoord; \n"
 "out vec4 gl_Position; \n"
 "out vec4 vcolor; \n"
 "out vec2 vtexCoord; \n"
@@ -25,7 +25,7 @@ const char* vertexShader =
 "}; \n"
 "void main() { \n"
 "   gl_Position = ((mr_sys.proj * mr_sys.view * model) * vec4(pos + gl_InstanceID * vec3(2.0, 0.0, 0.0), 1.0)); \n"
-"   vcolor = color * color2; \n"
+"   vcolor = vec4(pos, 1.0); \n"
 "   vtexCoord = texCoord; \n"
 "} \n"
 ;
@@ -43,7 +43,8 @@ const char* fragmentShader =
 "   uint64_t tex; \n"
 "}; \n"
 "void main() { \n"
-"   fragColor = ((texture(sampler2D(tex), vtexCoord).rgb + vcolor.xyz) * 0.5) * ((1.0 + sin(mr_sys.time)) / 1.5) + vec3(0.1, 0.1, 0.1); \n"
+"   fragColor = texture(sampler2D(tex), vtexCoord).rgb; \n"
+//"   fragColor = ((texture(sampler2D(tex), vtexCoord).rgb + vcolor.xyz) * 0.5) * ((1.0 + sin(mr_sys.time)) / 1.5) + vec3(0.1, 0.1, 0.1); \n"
 "} \n"
 ;
 
@@ -113,6 +114,7 @@ void main_logic(GLFWwindow* window) {
     // Run write async
     auto bufv_write = buf_vert->WriteAsync(vertexDataMem);
     auto bufi_write = buf_ind->WriteAsync(indexDataMem);
+    auto tex_load = TextureData::FromFileAsync("texture.jpg");
 
     // Define vertex format
     auto vdecl = VertexDecl::Create();
@@ -159,14 +161,14 @@ void main_logic(GLFWwindow* window) {
         ShaderProgram::UboInfo uboInfo;
         prog->GetUniformBuffer("UBOData", uboInfo);
 
-        uniform_texture = uboInfo.ubo->Ref<uint64_t>("tex");
-        uniform_modelMat = uboInfo.ubo->Ref<glm::mat4>("model");
+        uniform_texture = uboInfo.ubo->As<uint64_t>("tex");
+        uniform_modelMat = uboInfo.ubo->As<glm::mat4>("model");
 
         prog->GetUniformBuffer(SysUniformNameBlock, uboInfo);
 
-        uniform_projMat = uboInfo.ubo->Ref<glm::mat4>("mr_sys_block.proj");
-        uniform_viewMat = uboInfo.ubo->Ref<glm::mat4>("mr_sys_block.view");
-        uniform_time = uboInfo.ubo->Ref<float>("mr_sys_block.time");
+        uniform_projMat = uboInfo.ubo->As<glm::mat4>("mr_sys_block.proj");
+        uniform_viewMat = uboInfo.ubo->As<glm::mat4>("mr_sys_block.view");
+        uniform_time = uboInfo.ubo->As<float>("mr_sys_block.time");
     }
 
     // Set window 'background' color
@@ -175,6 +177,7 @@ void main_logic(GLFWwindow* window) {
     // Wait till async tasks end
     bufv_write.wait();
     bufi_write.wait();
+    tex_load.wait();
 
     /// Export/Import VertexBuffer
     /*std::ofstream json_file2("vbuffer.json");
@@ -190,8 +193,7 @@ void main_logic(GLFWwindow* window) {
     // model matrix will be changed in Update thread
 
     // Test texture
-    auto textureData = TextureData::FromFile("house.png");
-
+    auto textureData = tex_load.get();
     TextureParams textureParams;
     textureParams.minFilter = TextureMinFilter::LinearMipmapLinear;
     textureParams.magFilter = TextureMagFilter::Linear;
@@ -202,6 +204,12 @@ void main_logic(GLFWwindow* window) {
     texture->BuildMipmaps();
     texture->MakeResident();
     uniform_texture = texture->GetResidentHandle();
+
+    std::vector<MeshPtr> sceneMeshes1;
+    std::vector<MeshPtr> sceneMeshes2;
+    Mesh::ImportOptions importOptions; importOptions.debugLog = true;
+    Mesh::Import("elephant_budda.dae", prog, sceneMeshes1, importOptions);
+    Mesh::Import("mandarine.dae", prog, sceneMeshes2, importOptions);
 
     MR_LOG_T_STD_("Loading time (ms): ", loadTimer.End());
 
@@ -221,24 +229,49 @@ void main_logic(GLFWwindow* window) {
                                         }
                                      }, &uniform_modelMat.Value());
 
+    double lastTime = glfwGetTime();
+    int fps = 0;
+    double fpsTimer = 1.0;
     while(!glfwWindowShouldClose(window)) {
+        double deltaTime = glfwGetTime() - lastTime;
+
+        const float moveSpeed = 1.0f * deltaTime;
+        const float rotateSpeed = 90.0f * deltaTime;
+
         // Clear screen
         Draw::Clear(ClearFlags::ColorDepth);
 
         // Draw from buffer with shader
-        const uint32_t instances = 10;
-        Draw::Primitive(prog, DrawMode::Triangle, vbuffer, ibuffer, instances);
+        const uint32_t instances = 1;
+        //Draw::Primitive(prog, DrawMode::Triangle, vbuffer, ibuffer, instances);
+
+        for(int i = 0, n = sceneMeshes1.size(); i < n; ++i) {
+            sceneMeshes1[i]->Draw(instances);
+        }
+
+        /*for(int i = 0, n = sceneMeshes2.size(); i < n; ++i) {
+            sceneMeshes2[i]->Draw(instances);
+        }*/
 
         // Simple GLFW camera movement
-        if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) camera.MoveForward(0.001f);
-        if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) camera.MoveForward(-0.001f);
-        if(glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) camera.RotateY(0.1f);
-        if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) camera.RotateY(-0.1f);
+        if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) camera.MoveForward(moveSpeed);
+        if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) camera.MoveForward(-moveSpeed);
+        if(glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) camera.RotateY(rotateSpeed);
+        if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) camera.RotateY(-rotateSpeed);
 
         // Update uniform values
         uniform_viewMat = camera.GetMat();
-        uniform_time = (float)glfwGetTime();
+        uniform_time = (float)lastTime;
 
+        lastTime += deltaTime;
+
+        ++fps;
+        fpsTimer -= deltaTime;
+        if(fpsTimer <= 0.0) {
+            fpsTimer = 1.0;
+            std::cout << fps << std::endl;
+            fps = 0;
+        }
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

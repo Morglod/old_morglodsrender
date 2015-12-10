@@ -27,6 +27,8 @@ public:
     bool SetUniformBuffer(uint32_t buffer, uint32_t binding);
     bool GetUniformBuffer(uint32_t binding, uint32_t& out_buffer);
 
+    bool SetVertexDecl(VertexDecl* vdecl);
+
     static StateCache* Get();
 protected:
     bool _Init();
@@ -65,6 +67,18 @@ protected:
 
     // sizeof GL_MAX_UNIFORM_BUFFER_BINDINGS
     std::unique_ptr<_UniformBufferBindings> _ubo = nullptr;
+
+    /*struct _VertexAttribs {
+        uint32_t num = 0;
+
+        _VertexAttribs(uint32_t num);
+        ~_VertexAttribs();
+    };
+
+    // sizeof GL_MAX_VERTEX_ATTRIBS
+    std::unique_ptr<_VertexAttribs> _vattribs = nullptr;*/
+
+    VertexDecl* _vdecl = nullptr;
 };
 
 inline uint32_t StateCache::GetShaderProgram() const {

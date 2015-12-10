@@ -4,6 +4,7 @@
 #include "mr/pre/glew.hpp"
 
 #include <FreeImage.h>
+#include <iostream>
 
 namespace {
 
@@ -26,6 +27,16 @@ mr::TextureDataFormat MAP_FORMAT[5] = {
     // CMYK skipped by assertion
 };
 
+void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message){
+    std::string s_message = "";
+    if(fif != FIF_UNKNOWN) {
+        if (FreeImage_GetFormatFromFIF(fif))
+            s_message += "format: " + std::string(FreeImage_GetFormatFromFIF(fif)) + "\n";
+    }
+    s_message += std::string(message);
+    MR_LOG_ERROR(FreeImageErrorHandler, s_message);
+}
+
 }
 
 namespace mr {
@@ -34,6 +45,7 @@ TextureDataPtr TextureData::FromFile(std::string const& file) {
     MP_ScopeSample(TextureData::FromFile);
 
     FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
+    FreeImage_SetOutputMessage(FreeImageErrorHandler);
 
 	fif = FreeImage_GetFileType(file.c_str(), 0);
 	if(fif == FIF_UNKNOWN)
@@ -56,12 +68,20 @@ TextureDataPtr TextureData::FromFile(std::string const& file) {
 		return nullptr;
 	}
 
+	/* if ( FreeImage_GetBPP( dib ) != 32 ) {
+        FIBITMAP* hOldImage = dib;
+        dib = FreeImage_ConvertTo32Bits( hOldImage );
+        FreeImage_Unload( hOldImage );
+    } */
+
     FreeImage_FlipVertical(dib);
 
 	BYTE* bits = FreeImage_GetBits(dib);
 	unsigned int width = FreeImage_GetWidth(dib);
 	unsigned int height = FreeImage_GetHeight(dib);
-	size_t dataSize = FreeImage_GetMemorySize(dib);
+	size_t dataSize = FreeImage_GetDIBSize(dib); //FreeImage_GetMemorySize(dib);
+
+	volatile uint8_t asdasd = bits[dataSize-1];
 
 	//FREE_IMAGE_TYPE imageType = FreeImage_GetImageType(dib);
 	FREE_IMAGE_COLOR_TYPE imageFormat = FreeImage_GetColorType(dib);
@@ -78,7 +98,7 @@ TextureDataPtr TextureData::FromFile(std::string const& file) {
 		return nullptr;
 	}
 
-	auto mem = mr::Memory::Copy(bits, dataSize);
+	auto mem = mr::Memory::Copy(&bits[0], dataSize);
 	FreeImage_Unload(dib);
 
     auto textureData = TextureDataPtr(new TextureData());
@@ -88,6 +108,11 @@ TextureDataPtr TextureData::FromFile(std::string const& file) {
     textureData->_size = glm::uvec3(width, height, 1);
 
 	return textureData;
+}
+
+std::future<TextureDataPtr> TextureData::FromFileAsync(std::string const& file) {
+    MP_ScopeSample(TextureData::FromFileAsync);
+    return std::async(std::launch::async, TextureData::FromFile, file);
 }
 
 Texture2DPtr Texture2D::Create(TextureParams const& params) {

@@ -200,4 +200,21 @@ void ShaderProgram::Use(ShaderProgramPtr const& program) {
     }
 }
 
+void* ShaderProgram::FoundUniform::GetPtr() const {
+    return ubo->At(arrayIndex).ptr;
+}
+
+bool ShaderProgram::FindUniform(std::string const& uniformName, FoundUniform& out_uniform) const {
+    out_uniform.uniformName = uniformName;
+    UniformBufferDecl::Uniform foundUniform;
+    for(int i = 0, n = _ubo.num; i < n; ++i) {
+        if(_ubo.arr[i].ubo->GetDecl()->FindUniformByName(uniformName, foundUniform, out_uniform.arrayIndex)) {
+            out_uniform.ubo = _ubo.arr[i].ubo;
+            out_uniform.size = foundUniform.size;
+            return true;
+        }
+    }
+    return false;
+}
+
 }

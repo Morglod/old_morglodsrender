@@ -23,6 +23,7 @@
 					<Add library="libglew32.dll.a" />
 					<Add library="opengl32" />
 					<Add library="FreeImage" />
+					<Add library="libassimp.dll.a" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -33,7 +34,9 @@
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
 				<Compiler>
-					<Add option="-O2" />
+					<Add option="-march=corei7-avx" />
+					<Add option="-fexpensive-optimizations" />
+					<Add option="-O3" />
 					<Add option="-DBUILD_DLL" />
 				</Compiler>
 				<Linker>
@@ -42,11 +45,12 @@
 					<Add library="libglew32.dll.a" />
 					<Add library="opengl32" />
 					<Add library="FreeImage" />
+					<Add library="libassimp.dll.a" />
 				</Linker>
 			</Target>
 			<Target title="Debug_Sample_Cube">
 				<Option output="build/Sample_Cube_d" prefix_auto="1" extension_auto="1" />
-				<Option working_dir="build/" />
+				<Option working_dir="build/." />
 				<Option object_output="build_obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="tdm_gcc64" />
@@ -69,7 +73,13 @@
 				<Option type="1" />
 				<Option compiler="tdm_gcc64" />
 				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-march=corei7-avx" />
+					<Add option="-fexpensive-optimizations" />
+					<Add option="-O3" />
+				</Compiler>
 				<Linker>
+					<Add option="-s" />
 					<Add library="libglfw3dll.a" />
 					<Add library="MRv2" />
 					<Add library="user32" />
@@ -195,6 +205,10 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="mr/mesh.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="mr/mr.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -216,6 +230,10 @@
 			<Option target="Release" />
 			<Option target="Debug_Sample_Cube" />
 			<Option target="Release_Sample_Cube" />
+		</Unit>
+		<Unit filename="mr/primitive.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="mr/shader/program.hpp">
 			<Option target="Debug" />
@@ -324,12 +342,14 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="src/material/material.cpp">
-			<Option compile="0" />
-			<Option link="0" />
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="src/memory.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/mesh.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
@@ -342,6 +362,10 @@
 			<Option target="Release" />
 			<Option target="Debug_Sample_Cube" />
 			<Option target="Release_Sample_Cube" />
+		</Unit>
+		<Unit filename="src/primitive.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="src/shader/common_shader.glsl">
 			<Option target="Debug" />

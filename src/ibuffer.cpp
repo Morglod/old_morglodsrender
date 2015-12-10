@@ -3,11 +3,16 @@
 #include "mr/buffer.hpp"
 #include "src/statecache.hpp"
 #include "src/mp.hpp"
+#include "mr/log.hpp"
 
 namespace mr {
 
 IndexBufferPtr IndexBuffer::Create(BufferPtr const& ibuf, IndexDataType const& datatype, uint32_t num) {
     MP_ScopeSample(IndexBuffer::Create);
+    if(!ibuf->GetResidentState().resident) {
+        MR_LOG_ERROR(IndexBuffer::Create, "Buffer should be resident");
+        return nullptr;
+    }
     return IndexBufferPtr(new IndexBuffer(ibuf, nullptr, datatype, num));
 }
 

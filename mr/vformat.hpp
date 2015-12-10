@@ -30,11 +30,12 @@ public:
     };
 
     struct MR_API BindPoint {
+        /// Do not touch this order, in VertexDecl::Equal memcmp used
         uint8_t bindpoint = 0;
         uint8_t stride = 0;
+        uint8_t num = 0;
 
         Attrib* attribs = nullptr;
-        uint8_t num = 0;
 
         void Free();
         void Resize(uint8_t n);
@@ -44,8 +45,8 @@ public:
     };
 
     struct MR_API AttribMap {
+        uint8_t num = 0;
         BindPoint* bindpoints = nullptr;
-        uint8_t num;
 
         void Resize(uint8_t n);
         void Free();
@@ -65,6 +66,7 @@ public:
 
         Changer& Pos(PosDataType const& type = PosDataType::Float, uint8_t bindpoint = 0); // vec3<DataType>
         Changer& Color(ColorDataType const& type = ColorDataType::UByte, uint8_t bindpoint = 0); // vec4<DataType>
+        inline Changer& Normal(PosDataType const& type = PosDataType::Float, uint8_t bindpoint = 0); // vec3<DataType>
         Changer& Data(uint8_t sz, uint8_t bindpoint = 0); // skip data block, sizeof 'sz'
         Changer& Custom(DataType const& type, uint8_t components_num, uint8_t bindpoint = 0, bool normalized = false);
         void End();
@@ -86,6 +88,8 @@ public:
     inline uint8_t GetBindpointStride(uint8_t arrayIndex) const;
     inline uint8_t GetBindpointAttribsNum(uint8_t arrayIndex) const;
     inline Attrib GetAttribute(uint8_t bindpointArrayIndex, uint8_t attribArrayIndex) const;
+
+    inline bool Equal(const VertexDecl* other) const;
 
     static VertexDeclPtr Create();
 
@@ -113,6 +117,25 @@ inline uint8_t VertexDecl::GetBindpointAttribsNum(uint8_t arrayIndex) const {
 
 inline VertexDecl::Attrib VertexDecl::GetAttribute(uint8_t bindpointArrayIndex, uint8_t attribArrayIndex) const {
     return _map.bindpoints[bindpointArrayIndex].attribs[attribArrayIndex];
+}
+
+inline VertexDecl::Changer& VertexDecl::Changer::Normal(PosDataType const& type, uint8_t bindpoint) {
+    return Pos(type, bindpoint);
+}
+
+inline bool VertexDecl::Equal(const VertexDecl* other) const {
+    if(_size != other->_size) return false;
+    if(_map.num != other->_map.num) return false;
+    for(uint8_t ibp = 0, nbp = _map.num; ibp < nbp; ++ibp) {
+        if(memcmp(&_map.bindpoints[ibp], &(other->_map.bindpoints[ibp]), offsetof(VertexDecl::BindPoint, attribs)) != 0) return false;
+        const Attrib* attribs = _map.bindpoints[ibp].attribs;
+        const Attrib* otherAttribs = other->_map.bindpoints[ibp].attribs;
+        const uint8_t attribsNum = other->_map.bindpoints[ibp].num;
+        for(uint8_t i = 0; i < attribsNum; ++i) {
+            if(memcmp(&attribs[i], &otherAttribs[i], sizeof(Attrib)) != 0) return false;
+        }
+    }
+    return true;
 }
 
 }

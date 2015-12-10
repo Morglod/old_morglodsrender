@@ -9,10 +9,13 @@ MemoryPtr Memory::Ref(void* mem, size_t sz) {
     return MemoryPtr(new Memory(mem, sz, false));
 }
 
-MemoryPtr Memory::Copy(void* mem, size_t sz) {
+MemoryPtr Memory::Copy(const void* mem, size_t sz) {
     MP_BeginSample(Memory::Copy);
-    void* local = malloc(sz);
-    memcpy(local, mem, sz);
+    uint8_t* local = new uint8_t[sz]; //malloc(sz);
+    //memcpy(local, mem, sz);
+    for(size_t i = 0; i < sz; ++i) {
+        local[i] = ((const uint8_t*)mem)[i];
+    }
     MP_EndSample();
     return MemoryPtr(new Memory(local, sz, true));
 }

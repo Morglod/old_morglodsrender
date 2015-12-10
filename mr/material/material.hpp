@@ -12,19 +12,43 @@ namespace mr {
 
 typedef std::shared_ptr<class Buffer> BufferPtr;
 typedef std::shared_ptr<class Material> MaterialPtr;
+typedef std::shared_ptr<class Texture2D> Texture2DPtr;
 
 class MR_API Material final {
 public:
-    void SetUBO(std::string const& name, UniformBufferPtr const& buf);
+    template<typename T>
+    inline void SetUniform(std::string const& name, T const& value) const {
+        *((T*)(_uniforms.at(name).ptr)) = value;
+    }
+
+    template<typename T>
+    inline T GetUniform(std::string const& name) const {
+        return *((T*)(_uniforms.at(name).ptr));
+    }
+
+    void UpdateShaderUniforms();
+
     inline ShaderProgramPtr GetProgram() const;
+    static MaterialPtr Create(ShaderProgramPtr const& program, std::vector<std::string> const& uniformNames = std::vector<std::string>(), std::unordered_map<std::string, Texture2DPtr> const& textures = std::unordered_map<std::string, Texture2DPtr>());
 
-    UniformBufferPtr GetSystemUniformBuffer();
-    static MaterialShaderPtr Create(ShaderProgramPtr const& program, std::vector<std::string> const& uniformNames);
-
+    ~Material();
 protected:
     Material() = default;
+
+    struct sTexture {
+        uint64_t residentHandle = 0;
+        UniformRef<uint64_t> uniform;
+        Texture2DPtr texture = nullptr;
+        std::string uniformName;
+    };
+
+    uint32_t _textures_num = 0;
+    sTexture* _textures = nullptr;
+
     ShaderProgramPtr _program;
-    std::unordered_map<std::string, UniformRefAny> _uniforms; // <name, ref>
+
+    std::unordered_map<std::string, UniformRefAny> _uniforms; // <uniform name, ref>
+
 };
 
 inline ShaderProgramPtr Material::GetProgram() const {

@@ -3,6 +3,7 @@
 #include "mr/build.hpp"
 #include "mr/pre/glm.hpp"
 #include "mr/string.hpp"
+#include "mr/log.hpp"
 
 #include <memory>
 #include <vector>
@@ -38,6 +39,11 @@ public:
     struct Uniform {
         int32_t offset = 0;
         std::string name = "";
+        int32_t size = 0;
+
+        inline bool IsGood() const {
+            return size != 0;
+        }
     };
 
     inline int32_t GetSize() const;
@@ -71,6 +77,10 @@ private:
 
 struct MR_API UniformRefAny {
     void* ptr;
+    int32_t size;
+    inline UniformRefAny() : ptr(nullptr), size(0) {}
+    inline UniformRefAny(void* v, int32_t s) : ptr(v), size(s) {}
+    inline bool IsGood() const { return (ptr != nullptr) && (size != 0); }
 };
 
 template<typename T>
@@ -86,6 +96,10 @@ struct MR_API UniformRef : public UniformRefAny {
     inline T operator = (T const& value) {
         return ((*((T*)ptr)) = value);
     }
+
+    inline UniformRef() : UniformRefAny() {}
+    inline UniformRef(T* t) : UniformRefAny(t, sizeof(T)) {}
+    inline UniformRef(UniformRefAny const& any) : UniformRefAny(any.ptr, any.size) {}
 };
 
 class MR_API UniformBuffer final {
@@ -96,31 +110,17 @@ public:
     inline bool Match(UniformBufferDeclPtr const& other) const;
 
     template<typename T>
-    inline T* AsPtr(int32_t arrayIndex);
+    inline UniformRef<T> As(int32_t arrayIndex);
 
     template<typename T>
-    inline T* AsPtr(std::string const& name);
+    inline UniformRef<T> As(std::string const& name);
 
-    template<typename T>
-    inline T& As(int32_t arrayIndex);
-
-    template<typename T>
-    inline T& As(std::string const& name);
-
-    void* At(int32_t arrayIndex);
-    void* At(std::string const& name);
-
-    template<typename T>
-    inline UniformRef<T> Ref(int32_t arrayIndex);
-
-    template<typename T>
-    inline UniformRef<T> Ref(std::string const& name);
-
-    inline UniformRefAny RefAny(int32_t arrayIndex);
-    inline UniformRefAny RefAny(std::string const& name);
+    UniformRefAny At(int32_t arrayIndex) const;
+    UniformRefAny At(std::string const& name) const;
 
     static UniformBufferPtr Create(UniformBufferDeclPtr const& desc);
     static UniformBufferPtr Create(UniformBufferDeclPtr const& desc, BufferPtr const& buffer);
+
 private:
     bool _ResetBuffer();
     UniformBuffer() = default;
@@ -139,6 +139,10 @@ inline int32_t UniformBufferDecl::GetUniformsNum() const {
 }
 
 inline UniformBufferDecl::Uniform UniformBufferDecl::GetUniform(int32_t arrayIndex) const {
+    if(arrayIndex >= _uniforms.num || arrayIndex < 0) {
+        MR_LOG_ERROR(UniformBufferDecl::GetUniform, "Invalid index");
+        return UniformBufferDecl::Uniform();
+    }
     return _uniforms.arr[arrayIndex];
 }
 
@@ -176,24 +180,16 @@ inline bool UniformBufferDecl::Equal(UniformBufferDeclPtr const& other) const {
     return true;
 }
 
-/// UniformBuffer::Ref inline
+/// UniformBuffer::Ref
 
 template<typename T>
-inline UniformRef<T> UniformBuffer::Ref(int32_t arrayIndex) {
-    T* t = (T*)At(arrayIndex);
-    return UniformRef<T>{t};
+inline UniformRef<T> UniformBuffer::As(int32_t arrayIndex) {
+    return UniformRef<T>(At(arrayIndex));
 }
 
 template<typename T>
-inline UniformRef<T> UniformBuffer::Ref(std::string const& name) {
-    T* t = (T*)At(name);
-    return UniformRef<T>{t};
-}
-
-inline UniformRefAny UniformBuffer::RefAny(int32_t arrayIndex) {
-}
-
-inline UniformRefAny UniformBuffer::RefAny(std::string const& name) {
+inline UniformRef<T> UniformBuffer::As(std::string const& name) {
+    return UniformRef<T>(At(name));
 }
 
 /// UniformBuffer inline
@@ -208,33 +204,6 @@ inline UniformBufferDeclPtr UniformBuffer::GetDecl() const {
 
 inline BufferPtr UniformBuffer::GetBuffer() const {
     return _buffer;
-}
-
-template<typename T>
-inline T* UniformBuffer::AsPtr(int32_t arrayIndex) {
-    void* mem = At(arrayIndex);
-    if(mem == nullptr) return nullptr;
-    return (T*)mem;
-}
-
-template<typename T>
-inline T* UniformBuffer::AsPtr(std::string const& name) {
-    void* mem = At(name);
-    if(mem == nullptr) return nullptr;
-    return (T*)mem;
-}
-
-template<typename T>
-inline T& UniformBuffer::As(int32_t arrayIndex) {
-    void* mem = At(arrayIndex);
-    if(mem == nullptr) return nullptr;
-    return *((T*)mem);
-}
-
-template<typename T>
-inline T& UniformBuffer::As(std::string const& name) {
-    void* mem = At(name);
-    return *((T*)mem);
 }
 
 }

@@ -1,4 +1,5 @@
 #include "src/statecache.hpp"
+#include "mr/vformat.hpp"
 #include "mr/log.hpp"
 #include "mr/pre/glew.hpp"
 
@@ -100,6 +101,19 @@ bool StateCache::GetUniformBuffer(uint32_t binding, uint32_t& out_buffer) {
     return true;
 }
 
+bool StateCache::SetVertexDecl(VertexDecl* vdecl) {
+    if(_vdecl == nullptr) {
+        return (vdecl != nullptr);
+    }
+    if(_vdecl != vdecl) {
+        if(!_vdecl->Equal(vdecl)) {
+            _vdecl = vdecl;
+            return true;
+        }
+    }
+    return false;
+}
+
 bool StateCache::_Init() {
     {   // Init VertexBuffer bindpoints
         int num;
@@ -120,6 +134,16 @@ bool StateCache::_Init() {
         }
         _ubo = std::make_unique<_UniformBufferBindings>(num);
     }
+
+    /*{   // Init vertex attribs
+        int num;
+        glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &num);
+        if(num <= 0) {
+            MR_LOG_ERROR(StateCache::_Init, "Failed get GL_MAX_VERTEX_ATTRIBS, it's value <= 0");
+            return false;
+        }
+        _vattribs = std::make_unique<_VertexAttribs>(num);
+    }*/
 
     return true;
 }

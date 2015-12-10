@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <future>
 
 namespace mr {
 
@@ -142,6 +143,7 @@ public:
     inline TextureType GetTextureType() const;
 
     static TextureDataPtr FromFile(std::string const& file);
+    static std::future<TextureDataPtr> FromFileAsync(std::string const& file);
 private:
     TextureData() = default;
 

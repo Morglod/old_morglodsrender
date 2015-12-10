@@ -5,6 +5,7 @@
 #include "mr/gl/types.hpp"
 #include "src/mp.hpp"
 #include "mr/pre/glew.hpp"
+#include "src/statecache.hpp"
 
 #include <unordered_map>
 
@@ -134,13 +135,25 @@ VertexDecl::Changer VertexDecl::Begin() {
 }
 
 bool VertexDecl::Bind() {
+    if(!StateCache::Get()->SetVertexDecl(this)) return true;
+
     MP_BeginSample(VertexDecl::Bind);
 
+    // Reset vertex attribs state
+
+    static int attribsNum = 0;
+    static int lastBoundAttrib = 0;
+    if(attribsNum == 0) {
+        glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &attribsNum);
+        for(int i = 0; i < attribsNum; ++i)
+            glEnableVertexAttribArray(/*attrib.index*/i);
+    }
+
+    int maxBoundAttrib = 0;
     for(uint8_t i_bp = 0, n_bp = _map.num; i_bp < n_bp; ++i_bp) { //foreach bindpoint
         BindPoint const& bindpoint = _map.bindpoints[i_bp];
         for(uint8_t i_a = 0, n_a = bindpoint.num; i_a < n_a; ++i_a) { //foreach attrib
             Attrib const& attrib = bindpoint.attribs[i_a];
-            glEnableVertexAttribArray(attrib.index);
             if(GLEW_NV_vertex_buffer_unified_memory) {
                 glVertexAttribFormatNV(attrib.index, attrib.components_num, attrib.datatype, attrib.normalized, bindpoint.stride);
             }
@@ -148,8 +161,13 @@ bool VertexDecl::Bind() {
                 glVertexAttribFormat(attrib.index, attrib.components_num, attrib.datatype, attrib.normalized, attrib.offset);
                 glVertexAttribBinding(attrib.index, bindpoint.bindpoint);
             }
+            if(attrib.index > maxBoundAttrib) maxBoundAttrib = attrib.index;
         }
     }
+
+    for(int i = 0; i < maxBoundAttrib - lastBoundAttrib; ++i)
+        glDisableVertexAttribArray(lastBoundAttrib+i);
+    lastBoundAttrib = maxBoundAttrib;
 
     MP_EndSample();
 

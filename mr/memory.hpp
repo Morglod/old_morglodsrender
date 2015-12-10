@@ -11,7 +11,7 @@ typedef std::shared_ptr<class Memory> MemoryPtr;
 struct MR_API Memory final {
 
     static MemoryPtr Ref(void* mem, size_t sz);
-    static MemoryPtr Copy(void* mem, size_t sz);
+    static MemoryPtr Copy(const void* mem, size_t sz);
     static MemoryPtr Own(void* mem, size_t sz);
     static MemoryPtr Zero(size_t sz); // zero memory ptr with size
     static MemoryPtr New(size_t sz);

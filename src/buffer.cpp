@@ -169,6 +169,7 @@ bool Buffer::MakeResident(bool read, bool write) {
 
     glMakeNamedBufferResidentNV(_id, access_flag);
     if(glIsNamedBufferResidentNV(_id)) {
+        _resident.resident = true;
         glGetNamedBufferParameterui64vNV(_id, GL_BUFFER_GPU_ADDRESS_NV, &_resident.address);
         return true;
     } else return false;
@@ -182,7 +183,9 @@ bool Buffer::MakeNonResident() {
         return false;
     }
     glMakeNamedBufferNonResidentNV(_id);
-    return !glIsNamedBufferResidentNV(_id);
+    const bool isResident = glIsNamedBufferResidentNV(_id);
+    _resident.resident = isResident;
+    return !isResident;
 }
 
 std::future<bool> Buffer::WriteAsync(MemoryPtr const& mem_src, uint32_t offset) {

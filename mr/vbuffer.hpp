@@ -19,7 +19,6 @@ public:
     inline BufferPtr GetBuffer() const;
     inline VertexDeclPtr GetVertexDecl() const;
     inline uint32_t GetNum() const;
-
 protected:
     VertexBuffer(BufferPtr const& vbuf, VertexDeclPtr const& vdecl, uint32_t num);
 

@@ -42,6 +42,10 @@ bool VertexBuffer::Bind(uint32_t binding, uint32_t offset) {
 
 VertexBufferPtr VertexBuffer::Create(BufferPtr const& vbuf, VertexDeclPtr const& vdecl, uint32_t num) {
     MP_ScopeSample(VertexBuffer::Create);
+    if(!vbuf->GetResidentState().resident) {
+        MR_LOG_ERROR(VertexBuffer::Create, "Buffer should be resident");
+        return nullptr;
+    }
     return VertexBufferPtr(new VertexBuffer(vbuf, vdecl, num));
 }
 

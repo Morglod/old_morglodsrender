@@ -38,23 +38,27 @@ bool Draw::Primitive(ShaderProgramPtr const& program, DrawMode const& dmode, Ver
         return false;
     }
 
+    /// WHEN CHANGE BASE_INDEX, CHANGE ioffset IN RENDER CODE
+    MP_BeginSample(glDraw);
     const uint32_t baseInstance = 0, /*instancesNum = 1,*/ baseVertex = 0, baseIndex = 0;
     if(ibuf) {
         if(!ibuf->Bind()) {
             MR_LOG_ERROR(Draw::Primitive, "Failed bind index buffer");
+            MP_EndSample();
             MP_EndSample();
             return false;
         }
 
         // Offset in binded buffer or direct ptr to indecies
         void* ioffset;
-        if(ibuf->_mem == nullptr) ioffset = (void*)(size_t)(sizeof_gl((const uint32_t)ibuf->_dtype) * baseIndex);
+        if(ibuf->_mem == nullptr) ioffset = 0; //(void*)(size_t)(sizeof_gl((const uint32_t)ibuf->_dtype) * baseIndex);
         else ioffset = ibuf->_mem->GetPtr();
 
         glDrawElementsInstancedBaseVertexBaseInstance((const uint32_t)dmode, ibuf->_num, (const uint32_t)ibuf->_dtype, ioffset, instancesNum, baseVertex, baseInstance);
     } else {
         glDrawArraysInstancedBaseInstance((const uint32_t)dmode, baseVertex, vbuf->_num, instancesNum, baseInstance);
     }
+    MP_EndSample();
 
     MP_EndSample();
 
