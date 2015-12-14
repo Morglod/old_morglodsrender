@@ -23,6 +23,8 @@ public:
     inline glm::vec3 GetUp() const;
     inline glm::vec3 GetDown() const;
     inline void MoveForward(float units);
+    inline void MoveLeft(float units);
+    inline void MoveUp(float units);
     inline void RotateY(float units);
     inline void RotateX(float units);
 private:
@@ -93,6 +95,16 @@ inline glm::vec3 PerspectiveCamera::GetDown() const {
 
 inline void PerspectiveCamera::MoveForward(float units) {
     _pos += _dir_forward * units;
+    if(_auto_recalc) Update();
+}
+
+inline void PerspectiveCamera::MoveLeft(float units) {
+    _pos += _dir_left * units;
+    if(_auto_recalc) Update();
+}
+
+inline void PerspectiveCamera::MoveUp(float units) {
+    _pos += _dir_up * units;
     if(_auto_recalc) Update();
 }
 

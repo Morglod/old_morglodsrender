@@ -88,17 +88,20 @@ mr::Texture2DPtr _AssimpLoadTexture(aiMaterial* material, aiTextureType const& t
     textureParams.minFilter = mr::TextureMinFilter::LinearMipmapLinear;
     textureParams.magFilter = mr::TextureMagFilter::Linear;
 
+    out_Wrap = mr::TextureWrap::Repeat;
+    if(mapMode == aiTextureMapMode_Wrap) out_Wrap = mr::TextureWrap::Repeat;
+    else if(mapMode == aiTextureMapMode_Clamp) out_Wrap = mr::TextureWrap::Clamp;
+    else if(mapMode == aiTextureMapMode_Decal) out_Wrap = mr::TextureWrap::Decal;
+    else if(mapMode == aiTextureMapMode_Mirror) out_Wrap = mr::TextureWrap::MirroredRepeat;
+
+    textureParams.wrapR = textureParams.wrapS = textureParams.wrapT = out_Wrap;
+
     tex = mr::Texture2D::Create(textureParams);
     tex->Storage();
     tex->WriteImage(textureData);
     tex->BuildMipmaps();
     tex->MakeResident();
 
-    out_Wrap = mr::TextureWrap::Repeat;
-    if(mapMode == aiTextureMapMode_Wrap) out_Wrap = mr::TextureWrap::Repeat;
-    else if(mapMode == aiTextureMapMode_Clamp) out_Wrap = mr::TextureWrap::Clamp;
-    else if(mapMode == aiTextureMapMode_Decal) out_Wrap = mr::TextureWrap::Decal;
-    else if(mapMode == aiTextureMapMode_Mirror) out_Wrap = mr::TextureWrap::MirroredRepeat;
     return tex;
 }
 
@@ -231,71 +234,117 @@ bool Mesh::Import(std::string const& file, ShaderProgramPtr const& shaderProgram
     size_t debugIndeciesNum = 0;
 
     /// Process geometry
-    for(unsigned int i = 0; i < scene->mNumMeshes; ++i) {
+
+    /// Cache vertex format
+    /**
+    Vertex format may be the same for all meshes in scene,
+    so need to cache it
+    **/
+    struct sVertexFormat {
+        int8_t vertexOffsets_attribs_map[4] = {0,0,0,0};
+        bool bAttrib[4] = {false, false, false, false};
+        VertexDeclPtr decl = nullptr;
+        IndexDataType indexDataType = IndexDataType::UInt;
+    };
+    std::vector<sVertexFormat> cacheVertexFormat(2); // pre alloc for 2
+
+    for(uint32_t i = 0; i < scene->mNumMeshes; ++i) {
         aiMesh* mesh = scene->mMeshes[i];
         aiMatrix4x4 transformMatrix = _AssimpGetMat(scene, &nodesCache, i);
+        const size_t indexNum = mesh->mNumFaces * 3;
 
-        //Attribs flags
-        /*const */bool bAttrib[4] = {   mesh->HasPositions(),
-                                    mesh->HasNormals(),
-                                    (mesh->GetNumColorChannels() && mesh->HasVertexColors(0)),
-                                    (mesh->GetNumUVChannels() && mesh->HasTextureCoords(0))     };
-        bAttrib[1] = false; bAttrib[2] = false;
-        ///Create vertex format
+        // Attribs flags
+        bool bAttrib[4] = { mesh->HasPositions(),
+                            mesh->HasNormals(),
+                            (mesh->GetNumColorChannels() && mesh->HasVertexColors(0)),
+                            (mesh->GetNumUVChannels() && mesh->HasTextureCoords(0)) };
 
-        VertexDeclPtr vertexFormatPtr = VertexDecl::Create();
-        auto vertexDecl = vertexFormatPtr->Begin();
-        if(bAttrib[0]) vertexDecl.Pos();
-        if(bAttrib[1]) vertexDecl.Normal();
-        if(bAttrib[2]) vertexDecl.Color();
-        if(bAttrib[3]) vertexDecl.Custom(DataType::Float, 2, 0, true);
-        vertexDecl.End();
+        sVertexFormat vertexFormat;
+        memcpy(&(vertexFormat.bAttrib[0]), &bAttrib[0], sizeof(bool)*4);
 
-        ///Create index format
+        vertexFormat.bAttrib[1] = false; vertexFormat.bAttrib[2] = false;
 
-        IndexDataType indexDataType = IndexDataType::UInt;
-
-        ///Pack vertex data
-        VertexDecl::Attrib attribs[vertexFormatPtr->GetBindpointAttribsNum(0)];
-        for(int iattrib = 0, nattribs = vertexFormatPtr->GetBindpointAttribsNum(0); iattrib < nattribs; ++iattrib) {
-            attribs[iattrib] = vertexFormatPtr->GetAttribute(0, iattrib);
-        }
-        size_t vertexOffsets_attribs_map[4] = {0,0,0,0};
-
-        size_t vertexOffsets_attribs_map_index = 0;
-        for(unsigned char attr_i = 0; attr_i < 4; ++attr_i) {
-            if(bAttrib[attr_i]) {
-                vertexOffsets_attribs_map[attr_i] = vertexOffsets_attribs_map_index++;
+        /// Create vertex format or get from cache
+        for(uint32_t ivf = 0, nvf = cacheVertexFormat.size(); ivf < nvf; ++ivf) {
+            // Compare indexDataType here if needed
+            if(memcmp(&(cacheVertexFormat[ivf].bAttrib[0]), &(vertexFormat.bAttrib[0]), sizeof(bool)*4) == 0) {
+                vertexFormat = cacheVertexFormat[ivf];
             }
         }
 
-        size_t vertexDataSize = mesh->mNumVertices * vertexFormatPtr->GetSize();
+        /// Create new
+        if(vertexFormat.decl == nullptr) {
+            vertexFormat.decl = VertexDecl::Create();
+            auto vertexDecl = vertexFormat.decl->Begin();
+            if(vertexFormat.bAttrib[0]) vertexDecl.Pos();
+            if(vertexFormat.bAttrib[1]) vertexDecl.Normal();
+            if(vertexFormat.bAttrib[2]) vertexDecl.Color();
+            if(vertexFormat.bAttrib[3]) vertexDecl.Custom(DataType::Float, 2, 0, true);
+            vertexDecl.End();
+
+            /// Create index format
+            vertexFormat.indexDataType = (indexNum >= USHRT_MAX) ? IndexDataType::UInt : IndexDataType::UShort;
+
+            /// Map attribs indecies
+            size_t vertexOffsets_attribs_map_index = 0;
+            for(unsigned char attr_i = 0; attr_i < 4; ++attr_i) {
+                if(vertexFormat.bAttrib[attr_i]) {
+                    vertexFormat.vertexOffsets_attribs_map[attr_i] = vertexOffsets_attribs_map_index++;
+                }
+            }
+
+            // Cache
+            cacheVertexFormat.push_back(vertexFormat);
+        }
+
+        /// Pack vertex data
+        const auto attribsNum = vertexFormat.decl->GetAttribsNum();
+        VertexDecl::Attrib attribs[attribsNum];
+        for(int iattrib = 0; iattrib < attribsNum; ++iattrib) {
+            attribs[iattrib] = vertexFormat.decl->GetAttribute(iattrib);
+        }
+
+        size_t vertexDataSize = mesh->mNumVertices * vertexFormat.decl->GetSize();
         unsigned char * vertexData = new unsigned char [vertexDataSize];
         for(size_t it = 0; it < mesh->mNumVertices; ++it) {
-            const size_t vertexOffset = vertexFormatPtr->GetSize() * it;
+            const size_t vertexOffset = vertexFormat.decl->GetSize() * it;
 
             {
                 aiVector3D pos = mesh->mVertices[it];
                 pos *= transformMatrix;
-                memcpy(&vertexData[vertexOffset + attribs[vertexOffsets_attribs_map[0]].offset], &pos, sizeof(float)*3);
+                memcpy(&vertexData[vertexOffset + attribs[vertexFormat.vertexOffsets_attribs_map[0]].offset], &pos, sizeof(float)*3);
             }
 
-            if(bAttrib[1]) memcpy(&vertexData[vertexOffset + attribs[vertexOffsets_attribs_map[1]].offset], &(mesh->mNormals[it]),  sizeof(float)*3);
-            if(bAttrib[2]) memcpy(&vertexData[vertexOffset + attribs[vertexOffsets_attribs_map[2]].offset], &(mesh->mColors[0][it]),sizeof(float)*4);
-            if(bAttrib[3]) {
+            if(vertexFormat.bAttrib[1]) memcpy(&vertexData[vertexOffset + attribs[vertexFormat.vertexOffsets_attribs_map[1]].offset], &(mesh->mNormals[it]),  sizeof(float)*3);
+            if(vertexFormat.bAttrib[2]) memcpy(&vertexData[vertexOffset + attribs[vertexFormat.vertexOffsets_attribs_map[2]].offset], &(mesh->mColors[0][it]),sizeof(float)*4);
+            if(vertexFormat.bAttrib[3]) {
                 aiVector2D texCoord(mesh->mTextureCoords[0][it].x, mesh->mTextureCoords[0][it].y);
-                memcpy(&vertexData[vertexOffset + attribs[vertexOffsets_attribs_map[3]].offset], &texCoord, sizeof(float)*2);
+                memcpy(&vertexData[vertexOffset + attribs[vertexFormat.vertexOffsets_attribs_map[3]].offset], &texCoord, sizeof(float)*2);
             }
         }
 
-        ///Pack index data
-        size_t indexNum = mesh->mNumFaces * 3;
-        unsigned int * indexData = new unsigned int[indexNum];
-        for(size_t it = 0; it < mesh->mNumFaces; ++it) {
-            memcpy(&indexData[it*3], &mesh->mFaces[it].mIndices[0], sizeof(unsigned int)*3);
+        /// Pack index data
+        void * indexData = nullptr;
+        if(vertexFormat.indexDataType == IndexDataType::UInt) {
+            indexData = malloc(sizeof(uint32_t) *indexNum);
+            uint32_t* indexDataM = (uint32_t*)indexData;
+            for(size_t it = 0; it < mesh->mNumFaces; ++it) {
+                memcpy(&indexDataM[it*3], &mesh->mFaces[it].mIndices[0], sizeof(unsigned int)*3);
+            }
+        } else if(vertexFormat.indexDataType == IndexDataType::UShort) {
+            indexData = malloc(sizeof(uint16_t) *indexNum);
+            uint16_t* indexDataM = (uint16_t*)indexData;
+            for(size_t it = 0; it < mesh->mNumFaces; ++it) {
+                indexDataM[it*3 +0] = (uint16_t) mesh->mFaces[it].mIndices[0];
+                indexDataM[it*3 +1] = (uint16_t) mesh->mFaces[it].mIndices[1];
+                indexDataM[it*3 +2] = (uint16_t) mesh->mFaces[it].mIndices[2];
+            }
+        } else {
+            MR_LOG_ERROR(Mesh::Import, "Incorrect vertexFormat.indexDataType;");
+            return false;
         }
 
-        ///Make geometry
+        /// Make geometry
         debugVerticiesNum += mesh->mNumVertices;
         debugIndeciesNum += mesh->mNumFaces;
 
@@ -304,11 +353,11 @@ bool Mesh::Import(std::string const& file, ShaderProgramPtr const& shaderProgram
         vbufferData->MakeResident(MR_RESIDENT_READ_ONLY);
         ibufferData->MakeResident(MR_RESIDENT_READ_ONLY);
 
-        VertexBufferPtr vbuffer = VertexBuffer::Create(vbufferData, vertexFormatPtr, mesh->mNumVertices);
-        IndexBufferPtr ibuffer = IndexBuffer::Create(ibufferData, indexDataType, indexNum);
+        VertexBufferPtr vbuffer = VertexBuffer::Create(vbufferData, vertexFormat.decl, mesh->mNumVertices);
+        IndexBufferPtr ibuffer = IndexBuffer::Create(ibufferData, vertexFormat.indexDataType, indexNum);
 
         delete [] vertexData;
-        delete [] indexData;
+        free(indexData);
 
         PrimitivePtr primitve = Primitive::Create(DrawMode::Triangle, vbuffer, ibuffer);
         out_meshes[i] = Mesh::Create(primitve, materials[mesh->mMaterialIndex]);

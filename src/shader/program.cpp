@@ -10,13 +10,13 @@
 
 #include "mr/pre/glew.hpp"
 
-mr::UniformBufferPtr _sysUniformBuffer = nullptr;
+namespace {
+
+std::unordered_set<mr::ShaderProgram*> _registeredPrograms;
+
+}
 
 namespace mr {
-
-UniformBufferPtr ShaderProgram::GetSystemUniformBuffer() {
-    return _sysUniformBuffer;
-}
 
 void ShaderProgram::sUBOList::Resize(uint32_t num_) {
     MP_ScopeSample(ShaderProgram::sUBOList::Resize);
@@ -38,10 +38,21 @@ ShaderProgram::sUBOList::~sUBOList() {
     Free();
 }
 
-ShaderProgram::ShaderProgram() : _id(0) {
+void ShaderProgram::Destroy() {
+    if(_id != 0) {
+        glDeleteProgram(_id);
+        _id = 0;
+    }
 }
 
-ShaderProgram::~ShaderProgram() {}
+ShaderProgram::ShaderProgram() : _id(0) {
+    _registeredPrograms.insert(this);
+}
+
+ShaderProgram::~ShaderProgram() {
+    _registeredPrograms.erase(this);
+    Destroy();
+}
 
 ShaderProgramPtr ShaderProgram::Create(std::vector<ShaderPtr> const& shaders) {
     MP_ScopeSample(ShaderProgram::Create);
@@ -79,16 +90,18 @@ bool ShaderProgram::Link(std::vector<ShaderPtr> const& shaders) {
         return false;
     }
 
-    return _InitUBO();
+    return _ResetUniforms();
 }
 
 
-bool ShaderProgram::_InitUBO() {
-    MP_ScopeSample(ShaderProgram::_InitUBO);
+bool ShaderProgram::_ResetUniforms() {
+    MP_ScopeSample(ShaderProgram::_ResetUniforms);
+
+    _uniformLocations.clear();
 
     std::vector<std::pair<std::string, UniformBufferDeclPtr>> ubos;
     if(!UniformBufferDecl::Create(this, ubos)) {
-        MR_LOG_ERROR(ShaderProgram::_InitUBO, "failed get ubo list");
+        MR_LOG_ERROR(ShaderProgram::_ResetUniforms, "failed get ubo list");
         return false;
     }
 
@@ -96,14 +109,26 @@ bool ShaderProgram::_InitUBO() {
         _ubo.Resize(ubos.size());
         for(uint32_t i = 0, n = ubos.size(); i < n; ++i) {
             _ubo.arr[i].name = ubos[i].first;
-            /// Place global "system uniform" block
-            if(ubos[i].first == SysUniformNameBlock) {
-                if(_sysUniformBuffer == nullptr)
-                    _sysUniformBuffer = UniformBuffer::Create(ubos[i].second);
-                _ubo.arr[i].ubo = _sysUniformBuffer;
-            }
-            else _ubo.arr[i].ubo = UniformBuffer::Create(ubos[i].second);
+            _ubo.arr[i].ubo = UniformBuffer::Create(ubos[i].second);
         }
+    }
+
+    int32_t uniformsNum = 0;
+    glGetProgramiv(_id, GL_ACTIVE_UNIFORMS, &uniformsNum);
+    for(int32_t i = 0; i < uniformsNum; ++i) {
+        const int32_t nameBufLen = 128;
+        char nameBuf[nameBufLen];
+        int32_t nameLen = 0;
+        int32_t _uniform_size = 0;
+        uint32_t _uniform_type = 0;
+        glGetActiveUniform(_id, i, nameBufLen, &nameLen, &_uniform_size, &_uniform_type, &nameBuf[0]);
+        std::string uniformName(nameBuf, nameLen);
+
+        int32_t uniformLocation = glGetUniformLocation(_id, nameBuf);
+        if(uniformLocation == -1) {
+            MR_LOG_ERROR(ShaderProgram::_ResetUniforms, "Failed get uniform location \""+uniformName+"\"");
+        }
+        _uniformLocations[uniformName] = uniformLocation;
     }
 
     return true;
@@ -215,6 +240,10 @@ bool ShaderProgram::FindUniform(std::string const& uniformName, FoundUniform& ou
         }
     }
     return false;
+}
+
+std::unordered_set<ShaderProgram*> ShaderProgram::GetRegisteredPrograms() {
+    return _registeredPrograms;
 }
 
 }

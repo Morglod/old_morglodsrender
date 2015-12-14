@@ -186,8 +186,12 @@ UniformBufferPtr UniformBuffer::Create(UniformBufferDeclPtr const& desc, BufferP
 bool UniformBuffer::_ResetBuffer() {
     MP_ScopeSample(UniformBuffer::_ResetBuffer);
 
+    // be a multiple of 4
+    uint32_t size = _desc->GetSize() +4;
+    size -= size % 4;
+
     Buffer::CreationFlags flags; flags.map_after_creation = true;
-    _buffer = Buffer::Create(Memory::Zero(_desc->GetSize()), flags);
+    _buffer = Buffer::Create(Memory::Zero(size), flags);
     return (_buffer != nullptr);
 }
 

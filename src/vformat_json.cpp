@@ -32,7 +32,8 @@ MR_API bool mr::Json<mr::VertexDeclPtr>::_Export(mr::VertexDeclPtr& type, void* 
 
     ::Json::Value j_attribs;
 
-    const uint8_t bindpointsNum = type->GetBindpointsNum();
+    /// TODO
+    /*const uint8_t bindpointsNum = type->GetBindpointsNum();
     for(uint8_t ib = 0; ib < bindpointsNum; ++ib) {
         const uint8_t bindpointIndex = type->GetBindpointIndex(ib);
         const ::Json::Value j_bindpoint((uint32_t)bindpointIndex);
@@ -48,7 +49,7 @@ MR_API bool mr::Json<mr::VertexDeclPtr>::_Export(mr::VertexDeclPtr& type, void* 
 
             j_attribs.append(j_attrib);
         }
-    }
+    }*/
 
     j_root["attribs"] = j_attribs;
 

@@ -11,32 +11,6 @@
 
 namespace mr {
 
-void VertexDecl::BindPoint::Free() {
-    MP_BeginSample(VertexDecl::BindPoint::Free);
-
-    if(attribs != nullptr) {
-        delete [] attribs;
-        attribs = nullptr;
-    }
-    num = 0;
-
-    MP_EndSample();
-}
-
-void VertexDecl::BindPoint::Resize(uint8_t n) {
-    MP_BeginSample(VertexDecl::BindPoint::Resize);
-
-    Free();
-    attribs = new Attrib[n];
-    num = n;
-
-    MP_EndSample();
-}
-
-VertexDecl::BindPoint::~BindPoint() {
-    Free();
-}
-
 VertexDecl::Changer& VertexDecl::Changer::Pos(PosDataType const& type, uint8_t bindpoint) {
     MP_BeginSample(VertexDecl::Changer::Pos);
 
@@ -79,21 +53,26 @@ VertexDecl::Changer& VertexDecl::Changer::Custom(DataType const& type, uint8_t c
 void VertexDecl::Changer::End() {
     MP_BeginSample(VertexDecl::Changer::End);
 
+    int32_t attributesNum = 0;
+    for(std::pair<uint8_t, BindPointDesc> const& src_attribs : bindpoints)
+        attributesNum += src_attribs.second.attribs.size();
+
     // Write changes
     // src - VertexDecl::Changer declaration
     // dst - VertexDecl declaration
 
     decl._size = 0;
-    decl._map.Resize(bindpoints.size());
-    uint8_t ibp = 0;
+    decl._map.Resize(attributesNum);
+
+    int iattributes = 0;
+
     for(std::pair<uint8_t, BindPointDesc> const& src_attribs : bindpoints) {
-        BindPoint& dst_bindpoint = decl._map.bindpoints[ibp++];
-        dst_bindpoint.Resize(src_attribs.second.attribs.size());
-        dst_bindpoint.bindpoint = src_attribs.first;
-        dst_bindpoint.stride = src_attribs.second.offset;
         for(uint8_t i = 0, n = src_attribs.second.attribs.size(); i < n; ++i) {
-            dst_bindpoint.attribs[i] = src_attribs.second.attribs[i];
-            decl._size += dst_bindpoint.attribs[i].size;
+            Attrib src_attrib = src_attribs.second.attribs[i];
+            src_attrib.bindpoint = src_attribs.first;
+            src_attrib.stride = src_attribs.second.offset;
+            decl._map.attribs[iattributes++] = src_attrib;
+            decl._size += src_attrib.size;
         }
     }
 
@@ -150,19 +129,18 @@ bool VertexDecl::Bind() {
     }
 
     int maxBoundAttrib = 0;
-    for(uint8_t i_bp = 0, n_bp = _map.num; i_bp < n_bp; ++i_bp) { //foreach bindpoint
-        BindPoint const& bindpoint = _map.bindpoints[i_bp];
-        for(uint8_t i_a = 0, n_a = bindpoint.num; i_a < n_a; ++i_a) { //foreach attrib
-            Attrib const& attrib = bindpoint.attribs[i_a];
-            if(GLEW_NV_vertex_buffer_unified_memory) {
-                glVertexAttribFormatNV(attrib.index, attrib.components_num, attrib.datatype, attrib.normalized, bindpoint.stride);
-            }
-            else {
-                glVertexAttribFormat(attrib.index, attrib.components_num, attrib.datatype, attrib.normalized, attrib.offset);
-                glVertexAttribBinding(attrib.index, bindpoint.bindpoint);
-            }
-            if(attrib.index > maxBoundAttrib) maxBoundAttrib = attrib.index;
+    for(uint8_t i = 0, n = _map.num; i < n; ++i) {
+        Attrib const& attrib = _map.attribs[i];
+        if(attrib.index >= maxBoundAttrib)
+            glEnableVertexAttribArray(attrib.index);
+        if(GLEW_NV_vertex_buffer_unified_memory) {
+            glVertexAttribFormatNV(attrib.index, attrib.components_num, attrib.datatype, attrib.normalized, attrib.stride);
         }
+        else {
+            glVertexAttribFormat(attrib.index, attrib.components_num, attrib.datatype, attrib.normalized, attrib.offset);
+            glVertexAttribBinding(attrib.index, attrib.bindpoint);
+        }
+        if(attrib.index > maxBoundAttrib) maxBoundAttrib = attrib.index;
     }
 
     for(int i = 0; i < maxBoundAttrib - lastBoundAttrib; ++i)
@@ -178,7 +156,7 @@ void VertexDecl::AttribMap::Resize(uint8_t n) {
     MP_BeginSample(VertexDecl::AttribMap::Resize);
 
     Free();
-    bindpoints = new BindPoint[n];
+    attribs = new Attrib[n];
     num = n;
 
     MP_EndSample();
@@ -187,9 +165,9 @@ void VertexDecl::AttribMap::Resize(uint8_t n) {
 void VertexDecl::AttribMap::Free() {
     MP_ScopeSample(VertexDecl::AttribMap::Free);
 
-    if(bindpoints != nullptr) {
-        delete [] bindpoints;
-        bindpoints = nullptr;
+    if(attribs != nullptr) {
+        delete [] attribs;
+        attribs = nullptr;
     }
     num = 0;
 }

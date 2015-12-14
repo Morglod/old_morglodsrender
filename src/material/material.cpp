@@ -7,6 +7,7 @@
 #include "mr/log.hpp"
 #include "mr/texture.hpp"
 #include "src/mp.hpp"
+#include "mr/shader/uniformcache.hpp"
 
 #include "mr/pre/glew.hpp"
 
@@ -19,11 +20,14 @@ void Material::UpdateShaderUniforms() {
     if(lastMaterial == this) return;
     lastMaterial = this;
 
-    glFinish(); // TODO, flush mapped buffer memory
+    /*glFinish(); // TODO, flush mapped buffer memory
     for(uint32_t i = 0; i < _textures_num; ++i) {
         //if(_textures[i].texture == nullptr) continue;
         _textures[i].uniform = _textures[i].residentHandle;
-    }
+    }*/
+    if(_textures_num == 0) return;
+    UniformCache* uniformCache = UniformCache::Get();
+    uniformCache->Set<uint64_t, 1>("mr_diffuseTex", _textures[0].residentHandle);
 }
 
 MaterialPtr Material::Create(ShaderProgramPtr const& program, std::vector<std::string> const& uniformNames, std::unordered_map<std::string, Texture2DPtr> const& textures) {
@@ -37,8 +41,17 @@ MaterialPtr Material::Create(ShaderProgramPtr const& program, std::vector<std::s
         }
         else ms->_uniforms.insert(std::make_pair(uniformName, UniformRefAny(foundUniform.GetPtr(), foundUniform.size)));
     }
-    ms->_textures = new sTexture[textures.size()];
-    uint32_t i = 0;
+
+    if(textures.size() != 0) {
+        ms->_textures_num = 1;
+        ms->_textures = new sTexture[textures.size()];
+        sTexture texture;
+        texture.residentHandle = textures.at("tex")->GetResidentHandle();
+        texture.texture = textures.at("tex");
+        ms->_textures[0] = texture;
+    }
+
+    /*uint32_t i = 0;
     for(auto const& textureInfo : textures) {
         ShaderProgram::FoundUniform foundUniform;
         if(!program->FindUniform(textureInfo.first, foundUniform)) {
@@ -53,7 +66,7 @@ MaterialPtr Material::Create(ShaderProgramPtr const& program, std::vector<std::s
             ms->_textures[i] = texture;
         }
         ++i;
-    }
+    }*/
     return ms;
 }
 

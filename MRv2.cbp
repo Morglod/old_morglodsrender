@@ -249,6 +249,10 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="mr/shader/uniformcache.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="mr/string.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -384,6 +388,10 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="src/shader/ubo.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/shader/uniformcache.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>

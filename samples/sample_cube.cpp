@@ -18,13 +18,13 @@ const char* vertexShader =
 "out vec4 gl_Position; \n"
 "out vec4 vcolor; \n"
 "out vec2 vtexCoord; \n"
-"{{SYS_UNIFORM}} \n"
-"uniform UBOData { \n"
-"   mat4 model; \n"
-"   uint64_t tex; \n"
-"}; \n"
+"uniform mat4 mr_projMat; \n"
+"uniform mat4 mr_viewMat; \n"
+"uniform mat4 mr_time; \n"
+"uniform mat4 mr_modelMat; \n"
+"uniform uint64_t mr_diffuseTex; \n"
 "void main() { \n"
-"   gl_Position = ((mr_sys.proj * mr_sys.view * model) * vec4(pos + gl_InstanceID * vec3(2.0, 0.0, 0.0), 1.0)); \n"
+"   gl_Position = ((mr_projMat * mr_viewMat * mr_modelMat) * vec4(pos + gl_InstanceID * vec3(2.0, 0.0, 0.0), 1.0)); \n"
 "   vcolor = vec4(pos, 1.0); \n"
 "   vtexCoord = texCoord; \n"
 "} \n"
@@ -37,13 +37,13 @@ const char* fragmentShader =
 "in vec4 vcolor; \n"
 "in vec2 vtexCoord; \n"
 "out vec3 fragColor; \n"
-"{{SYS_UNIFORM}} \n"
-"uniform UBOData { \n"
-"   mat4 model; \n"
-"   uint64_t tex; \n"
-"}; \n"
+"uniform mat4 mr_projMat; \n"
+"uniform mat4 mr_viewMat; \n"
+"uniform mat4 mr_time; \n"
+"uniform mat4 mr_modelMat; \n"
+"uniform uint64_t mr_diffuseTex; \n"
 "void main() { \n"
-"   fragColor = texture(sampler2D(tex), vtexCoord).rgb; \n"
+"   fragColor = texture(sampler2D(mr_diffuseTex), vtexCoord).rgb; \n"
 //"   fragColor = ((texture(sampler2D(tex), vtexCoord).rgb + vcolor.xyz) * 0.5) * ((1.0 + sin(mr_sys.time)) / 1.5) + vec3(0.1, 0.1, 0.1); \n"
 "} \n"
 ;
@@ -102,7 +102,7 @@ void main_logic(GLFWwindow* window) {
 
     // Create buffer and map it
     Buffer::CreationFlags flags;
-    flags.map_after_creation = true;
+    //flags.map_after_creation = true;
 
     // Don't initialize buffers with memory this time
     // Will do it async further
@@ -144,53 +144,16 @@ void main_logic(GLFWwindow* window) {
         ibuffer = IndexBuffer::Create(indexDataMem, IndexDataType::UShort, indexNum);
 
     // Create and compile shaders
-    auto vshader = Shader::Create(ShaderType::Vertex, ReplaceString(std::string(vertexShader), "{{SYS_UNIFORM}}", SysUniformStr));
-    auto fshader = Shader::Create(ShaderType::Fragment, ReplaceString(std::string(fragmentShader), "{{SYS_UNIFORM}}", SysUniformStr));
+    auto vshader = Shader::Create(ShaderType::Vertex, vertexShader);
+    auto fshader = Shader::Create(ShaderType::Fragment, fragmentShader);
 
     // Create and link shader program
     auto prog = ShaderProgram::Create({vshader, fshader});
-
-    // Setup uniforms, from uniform blocks
-    UniformRef<uint64_t>    uniform_texture;
-    UniformRef<glm::mat4>   uniform_modelMat,
-                            uniform_projMat,
-                            uniform_viewMat;
-    UniformRef<float>       uniform_time;
-
-    {
-        ShaderProgram::UboInfo uboInfo;
-        prog->GetUniformBuffer("UBOData", uboInfo);
-
-        uniform_texture = uboInfo.ubo->As<uint64_t>("tex");
-        uniform_modelMat = uboInfo.ubo->As<glm::mat4>("model");
-
-        prog->GetUniformBuffer(SysUniformNameBlock, uboInfo);
-
-        uniform_projMat = uboInfo.ubo->As<glm::mat4>("mr_sys_block.proj");
-        uniform_viewMat = uboInfo.ubo->As<glm::mat4>("mr_sys_block.view");
-        uniform_time = uboInfo.ubo->As<float>("mr_sys_block.time");
-    }
-
-    // Set window 'background' color
-    Draw::SetClearColor(10,10,10,255);
 
     // Wait till async tasks end
     bufv_write.wait();
     bufi_write.wait();
     tex_load.wait();
-
-    /// Export/Import VertexBuffer
-    /*std::ofstream json_file2("vbuffer.json");
-    Json<VertexBufferPtr>::Export(vbuffer, json_file2);
-    */
-    /*std::ifstream json_file2("vbuffer.json");
-    Json<VertexBufferPtr>::Import(vbuffer, json_file2);
-    */
-
-    // Set base uniform values
-    uniform_projMat = glm::perspective(90.0f, 800.0f / 600.0f, 0.1f, 1000.0f);
-    uniform_viewMat = glm::lookAt(glm::vec3(0,0,5), glm::vec3(0,0,-1), glm::vec3(0,1,0));
-    // model matrix will be changed in Update thread
 
     // Test texture
     auto textureData = tex_load.get();
@@ -203,13 +166,31 @@ void main_logic(GLFWwindow* window) {
     texture->WriteImage(textureData);
     texture->BuildMipmaps();
     texture->MakeResident();
-    uniform_texture = texture->GetResidentHandle();
+
+    // Setup uniforms, from uniform blocks
+    UniformCache* uniformCache = UniformCache::Get();
+    // model matrix will be changed in Update thread
+    uniformCache->Set<glm::mat4, 1>("mr_modelMat", glm::mat4(1.0f));
+    uniformCache->Set<glm::mat4, 1>("mr_projMat", glm::perspective(90.0f, 800.0f / 600.0f, 0.1f, 1000.0f));
+    uniformCache->Set<glm::mat4, 1>("mr_viewMat", glm::lookAt(glm::vec3(0,0,5), glm::vec3(0,0,-1), glm::vec3(0,1,0)));
+    uniformCache->Set<uint64_t, 1>("mr_diffuseTex", texture->GetResidentHandle());
+
+    // Set window 'background' color
+    Draw::SetClearColor(10,10,10,255);
+
+    /// Export/Import VertexBuffer
+    /*std::ofstream json_file2("vbuffer.json");
+    Json<VertexBufferPtr>::Export(vbuffer, json_file2);
+    */
+    /*std::ifstream json_file2("vbuffer.json");
+    Json<VertexBufferPtr>::Import(vbuffer, json_file2);
+    */
 
     std::vector<MeshPtr> sceneMeshes1;
-    std::vector<MeshPtr> sceneMeshes2;
+    //std::vector<MeshPtr> sceneMeshes2;
     Mesh::ImportOptions importOptions; importOptions.debugLog = true;
-    Mesh::Import("elephant_budda.dae", prog, sceneMeshes1, importOptions);
-    Mesh::Import("mandarine.dae", prog, sceneMeshes2, importOptions);
+    Mesh::Import("sponza.obj", prog, sceneMeshes1, importOptions);
+    //Mesh::Import("mandarine.dae", prog, sceneMeshes2, importOptions);
 
     MR_LOG_T_STD_("Loading time (ms): ", loadTimer.End());
 
@@ -220,14 +201,15 @@ void main_logic(GLFWwindow* window) {
 
     // Update thread example
     bool update_thread_working = true;
-    auto update_thread = std::thread([&update_thread_working](glm::mat4* modelMat) {
+
+    /*auto update_thread = std::thread([&update_thread_working](StateCache* modelMat) {
                                         float a = 0.0f;
                                         while(update_thread_working) {
                                             *modelMat = glm::rotate(a, glm::vec3(1,1,1));
                                             a += 0.01f;
                                             std::this_thread::sleep_for(std::chrono::milliseconds(16));
                                         }
-                                     }, &uniform_modelMat.Value());
+                                     }, &uniform_modelMat.Value());*/
 
     double lastTime = glfwGetTime();
     int fps = 0;
@@ -235,7 +217,7 @@ void main_logic(GLFWwindow* window) {
     while(!glfwWindowShouldClose(window)) {
         double deltaTime = glfwGetTime() - lastTime;
 
-        const float moveSpeed = 1.0f * deltaTime;
+        const float moveSpeed = (((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) ? 500.0f : 0.0f) + 1.0f) * deltaTime;
         const float rotateSpeed = 90.0f * deltaTime;
 
         // Clear screen
@@ -256,12 +238,16 @@ void main_logic(GLFWwindow* window) {
         // Simple GLFW camera movement
         if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) camera.MoveForward(moveSpeed);
         if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) camera.MoveForward(-moveSpeed);
+        if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) camera.MoveLeft(moveSpeed);
+        if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) camera.MoveLeft(-moveSpeed);
+        if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) camera.MoveUp(moveSpeed);
+        if(glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) camera.MoveUp(-moveSpeed);
         if(glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) camera.RotateY(rotateSpeed);
         if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) camera.RotateY(-rotateSpeed);
 
         // Update uniform values
-        uniform_viewMat = camera.GetMat();
-        uniform_time = (float)lastTime;
+        uniformCache->Set<glm::mat4, 1>("mr_viewMat", camera.GetMat());
+        uniformCache->Set<float, 1>("mr_time", (float)lastTime);
 
         lastTime += deltaTime;
 
@@ -277,7 +263,7 @@ void main_logic(GLFWwindow* window) {
     }
 
     update_thread_working = false;
-    update_thread.join();
+    //update_thread.join();
 }
 
 int main() {

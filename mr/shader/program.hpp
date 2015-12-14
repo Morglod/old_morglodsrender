@@ -6,6 +6,8 @@
 #include <memory>
 #include <future>
 #include <vector>
+#include <unordered_set>
+#include <unordered_map>
 
 namespace mr {
 
@@ -40,6 +42,8 @@ public:
 
     // shaders may be empty
     static ShaderProgramPtr Create(std::vector<ShaderPtr> const& shaders = std::vector<ShaderPtr>());
+    void Destroy();
+
     bool Link(std::vector<ShaderPtr> const& shaders);
 
     bool SetUniformBuffer(uint32_t arrayIndex, UniformBufferPtr const& ubo);
@@ -50,19 +54,20 @@ public:
 
     bool FindUniform(std::string const& uniformName, FoundUniform& out_uniform) const;
 
-    static UniformBufferPtr GetSystemUniformBuffer();
+    inline int32_t GetUniformLocation(std::string const& name) const;
 
     static void Use(ShaderProgramPtr const& program);
+    static std::unordered_set<ShaderProgram*> GetRegisteredPrograms();
 
     inline uint32_t GetId() const;
 
-    virtual ~ShaderProgram();
+    ~ShaderProgram();
 
 protected:
     void _BindUniformBuffer(uint32_t index, uint32_t buffer);
 
     ShaderProgram();
-    bool _InitUBO();
+    bool _ResetUniforms();
     uint32_t _id;
 
     struct sUBOList {
@@ -75,6 +80,8 @@ protected:
     };
 
     sUBOList _ubo;
+
+    std::unordered_map<std::string, int32_t> _uniformLocations;
 };
 
 ///
@@ -85,6 +92,12 @@ inline uint32_t ShaderProgram::GetId() const {
 
 inline uint32_t ShaderProgram::GetUniformBuffersNum() const {
     return _ubo.num;
+}
+
+inline int32_t ShaderProgram::GetUniformLocation(std::string const& name) const {
+    auto it = _uniformLocations.find(name);
+    if(it == _uniformLocations.end()) return -1;
+    return it->second;
 }
 
 }

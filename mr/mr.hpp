@@ -20,3 +20,4 @@
 #include "string.hpp"
 #include "shader/ubo.hpp"
 #include "mesh.hpp"
+#include "shader/uniformcache.hpp"
