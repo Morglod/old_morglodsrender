@@ -15,3 +15,4 @@ Sponza из obj формата загружается за 4 секунды. FPS
 
 ![QIP Shot - Screen 560.png](https://bitbucket.org/repo/j7npk8/images/2382356475-QIP%20Shot%20-%20Screen%20560.png)
 ![1q1ISV70.png](https://bitbucket.org/repo/j7npk8/images/3751170486-1q1ISV70.png)
+![QIP Shot - Screen 596.png](https://bitbucket.org/repo/j7npk8/images/1402972547-QIP%20Shot%20-%20Screen%20596.png)
