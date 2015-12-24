@@ -16,7 +16,7 @@ const char* vertexShader =
 //"layout (location = 2) in float color2; \n"
 "layout (location = 1) in vec2 texCoord; \n"
 "out vec4 gl_Position; \n"
-"out vec4 vcolor; \n"
+"out vec3 world_pos; \n"
 "out vec2 vtexCoord; \n"
 "uniform mat4 mr_projMat; \n"
 "uniform mat4 mr_viewMat; \n"
@@ -24,8 +24,9 @@ const char* vertexShader =
 "uniform mat4 mr_modelMat; \n"
 "uniform uint64_t mr_diffuseTex; \n"
 "void main() { \n"
-"   gl_Position = ((mr_projMat * mr_viewMat * mr_modelMat) * vec4(pos + gl_InstanceID * vec3(2.0, 0.0, 0.0), 1.0)); \n"
-"   vcolor = vec4(pos, 1.0); \n"
+"   vec4 vertex_world_pos = mr_modelMat * vec4(pos + gl_InstanceID * vec3(2.0, 0.0, 0.0), 1.0); \n"
+"   gl_Position = (mr_projMat * mr_viewMat) * vertex_world_pos; \n"
+"   world_pos = vertex_world_pos.xyz; \n"
 "   vtexCoord = texCoord; \n"
 "} \n"
 ;
@@ -34,7 +35,7 @@ const char* fragmentShader =
 "#version 400 \n"
 "#extension GL_ARB_bindless_texture : require \n"
 "#extension GL_NV_gpu_shader5 : enable \n"
-"in vec4 vcolor; \n"
+"in vec3 world_pos; \n"
 "in vec2 vtexCoord; \n"
 "out vec3 fragColor; \n"
 "uniform mat4 mr_projMat; \n"
@@ -43,7 +44,10 @@ const char* fragmentShader =
 "uniform mat4 mr_modelMat; \n"
 "uniform uint64_t mr_diffuseTex; \n"
 "void main() { \n"
-"   fragColor = texture(sampler2D(mr_diffuseTex), vtexCoord).rgb; \n"
+"   vec3 light_pos = vec3(500, 200, 500); \n"
+//"   float light = 1 / (length(world_pos - light_pos) * 0.05); \n"
+"   float light = 1.0; \n"
+"   fragColor = texture(sampler2D(mr_diffuseTex), vtexCoord).rgb * light; \n"
 //"   fragColor = ((texture(sampler2D(tex), vtexCoord).rgb + vcolor.xyz) * 0.5) * ((1.0 + sin(mr_sys.time)) / 1.5) + vec3(0.1, 0.1, 0.1); \n"
 "} \n"
 ;
@@ -102,6 +106,7 @@ void main_logic(GLFWwindow* window) {
 
     // Create buffer and map it
     Buffer::CreationFlags flags;
+    flags.write = true;
     //flags.map_after_creation = true;
 
     // Don't initialize buffers with memory this time
@@ -171,7 +176,7 @@ void main_logic(GLFWwindow* window) {
     UniformCache* uniformCache = UniformCache::Get();
     // model matrix will be changed in Update thread
     uniformCache->Set<glm::mat4, 1>("mr_modelMat", glm::mat4(1.0f));
-    uniformCache->Set<glm::mat4, 1>("mr_projMat", glm::perspective(90.0f, 800.0f / 600.0f, 0.1f, 1000.0f));
+    uniformCache->Set<glm::mat4, 1>("mr_projMat", glm::perspective(90.0f, 800.0f / 600.0f, 0.1f, 2000.0f));
     uniformCache->Set<glm::mat4, 1>("mr_viewMat", glm::lookAt(glm::vec3(0,0,5), glm::vec3(0,0,-1), glm::vec3(0,1,0)));
     uniformCache->Set<uint64_t, 1>("mr_diffuseTex", texture->GetResidentHandle());
 
@@ -186,11 +191,11 @@ void main_logic(GLFWwindow* window) {
     Json<VertexBufferPtr>::Import(vbuffer, json_file2);
     */
 
-    std::vector<MeshPtr> sceneMeshes1;
-    //std::vector<MeshPtr> sceneMeshes2;
+    std::vector<MeshPtr> sceneMeshes;
     Mesh::ImportOptions importOptions; importOptions.debugLog = true;
-    Mesh::Import("sponza.obj", prog, sceneMeshes1, importOptions);
-    //Mesh::Import("mandarine.dae", prog, sceneMeshes2, importOptions);
+    Mesh::Import("sponza.obj", prog, sceneMeshes, importOptions);
+    Mesh::Import("mandarine.dae", prog, sceneMeshes, importOptions);
+    Mesh::Import("elephant_budda.dae", prog, sceneMeshes, importOptions);
 
     MR_LOG_T_STD_("Loading time (ms): ", loadTimer.End());
 
@@ -198,18 +203,6 @@ void main_logic(GLFWwindow* window) {
     PerspectiveCamera camera;
     camera.SetPos({0,0,0});
     camera.SetRot({0,0,0});
-
-    // Update thread example
-    bool update_thread_working = true;
-
-    /*auto update_thread = std::thread([&update_thread_working](StateCache* modelMat) {
-                                        float a = 0.0f;
-                                        while(update_thread_working) {
-                                            *modelMat = glm::rotate(a, glm::vec3(1,1,1));
-                                            a += 0.01f;
-                                            std::this_thread::sleep_for(std::chrono::milliseconds(16));
-                                        }
-                                     }, &uniform_modelMat.Value());*/
 
     double lastTime = glfwGetTime();
     int fps = 0;
@@ -227,13 +220,9 @@ void main_logic(GLFWwindow* window) {
         const uint32_t instances = 1;
         //Draw::Primitive(prog, DrawMode::Triangle, vbuffer, ibuffer, instances);
 
-        for(int i = 0, n = sceneMeshes1.size(); i < n; ++i) {
-            sceneMeshes1[i]->Draw(instances);
+        for(int i = 0, n = sceneMeshes.size(); i < n; ++i) {
+            sceneMeshes[i]->Draw(instances);
         }
-
-        /*for(int i = 0, n = sceneMeshes2.size(); i < n; ++i) {
-            sceneMeshes2[i]->Draw(instances);
-        }*/
 
         // Simple GLFW camera movement
         if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) camera.MoveForward(moveSpeed);
@@ -261,9 +250,6 @@ void main_logic(GLFWwindow* window) {
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-    update_thread_working = false;
-    //update_thread.join();
 }
 
 int main() {

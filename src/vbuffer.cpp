@@ -30,7 +30,7 @@ bool VertexBuffer::Bind(uint32_t binding, uint32_t offset) {
         const auto resident_size = _vbuf->_size;
         for(uint8_t i = 0, n = _vdecl->_map.num; i < n; ++i) {
             VertexDecl::Attrib const& attrib = _vdecl->_map.attribs[i];
-            glBufferAddressRangeNV(GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV, attrib.index, resident_ptr + attrib.offset, resident_size - attrib.offset);
+            glBufferAddressRangeNV(GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV, attrib.location, resident_ptr + attrib.offset, resident_size - attrib.offset);
         }
     }
 

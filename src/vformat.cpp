@@ -14,7 +14,7 @@ namespace mr {
 VertexDecl::Changer& VertexDecl::Changer::Pos(PosDataType const& type, uint8_t bindpoint) {
     MP_BeginSample(VertexDecl::Changer::Pos);
 
-    Push(bindpoint, (uint32_t)type, 3, false, false);
+    Push(bindpoint, (uint32_t)type, 3, false, false, ShaderLocation_Pos);
 
     MP_EndSample();
 
@@ -24,7 +24,27 @@ VertexDecl::Changer& VertexDecl::Changer::Pos(PosDataType const& type, uint8_t b
 VertexDecl::Changer& VertexDecl::Changer::Color(ColorDataType const& type, uint8_t bindpoint) {
     MP_BeginSample(VertexDecl::Changer::Color);
 
-    Push(bindpoint, (uint32_t)type, 4, true, false);
+    Push(bindpoint, (uint32_t)type, 4, true, false, ShaderLocation_Color);
+
+    MP_EndSample();
+
+    return *this;
+}
+
+VertexDecl::Changer& VertexDecl::Changer::Normal(PosDataType const& type, uint8_t bindpoint) {
+    MP_BeginSample(VertexDecl::Changer::Normal);
+
+    Push(bindpoint, (uint32_t)type, 3, true, false, ShaderLocation_Normal);
+
+    MP_EndSample();
+
+    return *this;
+}
+
+VertexDecl::Changer& VertexDecl::Changer::TexCoord(uint8_t bindpoint) {
+    MP_BeginSample(VertexDecl::Changer::TexCoord);
+
+    Push(bindpoint, (uint32_t)PosDataType::Float, 2, true, false, ShaderLocation_TexCoord);
 
     MP_EndSample();
 
@@ -34,17 +54,17 @@ VertexDecl::Changer& VertexDecl::Changer::Color(ColorDataType const& type, uint8
 VertexDecl::Changer& VertexDecl::Changer::Data(uint8_t sz, uint8_t bindpoint) {
     MP_BeginSample(VertexDecl::Changer::Data);
 
-    Push(bindpoint, GL_BYTE, sz, false, true);
+    Push(bindpoint, GL_BYTE, sz, false, true, 0);
 
     MP_EndSample();
 
     return *this;
 }
 
-VertexDecl::Changer& VertexDecl::Changer::Custom(DataType const& type, uint8_t components_num, uint8_t bindpoint, bool normalized) {
+VertexDecl::Changer& VertexDecl::Changer::Custom(DataType const& type, uint8_t components_num, uint8_t shaderLocation, uint8_t bindpoint, bool normalized) {
     MP_BeginSample(VertexDecl::Changer::Custom);
 
-    Push(bindpoint, (uint32_t)type, components_num, normalized, false);
+    Push(bindpoint, (uint32_t)type, components_num, normalized, false, shaderLocation);
 
     MP_EndSample();
     return *this;
@@ -79,7 +99,7 @@ void VertexDecl::Changer::End() {
     MP_EndSample();
 }
 
-void VertexDecl::Changer::Push(uint8_t bindpoint_index, uint32_t gl_dt, uint8_t comp_num, bool norm, bool offsetOnly) {
+void VertexDecl::Changer::Push(uint8_t bindpoint_index, uint32_t gl_dt, uint8_t comp_num, bool norm, bool offsetOnly, uint8_t shaderLocation) {
     MP_ScopeSample(VertexDecl::Changer::Push);
 
     const uint32_t dt_size = (gl_dt != GL_HALF_FLOAT) ? sizeof_gl(gl_dt) : sizeof(float);
@@ -93,8 +113,12 @@ void VertexDecl::Changer::Push(uint8_t bindpoint_index, uint32_t gl_dt, uint8_t 
         return;
     }
 
+    if(shaderLocation == -1) {
+        shaderLocation = bindpoint.attribi;
+    }
+
     Attrib attrib;
-    attrib.index = bindpoint.attribi;
+    attrib.location = shaderLocation;
     attrib.offset = bindpoint.offset;
     attrib.components_num = comp_num;
     attrib.datatype = gl_dt;
@@ -102,7 +126,7 @@ void VertexDecl::Changer::Push(uint8_t bindpoint_index, uint32_t gl_dt, uint8_t 
     attrib.size = attrib_size;
 
     bindpoint.attribs.push_back(attrib);
-    ++(bindpoint.attribi);
+    if(bindpoint.attribi <= shaderLocation) (bindpoint.attribi = shaderLocation+1);
     bindpoint.offset += attrib_size;
 }
 
@@ -131,16 +155,16 @@ bool VertexDecl::Bind() {
     int maxBoundAttrib = 0;
     for(uint8_t i = 0, n = _map.num; i < n; ++i) {
         Attrib const& attrib = _map.attribs[i];
-        if(attrib.index >= maxBoundAttrib)
-            glEnableVertexAttribArray(attrib.index);
+        if(attrib.location >= maxBoundAttrib)
+            glEnableVertexAttribArray(attrib.location);
         if(GLEW_NV_vertex_buffer_unified_memory) {
-            glVertexAttribFormatNV(attrib.index, attrib.components_num, attrib.datatype, attrib.normalized, attrib.stride);
+            glVertexAttribFormatNV(attrib.location, attrib.components_num, attrib.datatype, attrib.normalized, attrib.stride);
         }
         else {
-            glVertexAttribFormat(attrib.index, attrib.components_num, attrib.datatype, attrib.normalized, attrib.offset);
-            glVertexAttribBinding(attrib.index, attrib.bindpoint);
+            glVertexAttribFormat(attrib.location, attrib.components_num, attrib.datatype, attrib.normalized, attrib.offset);
+            glVertexAttribBinding(attrib.location, attrib.bindpoint);
         }
-        if(attrib.index > maxBoundAttrib) maxBoundAttrib = attrib.index;
+        if(attrib.location > maxBoundAttrib) maxBoundAttrib = attrib.location;
     }
 
     for(int i = 0; i < maxBoundAttrib - lastBoundAttrib; ++i)

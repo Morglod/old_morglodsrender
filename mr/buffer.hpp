@@ -38,9 +38,9 @@ class MR_API Buffer {
 public:
     struct MapFlags {
         bool    read = false,
-                write = true;
-        bool persistent = true;
-        bool coherent = true;
+                write = false;
+        bool persistent = false;
+        bool coherent = false;
         MapFlags() = default;
         MapFlags(MapFlags const&);
     };

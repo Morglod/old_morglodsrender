@@ -228,7 +228,7 @@ bool Mesh::Import(std::string const& file, ShaderProgramPtr const& shaderProgram
     std::unordered_map<size_t, aiMatrix4x4> nodesCache;
     _AssimpCacheNodes(scene->mRootNode, aiMatrix4x4(), &nodesCache);
 
-    out_meshes.resize(scene->mNumMeshes, nullptr);
+    out_meshes.reserve(out_meshes.size() + scene->mNumMeshes);
 
     size_t debugVerticiesNum = 0;
     size_t debugIndeciesNum = 0;
@@ -250,12 +250,17 @@ bool Mesh::Import(std::string const& file, ShaderProgramPtr const& shaderProgram
 
     for(uint32_t i = 0; i < scene->mNumMeshes; ++i) {
         aiMesh* mesh = scene->mMeshes[i];
+        if(!mesh->HasPositions()) {
+            MR_LOG_ERROR(Mesh::Import, "Failed import mesh without positions");
+            return false;
+        }
+
         aiMatrix4x4 transformMatrix = _AssimpGetMat(scene, &nodesCache, i);
         const size_t indexNum = mesh->mNumFaces * 3;
 
         // Attribs flags
-        bool bAttrib[4] = { mesh->HasPositions(),
-                            mesh->HasNormals(),
+        bool bAttrib[4] = {  mesh->HasPositions(),
+                             mesh->HasNormals(),
                             (mesh->GetNumColorChannels() && mesh->HasVertexColors(0)),
                             (mesh->GetNumUVChannels() && mesh->HasTextureCoords(0)) };
 
@@ -265,9 +270,9 @@ bool Mesh::Import(std::string const& file, ShaderProgramPtr const& shaderProgram
         vertexFormat.bAttrib[1] = false; vertexFormat.bAttrib[2] = false;
 
         /// Create vertex format or get from cache
+        vertexFormat.indexDataType = (indexNum >= USHRT_MAX) ? IndexDataType::UInt : IndexDataType::UShort;
         for(uint32_t ivf = 0, nvf = cacheVertexFormat.size(); ivf < nvf; ++ivf) {
-            // Compare indexDataType here if needed
-            if(memcmp(&(cacheVertexFormat[ivf].bAttrib[0]), &(vertexFormat.bAttrib[0]), sizeof(bool)*4) == 0) {
+            if(memcmp(&(cacheVertexFormat[ivf].bAttrib[0]), &(vertexFormat.bAttrib[0]), sizeof(bool)*4) == 0 && vertexFormat.indexDataType == cacheVertexFormat[ivf].indexDataType) {
                 vertexFormat = cacheVertexFormat[ivf];
             }
         }
@@ -279,11 +284,12 @@ bool Mesh::Import(std::string const& file, ShaderProgramPtr const& shaderProgram
             if(vertexFormat.bAttrib[0]) vertexDecl.Pos();
             if(vertexFormat.bAttrib[1]) vertexDecl.Normal();
             if(vertexFormat.bAttrib[2]) vertexDecl.Color();
-            if(vertexFormat.bAttrib[3]) vertexDecl.Custom(DataType::Float, 2, 0, true);
+            if(vertexFormat.bAttrib[3]) vertexDecl.TexCoord();
             vertexDecl.End();
 
             /// Create index format
-            vertexFormat.indexDataType = (indexNum >= USHRT_MAX) ? IndexDataType::UInt : IndexDataType::UShort;
+            // Already set before
+            // vertexFormat.indexDataType = (indexNum >= USHRT_MAX) ? IndexDataType::UInt : IndexDataType::UShort;
 
             /// Map attribs indecies
             size_t vertexOffsets_attribs_map_index = 0;
@@ -305,7 +311,8 @@ bool Mesh::Import(std::string const& file, ShaderProgramPtr const& shaderProgram
         }
 
         size_t vertexDataSize = mesh->mNumVertices * vertexFormat.decl->GetSize();
-        unsigned char * vertexData = new unsigned char [vertexDataSize];
+        MemoryPtr vertexDataMem = Memory::New(vertexDataSize);
+        uint8_t* vertexData = (uint8_t*) vertexDataMem->GetPtr();
         for(size_t it = 0; it < mesh->mNumVertices; ++it) {
             const size_t vertexOffset = vertexFormat.decl->GetSize() * it;
 
@@ -324,20 +331,20 @@ bool Mesh::Import(std::string const& file, ShaderProgramPtr const& shaderProgram
         }
 
         /// Pack index data
-        void * indexData = nullptr;
+        MemoryPtr indexDataMem = nullptr;
         if(vertexFormat.indexDataType == IndexDataType::UInt) {
-            indexData = malloc(sizeof(uint32_t) *indexNum);
-            uint32_t* indexDataM = (uint32_t*)indexData;
+            indexDataMem = Memory::New(sizeof(uint32_t) * indexNum);
+            uint32_t* indexData = (uint32_t*) indexDataMem->GetPtr();
             for(size_t it = 0; it < mesh->mNumFaces; ++it) {
-                memcpy(&indexDataM[it*3], &mesh->mFaces[it].mIndices[0], sizeof(unsigned int)*3);
+                memcpy(&indexData[it*3], &mesh->mFaces[it].mIndices[0], sizeof(uint32_t)*3);
             }
         } else if(vertexFormat.indexDataType == IndexDataType::UShort) {
-            indexData = malloc(sizeof(uint16_t) *indexNum);
-            uint16_t* indexDataM = (uint16_t*)indexData;
+            indexDataMem = Memory::New(sizeof(uint16_t) *indexNum);
+            uint16_t* indexData = (uint16_t*) indexDataMem->GetPtr();
             for(size_t it = 0; it < mesh->mNumFaces; ++it) {
-                indexDataM[it*3 +0] = (uint16_t) mesh->mFaces[it].mIndices[0];
-                indexDataM[it*3 +1] = (uint16_t) mesh->mFaces[it].mIndices[1];
-                indexDataM[it*3 +2] = (uint16_t) mesh->mFaces[it].mIndices[2];
+                indexData[it*3 +0] = (uint16_t) mesh->mFaces[it].mIndices[0];
+                indexData[it*3 +1] = (uint16_t) mesh->mFaces[it].mIndices[1];
+                indexData[it*3 +2] = (uint16_t) mesh->mFaces[it].mIndices[2];
             }
         } else {
             MR_LOG_ERROR(Mesh::Import, "Incorrect vertexFormat.indexDataType;");
@@ -348,19 +355,17 @@ bool Mesh::Import(std::string const& file, ShaderProgramPtr const& shaderProgram
         debugVerticiesNum += mesh->mNumVertices;
         debugIndeciesNum += mesh->mNumFaces;
 
-        BufferPtr vbufferData = Buffer::Create(Memory::Ref(vertexData, vertexDataSize), Buffer::CreationFlags());
-        BufferPtr ibufferData = Buffer::Create(Memory::Ref(indexData, indexNum * sizeof(uint32_t)), Buffer::CreationFlags());
+        const Buffer::CreationFlags bufferFlags;
+        BufferPtr vbufferData = Buffer::Create(vertexDataMem, bufferFlags);
+        BufferPtr ibufferData = Buffer::Create(indexDataMem, bufferFlags);
         vbufferData->MakeResident(MR_RESIDENT_READ_ONLY);
         ibufferData->MakeResident(MR_RESIDENT_READ_ONLY);
 
         VertexBufferPtr vbuffer = VertexBuffer::Create(vbufferData, vertexFormat.decl, mesh->mNumVertices);
         IndexBufferPtr ibuffer = IndexBuffer::Create(ibufferData, vertexFormat.indexDataType, indexNum);
 
-        delete [] vertexData;
-        free(indexData);
-
         PrimitivePtr primitve = Primitive::Create(DrawMode::Triangle, vbuffer, ibuffer);
-        out_meshes[i] = Mesh::Create(primitve, materials[mesh->mMaterialIndex]);
+        out_meshes.push_back(Mesh::Create(primitve, materials[mesh->mMaterialIndex]));
     }
 
     if(options.debugLog) {

@@ -52,8 +52,7 @@ BufferPtr Buffer::Create(MemoryPtr const& mem, CreationFlags const& flags) {
     uint32_t buffer = 0;
     glCreateBuffers(1, &buffer);
     const auto size = mem->GetSize();
-    //glNamedBufferStorage(buffer, size, mem->GetPtr(), flags_i);
-    glNamedBufferData(buffer, size, mem->GetPtr(), GL_STATIC_DRAW);
+    glNamedBufferStorage(buffer, size, mem->GetPtr(), flags_i);
     buf->_id = buffer;
     buf->_size = size;
     buf->_mapState.mem = nullptr;

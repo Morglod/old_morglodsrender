@@ -11,6 +11,11 @@
 
 namespace mr {
 
+constexpr uint8_t ShaderLocation_Pos = 0;
+constexpr uint8_t ShaderLocation_TexCoord = 1;
+constexpr uint8_t ShaderLocation_Normal = 2;
+constexpr uint8_t ShaderLocation_Color = 3;
+
 typedef std::shared_ptr<class VertexDecl> VertexDeclPtr;
 
 /**
@@ -21,7 +26,7 @@ class MR_API VertexDecl final {
     friend class VertexBuffer;
 public:
     struct Attrib {
-        uint8_t index; // attrib shader index
+        uint8_t location; // shader location
         uint8_t components_num;
         uint32_t datatype;
         uint8_t normalized; // 0 or 1
@@ -53,14 +58,15 @@ public:
 
         Changer& Pos(PosDataType const& type = PosDataType::Float, uint8_t bindpoint = 0); // vec3<DataType>
         Changer& Color(ColorDataType const& type = ColorDataType::UByte, uint8_t bindpoint = 0); // vec4<DataType>
-        inline Changer& Normal(PosDataType const& type = PosDataType::Float, uint8_t bindpoint = 0); // vec3<DataType>
+        Changer& Normal(PosDataType const& type = PosDataType::Float, uint8_t bindpoint = 0); // vec3<DataType>
+        Changer& TexCoord(uint8_t bindpoint = 0); // vec2<float>
         Changer& Data(uint8_t sz, uint8_t bindpoint = 0); // skip data block, sizeof 'sz'
-        Changer& Custom(DataType const& type, uint8_t components_num, uint8_t bindpoint = 0, bool normalized = false);
+        Changer& Custom(DataType const& type, uint8_t components_num, uint8_t shaderLocation, uint8_t bindpoint = 0, bool normalized = false);
         void End();
 
     protected:
         Changer(VertexDecl& d);
-        void Push(uint8_t bindpoint, uint32_t gl_dt, uint8_t comp_num, bool norm, bool offsetOnly);
+        void Push(uint8_t bindpoint, uint32_t gl_dt, uint8_t comp_num, bool norm, bool offsetOnly, uint8_t shaderLocation);
 
         VertexDecl& decl;
         std::unordered_map<uint8_t, BindPointDesc> bindpoints; // [binding point].attributes[]
@@ -93,10 +99,6 @@ inline uint8_t VertexDecl::GetAttribsNum() const {
 
 inline VertexDecl::Attrib VertexDecl::GetAttribute(uint8_t attribArrayIndex) const {
     return _map.attribs[attribArrayIndex];
-}
-
-inline VertexDecl::Changer& VertexDecl::Changer::Normal(PosDataType const& type, uint8_t bindpoint) {
-    return Pos(type, bindpoint);
 }
 
 inline bool VertexDecl::Equal(const VertexDecl* other) const {
