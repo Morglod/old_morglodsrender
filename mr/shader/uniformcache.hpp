@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../build.hpp"
+#include "mr/alloc.hpp"
+
 #include <unordered_map>
 #include <string>
 #include <memory>
@@ -21,7 +23,8 @@ public:
     virtual void Update(const ShaderProgram* shaderProgram) = 0;
 
     // Set current value
-    virtual void Set(const void* valuePtr) = 0;
+    // Return false if no changes
+    virtual bool Set(const void* valuePtr) = 0;
 
     // Get value (copy to 'to')
     virtual void Get(void* to) = 0;
@@ -37,17 +40,26 @@ template<typename T, int TVecSize>
 class UniformCacheValue : public IUniformCacheValue {
 public:
     static_assert(TVecSize <= 4, "vec<4> is max");
+
+    static constexpr size_t ByteSize = sizeof(T)*TVecSize;
     T value[TVecSize];
 
     inline void Update(const ShaderProgram* shaderProgram) override {
         IUniformCacheValue::Update<T>(shaderProgram, name, TVecSize, &value[0]);
     }
 
-    inline void Set(const void* valuePtr) override { memcpy(&value[0], valuePtr, sizeof(T)*TVecSize); }
-    inline void Get(void* to) override { memcpy(to, &value[0], sizeof(T)*TVecSize); }
+    inline bool Set(const void* valuePtr) override {
+        if(memcmp(valuePtr, &value[0], ByteSize) == 0) return false;
+        memcpy(&value[0], valuePtr, ByteSize);
+        return true;
+    }
+
+    inline void Get(void* to) override { memcpy(to, &value[0], ByteSize); }
     inline uint16_t GetSize() override { return sizeof(T); }
 
-    inline UniformCacheValue(std::string const& name_) : IUniformCacheValue(name_) {}
+    inline UniformCacheValue(std::string const& name_) : IUniformCacheValue(name_) {
+        memset(&value[0], 0, ByteSize);
+    }
     inline virtual ~UniformCacheValue() {}
 };
 
@@ -59,11 +71,12 @@ public:
     inline void Set(std::string const& name, const T* value) {
         auto cacheValue = Get(name);
         if(cacheValue == nullptr) {
-            cacheValue = IUniformCacheValuePtr(static_cast<IUniformCacheValue*>(new UniformCacheValue<T, TVecSize>(name)));
+            typedef UniformCacheValue<T, TVecSize> UniformCacheValueTSz;
+            cacheValue = IUniformCacheValuePtr(static_cast<IUniformCacheValue*>(MR_NEW(UniformCacheValueTSz, name)));
             _uniforms[name] = cacheValue;
         }
-        cacheValue->Set(value);
-        _Update(cacheValue.get());
+        if(cacheValue->Set(value))
+            _Update(cacheValue.get());
     }
 
     template<typename T, int TVecSize>

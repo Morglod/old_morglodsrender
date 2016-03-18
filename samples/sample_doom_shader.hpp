@@ -75,7 +75,7 @@ mr::ShaderProgramPtr shaderProgram;
 
 mr::BufferPtr CreateModelData(uint64_t tex_resident, uint64_t instances_resident) {
     mr::Buffer::CreationFlags flags;
-    return mr::Buffer::Create(mr::Memory::Own(new ModelData{tex_resident, instances_resident}, sizeof(ModelData)), flags);
+    return mr::Buffer::Create(mr::Memory::Own(MR_NEW_FILL(ModelData, {tex_resident, instances_resident}), sizeof(ModelData)), flags);
 }
 
 void InitShader() {
@@ -83,7 +83,7 @@ void InitShader() {
 
     Buffer::CreationFlags flags; flags.map_after_creation = true;
 
-    ubo_data = Buffer::Create(Memory::Own(new UBOData, sizeof(UBOData)), flags);
+    ubo_data = Buffer::Create(Memory::Own(MR_NEW(UBOData), sizeof(UBOData)), flags);
     ubo_data_ptr = (UBOData*)ubo_data->GetMapState().mem;
 
     auto vshader = Shader::Create(ShaderType::Vertex, std::string(vertexShader));

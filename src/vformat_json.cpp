@@ -9,12 +9,13 @@
 {
     "uid" : 123, // pointer to object in runtime, when exported
     "attribs" : [
-        // Be careful with order of attributes
+        // !! Order of attributes in array is important !!
         {
             "components_num" : 2,
             "datatype" : 123,
             "bindpoint" : 0,
-            "normalized" : 0
+            "normalized" : True,
+            "location" : 0
         }
     ]
 }
@@ -32,24 +33,21 @@ MR_API bool mr::Json<mr::VertexDeclPtr>::_Export(mr::VertexDeclPtr& type, void* 
 
     ::Json::Value j_attribs;
 
-    /// TODO
-    /*const uint8_t bindpointsNum = type->GetBindpointsNum();
-    for(uint8_t ib = 0; ib < bindpointsNum; ++ib) {
-        const uint8_t bindpointIndex = type->GetBindpointIndex(ib);
-        const ::Json::Value j_bindpoint((uint32_t)bindpointIndex);
-        const uint8_t bindpointAttribsNum = type->GetBindpointAttribsNum(ib);
-        for(uint8_t ia = 0; ia < bindpointAttribsNum; ++ia) {
-            const auto attrib = type->GetAttribute(ib, ia);
+    for(uint8_t i = 0, n = type->GetAttribsNum(); i < n; ++i) {
+        ::Json::Value j_attrib;
+        VertexDecl::Attrib const& attrib = type->GetAttribute(i);
 
-            ::Json::Value j_attrib;
-            j_attrib["components_num"] = ::Json::Value((uint32_t)attrib.components_num);
-            j_attrib["datatype"] = ::Json::Value((uint32_t)attrib.datatype);
-            j_attrib["normalized"] = ::Json::Value((bool)attrib.normalized);
-            j_attrib["bindpoint"] = j_bindpoint;
+        j_attrib["location"] = ::Json::Value((uint32_t)attrib.location);
+        j_attrib["components_num"] = ::Json::Value((uint32_t)attrib.components_num);
+        j_attrib["datatype"] = ::Json::Value((uint32_t)attrib.datatype);
+        j_attrib["normalized"] = ::Json::Value((bool)attrib.normalized);
+        j_attrib["offset"] = ::Json::Value((uint32_t)attrib.offset);
+        j_attrib["size"] = ::Json::Value((uint32_t)attrib.size);
+        j_attrib["stride"] = ::Json::Value((uint32_t)attrib.stride);
+        j_attrib["bindpoint"] = ::Json::Value((uint32_t)attrib.bindpoint);
 
-            j_attribs.append(j_attrib);
-        }
-    }*/
+        j_attribs.append(j_attrib);
+    }
 
     j_root["attribs"] = j_attribs;
 
@@ -97,7 +95,11 @@ MR_API bool mr::Json<mr::VertexDeclPtr>::_Import(mr::VertexDeclPtr& type, void* 
         uint32_t bindpoint = 0;
         _MR_JSON_MEMBER(j_attrib, "bindpoint", isUInt, Json<VertexDeclPtr>::Import, bindpoint, asUInt);
 
-        changer.Custom((mr::DataType)datatype, (uint8_t)components_num, bindpoint, normalized);
+        uint32_t location = 0;
+        _MR_JSON_MEMBER(j_attrib, "location", isUInt, Json<VertexDeclPtr>::Import, location, asUInt);
+
+        // Custom(DataType const& type, uint8_t components_num, uint8_t shaderLocation, uint8_t bindpoint = 0, bool normalized = false)
+        changer.Custom((mr::DataType)datatype, (uint8_t)components_num, location, bindpoint, normalized);
     }
 
     changer.End();

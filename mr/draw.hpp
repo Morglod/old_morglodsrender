@@ -36,12 +36,10 @@ enum class ClearFlags : uint32_t {
 
 class MR_API Draw final {
 public:
-    // Do clear current framebuffer
+    // Clear current framebuffer
     static bool Clear(ClearFlags const& flags);
 
-    // Set clear color
     static bool SetClearColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-    static bool Primitive(ShaderProgramPtr const& program, DrawMode const& dmode, VertexBufferPtr const& vb, IndexBufferPtr const& ib = nullptr, uint32_t instancesNum = 1);
 };
 
 }

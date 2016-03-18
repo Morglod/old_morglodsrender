@@ -12,60 +12,6 @@
 
 namespace mr {
 
-bool Draw::Primitive(ShaderProgramPtr const& program, DrawMode const& dmode, VertexBufferPtr const& vbuf, IndexBufferPtr const& ibuf, uint32_t instancesNum) {
-    MP_BeginSample(Draw::Primitive);
-
-    typedef  struct {
-        uint32_t  count; // Specifies the number of indices to be rendered.
-        uint32_t  primCount; // Specifies the number of instances of the specified range of indices to be rendered.
-        uint32_t  first; // Specifies the starting index in the enabled arrays.
-        uint32_t  baseInstance; // Specifies the base instance for use in fetching instanced vertex attributes.
-    } DrawArraysIndirectCommand;
-
-    typedef  struct {
-        uint32_t  count; // Specifies the number of elements to be rendered.
-        uint32_t  primCount; // Specifies the number of instances of the indexed geometry that should be drawn.
-        uint32_t  firstIndex;
-        uint32_t  baseVertex; // Specifies a constant that should be added to each element of indices when chosing elements from the enabled vertex arrays.
-        uint32_t  baseInstance; // Specifies the base instance for use in fetching instanced vertex attributes.
-    } DrawElementsIndirectCommand;
-
-    ShaderProgram::Use(program);
-
-    if(!vbuf->Bind(0, 0)) {
-        MR_LOG_ERROR(Draw::Primitive, "Failed bind vertex buffer");
-        MP_EndSample();
-        return false;
-    }
-
-    /// WHEN CHANGE BASE_INDEX, CHANGE ioffset IN RENDER CODE
-    MP_BeginSample(glDraw);
-    const uint32_t baseInstance = 0, /*instancesNum = 1,*/ baseVertex = 0, baseIndex = 0;
-    ((void)baseIndex); // disable warning
-    if(ibuf) {
-        if(!ibuf->Bind()) {
-            MR_LOG_ERROR(Draw::Primitive, "Failed bind index buffer");
-            MP_EndSample();
-            MP_EndSample();
-            return false;
-        }
-
-        // Offset in binded buffer or direct ptr to indecies
-        void* ioffset;
-        if(ibuf->_mem == nullptr) ioffset = nullptr; //(void*)(size_t)(sizeof_gl((const uint32_t)ibuf->_dtype) * baseIndex);
-        else ioffset = ibuf->_mem->GetPtr();
-
-        glDrawElementsInstancedBaseVertexBaseInstance((const uint32_t)dmode, ibuf->_num, (const uint32_t)ibuf->_dtype, ioffset, instancesNum, baseVertex, baseInstance);
-    } else {
-        glDrawArraysInstancedBaseInstance((const uint32_t)dmode, baseVertex, vbuf->_num, instancesNum, baseInstance);
-    }
-    MP_EndSample();
-
-    MP_EndSample();
-
-    return true;
-}
-
 bool Draw::Clear(ClearFlags const& flags) {
     MP_BeginSample(Draw::Clear);
     glClear((uint32_t)flags);

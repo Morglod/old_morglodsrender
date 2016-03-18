@@ -129,6 +129,14 @@
 			<Add option="-std=c++14" />
 			<Add directory="../morglodsrender" />
 		</Compiler>
+		<Unit filename="mr/alloc.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="mr/batch.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="mr/buffer.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -193,6 +201,10 @@
 			<Option target="Debug_Sample_Cube" />
 			<Option target="Release_Sample_Cube" />
 		</Unit>
+		<Unit filename="mr/json_object.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="mr/log.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -232,6 +244,10 @@
 			<Option target="Release_Sample_Cube" />
 		</Unit>
 		<Unit filename="mr/primitive.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="mr/rtt.hpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
@@ -303,6 +319,14 @@
 		<Unit filename="samples/sample_doom_texture.hpp">
 			<Option target="Sample_Doom" />
 		</Unit>
+		<Unit filename="src/alloc.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/batch.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/buffer.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -368,6 +392,10 @@
 			<Option target="Release_Sample_Cube" />
 		</Unit>
 		<Unit filename="src/primitive.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/rtt.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>

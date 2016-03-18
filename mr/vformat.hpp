@@ -24,6 +24,7 @@ typedef std::shared_ptr<class VertexDecl> VertexDeclPtr;
 
 class MR_API VertexDecl final {
     friend class VertexBuffer;
+    friend class _Alloc;
 public:
     struct Attrib {
         uint8_t location; // shader location

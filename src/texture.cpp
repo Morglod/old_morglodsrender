@@ -2,6 +2,7 @@
 #include "mr/log.hpp"
 #include "src/mp.hpp"
 #include "mr/pre/glew.hpp"
+#include "mr/alloc.hpp"
 
 #include <FreeImage.h>
 #include <iostream>
@@ -81,7 +82,7 @@ TextureDataPtr TextureData::FromFile(std::string const& file) {
 	unsigned int height = FreeImage_GetHeight(dib);
 	size_t dataSize = FreeImage_GetDIBSize(dib); //FreeImage_GetMemorySize(dib);
 
-	volatile uint8_t asdasd = bits[dataSize-1];
+	//volatile uint8_t asdasd = bits[dataSize-1]; WTF???
 
 	//FREE_IMAGE_TYPE imageType = FreeImage_GetImageType(dib);
 	FREE_IMAGE_COLOR_TYPE imageFormat = FreeImage_GetColorType(dib);
@@ -101,7 +102,7 @@ TextureDataPtr TextureData::FromFile(std::string const& file) {
 	auto mem = mr::Memory::Copy(&bits[0], dataSize);
 	FreeImage_Unload(dib);
 
-    auto textureData = TextureDataPtr(new TextureData());
+    auto textureData = MR_NEW_SHARED(TextureData);
     textureData->_data = mem;
     textureData->_dataFormat = MAP_FORMAT[imageFormat];
     textureData->_dataType = TextureDataType::UByte;
@@ -127,17 +128,14 @@ Texture2DPtr Texture2D::Create(TextureParams const& params) {
     glTextureParameteri(handle, GL_TEXTURE_MIN_FILTER, (int32_t)params.minFilter);
     glTextureParameteri(handle, GL_TEXTURE_MAG_FILTER, (int32_t)params.magFilter);
 
-    Texture2DPtr tex = Texture2DPtr(new Texture2D());
+    glTextureStorage2D(handle, params.levels, (uint32_t)params.storageFormat, params.size.x, params.size.y);
+
+    Texture2DPtr tex = MR_NEW_SHARED(Texture2D);
     tex->_id = handle;
     tex->_params = params;
 
-    return tex;
-}
 
-bool Texture2D::Storage() {
-    MP_ScopeSample(Texture2D::Storage);
-    glTextureStorage2D(_id, _params.levels, (uint32_t)_params.storageFormat, _params.size.x, _params.size.y);
-    return true;
+    return tex;
 }
 
 bool Texture2D::WriteImage(TextureDataPtr const& data, uint32_t level) {

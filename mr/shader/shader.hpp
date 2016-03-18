@@ -16,6 +16,7 @@ enum class ShaderType : uint32_t {
 };
 
 class MR_API Shader final {
+    friend class _Alloc;
 public:
     // Code may be empty
     static ShaderPtr Create(ShaderType const& type, std::string const& code = std::string());

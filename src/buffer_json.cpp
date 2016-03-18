@@ -4,6 +4,7 @@
 #include "mr/log.hpp"
 #include "mr/pre/glew.hpp"
 #include "src/mp.hpp"
+#include "mr/alloc.hpp"
 
 /**
 
@@ -96,7 +97,7 @@ MR_API bool mr::Json<mr::BufferPtr>::_Import(mr::BufferPtr& type, void* in) {
         return false;
     }
 
-    uint8_t* mem = new uint8_t[buf_size];
+    uint8_t* mem = MR_NEW_ARRAY(uint8_t, buf_size);
     ::Json::Value j_bytes;
     if(!(j_root.isMember("bytes") && (j_bytes = j_root.get("bytes", ::Json::Value::null)).isArray())) {
         MR_LOG_ERROR(Json<BufferPtr>::Import, "\"bytes\" is not a member, or not an array");

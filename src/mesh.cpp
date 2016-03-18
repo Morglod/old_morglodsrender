@@ -3,6 +3,7 @@
 #include "mr/texture.hpp"
 #include "mr/buffer.hpp"
 #include "src/mp.hpp"
+#include "mr/alloc.hpp"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -97,7 +98,6 @@ mr::Texture2DPtr _AssimpLoadTexture(aiMaterial* material, aiTextureType const& t
     textureParams.wrapR = textureParams.wrapS = textureParams.wrapT = out_Wrap;
 
     tex = mr::Texture2D::Create(textureParams);
-    tex->Storage();
     tex->WriteImage(textureData);
     tex->BuildMipmaps();
     tex->MakeResident();
@@ -116,7 +116,7 @@ bool Mesh::Draw(uint32_t instancesNum) {
 }
 
 MeshPtr Mesh::Create(PrimitivePtr const& prim, MaterialPtr const& material) {
-    MeshPtr m = MeshPtr(new Mesh);
+    MeshPtr m = MeshPtr(MR_NEW(Mesh));
     m->_primitive = prim;
     m->_material = material;
     return m;
@@ -160,17 +160,17 @@ bool Mesh::Import(std::string const& file, ShaderProgramPtr const& shaderProgram
 
     std::vector<MaterialPtr> materials;
     materials.resize(scene->mNumMaterials, nullptr);
-    std::vector<Texture2DPtr> textures;
-    textures.resize(scene->mNumTextures, nullptr);
 
     for(unsigned int i = 0; i < scene->mNumMaterials; ++i) {
         aiMaterial* material = scene->mMaterials[i];
         struct MaterialDesc {
-            glm::vec4 colorAmbient;
-            glm::vec3 colorDiffuse;
-            Texture2DPtr colorTexture;
-            Texture2DPtr normalTexture;
-            Texture2DPtr specularTexture;
+            glm::vec4 colorAmbient = glm::vec4(0,0,0,1);
+            glm::vec3 colorDiffuse = glm::vec3(1,1,1);
+            Texture2DPtr colorTexture = nullptr;
+            Texture2DPtr normalTexture = nullptr;
+            Texture2DPtr specularTexture = nullptr;
+
+            ~MaterialDesc() {}
         };
         MaterialDesc matDescr;
         {
@@ -197,30 +197,47 @@ bool Mesh::Import(std::string const& file, ShaderProgramPtr const& shaderProgram
             if(!noDiffuseTexture) {
                 TextureWrap wrapMode;
 
-                //TODO: Check if successfull loaded
                 Texture2DPtr tex = _AssimpLoadTexture(material, textureType, wrapMode);
-                tex->MakeResident();
-                matDescr.colorTexture = tex;
+                if(tex == nullptr) {
+                    MR_LOG_WARNING(Mesh::Import, "Failed import diffuse texture.");
+                    noDiffuseTexture = true;
+                } else {
+                    tex->MakeResident();
+                    matDescr.colorTexture = tex;
+                }
             }
 
             //Get normal texture
             if(material->GetTextureCount(aiTextureType_NORMALS) != 0) {
                 TextureWrap wrapMode;
                 Texture2DPtr tex = _AssimpLoadTexture(material, aiTextureType_NORMALS, wrapMode);
-                tex->MakeResident();
-                matDescr.normalTexture = tex;
+                if(tex == nullptr) {
+                    MR_LOG_WARNING(Mesh::Import, "Failed import normals texture.");
+                } else {
+                    tex->MakeResident();
+                    matDescr.normalTexture = tex;
+                }
             }
 
             //Get specular texture
             if(material->GetTextureCount(aiTextureType_SHININESS) != 0) {
                 TextureWrap wrapMode;
                 Texture2DPtr tex = _AssimpLoadTexture(material, aiTextureType_SHININESS, wrapMode);
-                tex->MakeResident();
-                matDescr.specularTexture = tex;
+                if(tex == nullptr) {
+                    MR_LOG_WARNING(Mesh::Import, "Failed import shininess texture.");
+                } else {
+                    tex->MakeResident();
+                    matDescr.specularTexture = tex;
+                }
             }
         }
-        // TODO: Pass textures
-        materials[i] = Material::Create(shaderProgram, {}, {{"tex", matDescr.colorTexture}});
+
+        std::unordered_map<std::string, Texture2DPtr> paramTextures;
+        if(matDescr.colorTexture) paramTextures[mr::MaterialDiffuseTex] = matDescr.colorTexture;
+        if(matDescr.normalTexture) paramTextures[mr::MaterialNormalTex] = matDescr.colorTexture;
+        if(matDescr.specularTexture) paramTextures[mr::MaterialSpecularTex] = matDescr.specularTexture;
+
+        materials[i] = Material::Create(shaderProgram, {}, paramTextures);
     }
 
     /// Process nodes
@@ -364,7 +381,7 @@ bool Mesh::Import(std::string const& file, ShaderProgramPtr const& shaderProgram
         VertexBufferPtr vbuffer = VertexBuffer::Create(vbufferData, vertexFormat.decl, mesh->mNumVertices);
         IndexBufferPtr ibuffer = IndexBuffer::Create(ibufferData, vertexFormat.indexDataType, indexNum);
 
-        PrimitivePtr primitve = Primitive::Create(DrawMode::Triangle, vbuffer, ibuffer);
+        PrimitivePtr primitve = Primitive::Create(DrawMode::Triangle, vbuffer, 0, ibuffer, 0);
         out_meshes.push_back(Mesh::Create(primitve, materials[mesh->mMaterialIndex]));
     }
 

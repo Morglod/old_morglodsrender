@@ -18,6 +18,7 @@ typedef std::shared_ptr<class UniformBufferDecl> UniformBufferDeclPtr;
 
 class MR_API ShaderProgram final {
     friend class Draw;
+    friend class _Alloc;
 public:
     struct UboInfo {
         std::string name = "";

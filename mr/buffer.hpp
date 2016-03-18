@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <future>
+#include <vector>
 
 #define MR_RESIDENT_READ_ONLY true, false
 #define MR_RESIDENT_WRITE_ONLY false, true
@@ -35,6 +36,7 @@ class MR_API Buffer {
     friend class Draw;
     friend class VertexBuffer;
     friend class IndexBuffer;
+    friend class _Alloc;
 public:
     struct MapFlags {
         bool    read = false,
@@ -77,6 +79,8 @@ public:
 
     // Memory may be Memory::Zero
     static BufferPtr Create(MemoryPtr const& mem, CreationFlags const& flags);
+    static std::vector<BufferPtr> Create(std::vector<std::pair<MemoryPtr, CreationFlags>> const& mem_flags);
+    static std::vector<BufferPtr> Create(std::vector<MemoryPtr> const& mem, CreationFlags const& flags);
     void Destroy();
 
     // Read OpenGL docs, about flags

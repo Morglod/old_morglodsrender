@@ -10,16 +10,19 @@ namespace mr {
 typedef std::shared_ptr<class Primitive> PrimitivePtr;
 
 class MR_API Primitive {
+    friend class _Alloc;
 public:
     inline DrawMode GetDrawMode() const;
     inline VertexBufferPtr GetVertexBuffer() const;
     inline IndexBufferPtr GetIndexBuffer() const;
+    inline uint32_t GetVertexBufferOffset() const;
+    inline uint32_t GetIndexBufferOffset() const;
 
     // TODO inline bool Equal(PrimitivePtr const& other) const;
 
     virtual bool Draw(ShaderProgramPtr const& program, uint32_t instancesNum = 1) const;
 
-    static PrimitivePtr Create(DrawMode const& dmode, VertexBufferPtr const& vb, IndexBufferPtr const& ib = nullptr);
+    static PrimitivePtr Create(DrawMode const& dmode, VertexBufferPtr const& vb, uint32_t vb_offset = 0, IndexBufferPtr const& ib = nullptr, uint32_t ib_offset = 0, uint32_t baseVertex = 0, uint32_t baseIndex = 0, uint32_t baseInstance = 0);
 
     virtual ~Primitive() = default;
 private:
@@ -27,6 +30,11 @@ private:
     DrawMode _drawMode;
     VertexBufferPtr _vbuffer;
     IndexBufferPtr _ibuffer;
+    uint32_t _vb_offset = 0;
+    uint32_t _ib_offset = 0;
+    uint32_t _baseVertex = 0;
+    uint32_t _baseIndex = 0;
+    uint32_t _baseInstance = 0;
 };
 
 inline DrawMode Primitive::GetDrawMode() const {
@@ -39,6 +47,14 @@ inline VertexBufferPtr Primitive::GetVertexBuffer() const {
 
 inline IndexBufferPtr Primitive::GetIndexBuffer() const {
     return _ibuffer;
+}
+
+inline uint32_t Primitive::GetVertexBufferOffset() const {
+    return _vb_offset;
+}
+
+inline uint32_t Primitive::GetIndexBufferOffset() const {
+    return _ib_offset;
 }
 
 /*

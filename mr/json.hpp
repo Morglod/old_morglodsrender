@@ -4,7 +4,6 @@
 
 #include <iostream>
 
-
 #define _MR_JSON_MEMBER(jsonValue, memberName, memberTypeCheckCall, callingMethod, outputVar, outputTypeCall) \
 if(! jsonValue .isMember( memberName )) { \
     MR_LOG_ERROR( callingMethod , "\"" memberName "\" is not a member" ); \

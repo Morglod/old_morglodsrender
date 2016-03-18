@@ -20,19 +20,17 @@ void Material::UpdateShaderUniforms() {
     if(lastMaterial == this) return;
     lastMaterial = this;
 
-    /*glFinish(); // TODO, flush mapped buffer memory
-    for(uint32_t i = 0; i < _textures_num; ++i) {
-        //if(_textures[i].texture == nullptr) continue;
-        _textures[i].uniform = _textures[i].residentHandle;
-    }*/
     if(_textures_num == 0) return;
     UniformCache* uniformCache = UniformCache::Get();
-    uniformCache->Set<uint64_t, 1>("mr_diffuseTex", _textures[0].residentHandle);
+
+    for(uint32_t i = 0; i < _textures_num; ++i) {
+        uniformCache->Set<uint64_t, 1>(_textures[i].uniformName, _textures[i].residentHandle);
+    }
 }
 
 MaterialPtr Material::Create(ShaderProgramPtr const& program, std::vector<std::string> const& uniformNames, std::unordered_map<std::string, Texture2DPtr> const& textures) {
     MP_ScopeSample(Material::Create);
-    MaterialPtr ms = MaterialPtr(new Material);
+    MaterialPtr ms = MaterialPtr(MR_NEW(Material));
     ms->_program = program;
     for(std::string const& uniformName : uniformNames) {
         ShaderProgram::FoundUniform foundUniform;
@@ -42,31 +40,24 @@ MaterialPtr Material::Create(ShaderProgramPtr const& program, std::vector<std::s
         else ms->_uniforms.insert(std::make_pair(uniformName, UniformRefAny(foundUniform.GetPtr(), foundUniform.size)));
     }
 
-    if(textures.size() != 0) {
-        ms->_textures_num = 1;
-        ms->_textures = new sTexture[textures.size()];
-        sTexture texture;
-        texture.residentHandle = textures.at("tex")->GetResidentHandle();
-        texture.texture = textures.at("tex");
-        ms->_textures[0] = texture;
-    }
+    if(textures.size() > 0) {
+        ms->_textures_num = textures.size();
+        ms->_textures = MR_NEW_ARRAY(sTexture, textures.size());
 
-    /*uint32_t i = 0;
-    for(auto const& textureInfo : textures) {
-        ShaderProgram::FoundUniform foundUniform;
-        if(!program->FindUniform(textureInfo.first, foundUniform)) {
-            MR_LOG_WARNING(Material::Create, "Failed find uniform \""+textureInfo.first+"\"");
-        }
-        else {
+        uint32_t i = 0;
+        for(auto const& UniformTexPair : textures) {
+            auto const& texPtr = UniformTexPair.second;
+
             sTexture texture;
-            texture.residentHandle = textureInfo.second->GetResidentHandle();
-            texture.uniform = UniformRefAny(foundUniform.GetPtr(), foundUniform.size);
-            texture.texture = textureInfo.second;
-            texture.uniformName = foundUniform.uniformName;
+            texture.uniformName = UniformTexPair.first;
+            texture.residentHandle = texPtr->GetResidentHandle();
+            texture.texture = texPtr;
             ms->_textures[i] = texture;
+
+            ++i;
         }
-        ++i;
-    }*/
+    } else ms->_textures_num = 0;
+
     return ms;
 }
 

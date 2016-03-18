@@ -3,6 +3,7 @@
 #include "src/thread/util.hpp"
 #include "mr/log.hpp"
 #include "src/mp.hpp"
+#include "mr/alloc.hpp"
 
 #include "mr/pre/glew.hpp"
 
@@ -14,7 +15,7 @@ Shader::~Shader() {}
 ShaderPtr Shader::Create(ShaderType const& type, std::string const& code) {
     MP_ScopeSample(Shader::Create);
 
-    ShaderPtr shader = ShaderPtr(new Shader());
+    ShaderPtr shader = MR_NEW_SHARED(Shader);
     shader->_id = glCreateShader((uint32_t)type);
     shader->_type = type;
     if(!code.empty()) return (shader->Compile(code) ? shader : nullptr);

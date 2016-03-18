@@ -17,6 +17,7 @@ typedef std::shared_ptr<class ShaderProgram> ShaderProgramPtr;
 typedef std::shared_ptr<class Buffer> BufferPtr;
 
 class MR_API UniformBufferDecl final {
+    friend class _Alloc;
 public:
     struct Uniform {
         int32_t offset = 0;
@@ -85,6 +86,7 @@ struct MR_API UniformRef : public UniformRefAny {
 };
 
 class MR_API UniformBuffer final {
+    friend class _Alloc;
 public:
     inline UniformBufferDeclPtr GetDecl() const;
     inline BufferPtr GetBuffer() const;

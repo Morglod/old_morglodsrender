@@ -4,6 +4,7 @@
 #include "mr/log.hpp"
 #include "mr/buffer.hpp"
 #include "src/mp.hpp"
+#include "mr/alloc.hpp"
 
 #include <iostream>
 
@@ -33,7 +34,7 @@ void UniformBufferDecl::sUniforms::Resize(int32_t num_) {
     MP_ScopeSample(UniformBufferDecl::sUniforms::Resize);
     Free();
     num = num_;
-    arr = new Uniform[num_];
+    arr = MR_NEW_ARRAY(Uniform, num_);
 }
 
 UniformBufferDecl::sUniforms::~sUniforms() {
@@ -75,7 +76,7 @@ UniformBufferDeclPtr UniformBufferDecl::Create(ShaderProgram* program, uint32_t 
 
     _CHECK_PROGRAM_NULL(UniformBufferDecl::Create, nullptr);
 
-    UniformBufferDeclPtr ubo = UniformBufferDeclPtr(new UniformBufferDecl);
+    UniformBufferDeclPtr ubo = MR_NEW_SHARED(UniformBufferDecl);
 
     glGetActiveUniformBlockiv(phandle, ubo_index, GL_UNIFORM_BLOCK_DATA_SIZE, &ubo->_size);
     if(ubo->_size == 0) {
@@ -90,8 +91,8 @@ UniformBufferDeclPtr UniformBufferDecl::Create(ShaderProgram* program, uint32_t 
         } else {
             ubo->_uniforms.Resize(ubo->_uniforms.num);
 
-            uint32_t* indecies = new uint32_t[ubo->_uniforms.num];
-            int32_t* offsets = new int32_t[ubo->_uniforms.num];
+            uint32_t* indecies = MR_NEW_ARRAY(uint32_t, ubo->_uniforms.num);
+            int32_t* offsets = MR_NEW_ARRAY(int32_t, ubo->_uniforms.num);
 
             glGetActiveUniformBlockiv(phandle, ubo_index, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, (int*)indecies);
             glGetActiveUniformsiv(phandle, ubo->_uniforms.num, indecies, GL_UNIFORM_OFFSET, offsets);
@@ -157,7 +158,7 @@ UniformBufferPtr UniformBuffer::Create(UniformBufferDeclPtr const& desc) {
         MR_LOG_ERROR(UniformBuffer::Create, "desc can not be null");
         return nullptr;
     }
-    UniformBufferPtr ubo = UniformBufferPtr(new UniformBuffer);
+    UniformBufferPtr ubo = MR_NEW_SHARED(UniformBuffer);
     ubo->_desc = desc;
     if(!ubo->_ResetBuffer()) {
         MR_LOG_ERROR(UniformBuffer::Create, "failed create buffer");
@@ -173,7 +174,7 @@ UniformBufferPtr UniformBuffer::Create(UniformBufferDeclPtr const& desc, BufferP
         MR_LOG_ERROR(UniformBuffer::Create, "desc can not be null");
         return nullptr;
     }
-    UniformBufferPtr ubo = UniformBufferPtr(new UniformBuffer);
+    UniformBufferPtr ubo = MR_NEW_SHARED(UniformBuffer);
     ubo->_desc = desc;
     if(buffer->GetSize() != desc->GetSize()) {
         MR_LOG_ERROR(UniformBuffer::Create, "not same buffer size");

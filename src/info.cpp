@@ -99,7 +99,7 @@ uint32_t Info::GetGpuTotalMemoryKb() {
             return 0;
         }
         unsigned int uNoOfGPUs = wglGetGPUIDsAMD(0,0);
-        unsigned int* uGPUIDs = new unsigned int[uNoOfGPUs];
+        unsigned int* uGPUIDs = MR_NEW_ARRAY(unsigned int, uNoOfGPUs);
         wglGetGPUIDsAMD(uNoOfGPUs,uGPUIDs);
 
         wglGetGPUInfoAMD(uGPUIDs[0], WGL_GPU_RAM_AMD, GL_UNSIGNED_INT, sizeof(unsigned int), &total_mem_kb);

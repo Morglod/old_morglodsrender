@@ -11,7 +11,8 @@ typedef std::shared_ptr<class Buffer> BufferPtr;
 typedef std::shared_ptr<class VertexBuffer> VertexBufferPtr;
 
 class MR_API VertexBuffer final {
-    friend class Draw;
+    friend class Primitive;
+    friend class _Alloc;
 public:
     bool Bind(uint32_t binding, uint32_t offset = 0);
     static VertexBufferPtr Create(BufferPtr const& vbuf, VertexDeclPtr const& vdecl, uint32_t num);

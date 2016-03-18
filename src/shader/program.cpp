@@ -7,6 +7,7 @@
 #include "src/mp.hpp"
 #include "src/statecache.hpp"
 #include "mr/shader/ubo.hpp"
+#include "mr/alloc.hpp"
 
 #include "mr/pre/glew.hpp"
 
@@ -21,7 +22,7 @@ namespace mr {
 void ShaderProgram::sUBOList::Resize(uint32_t num_) {
     MP_ScopeSample(ShaderProgram::sUBOList::Resize);
     Free();
-    arr = new UboInfo[num_];
+    arr = MR_NEW_ARRAY(UboInfo, num_);
     num = num_;
 }
 
@@ -57,7 +58,7 @@ ShaderProgram::~ShaderProgram() {
 ShaderProgramPtr ShaderProgram::Create(std::vector<ShaderPtr> const& shaders) {
     MP_ScopeSample(ShaderProgram::Create);
 
-    ShaderProgramPtr prog = ShaderProgramPtr(new ShaderProgram());
+    ShaderProgramPtr prog = ShaderProgramPtr(MR_NEW(ShaderProgram));
     prog->_id = glCreateProgram();
     if(!shaders.empty()) return (prog->Link(shaders)) ? prog : nullptr;
     return prog;

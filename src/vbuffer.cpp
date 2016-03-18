@@ -3,6 +3,7 @@
 #include "mr/log.hpp"
 #include "src/mp.hpp"
 #include "src/statecache.hpp"
+#include "mr/alloc.hpp"
 
 #include "mr/pre/glew.hpp"
 
@@ -43,7 +44,7 @@ VertexBufferPtr VertexBuffer::Create(BufferPtr const& vbuf, VertexDeclPtr const&
         MR_LOG_ERROR(VertexBuffer::Create, "Buffer should be resident");
         return nullptr;
     }
-    return VertexBufferPtr(new VertexBuffer(vbuf, vdecl, num));
+    return MR_NEW_SHARED(VertexBuffer, vbuf, vdecl, num);
 }
 
 VertexBuffer::VertexBuffer(BufferPtr const& vbuf, VertexDeclPtr const& vdecl, uint32_t num) : _vbuf(vbuf), _vdecl(vdecl), _num(num) {

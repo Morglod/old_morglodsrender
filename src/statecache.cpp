@@ -2,6 +2,7 @@
 #include "mr/vformat.hpp"
 #include "mr/log.hpp"
 #include "mr/pre/glew.hpp"
+#include "mr/alloc.hpp"
 
 namespace {
 
@@ -12,7 +13,7 @@ mr::StateCache _state_cache;
 namespace mr {
 
 StateCache::_VertexBufferBindings::_VertexBufferBindings(uint32_t n) {
-    ar = new _VertexBuffer[n];
+    ar = MR_NEW_ARRAY(_VertexBuffer, n);
     num = n;
 }
 
@@ -25,7 +26,7 @@ StateCache::_VertexBufferBindings::~_VertexBufferBindings() {
 }
 
 StateCache::_UniformBufferBindings::_UniformBufferBindings(uint32_t n) {
-    ar = new uint32_t[n];
+    ar = MR_NEW_ARRAY(uint32_t, n);
     num = n;
 }
 

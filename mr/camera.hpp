@@ -5,6 +5,9 @@
 
 namespace mr {
 
+constexpr const char* CameraProjMat = "mr_camera.projMat";
+constexpr const char* CameraViewMat = "mr_camera.viewMat";
+
 class MR_API PerspectiveCamera final {
 public:
     inline void SetAutoRecalc(bool state);
@@ -27,6 +30,7 @@ public:
     inline void MoveUp(float units);
     inline void RotateY(float units);
     inline void RotateX(float units);
+    inline void Movement(glm::vec3 const& luf, glm::vec3 const& rxryrz);
 private:
     glm::vec3 _pos, _rot;
     glm::vec3 _dir_forward, _dir_left, _dir_up;
@@ -115,6 +119,15 @@ inline void PerspectiveCamera::RotateY(float units) {
 
 inline void PerspectiveCamera::RotateX(float units) {
     _rot.y += units;
+    if(_auto_recalc) Update();
+}
+
+inline void PerspectiveCamera::Movement(glm::vec3 const& luf, glm::vec3 const& rxryrz) {
+    const glm::vec3 zero_v3(0.0f,0.0f,0.0f);
+    if(zero_v3 == luf && zero_v3 == rxryrz) return;
+    _pos += (_dir_forward * luf.z) + (_dir_left * luf.x) + (_dir_up * luf.y);
+    _rot.x += rxryrz.y;
+    _rot.y += rxryrz.x;
     if(_auto_recalc) Update();
 }
 

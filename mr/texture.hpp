@@ -134,6 +134,7 @@ struct TextureParams {
 };
 
 class MR_API TextureData final {
+    friend class _Alloc;
 public:
     inline MemoryPtr GetData() const;
     inline TextureDataFormat GetFormat() const;
@@ -157,7 +158,6 @@ class MR_API Texture2D final {
 public:
     inline uint32_t GetId() const;
     static Texture2DPtr Create(TextureParams const& params = TextureParams());
-    bool Storage();
     bool WriteImage(TextureDataPtr const& data, uint32_t level = 0);
     bool WriteSubImage(TextureDataPtr const& data, uint32_t level = 0, glm::ivec2 const& offset = glm::ivec2(0,0));
     bool BuildMipmaps();

@@ -8,26 +8,41 @@
 /// Define data
 //
 const char* vertexShader =
-"#version 400 \n"
+"#version 410 \n"
 "#extension GL_ARB_bindless_texture : require \n"
 "#extension GL_NV_gpu_shader5 : enable \n"
-"layout (location = 0) in vec3 pos; \n"
-//"layout (location = 1) in vec4 color; \n"
-//"layout (location = 2) in float color2; \n"
-"layout (location = 1) in vec2 texCoord; \n"
+
+"in struct mr_vertex_type { \n"
+"   layout (location = 0) vec3 pos; \n"
+"   layout (location = 1) vec2 texCoord; \n"
+"} mr_vertex; \n"
+
 "out vec4 gl_Position; \n"
 "out vec3 world_pos; \n"
 "out vec2 vtexCoord; \n"
-"uniform mat4 mr_projMat; \n"
-"uniform mat4 mr_viewMat; \n"
-"uniform mat4 mr_time; \n"
-"uniform mat4 mr_modelMat; \n"
-"uniform uint64_t mr_diffuseTex; \n"
+
+"uniform struct mr_sys_type { \n"
+"   float time; \n"
+"} mr_sys; \n"
+
+"uniform struct mr_scene_type { \n"
+"   mat4 modelMat; \n"
+"} mr_scene;\n"
+
+"uniform struct mr_camera_type { \n"
+"   mat4 projMat; \n"
+"   mat4 viewMat; \n"
+"} mr_camera;\n"
+
+"uniform struct mr_material_type { \n"
+"   uint64_t diffuseTex; \n"
+"} mr_material; \n"
+
 "void main() { \n"
-"   vec4 vertex_world_pos = mr_modelMat * vec4(pos + gl_InstanceID * vec3(2.0, 0.0, 0.0), 1.0); \n"
-"   gl_Position = (mr_projMat * mr_viewMat) * vertex_world_pos; \n"
+"   vec4 vertex_world_pos = mr_scene.modelMat * vec4(mr_vertex.pos + gl_InstanceID * vec3(2.0, 0.0, 0.0), 1.0); \n"
+"   gl_Position = (mr_camera.projMat * mr_camera.viewMat) * vertex_world_pos; \n"
 "   world_pos = vertex_world_pos.xyz; \n"
-"   vtexCoord = texCoord; \n"
+"   vtexCoord = mr_vertex.texCoord; \n"
 "} \n"
 ;
 
@@ -35,20 +50,33 @@ const char* fragmentShader =
 "#version 400 \n"
 "#extension GL_ARB_bindless_texture : require \n"
 "#extension GL_NV_gpu_shader5 : enable \n"
+
 "in vec3 world_pos; \n"
 "in vec2 vtexCoord; \n"
-"out vec3 fragColor; \n"
-"uniform mat4 mr_projMat; \n"
-"uniform mat4 mr_viewMat; \n"
-"uniform mat4 mr_time; \n"
-"uniform mat4 mr_modelMat; \n"
-"uniform uint64_t mr_diffuseTex; \n"
+
+"out vec3 mr_fragColor; \n"
+
+"uniform struct mr_sys_type { \n"
+"   float time; \n"
+"} mr_sys; \n"
+
+"uniform struct mr_scene_type { \n"
+"   mat4 modelMat; \n"
+"} mr_scene;\n"
+
+"uniform struct mr_camera_type { \n"
+"   mat4 projMat; \n"
+"   mat4 viewMat; \n"
+"} mr_camera;\n"
+
+"uniform struct mr_material_type { \n"
+"   uint64_t diffuseTex; \n"
+"} mr_material; \n"
+
 "void main() { \n"
 "   vec3 light_pos = vec3(500, 200, 500); \n"
-//"   float light = 1 / (length(world_pos - light_pos) * 0.05); \n"
 "   float light = 1.0; \n"
-"   fragColor = texture(sampler2D(mr_diffuseTex), vtexCoord).rgb * light; \n"
-//"   fragColor = ((texture(sampler2D(tex), vtexCoord).rgb + vcolor.xyz) * 0.5) * ((1.0 + sin(mr_sys.time)) / 1.5) + vec3(0.1, 0.1, 0.1); \n"
+"   mr_fragColor = texture(sampler2D(mr_material.diffuseTex), vtexCoord).rgb * light; \n"
 "} \n"
 ;
 
@@ -107,7 +135,6 @@ void main_logic(GLFWwindow* window) {
     // Create buffer and map it
     Buffer::CreationFlags flags;
     flags.write = true;
-    //flags.map_after_creation = true;
 
     // Don't initialize buffers with memory this time
     // Will do it async further
@@ -167,7 +194,6 @@ void main_logic(GLFWwindow* window) {
     textureParams.magFilter = TextureMagFilter::Linear;
 
     auto texture = Texture2D::Create(textureParams);
-    texture->Storage();
     texture->WriteImage(textureData);
     texture->BuildMipmaps();
     texture->MakeResident();
@@ -175,10 +201,10 @@ void main_logic(GLFWwindow* window) {
     // Setup uniforms, from uniform blocks
     UniformCache* uniformCache = UniformCache::Get();
     // model matrix will be changed in Update thread
-    uniformCache->Set<glm::mat4, 1>("mr_modelMat", glm::mat4(1.0f));
-    uniformCache->Set<glm::mat4, 1>("mr_projMat", glm::perspective(90.0f, 800.0f / 600.0f, 0.1f, 2000.0f));
-    uniformCache->Set<glm::mat4, 1>("mr_viewMat", glm::lookAt(glm::vec3(0,0,5), glm::vec3(0,0,-1), glm::vec3(0,1,0)));
-    uniformCache->Set<uint64_t, 1>("mr_diffuseTex", texture->GetResidentHandle());
+    uniformCache->Set<glm::mat4, 1>("mr_scene.modelMat", glm::mat4(1.0f));
+    uniformCache->Set<glm::mat4, 1>(mr::CameraProjMat, glm::perspective(90.0f, 960.0f / 600.0f, 0.1f, 2000.0f));
+    uniformCache->Set<glm::mat4, 1>(mr::CameraViewMat, glm::lookAt(glm::vec3(0,0,5), glm::vec3(0,0,-1), glm::vec3(0,1,0)));
+    uniformCache->Set<uint64_t, 1>(mr::MaterialDiffuseTex, texture->GetResidentHandle());
 
     // Set window 'background' color
     Draw::SetClearColor(10,10,10,255);
@@ -194,10 +220,15 @@ void main_logic(GLFWwindow* window) {
     std::vector<MeshPtr> sceneMeshes;
     Mesh::ImportOptions importOptions; importOptions.debugLog = true;
     Mesh::Import("sponza.obj", prog, sceneMeshes, importOptions);
-    Mesh::Import("mandarine.dae", prog, sceneMeshes, importOptions);
-    Mesh::Import("elephant_budda.dae", prog, sceneMeshes, importOptions);
 
     MR_LOG_T_STD_("Loading time (ms): ", loadTimer.End());
+
+    auto renderBuffers = RenderBuffer::Create({960, 600}, {TextureStorageFormat::RGB8, TextureStorageFormat::DepthComponent24});
+
+    auto framebuffer = FrameBuffer::Create();
+    framebuffer->SetColor(renderBuffers[0], 0);
+    framebuffer->SetDepth(renderBuffers[1]);
+    SetDrawFramebuffer(framebuffer);
 
     // Test camera
     PerspectiveCamera camera;
@@ -210,7 +241,7 @@ void main_logic(GLFWwindow* window) {
     while(!glfwWindowShouldClose(window)) {
         double deltaTime = glfwGetTime() - lastTime;
 
-        const float moveSpeed = (((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) ? 500.0f : 0.0f) + 1.0f) * deltaTime;
+        const float moveSpeed = ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) ? 500.0f : 2.0f) * deltaTime;
         const float rotateSpeed = 90.0f * deltaTime;
 
         // Clear screen
@@ -225,18 +256,20 @@ void main_logic(GLFWwindow* window) {
         }
 
         // Simple GLFW camera movement
-        if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) camera.MoveForward(moveSpeed);
-        if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) camera.MoveForward(-moveSpeed);
-        if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) camera.MoveLeft(moveSpeed);
-        if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) camera.MoveLeft(-moveSpeed);
-        if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) camera.MoveUp(moveSpeed);
-        if(glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) camera.MoveUp(-moveSpeed);
-        if(glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) camera.RotateY(rotateSpeed);
-        if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) camera.RotateY(-rotateSpeed);
+        glm::vec3 cameraMove(0,0,0), cameraRotate(0,0,0);
+        if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) cameraMove.z += moveSpeed;
+        if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) cameraMove.z -= moveSpeed;
+        if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) cameraMove.x += moveSpeed;
+        if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) cameraMove.x -= moveSpeed;
+        if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) cameraMove.y += moveSpeed;
+        if(glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) cameraMove.y -= moveSpeed;
+        if(glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) cameraRotate.y += rotateSpeed;
+        if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) cameraRotate.y -= rotateSpeed;
+        camera.Movement(cameraMove, cameraRotate);
 
         // Update uniform values
-        uniformCache->Set<glm::mat4, 1>("mr_viewMat", camera.GetMat());
-        uniformCache->Set<float, 1>("mr_time", (float)lastTime);
+        uniformCache->Set<glm::mat4, 1>(mr::CameraViewMat, camera.GetMat());
+        uniformCache->Set<float, 1>("mr_sys.time", (float)lastTime);
 
         lastTime += deltaTime;
 
@@ -247,6 +280,12 @@ void main_logic(GLFWwindow* window) {
             std::cout << fps << std::endl;
             fps = 0;
         }
+
+        int window_width, window_height;
+        glfwGetWindowSize(window, &window_width, &window_height);
+
+        framebuffer->ToScreen(FrameBufferBit::ColorDepth, {0,0,960,600}, {0,0,window_width,window_height});
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -263,7 +302,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600,
+    GLFWwindow* window = glfwCreateWindow(960, 600,
                                           "MR2 Simple Cube",
                                           nullptr, nullptr);
 

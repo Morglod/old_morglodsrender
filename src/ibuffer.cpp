@@ -4,6 +4,7 @@
 #include "src/statecache.hpp"
 #include "src/mp.hpp"
 #include "mr/log.hpp"
+#include "mr/alloc.hpp"
 
 namespace mr {
 
@@ -13,12 +14,12 @@ IndexBufferPtr IndexBuffer::Create(BufferPtr const& ibuf, IndexDataType const& d
         MR_LOG_ERROR(IndexBuffer::Create, "Buffer should be resident");
         return nullptr;
     }
-    return IndexBufferPtr(new IndexBuffer(ibuf, nullptr, datatype, num));
+    return IndexBufferPtr(MR_NEW(IndexBuffer, ibuf, nullptr, datatype, num));
 }
 
 IndexBufferPtr IndexBuffer::Create(MemoryPtr const& mem, IndexDataType const& datatype, uint32_t num) {
     MP_ScopeSample(IndexBuffer::Create);
-    return IndexBufferPtr(new IndexBuffer(nullptr, mem, datatype, num));
+    return IndexBufferPtr(MR_NEW(IndexBuffer, nullptr, mem, datatype, num));
 }
 
 IndexBuffer::IndexBuffer(BufferPtr const& buf, MemoryPtr const& mem, IndexDataType const& dtype, uint32_t num) : _buf(buf), _mem(mem), _dtype(dtype), _num(num) {

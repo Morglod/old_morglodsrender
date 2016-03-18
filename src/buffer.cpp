@@ -3,6 +3,7 @@
 #include "mr/log.hpp"
 #include "src/mp.hpp"
 #include "src/thread/util.hpp"
+#include "mr/alloc.hpp"
 
 namespace mr {
 
@@ -48,7 +49,7 @@ BufferPtr Buffer::Create(MemoryPtr const& mem, CreationFlags const& flags) {
                         (flags.read ? GL_MAP_READ_BIT : 0) |
                         (flags.write ? GL_MAP_WRITE_BIT : 0);
 
-    BufferPtr buf = BufferPtr(new Buffer());
+    BufferPtr buf = MR_NEW_SHARED(Buffer);
     uint32_t buffer = 0;
     glCreateBuffers(1, &buffer);
     const auto size = mem->GetSize();
@@ -65,6 +66,26 @@ BufferPtr Buffer::Create(MemoryPtr const& mem, CreationFlags const& flags) {
         }
     }
     return buf;
+}
+
+std::vector<BufferPtr> Buffer::Create(std::vector<std::pair<MemoryPtr, CreationFlags>> const& mem_flags) {
+    MP_ScopeSample(Buffer::Create);
+
+    std::vector<BufferPtr> result(mem_flags.size());
+    for(size_t i = 0; i < mem_flags.size(); ++i) {
+        result[i] = Buffer::Create(mem_flags[i].first, mem_flags[i].second);
+    }
+    return result;
+}
+
+std::vector<BufferPtr> Buffer::Create(std::vector<MemoryPtr> const& mem, CreationFlags const& flags) {
+    MP_ScopeSample(Buffer::Create);
+
+    std::vector<BufferPtr> result(mem.size());
+    for(size_t i = 0; i < mem.size(); ++i) {
+        result[i] = Buffer::Create(mem[i], flags);
+    }
+    return result;
 }
 
 void Buffer::Destroy() {
@@ -273,6 +294,13 @@ bool Buffer::Write(MemoryPtr const& mem_src, uint32_t offset) {
         return false;
     }
 
+    //If mapped, go sync way WriteAsync
+    if(IsMapped()) {
+        auto result = WriteAsync(mem_src, offset);
+        result.wait();
+        return result.get();
+    }
+
     glNamedBufferSubData(GetId(), offset, mem_src->GetSize(), mem_src->GetPtr());
 
     return true;
@@ -283,8 +311,15 @@ bool Buffer::Read(MemoryPtr const& mem_dst, uint32_t offset) {
 
     //Assert
     if((offset + mem_dst->GetSize()) > (uint32_t)GetSize()) {
-        MR_LOG_ERROR(Buffer::Write, "Failed read data: offset + mem.size > buffer.size");
+        MR_LOG_ERROR(Buffer::Read, "Failed read data: offset + mem.size > buffer.size");
         return false;
+    }
+
+    //If mapped, go sync way ReadAsync
+    if(IsMapped()) {
+        auto result = ReadAsync(mem_dst, offset);
+        result.wait();
+        return result.get();
     }
 
     glGetNamedBufferSubData(GetId(), offset, mem_dst->GetSize(), mem_dst->GetPtr());

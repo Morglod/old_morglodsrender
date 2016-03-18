@@ -6,6 +6,7 @@
 #include "src/mp.hpp"
 #include "mr/pre/glew.hpp"
 #include "src/statecache.hpp"
+#include "mr/alloc.hpp"
 
 #include <unordered_map>
 
@@ -180,7 +181,7 @@ void VertexDecl::AttribMap::Resize(uint8_t n) {
     MP_BeginSample(VertexDecl::AttribMap::Resize);
 
     Free();
-    attribs = new Attrib[n];
+    attribs = MR_NEW_ARRAY(Attrib, n);
     num = n;
 
     MP_EndSample();
@@ -201,7 +202,7 @@ VertexDecl::AttribMap::~AttribMap() {
 }
 
 VertexDeclPtr VertexDecl::Create() {
-    return VertexDeclPtr(new VertexDecl());
+    return MR_NEW_SHARED(VertexDecl);
 }
 
 }
